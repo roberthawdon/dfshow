@@ -1,6 +1,6 @@
 AUTOMAKE_OPTIONS = foreign
 LDFLAGS = -lncurses
 bin_PROGRAMS = show
-show_SOURCES = src/main.c src/views.c
+show_SOURCES = src/main.c src/views.c src/functions.c
 show_LDFLAGS = $(LDFLAGS)
-include_HEADERS = src/main.h src/views.h
+include_HEADERS = src/main.h src/views.h src/functions.h

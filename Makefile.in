@@ -102,7 +102,7 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(includedir)"
 PROGRAMS = $(bin_PROGRAMS)
-am_show_OBJECTS = main.$(OBJEXT) views.$(OBJEXT)
+am_show_OBJECTS = main.$(OBJEXT) views.$(OBJEXT) functions.$(OBJEXT)
 show_OBJECTS = $(am_show_OBJECTS)
 show_LDADD = $(LDADD)
 show_LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(show_LDFLAGS) $(LDFLAGS) \
@@ -302,9 +302,9 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 AUTOMAKE_OPTIONS = foreign
-show_SOURCES = src/main.c src/views.c
+show_SOURCES = src/main.c src/views.c src/functions.c
 show_LDFLAGS = $(LDFLAGS)
-include_HEADERS = src/main.h src/views.h
+include_HEADERS = src/main.h src/views.h src/functions.h
 all: all-am
 
 .SUFFIXES:
@@ -395,6 +395,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/functions.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/views.Po@am__quote@
 
@@ -439,6 +440,20 @@ views.obj: src/views.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/views.c' object='views.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o views.obj `if test -f 'src/views.c'; then $(CYGPATH_W) 'src/views.c'; else $(CYGPATH_W) '$(srcdir)/src/views.c'; fi`
+
+functions.o: src/functions.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT functions.o -MD -MP -MF $(DEPDIR)/functions.Tpo -c -o functions.o `test -f 'src/functions.c' || echo '$(srcdir)/'`src/functions.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/functions.Tpo $(DEPDIR)/functions.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/functions.c' object='functions.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o functions.o `test -f 'src/functions.c' || echo '$(srcdir)/'`src/functions.c
+
+functions.obj: src/functions.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT functions.obj -MD -MP -MF $(DEPDIR)/functions.Tpo -c -o functions.obj `if test -f 'src/functions.c'; then $(CYGPATH_W) 'src/functions.c'; else $(CYGPATH_W) '$(srcdir)/src/functions.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/functions.Tpo $(DEPDIR)/functions.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/functions.c' object='functions.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o functions.obj `if test -f 'src/functions.c'; then $(CYGPATH_W) 'src/functions.c'; else $(CYGPATH_W) '$(srcdir)/src/functions.c'; fi`
 install-includeHEADERS: $(include_HEADERS)
 	@$(NORMAL_INSTALL)
 	@list='$(include_HEADERS)'; test -n "$(includedir)" || list=; \
