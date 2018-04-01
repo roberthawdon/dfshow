@@ -45,4 +45,5 @@ int main()
   keypad(stdscr, TRUE);
 
   directory_view();
+  return 0;
 }
