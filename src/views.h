@@ -1,2 +1,2 @@
-void directory_view();
-void quit_menu();
+int directory_view();
+int quit_menu();

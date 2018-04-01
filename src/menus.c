@@ -1,5 +1,10 @@
 #include <ncurses.h>
 #include <unistd.h>
+#include "main.h"
+#include "views.h"
+
+int c;
+int * pc = &c;
 
 void directory_top_menu()
 {
@@ -113,4 +118,45 @@ void function_key_menu()
   mvprintw(LINES-1, 72, "F9");
   attroff(A_BOLD);
   mvprintw(LINES-1, 74, "-Sort");
+}
+
+void directory_view_menu()
+{
+  while(1)
+    {
+      *pc = getch();
+      switch(*pc)
+        {
+        case 'q':
+          quit_menu();
+          break;
+        case 27:
+          directory_change_menu();
+          break;
+          /* default:
+             mvprintw(LINES-2, 1, "Character pressed is = %3d Hopefully it can be printed as '%c'", c, c);
+             refresh(); */
+        }
+    }
+}
+
+void directory_change_menu_inputs()
+{
+  while(1)
+    {
+      *pc = getch();
+      switch(*pc)
+        {
+        case 'q':
+          exittoshell();
+          refresh();
+          break;
+        case 's':
+          directory_view(); // TODO: Ask which directory to show, this is a temporary placeholder
+          break;
+          /* case 27: // Pressing escape here didn't actually do anything in DF-EDIT 2.3b
+             directory_view();
+             break; */
+        }
+    }
 }
