@@ -32,6 +32,7 @@ int exittoshell()
 
 int main()
 {
+  set_escdelay(10);
 
   initscr();
   start_color();
