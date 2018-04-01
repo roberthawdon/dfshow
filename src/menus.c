@@ -120,7 +120,7 @@ void function_key_menu()
   mvprintw(LINES-1, 74, "-Sort");
 }
 
-void directory_view_menu()
+void directory_view_menu_inputs0()
 {
   while(1)
     {

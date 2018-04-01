@@ -24,7 +24,7 @@ int directory_view()
 
   refresh();
 
-  directory_view_menu();
+  directory_view_menu_inputs0();
 
   return 0;
 }
