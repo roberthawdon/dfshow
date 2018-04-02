@@ -15,6 +15,7 @@
 
 
 
+
 am__is_gnu_make = { \
   if test -z '$(MAKELEVEL)'; then \
     false; \
@@ -93,15 +94,16 @@ am__aclocal_m4_deps = $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 DIST_COMMON = $(srcdir)/Makefile.am $(top_srcdir)/configure \
-	$(am__configure_deps) $(am__DIST_COMMON)
+	$(am__configure_deps) $(include_HEADERS) $(am__DIST_COMMON)
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno config.status.lineno
 mkinstalldirs = $(install_sh) -d
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
-am__installdirs = "$(DESTDIR)$(bindir)"
+am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(includedir)"
 PROGRAMS = $(bin_PROGRAMS)
-am_show_OBJECTS = main.$(OBJEXT) views.$(OBJEXT)
+am_show_OBJECTS = main.$(OBJEXT) views.$(OBJEXT) functions.$(OBJEXT) \
+	menus.$(OBJEXT)
 show_OBJECTS = $(am_show_OBJECTS)
 show_LDADD = $(LDADD)
 show_LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(show_LDFLAGS) $(LDFLAGS) \
@@ -145,6 +147,34 @@ am__can_run_installinfo = \
     n|no|NO) false;; \
     *) (install-info --version) >/dev/null 2>&1;; \
   esac
+am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
+am__vpath_adj = case $$p in \
+    $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
+    *) f=$$p;; \
+  esac;
+am__strip_dir = f=`echo $$p | sed -e 's|^.*/||'`;
+am__install_max = 40
+am__nobase_strip_setup = \
+  srcdirstrip=`echo "$(srcdir)" | sed 's/[].[^$$\\*|]/\\\\&/g'`
+am__nobase_strip = \
+  for p in $$list; do echo "$$p"; done | sed -e "s|$$srcdirstrip/||"
+am__nobase_list = $(am__nobase_strip_setup); \
+  for p in $$list; do echo "$$p $$p"; done | \
+  sed "s| $$srcdirstrip/| |;"' / .*\//!s/ .*/ ./; s,\( .*\)/[^/]*$$,\1,' | \
+  $(AWK) 'BEGIN { files["."] = "" } { files[$$2] = files[$$2] " " $$1; \
+    if (++n[$$2] == $(am__install_max)) \
+      { print $$2, files[$$2]; n[$$2] = 0; files[$$2] = "" } } \
+    END { for (dir in files) print dir, files[dir] }'
+am__base_list = \
+  sed '$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;s/\n/ /g' | \
+  sed '$$!N;$$!N;$$!N;$$!N;s/\n/ /g'
+am__uninstall_files_from_dir = { \
+  test -z "$$files" \
+    || { test ! -d "$$dir" && test ! -f "$$dir" && test ! -r "$$dir"; } \
+    || { echo " ( cd '$$dir' && rm -f" $$files ")"; \
+         $(am__cd) "$$dir" && rm -f $$files; }; \
+  }
+HEADERS = $(include_HEADERS)
 am__tagged_files = $(HEADERS) $(SOURCES) $(TAGS_FILES) $(LISP)
 # Read a list of newline-separated strings from the standard input,
 # and print each of them once, without duplicates.  Input order is
@@ -185,12 +215,12 @@ distuninstallcheck_listfiles = find . -type f -print
 am__distuninstallcheck_listfiles = $(distuninstallcheck_listfiles) \
   | sed 's|^\./|$(prefix)/|' | grep -v '$(infodir)/dir$$'
 distcleancheck_listfiles = find . -type f -print
-ACLOCAL = ${SHELL} /home/robert/projects/dfshow/missing aclocal-1.15
+ACLOCAL = ${SHELL} /home/ian/projects/dfshow/missing aclocal-1.15
 AMTAR = $${TAR-tar}
 AM_DEFAULT_VERBOSITY = 1
-AUTOCONF = ${SHELL} /home/robert/projects/dfshow/missing autoconf
-AUTOHEADER = ${SHELL} /home/robert/projects/dfshow/missing autoheader
-AUTOMAKE = ${SHELL} /home/robert/projects/dfshow/missing automake-1.15
+AUTOCONF = ${SHELL} /home/ian/projects/dfshow/missing autoconf
+AUTOHEADER = ${SHELL} /home/ian/projects/dfshow/missing autoheader
+AUTOMAKE = ${SHELL} /home/ian/projects/dfshow/missing automake-1.15
 AWK = gawk
 CC = gcc
 CCDEPMODE = depmode=gcc3
@@ -203,9 +233,9 @@ DEPDIR = .deps
 ECHO_C = 
 ECHO_N = -n
 ECHO_T = 
-EGREP = /usr/bin/grep -E
+EGREP = /usr/sbin/grep -E
 EXEEXT = 
-GREP = /usr/bin/grep
+GREP = /usr/sbin/grep
 INSTALL = /usr/bin/install -c
 INSTALL_DATA = ${INSTALL} -m 644
 INSTALL_PROGRAM = ${INSTALL}
@@ -215,8 +245,8 @@ LDFLAGS = -lncurses
 LIBOBJS = 
 LIBS = 
 LTLIBOBJS = 
-MAKEINFO = ${SHELL} /home/robert/projects/dfshow/missing makeinfo
-MKDIR_P = /usr/bin/mkdir -p
+MAKEINFO = ${SHELL} /home/ian/projects/dfshow/missing makeinfo
+MKDIR_P = /usr/sbin/mkdir -p
 OBJEXT = o
 PACKAGE = dfshow
 PACKAGE_BUGREPORT = mail@robertianhawdon.me.uk
@@ -230,10 +260,10 @@ SET_MAKE =
 SHELL = /bin/sh
 STRIP = 
 VERSION = 0.0.0
-abs_builddir = /home/robert/projects/dfshow
-abs_srcdir = /home/robert/projects/dfshow
-abs_top_builddir = /home/robert/projects/dfshow
-abs_top_srcdir = /home/robert/projects/dfshow
+abs_builddir = /home/ian/projects/dfshow
+abs_srcdir = /home/ian/projects/dfshow
+abs_top_builddir = /home/ian/projects/dfshow
+abs_top_srcdir = /home/ian/projects/dfshow
 ac_ct_CC = gcc
 am__include = include
 am__leading_dot = .
@@ -252,7 +282,7 @@ host_alias =
 htmldir = ${docdir}
 includedir = ${prefix}/include
 infodir = ${datarootdir}/info
-install_sh = ${SHELL} /home/robert/projects/dfshow/install-sh
+install_sh = ${SHELL} /home/ian/projects/dfshow/install-sh
 libdir = ${exec_prefix}/lib
 libexecdir = ${exec_prefix}/libexec
 localedir = ${datarootdir}/locale
@@ -273,8 +303,9 @@ top_build_prefix =
 top_builddir = .
 top_srcdir = .
 AUTOMAKE_OPTIONS = foreign
-show_SOURCES = src/main.c src/views.c
+show_SOURCES = src/main.c src/views.c src/functions.c src/menus.c
 show_LDFLAGS = $(LDFLAGS)
+include_HEADERS = src/main.h src/views.h src/functions.h src/menus.h src/vars.h
 all: all-am
 
 .SUFFIXES:
@@ -365,7 +396,9 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+include ./$(DEPDIR)/functions.Po
 include ./$(DEPDIR)/main.Po
+include ./$(DEPDIR)/menus.Po
 include ./$(DEPDIR)/views.Po
 
 .c.o:
@@ -409,6 +442,55 @@ views.obj: src/views.c
 #	$(AM_V_CC)source='src/views.c' object='views.obj' libtool=no \
 #	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
 #	$(AM_V_CC_no)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o views.obj `if test -f 'src/views.c'; then $(CYGPATH_W) 'src/views.c'; else $(CYGPATH_W) '$(srcdir)/src/views.c'; fi`
+
+functions.o: src/functions.c
+	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT functions.o -MD -MP -MF $(DEPDIR)/functions.Tpo -c -o functions.o `test -f 'src/functions.c' || echo '$(srcdir)/'`src/functions.c
+	$(AM_V_at)$(am__mv) $(DEPDIR)/functions.Tpo $(DEPDIR)/functions.Po
+#	$(AM_V_CC)source='src/functions.c' object='functions.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(AM_V_CC_no)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o functions.o `test -f 'src/functions.c' || echo '$(srcdir)/'`src/functions.c
+
+functions.obj: src/functions.c
+	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT functions.obj -MD -MP -MF $(DEPDIR)/functions.Tpo -c -o functions.obj `if test -f 'src/functions.c'; then $(CYGPATH_W) 'src/functions.c'; else $(CYGPATH_W) '$(srcdir)/src/functions.c'; fi`
+	$(AM_V_at)$(am__mv) $(DEPDIR)/functions.Tpo $(DEPDIR)/functions.Po
+#	$(AM_V_CC)source='src/functions.c' object='functions.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(AM_V_CC_no)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o functions.obj `if test -f 'src/functions.c'; then $(CYGPATH_W) 'src/functions.c'; else $(CYGPATH_W) '$(srcdir)/src/functions.c'; fi`
+
+menus.o: src/menus.c
+	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT menus.o -MD -MP -MF $(DEPDIR)/menus.Tpo -c -o menus.o `test -f 'src/menus.c' || echo '$(srcdir)/'`src/menus.c
+	$(AM_V_at)$(am__mv) $(DEPDIR)/menus.Tpo $(DEPDIR)/menus.Po
+#	$(AM_V_CC)source='src/menus.c' object='menus.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(AM_V_CC_no)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o menus.o `test -f 'src/menus.c' || echo '$(srcdir)/'`src/menus.c
+
+menus.obj: src/menus.c
+	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT menus.obj -MD -MP -MF $(DEPDIR)/menus.Tpo -c -o menus.obj `if test -f 'src/menus.c'; then $(CYGPATH_W) 'src/menus.c'; else $(CYGPATH_W) '$(srcdir)/src/menus.c'; fi`
+	$(AM_V_at)$(am__mv) $(DEPDIR)/menus.Tpo $(DEPDIR)/menus.Po
+#	$(AM_V_CC)source='src/menus.c' object='menus.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(AM_V_CC_no)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o menus.obj `if test -f 'src/menus.c'; then $(CYGPATH_W) 'src/menus.c'; else $(CYGPATH_W) '$(srcdir)/src/menus.c'; fi`
+install-includeHEADERS: $(include_HEADERS)
+	@$(NORMAL_INSTALL)
+	@list='$(include_HEADERS)'; test -n "$(includedir)" || list=; \
+	if test -n "$$list"; then \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(includedir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(includedir)" || exit 1; \
+	fi; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_HEADER) $$files '$(DESTDIR)$(includedir)'"; \
+	  $(INSTALL_HEADER) $$files "$(DESTDIR)$(includedir)" || exit $$?; \
+	done
+
+uninstall-includeHEADERS:
+	@$(NORMAL_UNINSTALL)
+	@list='$(include_HEADERS)'; test -n "$(includedir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	dir='$(DESTDIR)$(includedir)'; $(am__uninstall_files_from_dir)
 
 ID: $(am__tagged_files)
 	$(am__define_uniq_tagged_files); mkid -fID $$unique
@@ -634,9 +716,9 @@ distcleancheck: distclean
 	       exit 1; } >&2
 check-am: all-am
 check: check-am
-all-am: Makefile $(PROGRAMS)
+all-am: Makefile $(PROGRAMS) $(HEADERS)
 installdirs:
-	for dir in "$(DESTDIR)$(bindir)"; do \
+	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(includedir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-am
@@ -692,7 +774,7 @@ info: info-am
 
 info-am:
 
-install-data-am:
+install-data-am: install-includeHEADERS
 
 install-dvi: install-dvi-am
 
@@ -739,7 +821,7 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-binPROGRAMS
+uninstall-am: uninstall-binPROGRAMS uninstall-includeHEADERS
 
 .MAKE: install-am install-strip
 
@@ -752,12 +834,13 @@ uninstall-am: uninstall-binPROGRAMS
 	dvi-am html html-am info info-am install install-am \
 	install-binPROGRAMS install-data install-data-am install-dvi \
 	install-dvi-am install-exec install-exec-am install-html \
-	install-html-am install-info install-info-am install-man \
-	install-pdf install-pdf-am install-ps install-ps-am \
-	install-strip installcheck installcheck-am installdirs \
-	maintainer-clean maintainer-clean-generic mostlyclean \
-	mostlyclean-compile mostlyclean-generic pdf pdf-am ps ps-am \
-	tags tags-am uninstall uninstall-am uninstall-binPROGRAMS
+	install-html-am install-includeHEADERS install-info \
+	install-info-am install-man install-pdf install-pdf-am \
+	install-ps install-ps-am install-strip installcheck \
+	installcheck-am installdirs maintainer-clean \
+	maintainer-clean-generic mostlyclean mostlyclean-compile \
+	mostlyclean-generic pdf pdf-am ps ps-am tags tags-am uninstall \
+	uninstall-am uninstall-binPROGRAMS uninstall-includeHEADERS
 
 .PRECIOUS: Makefile
 
