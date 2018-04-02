@@ -120,6 +120,13 @@ void function_key_menu()
   mvprintw(LINES-1, 74, "-Sort");
 }
 
+void show_directory_input()
+{
+  move(0,0);
+  clrtoeol();
+  mvprintw(0, 0, "Show Directory - Enter pathname: ");
+}
+
 void directory_view_menu_inputs0()
 {
   while(1)
@@ -152,7 +159,8 @@ void directory_change_menu_inputs()
           refresh();
           break;
         case 's':
-          directory_view(); // TODO: Ask which directory to show, this is a temporary placeholder
+          // directory_view(); // TODO: Ask which directory to show, this is a temporary placeholder
+          show_directory_input();
           break;
           /* case 27: // Pressing escape here didn't actually do anything in DF-EDIT 2.3b
              directory_view();
