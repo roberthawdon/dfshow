@@ -4,6 +4,7 @@
 #include "views.h"
 #include "functions.h"
 #include "menus.h"
+#include "vars.h"
 
 int directory_view()
 {
@@ -24,7 +25,15 @@ int directory_view()
 
   refresh();
 
-  directory_view_menu_inputs0();
+  switch(inputmode)
+    {
+    case 0:
+      directory_view_menu_inputs0();
+      break;
+    case 1:
+      directory_view_menu_inputs1();
+      break;
+    }
 
   return 0;
 }

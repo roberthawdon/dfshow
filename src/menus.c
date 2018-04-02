@@ -2,6 +2,9 @@
 #include <unistd.h>
 #include "main.h"
 #include "views.h"
+#include "vars.h"
+
+int inputmode = 0;
 
 int c;
 int * pc = &c;
@@ -124,7 +127,49 @@ void show_directory_input()
 {
   move(0,0);
   clrtoeol();
-  mvprintw(0, 0, "Show Directory - Enter pathname: ");
+  mvprintw(0, 0, "Show Directory - Enter pathname:");
+  attron(COLOR_PAIR(3));
+  mvprintw(0, 33, "*.*"); // Placeholder for typed text
+  attron(COLOR_PAIR(1));
+}
+
+void show_directory_inputs()
+{
+  while(1)
+    {
+      *pc = getch();
+      switch(*pc)
+        {
+        case 10: // Enter key
+          directory_view();
+          break;
+        case 27: // ESC Key
+          directory_top_menu();
+          directory_view_menu_inputs0();
+          break;
+        }
+    }
+}
+
+void directory_view_menu_inputs1()
+{
+  while(1)
+    {
+      *pc = getch();
+      switch(*pc)
+        {
+        case 'q':
+          quit_menu();
+          break;
+        case 's':
+          show_directory_input();
+          show_directory_inputs();
+          break;
+          /* default:
+             mvprintw(LINES-2, 1, "Character pressed is = %3d Hopefully it can be printed as '%c'", c, c);
+             refresh(); */
+        }
+    }
 }
 
 void directory_view_menu_inputs0()
@@ -138,7 +183,9 @@ void directory_view_menu_inputs0()
           quit_menu();
           break;
         case 27:
+          inputmode = 1;
           directory_change_menu();
+          directory_view_menu_inputs1();
           break;
           /* default:
              mvprintw(LINES-2, 1, "Character pressed is = %3d Hopefully it can be printed as '%c'", c, c);
@@ -146,7 +193,6 @@ void directory_view_menu_inputs0()
         }
     }
 }
-
 void directory_change_menu_inputs()
 {
   while(1)
@@ -161,6 +207,7 @@ void directory_change_menu_inputs()
         case 's':
           // directory_view(); // TODO: Ask which directory to show, this is a temporary placeholder
           show_directory_input();
+          show_directory_inputs();
           break;
           /* case 27: // Pressing escape here didn't actually do anything in DF-EDIT 2.3b
              directory_view();
