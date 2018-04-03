@@ -15,11 +15,7 @@ int directory_view()
 
   directory_top_menu();
 
-  attron(COLOR_PAIR(2));
-  mvprintw(2, 2, "%s", currentpwd);
-  mvprintw(3, 2, "14 Objects   42563 Used 10930239 Available"); // Placeholder for PWD info
-  mvprintw(4, 4, "---Attrs--- -Owner & Group-  -Size- --Date & Time-- ----Name----"); // Header
-  attron(COLOR_PAIR(1));
+  list_dir(currentpwd);
 
   function_key_menu();
 
