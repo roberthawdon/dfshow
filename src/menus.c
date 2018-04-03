@@ -34,17 +34,21 @@ void directory_top_menu()
   attroff(A_BOLD);
   mvprintw(0, 21, "elp,");
   attron(A_BOLD);
-  mvprintw(0, 26, "Q");
+  mvprintw(0, 26, "M");
   attroff(A_BOLD);
-  mvprintw(0, 27, "uit,");
+  mvprintw(0, 27, "odify,");
   attron(A_BOLD);
-  mvprintw(0, 32, "R");
+  mvprintw(0, 34, "Q");
   attroff(A_BOLD);
-  mvprintw(0, 33, "ename,");
+  mvprintw(0, 35, "uit,");
   attron(A_BOLD);
-  mvprintw(0, 40, "S");
+  mvprintw(0, 40, "R");
   attroff(A_BOLD);
-  mvprintw(0, 41, "how");
+  mvprintw(0, 41, "ename,");
+  attron(A_BOLD);
+  mvprintw(0, 48, "S");
+  attroff(A_BOLD);
+  mvprintw(0, 49, "how");
 }
 
 void directory_change_menu()
