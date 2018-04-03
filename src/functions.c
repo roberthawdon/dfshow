@@ -23,7 +23,7 @@ int list_dir(char *pwd)
       if ( folder ){
         while ( ( res = readdir ( folder ) ) ){
           if ( strcmp( res->d_name, "." ) && strcmp( res->d_name, ".." ) ){
-            mvprintw(5 + count, 56,"%s\n",res->d_name);
+            mvprintw(5 + count, 4,"---------- 0  owner group      00000  0000-00-00 00:00  %s\n",res->d_name); // A lot of placeholders here.
             count++;
           }
         }
@@ -31,7 +31,7 @@ int list_dir(char *pwd)
         attron(COLOR_PAIR(2));
         mvprintw(2, 2, "%s", pwd);
         mvprintw(3, 2, "%i Objects   00000 Used 00000000 Available", count); // Parcial Placeholder for PWD info
-        mvprintw(4, 4, "---Attrs--- -Owner & Group-  -Size- --Date & Time-- ----Name----"); // Header
+        mvprintw(4, 4, "----Attrs---- -Owner & Group-  -Size- ---Date & Time--- ----Name----"); // Header
         attron(COLOR_PAIR(1));
 
         closedir ( folder );
