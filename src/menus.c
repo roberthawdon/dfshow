@@ -123,6 +123,8 @@ void function_key_menu()
   mvprintw(LINES-1, 74, "-Sort");
 }
 
+void directory_view_menu_inputs0();
+
 void show_directory_input()
 {
   move(0,0);
