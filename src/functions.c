@@ -30,7 +30,7 @@ int list_dir(char *pwd)
 
         attron(COLOR_PAIR(2));
         mvprintw(2, 2, "%s", pwd);
-        mvprintw(3, 2, "%i Objects   42563 Used 10930239 Available", count); // Parcial Placeholder for PWD info
+        mvprintw(3, 2, "%i Objects   00000 Used 00000000 Available", count); // Parcial Placeholder for PWD info
         mvprintw(4, 4, "---Attrs--- -Owner & Group-  -Size- --Date & Time-- ----Name----"); // Header
         attron(COLOR_PAIR(1));
 
