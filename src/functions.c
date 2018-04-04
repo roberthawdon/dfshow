@@ -9,6 +9,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <time.h>
 #include "functions.h"
 #include "views.h"
 
@@ -22,6 +23,7 @@ int list_dir(char *pwd)
   const char *path = pwd;
   struct stat buffer;
   int         status;
+  char filedatetime[16];
 
   if (stat(path, &sb) == 0 && S_ISDIR(sb.st_mode)){
     DIR *folder = opendir ( path );
@@ -34,8 +36,9 @@ int list_dir(char *pwd)
           struct passwd *pw = getpwuid(sb.st_uid);
           struct group *gr = getgrgid(sb.st_gid);
           status = stat(res->d_name, &buffer);
+          strftime(filedatetime, 20, "%Y-%m-%d %H:%M", localtime(&(buffer.st_ctime)));
           // grp = getgrgid(res->d_ino);
-          mvprintw(4 + count, 4,"---------- 0  %s %s      %i  0000-00-00 00:00  %s\n",pw->pw_name,gr->gr_name,buffer.st_size,res->d_name); // A lot of placeholders here.
+          mvprintw(4 + count, 4,"---------- 0  %s %s      %i  %s  %s\n",pw->pw_name,gr->gr_name,buffer.st_size,filedatetime,res->d_name); // A lot of placeholders here.
           count++;
             //}
         }
