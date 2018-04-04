@@ -23,7 +23,8 @@ int list_dir(char *pwd)
   const char *path = pwd;
   struct stat buffer;
   int         status;
-  char filedatetime[16];
+  char filedatetime[17];
+  char perms[11] = {0};
 
   if (stat(path, &sb) == 0 && S_ISDIR(sb.st_mode)){
     DIR *folder = opendir ( path );
@@ -37,8 +38,29 @@ int list_dir(char *pwd)
           struct group *gr = getgrgid(sb.st_gid);
           status = lstat(res->d_name, &buffer);
           strftime(filedatetime, 20, "%Y-%m-%d %H:%M", localtime(&(buffer.st_ctime)));
+
+
+          //perms[0] = '-'; //placeholder
+          if ( buffer.st_mode & S_IFDIR ) {
+            perms[0] = 'd';
+          } else if ( S_ISLNK(buffer.st_mode) ) {
+            perms[0] = 'l';
+          } else {
+            perms[0] = '-';
+          }
+          perms[1] = buffer.st_mode & S_IRUSR? 'r': '-';
+          perms[2] = buffer.st_mode & S_IWUSR? 'w': '-';
+          perms[3] = buffer.st_mode & S_IXUSR? 'x': '-';
+          perms[4] = buffer.st_mode & S_IRGRP? 'r': '-';
+          perms[5] = buffer.st_mode & S_IWGRP? 'w': '-';
+          perms[6] = buffer.st_mode & S_IXGRP? 'x': '-';
+          perms[7] = buffer.st_mode & S_IROTH? 'r': '-';
+          perms[8] = buffer.st_mode & S_IWOTH? 'w': '-';
+          perms[9] = buffer.st_mode & S_IXOTH? 'x': '-';
+
+
           // grp = getgrgid(res->d_ino);
-          mvprintw(4 + count, 4,"%i 0  %s %s      %i  %s  %s\n",buffer.st_mode,pw->pw_name,gr->gr_name,buffer.st_size,filedatetime,res->d_name); // A lot of placeholders here.
+          mvprintw(4 + count, 4,"%s %i  %s %s      %i  %s  %s\n",perms,buffer.st_nlink,pw->pw_name,gr->gr_name,buffer.st_size,filedatetime,res->d_name); // A lot of placeholders here.
           count++;
             //}
         }
