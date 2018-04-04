@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <time.h>
+#include <sys/vfs.h>
 #include "functions.h"
 #include "views.h"
 
@@ -60,7 +61,7 @@ int list_dir(char *pwd)
 
 
           // grp = getgrgid(res->d_ino);
-          mvprintw(4 + count, 4,"%s %i  %s %s      %i  %s  %s\n",perms,buffer.st_nlink,pw->pw_name,gr->gr_name,buffer.st_size,filedatetime,res->d_name); // A lot of placeholders here.
+          mvprintw(4 + count, 4,"%s %i  %s %s      %i  %s  %s\n",perms,buffer.st_nlink,pw->pw_name,gr->gr_name,buffer.st_size,filedatetime,res->d_name); 
           count++;
             //}
         }
