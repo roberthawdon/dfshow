@@ -32,13 +32,13 @@ int list_dir(char *pwd)
       if ( folder ){
         while ( ( res = readdir ( folder ) ) ){
           //if ( strcmp( res->d_name, "." ) && strcmp( res->d_name, ".." ) ){
-          stat(res->d_name, &sb);
+          lstat(res->d_name, &sb);
           struct passwd *pw = getpwuid(sb.st_uid);
           struct group *gr = getgrgid(sb.st_gid);
-          status = stat(res->d_name, &buffer);
+          status = lstat(res->d_name, &buffer);
           strftime(filedatetime, 20, "%Y-%m-%d %H:%M", localtime(&(buffer.st_ctime)));
           // grp = getgrgid(res->d_ino);
-          mvprintw(4 + count, 4,"---------- 0  %s %s      %i  %s  %s\n",pw->pw_name,gr->gr_name,buffer.st_size,filedatetime,res->d_name); // A lot of placeholders here.
+          mvprintw(4 + count, 4,"%i 0  %s %s      %i  %s  %s\n",buffer.st_mode,pw->pw_name,gr->gr_name,buffer.st_size,filedatetime,res->d_name); // A lot of placeholders here.
           count++;
             //}
         }
