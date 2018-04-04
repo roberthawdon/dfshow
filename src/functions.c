@@ -3,6 +3,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <dirent.h>
+#include <fcntl.h>
 #include <pwd.h>
 #include <grp.h>
 #include <string.h>
@@ -19,6 +20,8 @@ int list_dir(char *pwd)
   struct group *gr;
   struct passwd *pw;
   const char *path = pwd;
+  struct stat buffer;
+  int         status;
 
   if (stat(path, &sb) == 0 && S_ISDIR(sb.st_mode)){
     DIR *folder = opendir ( path );
@@ -30,8 +33,9 @@ int list_dir(char *pwd)
           stat(res->d_name, &sb);
           struct passwd *pw = getpwuid(sb.st_uid);
           struct group *gr = getgrgid(sb.st_gid);
+          status = stat(res->d_name, &buffer);
           // grp = getgrgid(res->d_ino);
-          mvprintw(4 + count, 4,"---------- 0  %s %s      00000  0000-00-00 00:00  %s\n",pw->pw_name,gr->gr_name,res->d_name); // A lot of placeholders here.
+          mvprintw(4 + count, 4,"---------- 0  %s %s      %i  0000-00-00 00:00  %s\n",pw->pw_name,gr->gr_name,buffer.st_size,res->d_name); // A lot of placeholders here.
           count++;
             //}
         }
