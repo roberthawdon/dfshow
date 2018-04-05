@@ -17,6 +17,7 @@
 int list_dir(char *pwd)
 {
   size_t count = 0;
+  size_t file_count = 0;
   struct dirent *res;
   struct stat sb;
   struct group *gr;
@@ -26,12 +27,29 @@ int list_dir(char *pwd)
   int         status;
   char filedatetime[17];
   char perms[11] = {0};
+  // char result[11][4][128][128][32][17][512];
+
+  struct dfobject {
+    char perm[11];
+    int hlink[4];
+    char owner[128];
+    char group[128];
+    int size[32];
+    char date[17];
+    char name[512];
+  };
+
+  struct dfobject *ob;
+  ob = (struct dfobject*) malloc(1024 * sizeof(struct dfobject)); // Needs to be dynamic
 
   if (stat(path, &sb) == 0 && S_ISDIR(sb.st_mode)){
     DIR *folder = opendir ( path );
 
     if (access ( path, F_OK ) != -1 ){
       if ( folder ){
+        //while (( res = readdir( folder )) ) {
+        //    file_count++;
+        //}
         while ( ( res = readdir ( folder ) ) ){
           //if ( strcmp( res->d_name, "." ) && strcmp( res->d_name, ".." ) ){
           lstat(res->d_name, &sb);
@@ -41,7 +59,6 @@ int list_dir(char *pwd)
           strftime(filedatetime, 20, "%Y-%m-%d %H:%M", localtime(&(buffer.st_ctime)));
 
 
-          //perms[0] = '-'; //placeholder
           if ( buffer.st_mode & S_IFDIR ) {
             perms[0] = 'd';
           } else if ( S_ISLNK(buffer.st_mode) ) {
@@ -59,9 +76,25 @@ int list_dir(char *pwd)
           perms[8] = buffer.st_mode & S_IWOTH? 'w': '-';
           perms[9] = buffer.st_mode & S_IXOTH? 'x': '-';
 
+          // Writing our structure
+          strcpy(ob[count].perm, perms);
+          //strcpy(ob[count].hlink, buffer.st_nlink);
+          //strcpy(ob[count].owner, pw->pw_name);
+          strcpy(ob[count].group, gr->gr_name);
+          //strcpy(ob[count].size, buffer.st_size);
+          strcpy(ob[count].date, filedatetime);
+          strcpy(ob[count].name, res->d_name);
 
           // grp = getgrgid(res->d_ino);
-          mvprintw(4 + count, 4,"%s %i  %s %s      %i  %s  %s\n",perms,buffer.st_nlink,pw->pw_name,gr->gr_name,buffer.st_size,filedatetime,res->d_name); 
+          //mvprintw(4 + count, 4,"%s %i  %s %s      %i  %s  %s\n",ob[count].perm,buffer.st_nlink,pw->pw_name,ob[count].group,buffer.st_size,ob[count].date,ob[count].name);
+          mvprintw(4 + count, 4,"%s",ob[count].perm);
+          mvprintw(4 + count, 15,"%i",buffer.st_nlink);
+          mvprintw(4 + count, 18,"%s",pw->pw_name);
+          mvprintw(4 + count, 22,"%s",ob[count].group);
+          mvprintw(4 + count, 35,"%i",buffer.st_size);
+          mvprintw(4 + count, 42,"%s",ob[count].date);
+          mvprintw(4 + count, 60,"%s",ob[count].name);
+
           count++;
             //}
         }
