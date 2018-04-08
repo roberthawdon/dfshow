@@ -78,26 +78,28 @@ int list_dir(char *pwd)
 
           // Writing our structure
           strcpy(ob[count].perm, perms);
-          //strcpy(ob[count].hlink, buffer.st_nlink);
-          //strcpy(ob[count].owner, pw->pw_name);
+          *ob[count].hlink = buffer.st_nlink;
+          strcpy(ob[count].owner, pw->pw_name);
           strcpy(ob[count].group, gr->gr_name);
-          //strcpy(ob[count].size, buffer.st_size);
+          *ob[count].size = buffer.st_size;
           strcpy(ob[count].date, filedatetime);
           strcpy(ob[count].name, res->d_name);
 
           // grp = getgrgid(res->d_ino);
           //mvprintw(4 + count, 4,"%s %i  %s %s      %i  %s  %s\n",ob[count].perm,buffer.st_nlink,pw->pw_name,ob[count].group,buffer.st_size,ob[count].date,ob[count].name);
           mvprintw(4 + count, 4,"%s",ob[count].perm);
-          mvprintw(4 + count, 15,"%i",buffer.st_nlink);
-          mvprintw(4 + count, 18,"%s",pw->pw_name);
+          mvprintw(4 + count, 15,"%i",*ob[count].hlink);
+          mvprintw(4 + count, 18,"%s",ob[count].owner);
           mvprintw(4 + count, 22,"%s",ob[count].group);
-          mvprintw(4 + count, 35,"%i",buffer.st_size);
+          mvprintw(4 + count, 35,"%i",*ob[count].size);
           mvprintw(4 + count, 42,"%s",ob[count].date);
           mvprintw(4 + count, 60,"%s",ob[count].name);
 
           count++;
             //}
         }
+
+        mvprintw(4 + count + 2, 4,"Test");
 
         attron(COLOR_PAIR(2));
         mvprintw(1, 2, "%s", pwd);
@@ -106,6 +108,7 @@ int list_dir(char *pwd)
         attron(COLOR_PAIR(1));
 
         closedir ( folder );
+        free(ob); // Freeing memory
       }else{
         perror ( "Could not open the directory" );
         return 1;
