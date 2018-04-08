@@ -14,9 +14,50 @@
 #include "functions.h"
 #include "views.h"
 
+typedef struct {
+  char perm[11];
+  int hlink[4];
+  char owner[128];
+  char group[128];
+  int size[32];
+  char date[17];
+  char name[512];
+} results;
+
+int cmp_str(const void *lhs, const void *rhs)
+{
+  return strcmp(lhs, rhs);
+}
+
+int cmp_int(const void *lhs, const void *rhs)
+{
+  int aa, bb;
+
+  aa = *(int *)lhs;
+  bb = *(int *)rhs;
+
+  return (aa - bb);
+}
+
+int cmp_dflist(const void *lhs, const void *rhs)
+{
+
+  //struct dfobject *lhs;
+  //struct dfobject *rhs;
+
+  results *dforderA = (results *)lhs;
+  results *dforderB = (results *)rhs;
+
+  return strcmp(dforderA->name, dforderB->name);
+
+  //return (dforderA->size - dforderB->size);
+
+}
+
 int list_dir(char *pwd)
 {
   size_t count = 0;
+  size_t list_count = 0;
   size_t file_count = 0;
   struct dirent *res;
   struct stat sb;
@@ -29,18 +70,17 @@ int list_dir(char *pwd)
   char perms[11] = {0};
   // char result[11][4][128][128][32][17][512];
 
-  struct dfobject {
-    char perm[11];
-    int hlink[4];
-    char owner[128];
-    char group[128];
-    int size[32];
-    char date[17];
-    char name[512];
-  };
+  //  struct dfobject {
+  //    char perm[11];
+  //    int hlink[4];
+  //    char owner[128];
+  //    char group[128];
+  //    int size[32];
+  //    char date[17];
+  //    char name[512];
+  //  };
 
-  struct dfobject *ob;
-  ob = (struct dfobject*) malloc(1024 * sizeof(struct dfobject)); // Needs to be dynamic
+  results *ob = malloc(1024 * sizeof(results)); // Needs to be dynamic
 
   if (stat(path, &sb) == 0 && S_ISDIR(sb.st_mode)){
     DIR *folder = opendir ( path );
@@ -87,19 +127,35 @@ int list_dir(char *pwd)
 
           // grp = getgrgid(res->d_ino);
           //mvprintw(4 + count, 4,"%s %i  %s %s      %i  %s  %s\n",ob[count].perm,buffer.st_nlink,pw->pw_name,ob[count].group,buffer.st_size,ob[count].date,ob[count].name);
-          mvprintw(4 + count, 4,"%s",ob[count].perm);
-          mvprintw(4 + count, 15,"%i",*ob[count].hlink);
-          mvprintw(4 + count, 18,"%s",ob[count].owner);
-          mvprintw(4 + count, 22,"%s",ob[count].group);
-          mvprintw(4 + count, 35,"%i",*ob[count].size);
-          mvprintw(4 + count, 42,"%s",ob[count].date);
-          mvprintw(4 + count, 60,"%s",ob[count].name);
+          // mvprintw(4 + count, 4,"%s",ob[count].perm);
+          // mvprintw(4 + count, 15,"%i",*ob[count].hlink);
+          // mvprintw(4 + count, 18,"%s",ob[count].owner);
+          // mvprintw(4 + count, 22,"%s",ob[count].group);
+          // mvprintw(4 + count, 35,"%i",*ob[count].size);
+          // mvprintw(4 + count, 42,"%s",ob[count].date);
+          // mvprintw(4 + count, 60,"%s",ob[count].name);
 
           count++;
             //}
         }
 
-        mvprintw(4 + count + 2, 4,"Test");
+        qsort(ob, count, sizeof(results), cmp_dflist);
+
+        for(list_count; list_count < count; ){
+          mvprintw(4 + list_count, 4,"%s",ob[list_count].perm);
+          mvprintw(4 + list_count, 15,"%i",*ob[list_count].hlink);
+          mvprintw(4 + list_count, 18,"%s",ob[list_count].owner);
+          mvprintw(4 + list_count, 22,"%s",ob[list_count].group);
+          mvprintw(4 + list_count, 35,"%i",*ob[list_count].size);
+          mvprintw(4 + list_count, 42,"%s",ob[list_count].date);
+          // mvprintw(4 + list_count, 60,"%s",ob[list_count].name);
+
+          mvprintw(4 + list_count, 60,"%s",ob[list_count].name);
+          list_count++;
+         }
+
+
+        //mvprintw(4 + count + 2, 4,"Test");
 
         attron(COLOR_PAIR(2));
         mvprintw(1, 2, "%s", pwd);
