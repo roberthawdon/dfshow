@@ -142,15 +142,23 @@ int list_dir(char *pwd)
         qsort(ob, count, sizeof(results), cmp_dflist);
 
         for(list_count; list_count < count; ){
+          //TEMP Emulate listed item
+          if (list_count == 4) {
+            attron(A_BOLD);
+            attron(COLOR_PAIR(4));
+          }
           mvprintw(4 + list_count, 4,"%s",ob[list_count].perm);
           mvprintw(4 + list_count, 15,"%i",*ob[list_count].hlink);
           mvprintw(4 + list_count, 18,"%s",ob[list_count].owner);
           mvprintw(4 + list_count, 22,"%s",ob[list_count].group);
           mvprintw(4 + list_count, 35,"%i",*ob[list_count].size);
           mvprintw(4 + list_count, 42,"%s",ob[list_count].date);
-          // mvprintw(4 + list_count, 60,"%s",ob[list_count].name);
-
           mvprintw(4 + list_count, 60,"%s",ob[list_count].name);
+          //TEMP Emulate listed item
+          if (list_count == 4) {
+            attron(COLOR_PAIR(1));
+            attroff(A_BOLD);
+          }
           list_count++;
          }
 
