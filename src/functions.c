@@ -96,7 +96,7 @@ int list_dir(char *pwd)
           struct passwd *pw = getpwuid(sb.st_uid);
           struct group *gr = getgrgid(sb.st_gid);
           status = lstat(res->d_name, &buffer);
-          strftime(filedatetime, 20, "%Y-%m-%d %H:%M", localtime(&(buffer.st_ctime)));
+          strftime(filedatetime, 20, "%Y-%m-%d %H:%M", localtime(&(buffer.st_mtime)));
 
 
           if ( buffer.st_mode & S_IFDIR ) {
