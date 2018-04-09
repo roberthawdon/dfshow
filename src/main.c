@@ -19,6 +19,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <ncurses.h>
+#include <locale.h>
 #include "vars.h"
 #include "views.h"
 
@@ -34,6 +35,8 @@ int exittoshell()
 int main()
 {
   set_escdelay(10);
+
+  setlocale(LC_ALL, "");
 
   initscr();
   start_color();

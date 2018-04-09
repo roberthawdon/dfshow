@@ -1,5 +1,5 @@
 AUTOMAKE_OPTIONS = foreign
-LDFLAGS = -lncurses
+LDFLAGS = -lncursesw
 bin_PROGRAMS = show
 show_SOURCES = src/main.c src/views.c src/functions.c src/menus.c
 show_LDFLAGS = $(LDFLAGS)
