@@ -23,6 +23,18 @@ typedef struct {
   char name[512];
 } results;
 
+int hlinklen;
+int ownerlen;
+int grouplen;
+int sizelen;
+int namelen;
+
+int ownstart;
+int groupstart;
+int sizestart;
+int datestart;
+int namestart;
+;
 int seglength(const void *seg, char *segname, int LEN)
 {
 
@@ -210,13 +222,30 @@ int list_dir(char *pwd)
             attron(A_BOLD);
             attron(COLOR_PAIR(4));
           }
+
+          hlinklen = seglength(ob, "hlink", count);
+          ownerlen = seglength(ob, "owner", count);
+          grouplen = seglength(ob, "group", count);
+          sizelen = seglength(ob, "size", count);
+          namelen = seglength(ob, "name", count);
+
+          ownstart = 15 + hlinklen + 1;
+          groupstart = ownstart + ownerlen + 1;
+          if (ownerlen + 1 + grouplen < 16) {
+            sizestart = ownstart + 16;
+          } else {
+            sizestart = groupstart + grouplen + 1;
+          }
+          datestart = sizestart + sizelen + 1;
+          namestart = datestart + 18;
+
           mvprintw(4 + list_count, 4,"%s",ob[list_count].perm);
           mvprintw(4 + list_count, 15,"%i",*ob[list_count].hlink);
-          mvprintw(4 + list_count, 18,"%s",ob[list_count].owner);
-          mvprintw(4 + list_count, 22,"%s",ob[list_count].group);
-          mvprintw(4 + list_count, 35,"%i",*ob[list_count].size);
-          mvprintw(4 + list_count, 42,"%s",ob[list_count].date);
-          mvprintw(4 + list_count, 60,"%s",ob[list_count].name);
+          mvprintw(4 + list_count, ownstart,"%s",ob[list_count].owner);
+          mvprintw(4 + list_count, groupstart,"%s",ob[list_count].group);
+          mvprintw(4 + list_count, sizestart,"%i",*ob[list_count].size);
+          mvprintw(4 + list_count, datestart,"%s",ob[list_count].date);
+          mvprintw(4 + list_count, namestart,"%s",ob[list_count].name);
           //TEMP Emulate listed item
           if (list_count == 4) {
             attron(COLOR_PAIR(1));
@@ -226,16 +255,21 @@ int list_dir(char *pwd)
          }
 
 
-        mvprintw(4 + count + 2, 4,"Hlink: %i",seglength(ob, "hlink", count));
-        mvprintw(4 + count + 3, 4,"Owner: %i",seglength(ob, "owner", count));
-        mvprintw(4 + count + 4, 4,"Group: %i",seglength(ob, "group", count));
-        mvprintw(4 + count + 5, 4,"Size:  %i",seglength(ob, "size", count));
-        mvprintw(4 + count + 6, 4,"Name:  %i",seglength(ob, "name", count));
+        // mvprintw(4 + count + 2, 4,"Hlink: %i",hlinklen);
+        // mvprintw(4 + count + 3, 4,"Owner: %i",ownerlen);
+        // mvprintw(4 + count + 4, 4,"Group: %i",grouplen);
+        // mvprintw(4 + count + 5, 4,"Size:  %i",sizelen);
+        // mvprintw(4 + count + 6, 4,"Name:  %i",namelen);
 
         attron(COLOR_PAIR(2));
         mvprintw(1, 2, "%s", pwd);
         mvprintw(2, 2, "%i Objects   00000 Used 00000000 Available", count); // Parcial Placeholder for PWD info
-        mvprintw(3, 4, "----Attrs---- -Owner & Group-  -Size- ---Date & Time--- ----Name----"); // Header
+        mvprintw(3, 4, "---Attrs----");
+        mvprintw(3, ownstart, "-Owner & Group-");
+        mvprintw(3, sizestart, "-Size-");
+        mvprintw(3, datestart, "---Date & Time---");
+        mvprintw(3, namestart, "----Name----");
+        //mvprintw(3, 4, "----Attrs---- -Owner & Group-  -Size- ---Date & Time--- ----Name----"); // Header
         attron(COLOR_PAIR(1));
 
         closedir ( folder );
