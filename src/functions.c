@@ -34,7 +34,7 @@ int groupstart;
 int sizestart;
 int datestart;
 int namestart;
-;
+
 int seglength(const void *seg, char *segname, int LEN)
 {
 
