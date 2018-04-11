@@ -236,7 +236,11 @@ int list_dir(char *pwd)
           } else {
             sizestart = groupstart + grouplen + 1;
           }
-          datestart = sizestart + sizelen + 1;
+          if (sizelen < 7) {
+            datestart = sizestart + 7;
+          } else {
+            datestart = sizestart + sizelen + 1;
+          }
           namestart = datestart + 18;
 
           mvprintw(4 + list_count, 4,"%s",ob[list_count].perm);
