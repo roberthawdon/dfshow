@@ -10,7 +10,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <time.h>
-#include <sys/vfs.h>
 #include "functions.h"
 #include "views.h"
 
@@ -23,6 +22,70 @@ typedef struct {
   char date[17];
   char name[512];
 } results;
+
+int seglength(const void *seg, char *segname, int LEN)
+{
+
+  size_t longest, len;
+  char hlinkstr[5], sizestr[32];
+
+  results *dfseg = (results *)seg;
+
+
+  if (segname == "owner") {
+    longest = strlen(dfseg[0].owner);
+  }
+  else if (segname == "group") {
+    longest = strlen(dfseg[0].group);
+  }
+  else if (segname == "hlink") {
+    sprintf(hlinkstr, "%d", *dfseg[0].hlink);
+    longest = strlen(hlinkstr);
+  }
+  else if (segname == "size") {
+    sprintf(sizestr, "%d", *dfseg[0].size);
+    longest = strlen(sizestr);
+  }
+  else if (segname == "name") {
+    longest = strlen(dfseg[0].name);
+  }
+  else {
+    longest = 0;
+  }
+
+  size_t j = 0;
+
+  for(size_t i = 1; i < LEN; i++)
+    {
+      if (segname == "owner") {
+        len = strlen(dfseg[i].owner);
+      }
+      else if (segname == "group") {
+        len = strlen(dfseg[i].group);
+      }
+      else if (segname == "hlink") {
+        sprintf(hlinkstr, "%d", *dfseg[i].hlink);
+        len = strlen(hlinkstr);
+      }
+      else if (segname == "size") {
+        sprintf(sizestr, "%d", *dfseg[i].size);
+        len = strlen(sizestr);
+      }
+      else if (segname == "name") {
+        len = strlen(dfseg[i].name);
+      }
+      else {
+        len = 0;
+      }
+
+      if(longest < len)
+        {
+          longest = len;
+          j = i;
+        }
+    }
+  return longest;
+}
 
 int cmp_str(const void *lhs, const void *rhs)
 {
@@ -163,7 +226,11 @@ int list_dir(char *pwd)
          }
 
 
-        //mvprintw(4 + count + 2, 4,"Test");
+        mvprintw(4 + count + 2, 4,"Hlink: %i",seglength(ob, "hlink", count));
+        mvprintw(4 + count + 3, 4,"Owner: %i",seglength(ob, "owner", count));
+        mvprintw(4 + count + 4, 4,"Group: %i",seglength(ob, "group", count));
+        mvprintw(4 + count + 5, 4,"Size:  %i",seglength(ob, "size", count));
+        mvprintw(4 + count + 6, 4,"Name:  %i",seglength(ob, "name", count));
 
         attron(COLOR_PAIR(2));
         mvprintw(1, 2, "%s", pwd);
