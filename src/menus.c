@@ -9,6 +9,8 @@ int inputmode = 0;
 int c;
 int * pc = &c;
 
+extern char currentpwd[1024];
+
 void directory_top_menu()
 {
   move(0, 0);
@@ -147,7 +149,7 @@ void show_directory_inputs()
       switch(*pc)
         {
         case 10: // Enter key
-          directory_view();
+          directory_view(currentpwd);
           break;
         case 27: // ESC Key
           directory_top_menu();

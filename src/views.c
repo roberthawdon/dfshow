@@ -6,10 +6,8 @@
 #include "menus.h"
 #include "vars.h"
 
-int directory_view()
+int directory_view(char * currentpwd)
 {
-  char currentpwd[1024];
-  getcwd(currentpwd, sizeof(currentpwd));
   clear();
   attron(COLOR_PAIR(1));
 

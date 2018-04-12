@@ -20,9 +20,12 @@
 #include <stdlib.h>
 #include <ncurses.h>
 #include <locale.h>
+#include <string.h>
+#include <unistd.h>
 #include "vars.h"
 #include "views.h"
 
+char currentpwd[1024];
 
 int exittoshell()
 {
@@ -32,7 +35,7 @@ int exittoshell()
   return 0;
 }
 
-int main()
+int main(int argc, char *argv[])
 {
   set_escdelay(10);
 
@@ -50,6 +53,12 @@ int main()
   curs_set(FALSE); // Hide Curser (Will want to bring it back later)
   keypad(stdscr, TRUE);
 
-  directory_view();
+  if ( argc < 2 ){
+    getcwd(currentpwd, sizeof(currentpwd));
+  } else {
+    strcpy(currentpwd, argv[1]);
+    chdir(currentpwd);
+  }
+  directory_view(currentpwd);
   return 0;
 }
