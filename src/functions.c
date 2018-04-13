@@ -160,7 +160,7 @@ int list_dir(char *pwd)
   //    char name[512];
   //  };
 
-  results *ob = malloc(1024 * sizeof(results)); // Needs to be dynamic
+  results *ob = malloc(sizeof(results)); // Allocating a tiny amount of memory. We'll expand this on each file found.
 
   if (stat(path, &sb) == 0 && S_ISDIR(sb.st_mode)){
     DIR *folder = opendir ( path );
@@ -171,6 +171,7 @@ int list_dir(char *pwd)
         //    file_count++;
         //}
         while ( ( res = readdir ( folder ) ) ){
+          ob = realloc(ob, (count +1) * sizeof(results)); // Reallocating memory.
           //if ( strcmp( res->d_name, "." ) && strcmp( res->d_name, ".." ) ){
           lstat(res->d_name, &sb);
           struct passwd *pw = getpwuid(sb.st_uid);
@@ -280,7 +281,7 @@ int list_dir(char *pwd)
         attron(COLOR_PAIR(2));
         mvprintw(1, 2, "%s", pwd);
         mvprintw(2, 2, "%i Objects   00000 Used 00000000 Available", count); // Parcial Placeholder for PWD info
-        mvprintw(3, 4, "---Attrs----");
+        mvprintw(3, 4, "----Attrs----");
         mvprintw(3, ownstart, "-Owner & Group-");
         mvprintw(3, datestart - 7, "-Size-");
         mvprintw(3, datestart, "---Date & Time---");
