@@ -49,21 +49,21 @@ int seglength(const void *seg, char *segname, int LEN)
   results *dfseg = (results *)seg;
 
 
-  if (segname == "owner") {
+  if (strcmp(segname, "owner")) {
     longest = strlen(dfseg[0].owner);
   }
-  else if (segname == "group") {
+  else if (strcmp(segname, "group")) {
     longest = strlen(dfseg[0].group);
   }
-  else if (segname == "hlink") {
+  else if (strcmp(segname, "hlink")) {
     sprintf(hlinkstr, "%d", *dfseg[0].hlink);
     longest = strlen(hlinkstr);
   }
-  else if (segname == "size") {
+  else if (strcmp(segname, "size")) {
     sprintf(sizestr, "%d", *dfseg[0].size);
     longest = strlen(sizestr);
   }
-  else if (segname == "name") {
+  else if (strcmp(segname, "name")) {
     longest = strlen(dfseg[0].name);
   }
   else {
