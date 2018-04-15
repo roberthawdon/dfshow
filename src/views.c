@@ -13,7 +13,7 @@ int directory_view(char * currentpwd)
 
   directory_top_menu();
 
-  list_dir(currentpwd);
+  display_dir(currentpwd, "name");
 
   function_key_menu();
 

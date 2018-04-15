@@ -14,6 +14,7 @@
 #include "views.h"
 
 typedef struct {
+  int sys[5];
   char perm[11];
   int hlink[4];
   int hlinklens[5];
@@ -134,10 +135,9 @@ int cmp_dflist(const void *lhs, const void *rhs)
 
 }
 
-int list_dir(char *pwd)
+results* get_dir(char *pwd)
 {
   size_t count = 0;
-  size_t list_count = 0;
   size_t file_count = 0;
   struct dirent *res;
   struct stat sb;
@@ -225,80 +225,93 @@ int list_dir(char *pwd)
             //}
         }
 
-        qsort(ob, count, sizeof(results), cmp_dflist);
 
-        for(list_count; list_count < count; ){
-          //TEMP Emulate listed item
-          if (list_count == 4) {
-            attron(A_BOLD);
-            attron(COLOR_PAIR(4));
-          }
-
-          hlinklen = seglength(ob, "hlink", count);
-          ownerlen = seglength(ob, "owner", count);
-          grouplen = seglength(ob, "group", count);
-          sizelen = seglength(ob, "size", count);
-          namelen = seglength(ob, "name", count);
-
-          ownstart = 15 + hlinklen + 1;
-          groupstart = ownstart + ownerlen + 1;
-          if (ownerlen + 1 + grouplen < 16) {
-            sizestart = ownstart + 16;
-          } else {
-            sizestart = groupstart + grouplen + 1;
-          }
-          if (sizelen < 7) {
-            datestart = sizestart + 7;
-          } else {
-            datestart = sizestart + sizelen + 1;
-          }
-          sizeobjectstart = datestart - 1 - *ob[list_count].sizelens;
-          namestart = datestart + 18;
-          hlinkstart = ownstart - 1 - *ob[list_count].hlinklens;
-
-          mvprintw(4 + list_count, 4,"%s",ob[list_count].perm);
-          mvprintw(4 + list_count, hlinkstart,"%i",*ob[list_count].hlink);
-          mvprintw(4 + list_count, ownstart,"%s",ob[list_count].owner);
-          mvprintw(4 + list_count, groupstart,"%s",ob[list_count].group);
-          mvprintw(4 + list_count, sizeobjectstart,"%i",*ob[list_count].size);
-          mvprintw(4 + list_count, datestart,"%s",ob[list_count].date);
-          mvprintw(4 + list_count, namestart,"%s",ob[list_count].name);
-          //TEMP Emulate listed item
-          if (list_count == 4) {
-            attron(COLOR_PAIR(1));
-            attroff(A_BOLD);
-          }
-          list_count++;
-         }
-
-
-        // mvprintw(4 + count + 2, 4,"Hlink: %i",hlinklen);
-        // mvprintw(4 + count + 3, 4,"Owner: %i",ownerlen);
-        // mvprintw(4 + count + 4, 4,"Group: %i",grouplen);
-        // mvprintw(4 + count + 5, 4,"Size:  %i",sizelen);
-        // mvprintw(4 + count + 6, 4,"Name:  %i",namelen);
-
-        attron(COLOR_PAIR(2));
-        mvprintw(1, 2, "%s", pwd);
-        mvprintw(2, 2, "%i Objects   00000 Used 00000000 Available", count); // Parcial Placeholder for PWD info
-        mvprintw(3, 4, "----Attrs----");
-        mvprintw(3, ownstart, "-Owner & Group-");
-        mvprintw(3, datestart - 7, "-Size-");
-        mvprintw(3, datestart, "---Date & Time---");
-        mvprintw(3, namestart, "----Name----");
-        //mvprintw(3, 4, "----Attrs---- -Owner & Group-  -Size- ---Date & Time--- ----Name----"); // Header
-        attron(COLOR_PAIR(1));
-
+        *ob[0].sys = count;
         closedir ( folder );
-        free(ob); // Freeing memory
+        return ob;
+        //free(*ob); // Freeing memory
       }else{
         perror ( "Could not open the directory" );
-        return 1;
+        return ob;
       }
     }
 
   }else{
     printf("The %s it cannot be opened or is not a directory\n", path);
-    return 1;
+    return ob;
   }
+}
+
+int display_dir(char *pwd, char *order){
+
+  size_t list_count = 0;
+
+  results* ob;
+  ob = get_dir(pwd);
+
+  int count = *ob[0].sys;
+
+  qsort(ob, count, sizeof(results), cmp_dflist);
+
+  for(list_count; list_count < count; ){
+    //TEMP Emulate listed item
+    if (list_count == 4) {
+      attron(A_BOLD);
+      attron(COLOR_PAIR(4));
+    }
+
+    hlinklen = seglength(ob, "hlink", count);
+    ownerlen = seglength(ob, "owner", count);
+    grouplen = seglength(ob, "group", count);
+    sizelen = seglength(ob, "size", count);
+    namelen = seglength(ob, "name", count);
+
+    ownstart = 15 + hlinklen + 1;
+    groupstart = ownstart + ownerlen + 1;
+    if (ownerlen + 1 + grouplen < 16) {
+      sizestart = ownstart + 16;
+    } else {
+      sizestart = groupstart + grouplen + 1;
+    }
+    if (sizelen < 7) {
+      datestart = sizestart + 7;
+    } else {
+      datestart = sizestart + sizelen + 1;
+    }
+    sizeobjectstart = datestart - 1 - *ob[list_count].sizelens;
+    namestart = datestart + 18;
+    hlinkstart = ownstart - 1 - *ob[list_count].hlinklens;
+
+    mvprintw(4 + list_count, 4,"%s",ob[list_count].perm);
+    mvprintw(4 + list_count, hlinkstart,"%i",*ob[list_count].hlink);
+    mvprintw(4 + list_count, ownstart,"%s",ob[list_count].owner);
+    mvprintw(4 + list_count, groupstart,"%s",ob[list_count].group);
+    mvprintw(4 + list_count, sizeobjectstart,"%i",*ob[list_count].size);
+    mvprintw(4 + list_count, datestart,"%s",ob[list_count].date);
+    mvprintw(4 + list_count, namestart,"%s",ob[list_count].name);
+    //TEMP Emulate listed item
+    if (list_count == 4) {
+      attron(COLOR_PAIR(1));
+      attroff(A_BOLD);
+    }
+    list_count++;
+    }
+
+  // mvprintw(4 + count + 2, 4,"Hlink: %i",hlinklen);
+  // mvprintw(4 + count + 3, 4,"Owner: %i",ownerlen);
+  // mvprintw(4 + count + 4, 4,"Group: %i",grouplen);
+  // mvprintw(4 + count + 5, 4,"Size:  %i",sizelen);
+  // mvprintw(4 + count + 6, 4,"Name:  %i",namelen);
+
+  attron(COLOR_PAIR(2));
+  mvprintw(1, 2, "%s", pwd);
+  mvprintw(2, 2, "%i Objects   00000 Used 00000000 Available", count); // Parcial Placeholder for PWD info
+  mvprintw(3, 4, "----Attrs----");
+  mvprintw(3, ownstart, "-Owner & Group-");
+  mvprintw(3, datestart - 7, "-Size-");
+  mvprintw(3, datestart, "---Date & Time---");
+  mvprintw(3, namestart, "----Name----");
+  //mvprintw(3, 4, "----Attrs---- -Owner & Group-  -Size- ---Date & Time--- ----Name----"); // Header
+  attron(COLOR_PAIR(1));
+  free(ob); //Freeing memory
 }
