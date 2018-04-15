@@ -1,5 +1,6 @@
 #include <ncurses.h>
 #include <unistd.h>
+#include "functions.h"
 #include "main.h"
 #include "views.h"
 #include "vars.h"
@@ -162,11 +163,31 @@ void sort_view()
 
 void sort_view_inputs()
 {
+  extern results* ob;
+  extern int totalfilecount;
   while(1)
     {
       *pc = getch();
       switch(*pc)
         {
+        case 'n':
+          clear_workspace();
+          display_dir(currentpwd, ob, "name");
+          directory_top_menu();
+          directory_view_menu_inputs0();
+          break;
+        case 'd':
+          clear_workspace();
+          display_dir(currentpwd, ob, "date");
+          directory_top_menu();
+          directory_view_menu_inputs0();
+          break;
+        case 's':
+          clear_workspace();
+          display_dir(currentpwd, ob, "size");
+          directory_top_menu();
+          directory_view_menu_inputs0();
+          break;
         case 27: // ESC Key
           directory_top_menu();
           directory_view_menu_inputs0();
@@ -255,7 +276,7 @@ void directory_change_menu_inputs()
           show_directory_input();
           show_directory_inputs();
           break;
-          /* case 27: // Pressing escape here didn't actually do anything in DF-EDIT 2.3b
+          /* case 27: // Pressing escape here didn't actually do anything in DF-EDIT 2.3d
              directory_view();
              break; */
         }

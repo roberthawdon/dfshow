@@ -13,19 +13,6 @@
 #include "functions.h"
 #include "views.h"
 
-typedef struct {
-  int sys[5];
-  char perm[11];
-  int hlink[4];
-  int hlinklens[5];
-  char owner[128];
-  char group[128];
-  int size[32];
-  int sizelens[32];
-  char date[17];
-  char name[512];
-} results;
-
 char hlinkstr[5], sizestr[32];
 
 int hlinklen;
@@ -42,6 +29,8 @@ int sizeobjectstart;
 int datestart;
 int namestart;
 
+int totalfilecount;
+
 int seglength(const void *seg, char *segname, int LEN)
 {
 
@@ -49,22 +38,21 @@ int seglength(const void *seg, char *segname, int LEN)
 
   results *dfseg = (results *)seg;
 
-
-  if (strcmp(segname, "owner")) {
+  if (!strcmp(segname, "owner")) {
     longest = strlen(dfseg[0].owner);
   }
-  else if (strcmp(segname, "group")) {
+  else if (!strcmp(segname, "group")) {
     longest = strlen(dfseg[0].group);
   }
-  else if (strcmp(segname, "hlink")) {
+  else if (!strcmp(segname, "hlink")) {
     sprintf(hlinkstr, "%d", *dfseg[0].hlink);
     longest = strlen(hlinkstr);
   }
-  else if (strcmp(segname, "size")) {
+  else if (!strcmp(segname, "size")) {
     sprintf(sizestr, "%d", *dfseg[0].size);
     longest = strlen(sizestr);
   }
-  else if (strcmp(segname, "name")) {
+  else if (!strcmp(segname, "name")) {
     longest = strlen(dfseg[0].name);
   }
   else {
@@ -120,7 +108,7 @@ int cmp_int(const void *lhs, const void *rhs)
   return (aa - bb);
 }
 
-int cmp_dflist(const void *lhs, const void *rhs)
+int cmp_dflist_name(const void *lhs, const void *rhs)
 {
 
   //struct dfobject *lhs;
@@ -132,6 +120,24 @@ int cmp_dflist(const void *lhs, const void *rhs)
   return strcmp(dforderA->name, dforderB->name);
 
   //return (dforderA->size - dforderB->size);
+
+}
+
+int cmp_dflist_date(const void *lhs, const void *rhs)
+{
+  results *dforderA = (results *)lhs;
+  results *dforderB = (results *)rhs;
+
+  return strcmp(dforderA->date, dforderB->date);
+
+}
+
+int cmp_dflist_size(const void *lhs, const void *rhs)
+{
+  results *dforderA = (results *)lhs;
+  results *dforderB = (results *)rhs;
+
+  return (*dforderA->size - *dforderB->size);
 
 }
 
@@ -226,7 +232,7 @@ results* get_dir(char *pwd)
         }
 
 
-        *ob[0].sys = count;
+        totalfilecount = count;
         closedir ( folder );
         return ob;
         //free(*ob); // Freeing memory
@@ -242,16 +248,23 @@ results* get_dir(char *pwd)
   }
 }
 
-int display_dir(char *pwd, char *order){
+int display_dir(char *pwd, results* ob, char *order){
 
   size_t list_count = 0;
 
-  results* ob;
-  ob = get_dir(pwd);
 
-  int count = *ob[0].sys;
+  //mvprintw(2,66,"%i",*ob[0].sys);
+  int count = totalfilecount;
 
-  qsort(ob, count, sizeof(results), cmp_dflist);
+  if ( !strcmp(order, "name")){
+    qsort(ob, count, sizeof(results), cmp_dflist_name);
+  }
+  else if ( !strcmp(order, "date")){
+    qsort(ob, count, sizeof(results), cmp_dflist_date);
+  }
+  else if ( !strcmp(order, "size")){
+    qsort(ob, count, sizeof(results), cmp_dflist_size);
+  }
 
   for(list_count; list_count < count; ){
     //TEMP Emulate listed item
@@ -313,5 +326,4 @@ int display_dir(char *pwd, char *order){
   mvprintw(3, namestart, "----Name----");
   //mvprintw(3, 4, "----Attrs---- -Owner & Group-  -Size- ---Date & Time--- ----Name----"); // Header
   attron(COLOR_PAIR(1));
-  free(ob); //Freeing memory
 }
