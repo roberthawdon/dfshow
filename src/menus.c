@@ -1,15 +1,18 @@
 #include <ncurses.h>
 #include <unistd.h>
+#include <string.h>
 #include "functions.h"
 #include "main.h"
 #include "views.h"
 #include "vars.h"
 
 int inputmode = 0;
+char sortmode[5] = "name";
 
 int c;
 int * pc = &c;
 
+extern results* ob;
 extern char currentpwd[1024];
 
 void directory_top_menu()
@@ -163,8 +166,6 @@ void sort_view()
 
 void sort_view_inputs()
 {
-  extern results* ob;
-  extern int totalfilecount;
   while(1)
     {
       *pc = getch();
@@ -172,19 +173,22 @@ void sort_view_inputs()
         {
         case 'n':
           clear_workspace();
-          display_dir(currentpwd, ob, "name");
+          strcpy(sortmode, "name");
+          display_dir(currentpwd, ob, sortmode);
           directory_top_menu();
           directory_view_menu_inputs0();
           break;
         case 'd':
           clear_workspace();
-          display_dir(currentpwd, ob, "date");
+          strcpy(sortmode, "date");
+          display_dir(currentpwd, ob, sortmode);
           directory_top_menu();
           directory_view_menu_inputs0();
           break;
         case 's':
           clear_workspace();
-          display_dir(currentpwd, ob, "size");
+          strcpy(sortmode, "size");
+          display_dir(currentpwd, ob, sortmode);
           directory_top_menu();
           directory_view_menu_inputs0();
           break;
@@ -249,6 +253,11 @@ void directory_view_menu_inputs0()
           inputmode = 1;
           directory_change_menu();
           directory_view_menu_inputs1();
+          break;
+        case 269: // F5
+          ob = get_dir(currentpwd);
+          clear_workspace();
+          display_dir(currentpwd, ob, sortmode);
           break;
         case 273: // F9
           sort_view();
