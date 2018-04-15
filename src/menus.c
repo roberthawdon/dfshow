@@ -141,6 +141,40 @@ void show_directory_input()
   attron(COLOR_PAIR(1));
 }
 
+void sort_view()
+{
+  move(0, 0);
+  clrtoeol();
+  mvprintw(0, 0, "Sort list by -");
+  attron(A_BOLD);
+  mvprintw(0, 15, "D");
+  attroff(A_BOLD);
+  mvprintw(0, 16, "ate & time,");
+  attron(A_BOLD);
+  mvprintw(0, 28, "N");
+  attroff(A_BOLD);
+  mvprintw(0, 29, "ame,");
+  attron(A_BOLD);
+  mvprintw(0, 34, "S");
+  attroff(A_BOLD);
+  mvprintw(0, 35, "ize");
+}
+
+void sort_view_inputs()
+{
+  while(1)
+    {
+      *pc = getch();
+      switch(*pc)
+        {
+        case 27: // ESC Key
+          directory_top_menu();
+          directory_view_menu_inputs0();
+          break;
+        }
+    }
+}
+
 void show_directory_inputs()
 {
   while(1)
@@ -195,9 +229,13 @@ void directory_view_menu_inputs0()
           directory_change_menu();
           directory_view_menu_inputs1();
           break;
-          /* default:
-             mvprintw(LINES-2, 1, "Character pressed is = %3d Hopefully it can be printed as '%c'", c, c);
-             refresh(); */
+        case 273: // F9
+          sort_view();
+          sort_view_inputs();
+          break;
+          // default:
+          //    mvprintw(LINES-2, 1, "Character pressed is = %3d Hopefully it can be printed as '%c'", c, c);
+          //    refresh();
         }
     }
 }
