@@ -1,3 +1,4 @@
+*.o
 .deps
 Makefile
 Makefile.in
@@ -8,11 +9,7 @@ config.log
 config.status
 configure
 depcomp
-functions.o
 install-sh
-main.o
-menus.o
 missing
 show
-views.o
 
