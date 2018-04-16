@@ -141,6 +141,21 @@ int cmp_dflist_size(const void *lhs, const void *rhs)
 
 }
 
+int check_dir(char *pwd)
+{
+  const char *path = pwd;
+  struct stat sb;
+  if (stat(path, &sb) == 0 && S_ISDIR(sb.st_mode)){
+    if (access ( path, F_OK ) != -1 ){
+      return 1;
+    } else {
+      return 0;
+    }
+  } else {
+  return 0;
+  }
+}
+
 results* get_dir(char *pwd)
 {
   size_t count = 0;
@@ -300,7 +315,7 @@ void display_dir(char *pwd, results* ob, char *order){
     mvprintw(4 + list_count, hlinkstart,"%i",*ob[list_count].hlink);
     mvprintw(4 + list_count, ownstart,"%s",ob[list_count].owner);
     mvprintw(4 + list_count, groupstart,"%s",ob[list_count].group);
-    mvprintw(4 + list_count, sizeobjectstart,"%i",*ob[list_count].size);
+    mvprintw(4 + list_count, sizeobjectstart,"%lli",*ob[list_count].size);
     mvprintw(4 + list_count, datestart,"%s",ob[list_count].date);
     mvprintw(4 + list_count, namestart,"%s",ob[list_count].name);
     //TEMP Emulate listed item

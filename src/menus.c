@@ -150,6 +150,9 @@ void show_directory_input()
   noecho();
   curs_set(FALSE);
   attron(COLOR_PAIR(1));
+  if (!check_dir(currentpwd)){
+    quit_menu();
+  }
   chdir(currentpwd);
   ob = get_dir(currentpwd);
   clear_workspace();
