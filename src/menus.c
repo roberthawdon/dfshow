@@ -141,7 +141,12 @@ void show_directory_input()
   clrtoeol();
   mvprintw(0, 0, "Show Directory - Enter pathname:");
   attron(COLOR_PAIR(3));
-  mvprintw(0, 33, "*.*"); // Placeholder for typed text
+  //mvprintw(0, 33, "*.*"); // Placeholder for typed text
+  echo();
+  curs_set(TRUE);
+  mvscanw(0,33,"%s",&currentpwd);
+  noecho();
+  curs_set(FALSE);
   attron(COLOR_PAIR(1));
 }
 
