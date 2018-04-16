@@ -150,6 +150,7 @@ void show_directory_input()
   noecho();
   curs_set(FALSE);
   attron(COLOR_PAIR(1));
+  chdir(currentpwd);
   ob = get_dir(currentpwd);
   clear_workspace();
   display_dir(currentpwd, ob, sortmode);
