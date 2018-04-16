@@ -141,8 +141,25 @@ void show_directory_input()
   clrtoeol();
   mvprintw(0, 0, "Show Directory - Enter pathname:");
   attron(COLOR_PAIR(3));
-  mvprintw(0, 33, "*.*"); // Placeholder for typed text
+  //mvprintw(0, 33, "*.*"); // Placeholder for typed text
+  echo();
+  curs_set(TRUE);
+  move(0,33);
+  //mvscanw(0,33,"%s\n",&currentpwd);
+  getstr(currentpwd);
+  noecho();
+  curs_set(FALSE);
   attron(COLOR_PAIR(1));
+  if (!check_dir(currentpwd)){
+    quit_menu();
+  }
+  chdir(currentpwd);
+  ob = get_dir(currentpwd);
+  clear_workspace();
+  display_dir(currentpwd, ob, sortmode);
+  directory_top_menu();
+  function_key_menu();
+  directory_view_menu_inputs0();
 }
 
 void sort_view()
@@ -207,9 +224,9 @@ void show_directory_inputs()
       *pc = getch();
       switch(*pc)
         {
-        case 10: // Enter key
-          directory_view(currentpwd);
-          break;
+          // case 10: // Enter key
+            //   directory_view(currentpwd);
+          //   break;
         case 27: // ESC Key
           directory_top_menu();
           directory_view_menu_inputs0();

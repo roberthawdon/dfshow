@@ -22,6 +22,7 @@
 #include <locale.h>
 #include <string.h>
 #include <unistd.h>
+#include "functions.h"
 #include "vars.h"
 #include "views.h"
 
@@ -59,6 +60,11 @@ int main(int argc, char *argv[])
     strcpy(currentpwd, argv[1]);
     chdir(currentpwd);
   }
+  if (!check_dir(currentpwd)){
+    //strcpy(currentpwd, "/"); // If dir doesn't exist, default to root
+    quit_menu();
+  }
+
   directory_view(currentpwd);
   return 0;
 }
