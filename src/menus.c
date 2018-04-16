@@ -154,6 +154,7 @@ void show_directory_input()
   clear_workspace();
   display_dir(currentpwd, ob, sortmode);
   directory_top_menu();
+  function_key_menu();
   directory_view_menu_inputs0();
 }
 
