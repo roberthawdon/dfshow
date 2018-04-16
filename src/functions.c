@@ -63,21 +63,21 @@ int seglength(const void *seg, char *segname, int LEN)
 
   for(size_t i = 1; i < LEN; i++)
     {
-      if (segname == "owner") {
+      if (!strcmp(segname, "owner")) {
         len = strlen(dfseg[i].owner);
       }
-      else if (segname == "group") {
+      else if (!strcmp(segname, "group")) {
         len = strlen(dfseg[i].group);
       }
-      else if (segname == "hlink") {
+      else if (!strcmp(segname, "hlink")) {
         sprintf(hlinkstr, "%d", *dfseg[i].hlink);
         len = strlen(hlinkstr);
       }
-      else if (segname == "size") {
+      else if (!strcmp(segname, "size")) {
         sprintf(sizestr, "%d", *dfseg[i].size);
         len = strlen(sizestr);
       }
-      else if (segname == "name") {
+      else if (!strcmp(segname, "name")) {
         len = strlen(dfseg[i].name);
       }
       else {
@@ -204,7 +204,7 @@ results* get_dir(char *pwd)
           perms[9] = buffer.st_mode & S_IXOTH? 'x': '-';
 
           sprintf(hlinkstr, "%d", buffer.st_nlink);
-          sprintf(sizestr, "%d", buffer.st_size);
+          sprintf(sizestr, "%lld", buffer.st_size);
 
           // Writing our structure
           strcpy(ob[count].perm, perms);
@@ -246,9 +246,10 @@ results* get_dir(char *pwd)
     printf("The %s it cannot be opened or is not a directory\n", path);
     return ob;
   }
+  return ob;
 }
 
-int display_dir(char *pwd, results* ob, char *order){
+void display_dir(char *pwd, results* ob, char *order){
 
   size_t list_count = 0;
 
@@ -266,7 +267,7 @@ int display_dir(char *pwd, results* ob, char *order){
     qsort(ob, count, sizeof(results), cmp_dflist_size);
   }
 
-  for(list_count; list_count < count; ){
+  for(list_count = 0; list_count < count; ){
     //TEMP Emulate listed item
     if (list_count == 4) {
       attron(A_BOLD);
