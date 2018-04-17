@@ -286,10 +286,16 @@ results* reorder_ob(results* ob, char *order){
 
 void display_dir(char *pwd, results* ob, int topfileref, int selected){
 
+  int displaysize = ((LINES -1) - 4); // Calculate area to print
   size_t list_count = 0;
   int count = totalfilecount;
 
-  for(list_count = 0; list_count < count; ){
+  if (displaysize > count){
+    displaysize = count;
+  }
+
+  //for(list_count = 0; list_count < count; ){
+  for(list_count = 0; list_count < displaysize; ){
     // Setting highlight
     if (list_count == selected) {
       attron(A_BOLD);
