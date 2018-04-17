@@ -53,7 +53,7 @@ int quit_menu()
 void clear_workspace()
 {
   size_t line_count = 1;
-  for (line_count; line_count < (LINES - 1);)
+  for (line_count = 1; line_count < (LINES - 1);)
     {
       move (line_count,0);
       clrtoeol();
