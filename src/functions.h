@@ -18,5 +18,6 @@ int cmp_dflist_name(const void *lhs, const void *rhs);
 int cmp_dflist_date(const void *lhs, const void *rhs);
 int cmp_dflist_size(const void *lhs, const void *rhs);
 results* get_dir(char *pwd);
-void display_dir(char *pwd, results* ob, char *order);
+results* reorder_ob(results* ob, char *order);
+void display_dir(char *pwd, results* ob, int topfileref, int selected);
 

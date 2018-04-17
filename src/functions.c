@@ -31,6 +31,9 @@ int namestart;
 
 int totalfilecount;
 
+int selected;
+int topfileref = 0;
+
 int seglength(const void *seg, char *segname, int LEN)
 {
 
@@ -264,11 +267,7 @@ results* get_dir(char *pwd)
   return ob;
 }
 
-void display_dir(char *pwd, results* ob, char *order){
-
-  size_t list_count = 0;
-
-
+results* reorder_ob(results* ob, char *order){
   //mvprintw(2,66,"%i",*ob[0].sys);
   int count = totalfilecount;
 
@@ -282,12 +281,28 @@ void display_dir(char *pwd, results* ob, char *order){
     qsort(ob, count, sizeof(results), cmp_dflist_size);
   }
 
+  return ob;
+}
+
+void display_dir(char *pwd, results* ob, int topfileref, int selected){
+
+  size_t list_count = 0;
+  int count = totalfilecount;
+
   for(list_count = 0; list_count < count; ){
-    //TEMP Emulate listed item
-    if (list_count == 4) {
+    // Setting highlight
+    if (list_count == selected) {
       attron(A_BOLD);
       attron(COLOR_PAIR(4));
+    } else {
+      attroff(A_BOLD);
+      attron(COLOR_PAIR(1));
     }
+    // //TEMP Emulate listed item
+    // if (list_count == 4) {
+    //   attron(A_BOLD);
+    //   attron(COLOR_PAIR(4));
+    // }
 
     hlinklen = seglength(ob, "hlink", count);
     ownerlen = seglength(ob, "owner", count);
@@ -318,11 +333,11 @@ void display_dir(char *pwd, results* ob, char *order){
     mvprintw(4 + list_count, sizeobjectstart,"%lli",*ob[list_count].size);
     mvprintw(4 + list_count, datestart,"%s",ob[list_count].date);
     mvprintw(4 + list_count, namestart,"%s",ob[list_count].name);
-    //TEMP Emulate listed item
-    if (list_count == 4) {
-      attron(COLOR_PAIR(1));
-      attroff(A_BOLD);
-    }
+    // //TEMP Emulate listed item
+    // if (list_count == 4) {
+    //   attron(COLOR_PAIR(1));
+    //   attroff(A_BOLD);
+    // }
     list_count++;
     }
 
@@ -333,6 +348,7 @@ void display_dir(char *pwd, results* ob, char *order){
   // mvprintw(4 + count + 6, 4,"Name:  %i",namelen);
 
   attron(COLOR_PAIR(2));
+  attroff(A_BOLD); // Required to ensure the last selected item doesn't bold the header
   mvprintw(1, 2, "%s", pwd);
   mvprintw(2, 2, "%i Objects   00000 Used 00000000 Available", count); // Parcial Placeholder for PWD info
   mvprintw(3, 4, "----Attrs----");

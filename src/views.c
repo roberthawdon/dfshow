@@ -17,7 +17,8 @@ int directory_view(char * currentpwd)
   directory_top_menu();
 
   ob = get_dir(currentpwd);
-  display_dir(currentpwd, ob, "name");
+  reorder_ob(ob, "name");
+  display_dir(currentpwd, ob, 0, 0);
 
   function_key_menu();
 
