@@ -198,7 +198,7 @@ void sort_view_inputs()
           clear_workspace();
           strcpy(sortmode, "name");
           reorder_ob(ob, sortmode);
-          display_dir(currentpwd, ob, 0, selected);
+          display_dir(currentpwd, ob, topfileref, selected);
           directory_top_menu();
           directory_view_menu_inputs0();
           break;
@@ -206,7 +206,7 @@ void sort_view_inputs()
           clear_workspace();
           strcpy(sortmode, "date");
           reorder_ob(ob, sortmode);
-          display_dir(currentpwd, ob, 0, selected);
+          display_dir(currentpwd, ob, topfileref, selected);
           directory_top_menu();
           directory_view_menu_inputs0();
           break;
@@ -214,7 +214,7 @@ void sort_view_inputs()
           clear_workspace();
           strcpy(sortmode, "size");
           reorder_ob(ob, sortmode);
-          display_dir(currentpwd, ob, 0, selected);
+          display_dir(currentpwd, ob, topfileref, selected);
           directory_top_menu();
           directory_view_menu_inputs0();
           break;
