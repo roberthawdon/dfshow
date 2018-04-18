@@ -319,13 +319,35 @@ void directory_view_menu_inputs0()
           break;
         case 261: // Right Arrow
           break;
-        case 338: // PgDn
-          break;
-        case 339: // PgUp
-          break;
+        case 338: // PgDn - Drop through
         case 265: // F1
+          if (selected < totalfilecount) {
+            clear_workspace();
+            topfileref = topfileref + displaysize;
+            if (topfileref > (totalfilecount - displaysize)){
+              topfileref = totalfilecount - displaysize;
+            }
+            selected = selected + displaysize;
+            if (selected > totalfilecount - 1){
+              selected = totalfilecount - 1;
+            }
+          }
+          display_dir(currentpwd, ob, topfileref, selected);
           break;
+        case 339: // PgUp - Drop through
         case 266: // F2
+          if (selected > 0){
+            clear_workspace();
+            topfileref = topfileref - displaysize;
+            if (topfileref < 0){
+              topfileref = 0;
+            }
+            selected = selected - displaysize;
+            if (selected < 0){
+              selected = 0;
+            }
+          }
+          display_dir(currentpwd, ob, topfileref, selected);
           break;
         case 267: // F3
           break;
@@ -335,7 +357,7 @@ void directory_view_menu_inputs0()
           ob = get_dir(currentpwd);
           clear_workspace();
           reorder_ob(ob, sortmode);
-          display_dir(currentpwd, ob, 0, selected);
+          display_dir(currentpwd, ob, topfileref, selected);
           break;
         case 270: // F6
           break;
