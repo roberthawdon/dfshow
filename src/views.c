@@ -8,16 +8,19 @@
 #include "vars.h"
 
 results *ob;
+extern int topfileref;
 
 int directory_view(char * currentpwd)
 {
+  topfileref = 0;
   clear();
   attron(COLOR_PAIR(1));
 
   directory_top_menu();
 
   ob = get_dir(currentpwd);
-  display_dir(currentpwd, ob, "name");
+  reorder_ob(ob, "name");
+  display_dir(currentpwd, ob, topfileref, 0);
 
   function_key_menu();
 

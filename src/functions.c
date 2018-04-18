@@ -31,6 +31,10 @@ int namestart;
 
 int totalfilecount;
 
+int selected;
+int topfileref = 0;
+int displaysize; // Calculate area to print
+
 int seglength(const void *seg, char *segname, int LEN)
 {
 
@@ -264,11 +268,7 @@ results* get_dir(char *pwd)
   return ob;
 }
 
-void display_dir(char *pwd, results* ob, char *order){
-
-  size_t list_count = 0;
-
-
+results* reorder_ob(results* ob, char *order){
   //mvprintw(2,66,"%i",*ob[0].sys);
   int count = totalfilecount;
 
@@ -282,12 +282,35 @@ void display_dir(char *pwd, results* ob, char *order){
     qsort(ob, count, sizeof(results), cmp_dflist_size);
   }
 
-  for(list_count = 0; list_count < count; ){
-    //TEMP Emulate listed item
-    if (list_count == 4) {
+  return ob;
+}
+
+void display_dir(char *pwd, results* ob, int topfileref, int selected){
+
+  displaysize = LINES - 5;
+  size_t list_count = 0;
+  int count = totalfilecount;
+  selected = selected - topfileref;
+
+  if (displaysize > count){
+    displaysize = count;
+  }
+
+  //for(list_count = 0; list_count < count; ){
+  for(list_count = 0; list_count < displaysize; ){
+    // Setting highlight
+    if (list_count == selected) {
       attron(A_BOLD);
       attron(COLOR_PAIR(4));
+    } else {
+      attroff(A_BOLD);
+      attron(COLOR_PAIR(1));
     }
+    // //TEMP Emulate listed item
+    // if (list_count == 4) {
+    //   attron(A_BOLD);
+    //   attron(COLOR_PAIR(4));
+    // }
 
     hlinklen = seglength(ob, "hlink", count);
     ownerlen = seglength(ob, "owner", count);
@@ -307,22 +330,22 @@ void display_dir(char *pwd, results* ob, char *order){
     } else {
       datestart = sizestart + sizelen + 1;
     }
-    sizeobjectstart = datestart - 1 - *ob[list_count].sizelens;
+    sizeobjectstart = datestart - 1 - *ob[list_count + topfileref].sizelens;
     namestart = datestart + 18;
-    hlinkstart = ownstart - 1 - *ob[list_count].hlinklens;
+    hlinkstart = ownstart - 1 - *ob[list_count + topfileref].hlinklens;
 
-    mvprintw(4 + list_count, 4,"%s",ob[list_count].perm);
-    mvprintw(4 + list_count, hlinkstart,"%i",*ob[list_count].hlink);
-    mvprintw(4 + list_count, ownstart,"%s",ob[list_count].owner);
-    mvprintw(4 + list_count, groupstart,"%s",ob[list_count].group);
-    mvprintw(4 + list_count, sizeobjectstart,"%lli",*ob[list_count].size);
-    mvprintw(4 + list_count, datestart,"%s",ob[list_count].date);
-    mvprintw(4 + list_count, namestart,"%s",ob[list_count].name);
-    //TEMP Emulate listed item
-    if (list_count == 4) {
-      attron(COLOR_PAIR(1));
-      attroff(A_BOLD);
-    }
+    mvprintw(4 + list_count, 4,"%s",ob[list_count + topfileref].perm);
+    mvprintw(4 + list_count, hlinkstart,"%i",*ob[list_count + topfileref].hlink);
+    mvprintw(4 + list_count, ownstart,"%s",ob[list_count + topfileref].owner);
+    mvprintw(4 + list_count, groupstart,"%s",ob[list_count + topfileref].group);
+    mvprintw(4 + list_count, sizeobjectstart,"%lli",*ob[list_count + topfileref].size);
+    mvprintw(4 + list_count, datestart,"%s",ob[list_count + topfileref].date);
+    mvprintw(4 + list_count, namestart,"%s",ob[list_count + topfileref].name);
+    // //TEMP Emulate listed item
+    // if (list_count + topfileref == 4) {
+    //   attron(COLOR_PAIR(1));
+    //   attroff(A_BOLD);
+    // }
     list_count++;
     }
 
@@ -333,6 +356,7 @@ void display_dir(char *pwd, results* ob, char *order){
   // mvprintw(4 + count + 6, 4,"Name:  %i",namelen);
 
   attron(COLOR_PAIR(2));
+  attroff(A_BOLD); // Required to ensure the last selected item doesn't bold the header
   mvprintw(1, 2, "%s", pwd);
   mvprintw(2, 2, "%i Objects   00000 Used 00000000 Available", count); // Parcial Placeholder for PWD info
   mvprintw(3, 4, "----Attrs----");

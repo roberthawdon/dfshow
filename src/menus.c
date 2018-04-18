@@ -15,6 +15,11 @@ int * pc = &c;
 extern results* ob;
 extern char currentpwd[1024];
 
+extern int selected;
+extern int topfileref;
+extern int totalfilecount;
+extern int displaysize;
+
 void directory_top_menu()
 {
   move(0, 0);
@@ -156,7 +161,8 @@ void show_directory_input()
   chdir(currentpwd);
   ob = get_dir(currentpwd);
   clear_workspace();
-  display_dir(currentpwd, ob, sortmode);
+  reorder_ob(ob, sortmode);
+  display_dir(currentpwd, ob, 0, selected);
   directory_top_menu();
   function_key_menu();
   directory_view_menu_inputs0();
@@ -191,21 +197,24 @@ void sort_view_inputs()
         case 'n':
           clear_workspace();
           strcpy(sortmode, "name");
-          display_dir(currentpwd, ob, sortmode);
+          reorder_ob(ob, sortmode);
+          display_dir(currentpwd, ob, 0, selected);
           directory_top_menu();
           directory_view_menu_inputs0();
           break;
         case 'd':
           clear_workspace();
           strcpy(sortmode, "date");
-          display_dir(currentpwd, ob, sortmode);
+          reorder_ob(ob, sortmode);
+          display_dir(currentpwd, ob, 0, selected);
           directory_top_menu();
           directory_view_menu_inputs0();
           break;
         case 's':
           clear_workspace();
           strcpy(sortmode, "size");
-          display_dir(currentpwd, ob, sortmode);
+          reorder_ob(ob, sortmode);
+          display_dir(currentpwd, ob, 0, selected);
           directory_top_menu();
           directory_view_menu_inputs0();
           break;
@@ -263,27 +272,126 @@ void directory_view_menu_inputs0()
       *pc = getch();
       switch(*pc)
         {
+        case 'c':
+          break;
+        case 'd':
+          break;
+        case 'e':
+          break;
+        case 'h':
+          break;
+        case 'm':
+          break;
         case 'q':
           quit_menu();
+          break;
+        case'r':
+          break;
+        case 's':
           break;
         case 27:
           inputmode = 1;
           directory_change_menu();
           directory_view_menu_inputs1();
           break;
+        case 10: // Enter - Falls through
+        case 258: // Down Arrow
+          if (selected < (totalfilecount - 1)) {
+            selected++;
+            if (selected > ((topfileref + displaysize) - 1)){
+              topfileref++;
+              clear_workspace();
+            }
+            display_dir(currentpwd, ob, topfileref, selected);
+          }
+          break;
+        case 259: // Up Arrow
+          if (selected > 0){
+            selected--;
+            if (selected < topfileref){
+              topfileref--;
+              clear_workspace();
+            }
+            display_dir(currentpwd, ob, topfileref, selected);
+          }
+          break;
+        case 260: // Left Arrow
+          break;
+        case 261: // Right Arrow
+          break;
+        case 338: // PgDn - Drop through
+        case 265: // F1
+          if (selected < totalfilecount) {
+            clear_workspace();
+            topfileref = topfileref + displaysize;
+            if (topfileref > (totalfilecount - displaysize)){
+              topfileref = totalfilecount - displaysize;
+            }
+            selected = selected + displaysize;
+            if (selected > totalfilecount - 1){
+              selected = totalfilecount - 1;
+            }
+          }
+          display_dir(currentpwd, ob, topfileref, selected);
+          break;
+        case 339: // PgUp - Drop through
+        case 266: // F2
+          if (selected > 0){
+            clear_workspace();
+            topfileref = topfileref - displaysize;
+            if (topfileref < 0){
+              topfileref = 0;
+            }
+            selected = selected - displaysize;
+            if (selected < 0){
+              selected = 0;
+            }
+          }
+          display_dir(currentpwd, ob, topfileref, selected);
+          break;
+        case 267: // F3
+          clear_workspace();
+          selected = 0;
+          topfileref =0;
+          display_dir(currentpwd, ob, topfileref, selected);
+          break;
+        case 268: // F4
+          clear_workspace();
+          selected = totalfilecount - 1;
+          topfileref = totalfilecount - displaysize;
+          display_dir(currentpwd, ob, topfileref, selected);
+          break;
         case 269: // F5
           ob = get_dir(currentpwd);
           clear_workspace();
-          display_dir(currentpwd, ob, sortmode);
+          reorder_ob(ob, sortmode);
+          display_dir(currentpwd, ob, topfileref, selected);
+          break;
+        case 270: // F6
+          break;
+        case 271: // F7
+          break;
+        case 272: // F8
           break;
         case 273: // F9
           sort_view();
           sort_view_inputs();
           break;
+        case 262: // Home
+          selected = topfileref;
+          display_dir(currentpwd, ob, topfileref, selected);
+          break;
+        case 360: // End
+          selected = topfileref + (displaysize - 1);
+          display_dir(currentpwd, ob, topfileref, selected);
+          break;
           // default:
-          //    mvprintw(LINES-2, 1, "Character pressed is = %3d Hopefully it can be printed as '%c'", c, c);
-          //    refresh();
+          //     mvprintw(LINES-2, 1, "Character pressed is = %3d Hopefully it can be printed as '%c'", c, c);
+          //     refresh();
         }
+      //mvprintw(LINES-3, 1, "%i",totalfilecount);
+      //mvprintw(LINES-2, 1, "%i",selected);
+      //refresh();
     }
 }
 void directory_change_menu_inputs()
