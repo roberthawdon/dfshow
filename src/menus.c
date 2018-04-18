@@ -18,6 +18,7 @@ extern char currentpwd[1024];
 extern int selected;
 extern int topfileref;
 extern int totalfilecount;
+extern int displaysize;
 
 void directory_top_menu()
 {
@@ -293,22 +294,25 @@ void directory_view_menu_inputs0()
           directory_change_menu();
           directory_view_menu_inputs1();
           break;
-        case 10: // Enter
-          if (selected < (totalfilecount - 1)) {
-            selected++;
-            display_dir(currentpwd, ob, 0, selected);
-          }
-          break;
+        case 10: // Enter - Falls through
         case 258: // Down Arrow
           if (selected < (totalfilecount - 1)) {
             selected++;
-            display_dir(currentpwd, ob, 0, selected);
+            if (selected > ((topfileref + displaysize) - 1)){
+              topfileref++;
+              clear_workspace();
+            }
+            display_dir(currentpwd, ob, topfileref, selected);
           }
           break;
         case 259: // Up Arrow
           if (selected > 0){
             selected--;
-            display_dir(currentpwd, ob, 0, selected);
+            if (selected < topfileref){
+              topfileref--;
+              clear_workspace();
+            }
+            display_dir(currentpwd, ob, topfileref, selected);
           }
           break;
         case 260: // Left Arrow

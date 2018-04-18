@@ -33,6 +33,7 @@ int totalfilecount;
 
 int selected;
 int topfileref = 0;
+int displaysize; // Calculate area to print
 
 int seglength(const void *seg, char *segname, int LEN)
 {
@@ -286,9 +287,10 @@ results* reorder_ob(results* ob, char *order){
 
 void display_dir(char *pwd, results* ob, int topfileref, int selected){
 
-  int displaysize = ((LINES -1) - 4); // Calculate area to print
+  displaysize = LINES - 5;
   size_t list_count = 0;
   int count = totalfilecount;
+  selected = selected - topfileref;
 
   if (displaysize > count){
     displaysize = count;
@@ -328,19 +330,19 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
     } else {
       datestart = sizestart + sizelen + 1;
     }
-    sizeobjectstart = datestart - 1 - *ob[list_count].sizelens;
+    sizeobjectstart = datestart - 1 - *ob[list_count + topfileref].sizelens;
     namestart = datestart + 18;
-    hlinkstart = ownstart - 1 - *ob[list_count].hlinklens;
+    hlinkstart = ownstart - 1 - *ob[list_count + topfileref].hlinklens;
 
-    mvprintw(4 + list_count, 4,"%s",ob[list_count].perm);
-    mvprintw(4 + list_count, hlinkstart,"%i",*ob[list_count].hlink);
-    mvprintw(4 + list_count, ownstart,"%s",ob[list_count].owner);
-    mvprintw(4 + list_count, groupstart,"%s",ob[list_count].group);
-    mvprintw(4 + list_count, sizeobjectstart,"%lli",*ob[list_count].size);
-    mvprintw(4 + list_count, datestart,"%s",ob[list_count].date);
-    mvprintw(4 + list_count, namestart,"%s",ob[list_count].name);
+    mvprintw(4 + list_count, 4,"%s",ob[list_count + topfileref].perm);
+    mvprintw(4 + list_count, hlinkstart,"%i",*ob[list_count + topfileref].hlink);
+    mvprintw(4 + list_count, ownstart,"%s",ob[list_count + topfileref].owner);
+    mvprintw(4 + list_count, groupstart,"%s",ob[list_count + topfileref].group);
+    mvprintw(4 + list_count, sizeobjectstart,"%lli",*ob[list_count + topfileref].size);
+    mvprintw(4 + list_count, datestart,"%s",ob[list_count + topfileref].date);
+    mvprintw(4 + list_count, namestart,"%s",ob[list_count + topfileref].name);
     // //TEMP Emulate listed item
-    // if (list_count == 4) {
+    // if (list_count + topfileref == 4) {
     //   attron(COLOR_PAIR(1));
     //   attroff(A_BOLD);
     // }
