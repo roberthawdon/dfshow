@@ -330,6 +330,8 @@ void directory_view_menu_inputs0()
             selected = selected + displaysize;
             if (selected > totalfilecount - 1){
               selected = totalfilecount - 1;
+            } else {
+              selected = topfileref + (displaysize - 1);
             }
           }
           display_dir(currentpwd, ob, topfileref, selected);
@@ -345,6 +347,8 @@ void directory_view_menu_inputs0()
             selected = selected - displaysize;
             if (selected < 0){
               selected = 0;
+            } else {
+              selected = topfileref;
             }
           }
           display_dir(currentpwd, ob, topfileref, selected);
