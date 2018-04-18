@@ -350,8 +350,16 @@ void directory_view_menu_inputs0()
           display_dir(currentpwd, ob, topfileref, selected);
           break;
         case 267: // F3
+          clear_workspace();
+          selected = 0;
+          topfileref =0;
+          display_dir(currentpwd, ob, topfileref, selected);
           break;
         case 268: // F4
+          clear_workspace();
+          selected = totalfilecount - 1;
+          topfileref = totalfilecount - displaysize;
+          display_dir(currentpwd, ob, topfileref, selected);
           break;
         case 269: // F5
           ob = get_dir(currentpwd);
@@ -369,9 +377,17 @@ void directory_view_menu_inputs0()
           sort_view();
           sort_view_inputs();
           break;
-          //default:
-          //    mvprintw(LINES-2, 1, "Character pressed is = %3d Hopefully it can be printed as '%c'", c, c);
-          //    refresh();
+        case 262: // Home
+          selected = topfileref;
+          display_dir(currentpwd, ob, topfileref, selected);
+          break;
+        case 360: // End
+          selected = topfileref + (displaysize - 1);
+          display_dir(currentpwd, ob, topfileref, selected);
+          break;
+          // default:
+          //     mvprintw(LINES-2, 1, "Character pressed is = %3d Hopefully it can be printed as '%c'", c, c);
+          //     refresh();
         }
       //mvprintw(LINES-3, 1, "%i",totalfilecount);
       //mvprintw(LINES-2, 1, "%i",selected);
