@@ -172,7 +172,7 @@ int check_last_char(const char *str, const char *chk)
   }
 }
 
-void set_history(char *pwd)
+void set_history(char *pwd, int topfileref, int selected)
 {
   if (sessionhistory == 0){
     history *hs = malloc(sizeof(history));
@@ -184,6 +184,8 @@ void set_history(char *pwd)
   }
 
   strcpy(hs[historyref].path, pwd);
+  hs[historyref].topfileref = topfileref;
+  hs[historyref].selected = selected;
   historyref++;
 
 

@@ -12,6 +12,8 @@ typedef struct {
 
 typedef struct {
   char path[1024];
+  int topfileref;
+  int selected;
 } history;
 
 int check_dir(char *pwd);
@@ -25,4 +27,4 @@ int cmp_dflist_size(const void *lhs, const void *rhs);
 results* get_dir(char *pwd);
 results* reorder_ob(results* ob, char *order);
 void display_dir(char *pwd, results* ob, int topfileref, int selected);
-void set_history(char *pwd);
+void set_history(char *pwd, int topfileref, int selected);

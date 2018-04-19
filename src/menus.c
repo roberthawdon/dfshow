@@ -162,7 +162,7 @@ void show_directory_input()
   if (!check_dir(currentpwd)){
     quit_menu();
   }
-  set_history(currentpwd);
+  set_history(currentpwd, topfileref, selected);
   topfileref = 0;
   selected = 0;
   chdir(currentpwd);
@@ -292,10 +292,10 @@ void directory_view_menu_inputs0()
         case 'q':
           if (historyref > 1){
             strcpy(chpwd, hs[historyref - 2].path);
+            selected = hs[historyref - 1].selected;
+            topfileref = hs[historyref - 1].topfileref;
             historyref--;
             if (check_dir(chpwd)){
-              topfileref = 0;
-              selected = 0;
               strcpy(currentpwd, chpwd);
               chdir(currentpwd);
               ob = get_dir(currentpwd);
@@ -320,7 +320,7 @@ void directory_view_menu_inputs0()
           //mvprintw(0, 66, "%s", chpwd);
           //break;
           if (check_dir(chpwd)){
-            set_history(chpwd);
+            set_history(chpwd, topfileref, selected);
             topfileref = 0;
             selected = 0;
             strcpy(currentpwd, chpwd);
