@@ -160,6 +160,15 @@ int check_dir(char *pwd)
   }
 }
 
+int check_last_char(const char *str, const char *chk)
+{
+  if (!strcmp(&str[strlen(str) - 1], chk)){
+    return 1;
+  } else {
+    return 0;
+  }
+}
+
 results* get_dir(char *pwd)
 {
   size_t count = 0;

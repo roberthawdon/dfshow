@@ -291,7 +291,9 @@ void directory_view_menu_inputs0()
           break;
         case 's':
           strcpy(chpwd, currentpwd);
-          strcat(chpwd, "/");
+          if (!check_last_char(chpwd, "/")){
+            strcat(chpwd, "/");
+          }
           strcat(chpwd, ob[selected].name);
           //mvprintw(0, 66, "%s", chpwd);
           //break;
