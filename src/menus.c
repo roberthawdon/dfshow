@@ -163,6 +163,8 @@ void show_directory_input()
     quit_menu();
   }
   set_history(currentpwd);
+  topfileref = 0;
+  selected = 0;
   chdir(currentpwd);
   ob = get_dir(currentpwd);
   clear_workspace();
@@ -303,6 +305,7 @@ void directory_view_menu_inputs0()
             }
             break;
           } else {
+            historyref--;
             quit_menu();
           }
           break;
