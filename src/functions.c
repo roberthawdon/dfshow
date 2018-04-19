@@ -115,15 +115,10 @@ int cmp_int(const void *lhs, const void *rhs)
 int cmp_dflist_name(const void *lhs, const void *rhs)
 {
 
-  //struct dfobject *lhs;
-  //struct dfobject *rhs;
-
   results *dforderA = (results *)lhs;
   results *dforderB = (results *)rhs;
 
   return strcmp(dforderA->name, dforderB->name);
-
-  //return (dforderA->size - dforderB->size);
 
 }
 
@@ -182,17 +177,6 @@ results* get_dir(char *pwd)
   int         status;
   char filedatetime[17];
   char perms[11] = {0};
-  // char result[11][4][128][128][32][17][512];
-
-  //  struct dfobject {
-  //    char perm[11];
-  //    int hlink[4];
-  //    char owner[128];
-  //    char group[128];
-  //    int size[32];
-  //    char date[17];
-  //    char name[512];
-  //  };
 
   results *ob = malloc(sizeof(results)); // Allocating a tiny amount of memory. We'll expand this on each file found.
 
@@ -201,12 +185,8 @@ results* get_dir(char *pwd)
 
     if (access ( path, F_OK ) != -1 ){
       if ( folder ){
-        //while (( res = readdir( folder )) ) {
-        //    file_count++;
-        //}
         while ( ( res = readdir ( folder ) ) ){
           ob = realloc(ob, (count +1) * sizeof(results)); // Reallocating memory.
-          //if ( strcmp( res->d_name, "." ) && strcmp( res->d_name, ".." ) ){
           lstat(res->d_name, &sb);
           struct passwd *pw = getpwuid(sb.st_uid);
           struct group *gr = getgrgid(sb.st_gid);
@@ -245,25 +225,13 @@ results* get_dir(char *pwd)
           strcpy(ob[count].date, filedatetime);
           strcpy(ob[count].name, res->d_name);
 
-          // grp = getgrgid(res->d_ino);
-          //mvprintw(4 + count, 4,"%s %i  %s %s      %i  %s  %s\n",ob[count].perm,buffer.st_nlink,pw->pw_name,ob[count].group,buffer.st_size,ob[count].date,ob[count].name);
-          // mvprintw(4 + count, 4,"%s",ob[count].perm);
-          // mvprintw(4 + count, 15,"%i",*ob[count].hlink);
-          // mvprintw(4 + count, 18,"%s",ob[count].owner);
-          // mvprintw(4 + count, 22,"%s",ob[count].group);
-          // mvprintw(4 + count, 35,"%i",*ob[count].size);
-          // mvprintw(4 + count, 42,"%s",ob[count].date);
-          // mvprintw(4 + count, 60,"%s",ob[count].name);
-
           count++;
-            //}
         }
 
 
         totalfilecount = count;
         closedir ( folder );
         return ob;
-        //free(*ob); // Freeing memory
       }else{
         perror ( "Could not open the directory" );
         return ob;
@@ -305,7 +273,6 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
     displaysize = count;
   }
 
-  //for(list_count = 0; list_count < count; ){
   for(list_count = 0; list_count < displaysize; ){
     // Setting highlight
     if (list_count == selected) {
@@ -315,11 +282,6 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
       attroff(A_BOLD);
       attron(COLOR_PAIR(1));
     }
-    // //TEMP Emulate listed item
-    // if (list_count == 4) {
-    //   attron(A_BOLD);
-    //   attron(COLOR_PAIR(4));
-    // }
 
     hlinklen = seglength(ob, "hlink", count);
     ownerlen = seglength(ob, "owner", count);
@@ -350,19 +312,8 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
     mvprintw(4 + list_count, sizeobjectstart,"%lli",*ob[list_count + topfileref].size);
     mvprintw(4 + list_count, datestart,"%s",ob[list_count + topfileref].date);
     mvprintw(4 + list_count, namestart,"%s",ob[list_count + topfileref].name);
-    // //TEMP Emulate listed item
-    // if (list_count + topfileref == 4) {
-    //   attron(COLOR_PAIR(1));
-    //   attroff(A_BOLD);
-    // }
     list_count++;
     }
-
-  // mvprintw(4 + count + 2, 4,"Hlink: %i",hlinklen);
-  // mvprintw(4 + count + 3, 4,"Owner: %i",ownerlen);
-  // mvprintw(4 + count + 4, 4,"Group: %i",grouplen);
-  // mvprintw(4 + count + 5, 4,"Size:  %i",sizelen);
-  // mvprintw(4 + count + 6, 4,"Name:  %i",namelen);
 
   attron(COLOR_PAIR(2));
   attroff(A_BOLD); // Required to ensure the last selected item doesn't bold the header
@@ -373,6 +324,5 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   mvprintw(3, datestart - 7, "-Size-");
   mvprintw(3, datestart, "---Date & Time---");
   mvprintw(3, namestart, "----Name----");
-  //mvprintw(3, 4, "----Attrs---- -Owner & Group-  -Size- ---Date & Time--- ----Name----"); // Header
   attron(COLOR_PAIR(1));
 }
