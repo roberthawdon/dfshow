@@ -15,8 +15,10 @@ int * pc = &c;
 char chpwd[1024];
 
 extern results* ob;
+extern history* hs;
 extern char currentpwd[1024];
 
+extern int historyref;
 extern int selected;
 extern int topfileref;
 extern int totalfilecount;
@@ -160,6 +162,7 @@ void show_directory_input()
   if (!check_dir(currentpwd)){
     quit_menu();
   }
+  set_history(currentpwd);
   chdir(currentpwd);
   ob = get_dir(currentpwd);
   clear_workspace();
@@ -285,7 +288,26 @@ void directory_view_menu_inputs0()
         case 'm':
           break;
         case 'q':
-          quit_menu();
+          if (historyref > 1){
+            strcpy(chpwd, hs[historyref - 2].path);
+            move(0,66);
+            clrtoeol();
+            mvprintw(0, 66, "ref: %d, path: %s",historyref -1, chpwd);
+            historyref--;
+            if (check_dir(chpwd)){
+              topfileref = 0;
+              selected = 0;
+              strcpy(currentpwd, chpwd);
+              chdir(currentpwd);
+              ob = get_dir(currentpwd);
+              clear_workspace();
+              reorder_ob(ob, sortmode);
+              display_dir(currentpwd, ob, topfileref, selected);
+            }
+            break;
+          } else {
+            quit_menu();
+          }
           break;
         case'r':
           break;
@@ -298,6 +320,7 @@ void directory_view_menu_inputs0()
           //mvprintw(0, 66, "%s", chpwd);
           //break;
           if (check_dir(chpwd)){
+            set_history(chpwd);
             topfileref = 0;
             selected = 0;
             strcpy(currentpwd, chpwd);

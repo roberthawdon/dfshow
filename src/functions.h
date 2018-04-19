@@ -10,6 +10,10 @@ typedef struct {
   char name[512];
 } results;
 
+typedef struct {
+  char path[1024];
+} history;
+
 int check_dir(char *pwd);
 int check_last_char(const char *str, const char *chk);
 int seglength(const void *seg, char *segname, int LEN);
@@ -21,4 +25,4 @@ int cmp_dflist_size(const void *lhs, const void *rhs);
 results* get_dir(char *pwd);
 results* reorder_ob(results* ob, char *order);
 void display_dir(char *pwd, results* ob, int topfileref, int selected);
-
+void set_history(char *pwd);

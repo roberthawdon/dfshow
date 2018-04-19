@@ -34,6 +34,10 @@ int totalfilecount;
 int selected;
 int topfileref = 0;
 int displaysize; // Calculate area to print
+int historyref = 0;
+int sessionhistory = 0;
+
+history *hs;
 
 int seglength(const void *seg, char *segname, int LEN)
 {
@@ -166,6 +170,25 @@ int check_last_char(const char *str, const char *chk)
   } else {
     return 0;
   }
+}
+
+void set_history(char *pwd)
+{
+  if (sessionhistory == 0){
+    history *hs = malloc(sizeof(history));
+  }
+
+  if (historyref == sessionhistory) {
+    hs = realloc(hs, (historyref +1) * sizeof(history));
+    sessionhistory++;
+  }
+
+  strcpy(hs[historyref].path, pwd);
+  historyref++;
+
+
+  //mvprintw(0, 66, "%s", hs[historyref -1].path);
+
 }
 
 results* get_dir(char *pwd)
@@ -319,6 +342,7 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
     list_count++;
     }
 
+  //mvprintw(0, 66, "%d %d", historyref, sessionhistory);
   attron(COLOR_PAIR(2));
   attroff(A_BOLD); // Required to ensure the last selected item doesn't bold the header
   mvprintw(1, 2, "%s", pwd);

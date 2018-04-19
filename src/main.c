@@ -28,16 +28,21 @@
 
 char currentpwd[1024];
 
+
 int exittoshell()
 {
+  history *hs;
   clear();
   endwin();
+  free(hs);
   exit(0);
   return 0;
 }
 
 int main(int argc, char *argv[])
 {
+
+
   set_escdelay(10);
 
   setlocale(LC_ALL, "");
@@ -48,6 +53,7 @@ int main(int argc, char *argv[])
   init_pair(2, COLOR_GREEN, COLOR_BLACK);
   init_pair(3, COLOR_BLACK, COLOR_WHITE);
   init_pair(4, COLOR_BLUE, COLOR_BLACK);
+  init_pair(5, COLOR_RED, COLOR_BLACK);
   cbreak();
   // nodelay(stdscr, TRUE);
   noecho();
