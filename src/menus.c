@@ -290,9 +290,6 @@ void directory_view_menu_inputs0()
         case 'q':
           if (historyref > 1){
             strcpy(chpwd, hs[historyref - 2].path);
-            move(0,66);
-            clrtoeol();
-            mvprintw(0, 66, "ref: %d, path: %s",historyref -1, chpwd);
             historyref--;
             if (check_dir(chpwd)){
               topfileref = 0;
