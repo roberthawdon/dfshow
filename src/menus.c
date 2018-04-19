@@ -12,6 +12,8 @@ char sortmode[5] = "name";
 int c;
 int * pc = &c;
 
+char chpwd[1024];
+
 extern results* ob;
 extern char currentpwd[1024];
 
@@ -288,6 +290,21 @@ void directory_view_menu_inputs0()
         case'r':
           break;
         case 's':
+          strcpy(chpwd, currentpwd);
+          strcat(chpwd, "/");
+          strcat(chpwd, ob[selected].name);
+          //mvprintw(0, 66, "%s", chpwd);
+          //break;
+          if (check_dir(chpwd)){
+            topfileref = 0;
+            selected = 0;
+            strcpy(currentpwd, chpwd);
+            chdir(currentpwd);
+            ob = get_dir(currentpwd);
+            clear_workspace();
+            reorder_ob(ob, sortmode);
+            display_dir(currentpwd, ob, topfileref, selected);
+          }
           break;
         case 27:
           inputmode = 1;
