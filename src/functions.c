@@ -145,13 +145,17 @@ int check_dir(char *pwd)
   const char *path = pwd;
   struct stat sb;
   if (stat(path, &sb) == 0 && S_ISDIR(sb.st_mode)){
+    DIR *folder = opendir ( path );
     if (access ( path, F_OK ) != -1 ){
-      return 1;
+      if ( folder ){
+        closedir ( folder );
+        return 1;
+      } else {
+        return 0;
+      }
     } else {
-      return 0;
+    return 0;
     }
-  } else {
-  return 0;
   }
 }
 
