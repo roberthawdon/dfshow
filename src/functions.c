@@ -161,6 +161,7 @@ int check_dir(char *pwd)
     return 0;
     }
   }
+  return 0;
 }
 
 int check_last_char(const char *str, const char *chk)
