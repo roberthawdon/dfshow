@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <time.h>
+#include <sys/statvfs.h>
 #include "functions.h"
 #include "views.h"
 
@@ -37,7 +38,36 @@ int displaysize; // Calculate area to print
 int historyref = 0;
 int sessionhistory = 0;
 
+long savailable = 0;
+long sused = 0;
+
 history *hs;
+
+long GetAvailableSpace(const char* path)
+{
+  struct statvfs stat;
+
+  if (statvfs(path, &stat) != 0) {
+    // error happens, just quits here
+    return -1;
+  }
+
+  // the available size is f_bsize * f_bavail
+  return stat.f_bsize * stat.f_bavail;
+}
+
+long GetUsedSpace(const char* path)
+{
+  struct statvfs stat;
+
+  if (statvfs(path, &stat) != 0) {
+    // error happens, just quits here
+    return -1;
+  }
+
+  // the available size is f_bsize * f_bavail
+  return (stat.f_bsize * stat.f_blocks) - (stat.f_bsize * stat.f_bavail);
+}
 
 int seglength(const void *seg, char *segname, int LEN)
 {
@@ -196,6 +226,9 @@ void set_history(char *pwd, int topfileref, int selected)
 
 results* get_dir(char *pwd)
 {
+  savailable = GetAvailableSpace(pwd);
+  sused = 0; // Resetting used value
+  //sused = GetUsedSpace(pwd); // Original DF-EDIT added the sizes to show what was used in that directory, rather than the whole disk.
   size_t count = 0;
   size_t file_count = 0;
   struct dirent *res;
@@ -255,12 +288,15 @@ results* get_dir(char *pwd)
           strcpy(ob[count].date, filedatetime);
           strcpy(ob[count].name, res->d_name);
 
+          sused = sused + buffer.st_size; // Adding the size values
+
           count++;
         }
 
 
         totalfilecount = count;
         closedir ( folder );
+
         return ob;
       }else{
         perror ( "Could not open the directory" );
@@ -349,7 +385,7 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   attron(COLOR_PAIR(2));
   attroff(A_BOLD); // Required to ensure the last selected item doesn't bold the header
   mvprintw(1, 2, "%s", pwd);
-  mvprintw(2, 2, "%i Objects   00000 Used 00000000 Available", count); // Parcial Placeholder for PWD info
+  mvprintw(2, 2, "%i Objects   %lli Used %lli Available", count, sused, savailable);// Parcial Placeholder for PWD info
   mvprintw(3, 4, "----Attrs----");
   mvprintw(3, ownstart, "-Owner & Group-");
   mvprintw(3, datestart - 7, "-Size-");
