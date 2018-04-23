@@ -175,6 +175,19 @@ void show_directory_input()
   directory_view_menu_inputs0();
 }
 
+void copy_file_input(char *file)
+{
+  move(0,0);
+  clrtoeol();
+  mvprintw(0, 0, "Copy file to:");
+  attron(COLOR_PAIR(3));
+  mvprintw(0, 14, "%s", file); // Placeholder
+  attron(COLOR_PAIR(1));
+}
+
+void rename_file_input(char *file);
+void make_directory_input();
+
 void sort_view()
 {
   move(0, 0);
