@@ -277,6 +277,7 @@ void directory_view_menu_inputs1()
           directory_top_menu();
           function_key_menu();
           display_dir(currentpwd, ob, topfileref, selected);
+          directory_view_menu_inputs0();
           break;
         case 'q':
           quit_menu();
