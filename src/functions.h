@@ -30,3 +30,5 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected);
 void set_history(char *pwd, int topfileref, int selected);
 long GetAvailableSpace(const char* path);
 long GetUsedSpace(const char* path);
+void SendToPager(const char* object);
+void SendToEditor(const char* object);

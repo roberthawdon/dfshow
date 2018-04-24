@@ -13,6 +13,7 @@ int c;
 int * pc = &c;
 
 char chpwd[1024];
+char selfile[1024];
 
 extern results* ob;
 extern history* hs;
@@ -293,10 +294,31 @@ void directory_view_menu_inputs0()
       switch(*pc)
         {
         case 'c':
+          strcpy(selfile, currentpwd);
+          if (!check_last_char(selfile, "/")){
+            strcat(selfile, "/");
+          }
+          strcat(selfile, ob[selected].name);
+          if (!check_dir(selfile)){
+            copy_file_input(selfile);
+          }
           break;
         case 'd':
           break;
         case 'e':
+          strcpy(chpwd, currentpwd);
+          if (!check_last_char(chpwd, "/")){
+            strcat(chpwd, "/");
+          }
+          strcat(chpwd, ob[selected].name);
+          //mvprintw(0, 66, "%s", chpwd);
+          //break;
+          if (!check_dir(chpwd)){
+            SendToEditor(chpwd);
+            directory_top_menu();
+            function_key_menu();
+            display_dir(currentpwd, ob, topfileref, selected);
+          }
           break;
         case 'h':
           break;
@@ -341,6 +363,11 @@ void directory_view_menu_inputs0()
             ob = get_dir(currentpwd);
             clear_workspace();
             reorder_ob(ob, sortmode);
+            display_dir(currentpwd, ob, topfileref, selected);
+          } else {
+            SendToPager(chpwd);
+            directory_top_menu();
+            function_key_menu();
             display_dir(currentpwd, ob, topfileref, selected);
           }
           break;

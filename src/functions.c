@@ -43,6 +43,30 @@ long sused = 0;
 
 history *hs;
 
+void SendToPager(const char* object)
+{
+  char page[1024];
+  strcpy(page, getenv("PAGER"));
+  strcat(page, " ");
+  strcat(page, object);
+  clear();
+  endwin();
+  system(page);
+  initscr();
+}
+
+void SendToEditor(const char* object)
+{
+  char page[1024];
+  strcpy(page, getenv("EDITOR"));
+  strcat(page, " ");
+  strcat(page, object);
+  clear();
+  endwin();
+  system(page);
+  initscr();
+}
+
 long GetAvailableSpace(const char* path)
 {
   struct statvfs stat;
