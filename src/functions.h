@@ -32,3 +32,4 @@ long GetAvailableSpace(const char* path);
 long GetUsedSpace(const char* path);
 void SendToPager(const char* object);
 void SendToEditor(const char* object);
+void LaunchShell();

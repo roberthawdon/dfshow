@@ -43,6 +43,16 @@ long sused = 0;
 
 history *hs;
 
+void LaunchShell()
+{
+  clear();
+  endwin();
+  // system("clear"); // Not exactly sure if I want this yet.
+  printf("\nUse 'exit' to return to Show.\n\n");
+  system(getenv("SHELL"));
+  initscr();
+}
+
 void SendToPager(const char* object)
 {
   char page[1024];
@@ -56,14 +66,15 @@ void SendToPager(const char* object)
 }
 
 void SendToEditor(const char* object)
+
 {
-  char page[1024];
-  strcpy(page, getenv("EDITOR"));
-  strcat(page, " ");
-  strcat(page, object);
+  char editor[1024];
+  strcpy(editor, getenv("EDITOR"));
+  strcat(editor, " ");
+  strcat(editor, object);
   clear();
   endwin();
-  system(page);
+  system(editor);
   initscr();
 }
 

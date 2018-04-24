@@ -272,6 +272,12 @@ void directory_view_menu_inputs1()
       *pc = getch();
       switch(*pc)
         {
+        case 'r':
+          LaunchShell();
+          directory_top_menu();
+          function_key_menu();
+          display_dir(currentpwd, ob, topfileref, selected);
+          break;
         case 'q':
           quit_menu();
           break;
@@ -483,6 +489,13 @@ void directory_change_menu_inputs()
       *pc = getch();
       switch(*pc)
         {
+        case 'r':
+          LaunchShell();
+          directory_change_menu();
+          //directory_top_menu();
+          //function_key_menu();
+          //display_dir(currentpwd, ob, topfileref, selected);
+          break;
         case 'q':
           exittoshell();
           refresh();
