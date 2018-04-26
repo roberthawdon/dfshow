@@ -56,9 +56,13 @@ void LaunchShell()
 void SendToPager(const char* object)
 {
   char page[1024];
+  char esc[1024];
   strcpy(page, getenv("PAGER"));
   strcat(page, " ");
-  strcat(page, object);
+  strcpy(esc, "'");
+  strcat(esc, object);
+  strcat(esc, "'");
+  strcat(page, esc);
   clear();
   endwin();
   system(page);
@@ -69,9 +73,13 @@ void SendToEditor(const char* object)
 
 {
   char editor[1024];
+  char esc[1024];
   strcpy(editor, getenv("EDITOR"));
   strcat(editor, " ");
-  strcat(editor, object);
+  strcpy(esc, "'");
+  strcat(esc, object);
+  strcat(esc, "'");
+  strcat(editor, esc);
   clear();
   endwin();
   system(editor);
