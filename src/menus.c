@@ -186,8 +186,25 @@ void copy_file_input(char *file)
   attron(COLOR_PAIR(1));
 }
 
-void rename_file_input(char *file);
-void make_directory_input();
+void rename_file_input(char *file)
+{
+  move(0,0);
+  clrtoeol();
+  mvprintw(0, 0, "Rename file to:");
+  attron(COLOR_PAIR(3));
+  mvprintw(0, 16, "%s", file); // Placeholder
+  attron(COLOR_PAIR(1));
+}
+void make_directory_input()
+{
+  move(0,0);
+  clrtoeol();
+  mvprintw(0, 0, "Make Directory - Enter pathname:");
+  attron(COLOR_PAIR(3));
+  mvprintw(0, 33, "%s", "*.*"); // Placeholder
+  attron(COLOR_PAIR(1));
+}
+
 
 void sort_view()
 {
@@ -272,6 +289,9 @@ void directory_view_menu_inputs1()
       *pc = getch();
       switch(*pc)
         {
+        case 'm':
+          make_directory_input();
+          break;
         case 'r':
           LaunchShell();
           directory_top_menu();
@@ -352,6 +372,12 @@ void directory_view_menu_inputs0()
           }
           break;
         case'r':
+          strcpy(selfile, currentpwd);
+          if (!check_last_char(selfile, "/")){
+            strcat(selfile, "/");
+          }
+          strcat(selfile, ob[selected].name);
+          rename_file_input(selfile);
           break;
         case 's':
           strcpy(chpwd, currentpwd);
@@ -490,6 +516,9 @@ void directory_change_menu_inputs()
       *pc = getch();
       switch(*pc)
         {
+        case 'm':
+          make_directory_input();
+          break;
         case 'r':
           LaunchShell();
           directory_change_menu();
