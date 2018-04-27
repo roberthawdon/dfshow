@@ -17,6 +17,7 @@ typedef struct {
 } history;
 
 int check_dir(char *pwd);
+void mk_dir(char *path);
 int check_last_char(const char *str, const char *chk);
 int seglength(const void *seg, char *segname, int LEN);
 int cmp_str(const void *lhs, const void *rhs);

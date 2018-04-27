@@ -197,12 +197,27 @@ void rename_file_input(char *file)
 }
 void make_directory_input()
 {
+  char newdir[1024];
   move(0,0);
   clrtoeol();
   mvprintw(0, 0, "Make Directory - Enter pathname:");
   attron(COLOR_PAIR(3));
-  mvprintw(0, 33, "%s", "*.*"); // Placeholder
+  //mvprintw(0, 33, "%s", "*.*"); // Placeholder
+  echo();
+  curs_set(TRUE);
+  move (0,33);
+  getstr(newdir);
+  mk_dir(newdir);
+  noecho();
+  curs_set(FALSE);
   attron(COLOR_PAIR(1));
+  ob = get_dir(currentpwd);
+  clear_workspace();
+  reorder_ob(ob, sortmode);
+  display_dir(currentpwd, ob, 0, selected);
+  directory_top_menu();
+  function_key_menu();
+  directory_view_menu_inputs0();
 }
 
 
