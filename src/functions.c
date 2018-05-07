@@ -66,16 +66,18 @@ void SendToPager(const char* object)
 {
   char page[1024];
   char esc[1024];
-  strcpy(page, getenv("PAGER"));
-  strcat(page, " ");
-  strcpy(esc, "'");
-  strcat(esc, object);
-  strcat(esc, "'");
-  strcat(page, esc);
-  clear();
-  endwin();
-  system(page);
-  initscr();
+  if ( getenv("PAGER")) {
+    strcpy(page, getenv("PAGER"));
+    strcat(page, " ");
+    strcpy(esc, "'");
+    strcat(esc, object);
+    strcat(esc, "'");
+    strcat(page, esc);
+    clear();
+    endwin();
+    system(page);
+    initscr();
+  }
 }
 
 void SendToEditor(const char* object)
@@ -83,16 +85,18 @@ void SendToEditor(const char* object)
 {
   char editor[1024];
   char esc[1024];
-  strcpy(editor, getenv("EDITOR"));
-  strcat(editor, " ");
-  strcpy(esc, "'");
-  strcat(esc, object);
-  strcat(esc, "'");
-  strcat(editor, esc);
-  clear();
-  endwin();
-  system(editor);
-  initscr();
+  if ( getenv("EDITOR")) {
+    strcpy(editor, getenv("EDITOR"));
+    strcat(editor, " ");
+    strcpy(esc, "'");
+    strcat(esc, object);
+    strcat(esc, "'");
+    strcat(editor, esc);
+    clear();
+    endwin();
+    system(editor);
+    initscr();
+  }
 }
 
 long GetAvailableSpace(const char* path)
