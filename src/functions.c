@@ -77,6 +77,11 @@ void copy_file(char *source_input, char *target_input)
   fclose(target);
 }
 
+void delete_file(char *source_input)
+{
+  remove(source_input);
+}
+
 void SendToPager(const char* object)
 {
   char page[1024];

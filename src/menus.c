@@ -210,6 +210,7 @@ void rename_file_input(char *file)
   mvprintw(0, 16, "%s", file); // Placeholder
   attron(COLOR_PAIR(1));
 }
+
 void make_directory_input()
 {
   char newdir[1024];
@@ -235,6 +236,20 @@ void make_directory_input()
   directory_view_menu_inputs0();
 }
 
+void delete_file_confirm()
+{
+  move(0,0);
+  clrtoeol();
+  mvprintw(0,0, "Delete file? (");
+  attron(A_BOLD);
+  mvprintw(0, 14, "Y");
+  attroff(A_BOLD);
+  mvprintw(0, 15, "es/");
+  attron(A_BOLD);
+  mvprintw(0, 18, "N");
+  attroff(A_BOLD);
+  mvprintw(0, 19, "o)");
+}
 
 void sort_view()
 {
@@ -253,6 +268,28 @@ void sort_view()
   mvprintw(0, 34, "S");
   attroff(A_BOLD);
   mvprintw(0, 35, "ize");
+}
+
+void delete_file_confirm_input(char *file)
+{
+  while(1)
+    {
+      *pc = getch();
+      switch(*pc)
+        {
+        case 'y':
+          delete_file(file);
+          ob = get_dir(currentpwd);
+          clear_workspace();
+          reorder_ob(ob, sortmode);
+          display_dir(currentpwd, ob, topfileref, selected);
+          // Not breaking here, intentionally dropping through to the default
+        default:
+          directory_top_menu();
+          directory_view_menu_inputs0();
+          break;
+        }
+    }
 }
 
 void sort_view_inputs()
@@ -361,6 +398,15 @@ void directory_view_menu_inputs0()
           }
           break;
         case 'd':
+          strcpy(selfile, currentpwd);
+          if (!check_last_char(selfile, "/")){
+            strcat(selfile, "/");
+          }
+          strcat(selfile, ob[selected].name);
+          if (!check_dir(selfile)){
+            delete_file_confirm();
+            delete_file_confirm_input(selfile);
+          }
           break;
         case 'e':
           strcpy(chpwd, currentpwd);
