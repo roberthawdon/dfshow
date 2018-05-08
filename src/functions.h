@@ -18,6 +18,7 @@ typedef struct {
 
 int check_dir(char *pwd);
 void mk_dir(char *path);
+void copy_file(char *source_input, char *target_input);
 int check_last_char(const char *str, const char *chk);
 int seglength(const void *seg, char *segname, int LEN);
 int cmp_str(const void *lhs, const void *rhs);

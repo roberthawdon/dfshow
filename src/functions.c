@@ -62,6 +62,21 @@ void mk_dir(char *path)
   }
 }
 
+void copy_file(char *source_input, char *target_input)
+{
+  char ch;
+  FILE *source, *target;
+
+  source = fopen(source_input, "r");
+  target = fopen(target_input, "w");
+
+  while( ( ch = fgetc(source) ) != EOF )
+    fputc(ch, target);
+
+  fclose(source);
+  fclose(target);
+}
+
 void SendToPager(const char* object)
 {
   char page[1024];

@@ -178,12 +178,27 @@ void show_directory_input()
 
 void copy_file_input(char *file)
 {
+  char newfile[1024];
   move(0,0);
   clrtoeol();
   mvprintw(0, 0, "Copy file to:");
   attron(COLOR_PAIR(3));
-  mvprintw(0, 14, "%s", file); // Placeholder
+  // mvprintw(0, 14, "%s", file); // Placeholder
+  echo();
+  curs_set(TRUE);
+  move(0,14);
+  getstr(newfile);
+  copy_file(file, newfile);
+  noecho();
+  curs_set(FALSE);
   attron(COLOR_PAIR(1));
+  ob = get_dir(currentpwd);
+  clear_workspace();
+  reorder_ob(ob, sortmode);
+  display_dir(currentpwd, ob, 0, selected);
+  directory_top_menu();
+  function_key_menu();
+  directory_view_menu_inputs0();
 }
 
 void rename_file_input(char *file)
