@@ -462,7 +462,7 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   attroff(A_BOLD); // Required to ensure the last selected item doesn't bold the header
   mvprintw(1, 2, "%s", pwd);
   mvprintw(2, 2, "%i Objects   %lli Used %lli Available", count, sused, savailable);// Parcial Placeholder for PWD info
-  mvprintw(3, 4, "----Attrs----");
+  mvprintw(3, 4, "---Attrs---");
   mvprintw(3, ownstart, "-Owner & Group-");
   mvprintw(3, datestart - 7, "-Size-");
   mvprintw(3, datestart, "---Date & Time---");
