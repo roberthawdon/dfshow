@@ -147,6 +147,8 @@ void directory_view_menu_inputs0();
 
 void show_directory_input()
 {
+  char oldpwd[1024];
+  strcpy(oldpwd, currentpwd);
   move(0,0);
   clrtoeol();
   mvprintw(0, 0, "Show Directory - Enter pathname:");
@@ -157,13 +159,18 @@ void show_directory_input()
   move(0,33);
   //mvscanw(0,33,"%s\n",&currentpwd);
   getstr(currentpwd);
+  if (!strcmp(currentpwd, "")){
+    strcpy(currentpwd, oldpwd);
+  }
   noecho();
   curs_set(FALSE);
   attron(COLOR_PAIR(1));
   if (!check_dir(currentpwd)){
     quit_menu();
   }
-  set_history(currentpwd, topfileref, selected);
+  if (strcmp(oldpwd,currentpwd)){
+    set_history(currentpwd, topfileref, selected);
+  }
   topfileref = 0;
   selected = 0;
   chdir(currentpwd);
