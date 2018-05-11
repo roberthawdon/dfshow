@@ -9,6 +9,7 @@ void directory_change_menu_inputs();
 void show_directory_inputs();
 void copy_file_input(char *file);
 void rename_file_input(char *file);
+void edit_file_input();
 void make_directory_input();
 void delete_file_confirm();
 void delete_file_confirm_input(char *file);

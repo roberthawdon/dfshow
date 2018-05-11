@@ -201,6 +201,24 @@ void copy_file_input(char *file)
   directory_view_menu_inputs0();
 }
 
+void edit_file_input()
+{
+  char filepath[1024];
+  move(0,0);
+  clrtoeol();
+  mvprintw(0, 0, "Edit File - Enter pathname:");
+  attron(COLOR_PAIR(3));
+  // mvprintw(0, 14, "%s", file); // Placeholder
+  echo();
+  curs_set(TRUE);
+  move(0,28);
+  getstr(filepath);
+  noecho();
+  curs_set(FALSE);
+  attron(COLOR_PAIR(1));
+  SendToEditor(filepath);
+}
+
 void rename_file_input(char *file)
 {
   move(0,0);
@@ -361,6 +379,13 @@ void directory_view_menu_inputs1()
           break;
         case 'r':
           LaunchShell();
+          directory_top_menu();
+          function_key_menu();
+          display_dir(currentpwd, ob, topfileref, selected);
+          directory_view_menu_inputs0();
+          break;
+        case 'e':
+          edit_file_input();
           directory_top_menu();
           function_key_menu();
           display_dir(currentpwd, ob, topfileref, selected);
@@ -601,6 +626,10 @@ void directory_change_menu_inputs()
           //directory_top_menu();
           //function_key_menu();
           //display_dir(currentpwd, ob, topfileref, selected);
+          break;
+        case 'e':
+          edit_file_input();
+          directory_change_menu();
           break;
         case 'q':
           exittoshell();
