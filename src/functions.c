@@ -38,8 +38,8 @@ int displaysize; // Calculate area to print
 int historyref = 0;
 int sessionhistory = 0;
 
-long savailable = 0;
-long sused = 0;
+unsigned long int savailable = 0;
+unsigned long int sused = 0;
 
 history *hs;
 
@@ -451,7 +451,7 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
     mvprintw(4 + list_count, hlinkstart,"%i",*ob[list_count + topfileref].hlink);
     mvprintw(4 + list_count, ownstart,"%s",ob[list_count + topfileref].owner);
     mvprintw(4 + list_count, groupstart,"%s",ob[list_count + topfileref].group);
-    mvprintw(4 + list_count, sizeobjectstart,"%lli",*ob[list_count + topfileref].size);
+    mvprintw(4 + list_count, sizeobjectstart,"%lu",*ob[list_count + topfileref].size);
     mvprintw(4 + list_count, datestart,"%s",ob[list_count + topfileref].date);
     mvprintw(4 + list_count, namestart,"%s",ob[list_count + topfileref].name);
     list_count++;
@@ -461,7 +461,7 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   attron(COLOR_PAIR(2));
   attroff(A_BOLD); // Required to ensure the last selected item doesn't bold the header
   mvprintw(1, 2, "%s", pwd);
-  mvprintw(2, 2, "%i Objects   %lli Used %lli Available", count, sused, savailable);// Parcial Placeholder for PWD info
+  mvprintw(2, 2, "%i Objects   %lu Used %lu Available", count, sused, savailable);// Parcial Placeholder for PWD info
   mvprintw(3, 4, "---Attrs---");
   mvprintw(3, ownstart, "-Owner & Group-");
   mvprintw(3, datestart - 7, "-Size-");
