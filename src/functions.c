@@ -348,6 +348,15 @@ int check_last_char(const char *str, const char *chk)
   }
 }
 
+int check_first_char(const char *str, const char *chk)
+{
+   if (str[0] == chk[0]){
+    return 1;
+  } else {
+    return 0;
+  }
+}
+
 void set_history(char *pwd, int topfileref, int selected)
 {
   if (sessionhistory == 0){
@@ -394,6 +403,9 @@ results* get_dir(char *pwd)
     if (access ( path, F_OK ) != -1 ){
       if ( folder ){
         while ( ( res = readdir ( folder ) ) ){
+          if ( check_first_char(res->d_name, ".") && strcmp(res->d_name, ".") && strcmp(res->d_name, "..") ) {
+            continue; // Skipping hidden files
+          }
           ob = realloc(ob, (count +1) * sizeof(results)); // Reallocating memory.
           lstat(res->d_name, &sb);
           struct passwd *pw = getpwuid(sb.st_uid);

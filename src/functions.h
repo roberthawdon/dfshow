@@ -22,6 +22,7 @@ void mk_dir(char *path);
 void copy_file(char *source_input, char *target_input);
 void delete_file(char *source_input);
 int check_last_char(const char *str, const char *chk);
+int check_first_char(const char *str, const char *chk);
 int seglength(const void *seg, char *segname, int LEN);
 int cmp_str(const void *lhs, const void *rhs);
 int cmp_int(const void *lhs, const void *rhs);
