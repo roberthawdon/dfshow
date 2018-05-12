@@ -420,7 +420,7 @@ results* get_dir(char *pwd)
           perms[9] = buffer.st_mode & S_IXOTH? 'x': '-';
 
           sprintf(hlinkstr, "%d", buffer.st_nlink);
-          sprintf(sizestr, "%lld", buffer.st_size);
+          sprintf(sizestr, "%lu", buffer.st_size);
 
           // Writing our structure
           strcpy(ob[count].perm, perms);
