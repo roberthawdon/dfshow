@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <ncurses.h>
+#include <ctype.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <dirent.h>
@@ -42,6 +43,74 @@ unsigned long int savailable = 0;
 unsigned long int sused = 0;
 
 history *hs;
+
+void readline(char *buffer, int buflen, char *oldbuf)
+/* Read up to buflen-1 characters into `buffer`.
+ * A terminating '\0' character is added after the input.  */
+{
+  int old_curs = curs_set(1);
+  int pos;
+  int len;
+  int oldlen;
+  int x, y;
+
+  oldlen = strlen(oldbuf);
+  attron(COLOR_PAIR(3));
+
+  pos = oldlen;
+  len = oldlen;
+
+  getyx(stdscr, y, x);
+
+  strcpy(buffer, oldbuf);
+
+  for (;;) {
+    int c;
+
+    buffer[len] = ' ';
+    mvaddnstr(y, x, buffer, len+1); // Prints buffer on screen
+    move(y, x+pos); //
+    c = getch();
+
+    if (c == KEY_ENTER || c == '\n' || c == '\r') {
+      attron(COLOR_PAIR(1));
+      break;
+    } else if (isprint(c)) {
+      if (pos < buflen-1) {
+        memmove(buffer+pos+1, buffer+pos, len-pos);
+        buffer[pos++] = c;
+        len += 1;
+      } else {
+        beep();
+      }
+    } else if (c == KEY_LEFT) {
+      if (pos > 0) pos -= 1; else beep();
+    } else if (c == KEY_RIGHT) {
+      if (pos < len) pos += 1; else beep();
+    } else if ((c == KEY_BACKSPACE) || (c == 127)) {
+      if (pos > 0) {
+        memmove(buffer+pos-1, buffer+pos, len-pos);
+        pos -= 1;
+        len -= 1;
+        clrtoeol();
+      } else {
+        beep();
+      }
+    } else if (c == KEY_DC) {
+      if (pos < len) {
+        memmove(buffer+pos, buffer+pos+1, len-pos-1);
+        len -= 1;
+        clrtoeol();
+      } else {
+        beep();
+      }
+    } else {
+      beep();
+    }
+  }
+  buffer[len] = '\0';
+  if (old_curs != ERR) curs_set(old_curs);
+}
 
 void LaunchShell()
 {

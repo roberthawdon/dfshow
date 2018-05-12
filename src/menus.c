@@ -152,19 +152,10 @@ void show_directory_input()
   move(0,0);
   clrtoeol();
   mvprintw(0, 0, "Show Directory - Enter pathname:");
-  attron(COLOR_PAIR(3));
-  //mvprintw(0, 33, "*.*"); // Placeholder for typed text
-  echo();
   curs_set(TRUE);
   move(0,33);
-  //mvscanw(0,33,"%s\n",&currentpwd);
-  getstr(currentpwd);
-  if (!strcmp(currentpwd, "")){
-    strcpy(currentpwd, oldpwd);
-  }
-  noecho();
+  readline(currentpwd, 1024, oldpwd);
   curs_set(FALSE);
-  attron(COLOR_PAIR(1));
   if (!check_dir(currentpwd)){
     quit_menu();
   }
@@ -189,16 +180,11 @@ void copy_file_input(char *file)
   move(0,0);
   clrtoeol();
   mvprintw(0, 0, "Copy file to:");
-  attron(COLOR_PAIR(3));
-  // mvprintw(0, 14, "%s", file); // Placeholder
-  echo();
   curs_set(TRUE);
   move(0,14);
-  getstr(newfile);
+  readline(newfile, 1024, file);
   copy_file(file, newfile);
-  noecho();
   curs_set(FALSE);
-  attron(COLOR_PAIR(1));
   ob = get_dir(currentpwd);
   clear_workspace();
   reorder_ob(ob, sortmode);
@@ -214,13 +200,9 @@ void edit_file_input()
   move(0,0);
   clrtoeol();
   mvprintw(0, 0, "Edit File - Enter pathname:");
-  attron(COLOR_PAIR(3));
-  // mvprintw(0, 14, "%s", file); // Placeholder
-  echo();
   curs_set(TRUE);
   move(0,28);
-  getstr(filepath);
-  noecho();
+  readline(filepath, 1024, "");
   curs_set(FALSE);
   attron(COLOR_PAIR(1));
   SendToEditor(filepath);
@@ -242,16 +224,14 @@ void make_directory_input()
   move(0,0);
   clrtoeol();
   mvprintw(0, 0, "Make Directory - Enter pathname:");
-  attron(COLOR_PAIR(3));
-  //mvprintw(0, 33, "%s", "*.*"); // Placeholder
-  echo();
   curs_set(TRUE);
   move (0,33);
-  getstr(newdir);
+  if (!check_last_char(currentpwd, "/")){
+    strcat(currentpwd, "/");
+  }
+  readline(newdir, 1024, currentpwd);
   mk_dir(newdir);
-  noecho();
   curs_set(FALSE);
-  attron(COLOR_PAIR(1));
   ob = get_dir(currentpwd);
   clear_workspace();
   reorder_ob(ob, sortmode);
