@@ -370,6 +370,25 @@ void show_directory_inputs()
     }
 }
 
+void modify_key_menu_inputs()
+{
+  while(1)
+    {
+      *pc = getch();
+      switch(*pc)
+        {
+        case 'o':
+          break;
+        case 'p':
+          break;
+        case 27: // ESC Key
+          directory_top_menu();
+          directory_view_menu_inputs0();
+          break;
+        }
+    }
+}
+
 void directory_view_menu_inputs1()
 {
   while(1)
@@ -400,6 +419,11 @@ void directory_view_menu_inputs1()
         case 's':
           show_directory_input();
           show_directory_inputs();
+          break;
+        case 27:
+          inputmode = 0; // Don't think this does anything
+          directory_top_menu();
+          directory_view_menu_inputs0();
           break;
           /* default:
              mvprintw(LINES-2, 1, "Character pressed is = %3d Hopefully it can be printed as '%c'", c, c);
@@ -460,10 +484,14 @@ void directory_view_menu_inputs0()
           ob = get_dir(currentpwd);
           clear_workspace();
           reorder_ob(ob, sortmode);
+          // Selecting top item to avoid buffer underflows
+          selected = 0;
+          topfileref = 0;
           display_dir(currentpwd, ob, topfileref, selected);
           break;
         case 'm':
           modify_key_menu();
+          modify_key_menu_inputs();
           break;
         case 'q':
           if (historyref > 1){
