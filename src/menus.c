@@ -24,6 +24,7 @@ extern int selected;
 extern int topfileref;
 extern int totalfilecount;
 extern int displaysize;
+extern int showhidden;
 
 void directory_top_menu()
 {
@@ -48,23 +49,23 @@ void directory_top_menu()
   attron(A_BOLD);
   mvprintw(0, 20, "H");
   attroff(A_BOLD);
-  mvprintw(0, 21, "elp,");
+  mvprintw(0, 21, "idden,");
   attron(A_BOLD);
-  mvprintw(0, 26, "M");
+  mvprintw(0, 28, "M");
   attroff(A_BOLD);
-  mvprintw(0, 27, "odify,");
+  mvprintw(0, 29, "odify,");
   attron(A_BOLD);
-  mvprintw(0, 34, "Q");
+  mvprintw(0, 36, "Q");
   attroff(A_BOLD);
-  mvprintw(0, 35, "uit,");
+  mvprintw(0, 37, "uit,");
   attron(A_BOLD);
-  mvprintw(0, 40, "R");
+  mvprintw(0, 42, "R");
   attroff(A_BOLD);
-  mvprintw(0, 41, "ename,");
+  mvprintw(0, 43, "ename,");
   attron(A_BOLD);
-  mvprintw(0, 48, "S");
+  mvprintw(0, 50, "S");
   attroff(A_BOLD);
-  mvprintw(0, 49, "how");
+  mvprintw(0, 51, "how");
 }
 
 void directory_change_menu()
@@ -141,6 +142,21 @@ void function_key_menu()
   mvprintw(LINES-1, 72, "F9");
   attroff(A_BOLD);
   mvprintw(LINES-1, 74, "-Sort");
+}
+
+void modify_key_menu()
+{
+  move(0, 0);
+  clrtoeol();
+  mvprintw(0, 0, "Modify:");
+  attron(A_BOLD);
+  mvprintw(0, 8, "O");
+  attroff(A_BOLD);
+  mvprintw(0, 9, "wner/Group,");
+  attron(A_BOLD);
+  mvprintw(0, 21, "P");
+  attroff(A_BOLD);
+  mvprintw(0, 22, "ermissions");
 }
 
 void directory_view_menu_inputs0();
@@ -436,8 +452,18 @@ void directory_view_menu_inputs0()
           }
           break;
         case 'h':
+          if (showhidden == 0) {
+            showhidden = 1;
+          } else {
+            showhidden = 0;
+          }
+          ob = get_dir(currentpwd);
+          clear_workspace();
+          reorder_ob(ob, sortmode);
+          display_dir(currentpwd, ob, topfileref, selected);
           break;
         case 'm':
+          modify_key_menu();
           break;
         case 'q':
           if (historyref > 1){

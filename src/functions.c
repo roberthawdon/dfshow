@@ -39,6 +39,8 @@ int displaysize; // Calculate area to print
 int historyref = 0;
 int sessionhistory = 0;
 
+int showhidden = 0;
+
 unsigned long int savailable = 0;
 unsigned long int sused = 0;
 
@@ -403,7 +405,7 @@ results* get_dir(char *pwd)
     if (access ( path, F_OK ) != -1 ){
       if ( folder ){
         while ( ( res = readdir ( folder ) ) ){
-          if ( check_first_char(res->d_name, ".") && strcmp(res->d_name, ".") && strcmp(res->d_name, "..") ) {
+          if ( showhidden == 0 && check_first_char(res->d_name, ".") && strcmp(res->d_name, ".") && strcmp(res->d_name, "..") ) {
             continue; // Skipping hidden files
           }
           ob = realloc(ob, (count +1) * sizeof(results)); // Reallocating memory.
