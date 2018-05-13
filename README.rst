@@ -7,9 +7,7 @@ DF-SHOW
 
 **DF-SHOW (Directory File Show) is a POSIX rewrite of the SHOW application from Larry Kroeker's DF-EDIT (Directory File Editor) based on the Version 2.3d release from 1986.**
 
-* `Bug Tracker`_
-
-.._`Bug Tracker`: https://github.com/roberthawdon/dfshow/issues
+* `Bug Tracker`: https://github.com/roberthawdon/dfshow/issues
 
 Introduction
 ------------
