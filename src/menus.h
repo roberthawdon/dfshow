@@ -3,6 +3,8 @@ void directory_change_menu();
 void function_key_menu();
 void modify_key_menu();
 void modify_key_menu_inputs();
+void modify_owner_input();
+void modify_permissions_input();
 void show_directory_input();
 void sort_view();
 void directory_view_menu_inputs0();

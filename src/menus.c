@@ -220,7 +220,6 @@ void edit_file_input()
   move(0,28);
   readline(filepath, 1024, "");
   curs_set(FALSE);
-  attron(COLOR_PAIR(1));
   SendToEditor(filepath);
 }
 
@@ -370,6 +369,36 @@ void show_directory_inputs()
     }
 }
 
+void modify_owner_input()
+{
+  char ownerinput[256];
+  move(0,0);
+  clrtoeol();
+  mvprintw(0, 0, "Modify Owner/Group:");
+  curs_set(TRUE);
+  move(0,20);
+  readline(ownerinput, 256, "");
+  curs_set(FALSE);
+  //Temp
+  directory_top_menu();
+  directory_view_menu_inputs0();
+}
+
+void modify_permissions_input()
+{
+  char perms[4];
+  move(0,0);
+  clrtoeol();
+  mvprintw(0, 0, "Modify Permissions:");
+  curs_set(TRUE);
+  move(0,20);
+  readline(perms, 4, "");
+  curs_set(FALSE);
+  //Temp
+  directory_top_menu();
+  directory_view_menu_inputs0();
+}
+
 void modify_key_menu_inputs()
 {
   while(1)
@@ -378,8 +407,10 @@ void modify_key_menu_inputs()
       switch(*pc)
         {
         case 'o':
+          modify_owner_input();
           break;
         case 'p':
+          modify_permissions_input();
           break;
         case 27: // ESC Key
           directory_top_menu();
