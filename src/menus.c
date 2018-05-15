@@ -159,7 +159,7 @@ void modify_key_menu()
   mvprintw(0, 22, "ermissions");
 }
 
-void directory_view_menu_inputs0();
+void directory_view_menu_inputs0(); // Needed to allow menu inputs to switch between each other
 
 void show_directory_input()
 {
