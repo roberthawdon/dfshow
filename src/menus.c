@@ -1,6 +1,9 @@
 #include <ncurses.h>
 #include <unistd.h>
 #include <string.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
 #include "functions.h"
 #include "main.h"
 #include "views.h"
@@ -386,17 +389,36 @@ void modify_owner_input()
 
 void modify_permissions_input()
 {
+  int newperm;
   char perms[4];
+  char *ptr;
+  char pfile[1024];
   move(0,0);
   clrtoeol();
   mvprintw(0, 0, "Modify Permissions:");
   curs_set(TRUE);
   move(0,20);
-  readline(perms, 4, "");
+  readline(perms, 5, "");
   curs_set(FALSE);
-  //Temp
+
+  newperm = strtol(perms, &ptr, 8); // Convert string to Octal and then store it as an int. Yay, numbers.
+
+  strcpy(pfile, currentpwd);
+  if (!check_last_char(pfile, "/")){
+    strcat(pfile, "/");
+  }
+  strcat(pfile, ob[selected].name);
+  chmod(pfile, newperm);
+
+
+  ob = get_dir(currentpwd);
+  clear_workspace();
+  reorder_ob(ob, sortmode);
+  display_dir(currentpwd, ob, topfileref, selected);
+
   directory_top_menu();
   directory_view_menu_inputs0();
+
 }
 
 void modify_key_menu_inputs()
