@@ -39,3 +39,4 @@ void SendToPager(const char* object);
 void SendToEditor(const char* object);
 void CheckEnv(const char* key);
 void LaunchShell();
+void UpdateOwnerGroup(const char* object, char* ogstr);

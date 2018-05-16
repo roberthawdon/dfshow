@@ -374,6 +374,7 @@ void show_directory_inputs()
 
 void modify_owner_input()
 {
+  char ofile[1024];
   char ownerinput[256];
   move(0,0);
   clrtoeol();
@@ -383,8 +384,18 @@ void modify_owner_input()
   readline(ownerinput, 256, "");
   curs_set(FALSE);
   //Temp
-  directory_top_menu();
-  directory_view_menu_inputs0();
+
+  strcpy(ofile, currentpwd);
+  if (!check_last_char(ofile, "/")){
+    strcat(ofile, "/");
+  }
+  strcat(ofile, ob[selected].name);
+
+  UpdateOwnerGroup(ofile, ownerinput);
+
+
+  //directory_top_menu();
+  //directory_view_menu_inputs0();
 }
 
 void modify_permissions_input()

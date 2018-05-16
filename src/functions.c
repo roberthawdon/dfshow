@@ -124,6 +124,7 @@ void LaunchShell()
   initscr();
 }
 
+
 void mk_dir(char *path)
 {
   struct stat st = {0};
@@ -356,6 +357,20 @@ int check_first_char(const char *str, const char *chk)
     return 1;
   } else {
     return 0;
+  }
+}
+
+void UpdateOwnerGroup(const char* object, char* ogstr)
+{
+  char owner[256];
+  char group[256];
+  uid_t uid;
+  gid_t gid;
+  if ( check_last_char(ogstr, ":") ){
+    ogstr[strlen(ogstr)-1] = 0;
+    strcpy(owner, ogstr);
+    strcpy(group, ogstr);
+    //mvprintw(0,66, "%s:%s", owner, group); //test
   }
 }
 
