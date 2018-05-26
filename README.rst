@@ -1,7 +1,7 @@
 DF-SHOW
 =======
 
-:Author: Robert Ian Hawdon (mail+git@robertianhawdon.me.uk)
+:Author: Robert Ian Hawdon (git@robertianhawdon.me.uk)
 :Source: https://github.com/roberthawdon/dfshow
 :Version: alpha
 
@@ -14,7 +14,7 @@ DF-SHOW
 Introduction
 ------------
 
-The show application lets users view the names of files and directories on a disk with information about the files. Files can be copied, moved, viewed, and edited (in your system's default editor). The application is run using the `show` command. The output is similar to the `ls` command.
+The show application lets users view the names of files and directories on a disk with information about the files. Files can be copied, moved, viewed, and edited (in your system's default editor). The application is run using the ``show`` command. The output is similar to the ``ls`` command.
 
 Features
 --------
@@ -34,7 +34,7 @@ The show directory utility is invoked with the following command:
 
     show <directory_name>
 
-The <directory_name> parameter can by any directory the current user has access to on the system, similar to the `ls` command. Using `/` will take the user to the root directory of the system.
+The <directory_name> parameter can by any directory the current user has access to on the system, similar to the ``ls`` command. Using ``/`` will take the user to the root directory of the system.
 
 If the show directory utility is invoked without specifing a directory, then the current directory is displayed.
 
