@@ -385,17 +385,20 @@ void modify_owner_input()
   curs_set(FALSE);
   //Temp
 
-  strcpy(ofile, currentpwd);
-  if (!check_last_char(ofile, "/")){
-    strcat(ofile, "/");
+  if (strcmp(ownerinput,"")){
+    strcpy(ofile, currentpwd);
+    if (!check_last_char(ofile, "/")){
+      strcat(ofile, "/");
+    }
+    strcat(ofile, ob[selected].name);
+
+    UpdateOwnerGroup(ofile, ownerinput);
+  } else {
+    directory_top_menu();
+    directory_view_menu_inputs0();
   }
-  strcat(ofile, ob[selected].name);
-
-  UpdateOwnerGroup(ofile, ownerinput);
 
 
-  //directory_top_menu();
-  //directory_view_menu_inputs0();
 }
 
 void modify_permissions_input()
