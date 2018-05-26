@@ -397,8 +397,6 @@ void modify_owner_input()
     directory_top_menu();
     directory_view_menu_inputs0();
   }
-
-
 }
 
 void modify_permissions_input()

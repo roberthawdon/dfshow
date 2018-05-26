@@ -366,11 +366,22 @@ void UpdateOwnerGroup(const char* object, char* ogstr)
   char group[256];
   char *buf;
   size_t bufsize;
+  struct stat sb;
+  struct passwd *oldpwd;
   struct passwd pwd;
   struct passwd *presult;
+  struct group *oldgrp;
   struct group grp;
   struct group *gresult;
   int s, uid, gid;
+
+  uid = -1;
+  gid = -1;
+
+  lstat(object, &sb);
+
+  oldpwd = getpwuid(sb.st_uid);
+  oldgrp = getgrgid(sb.st_gid);
 
   bufsize = sysconf(_SC_GETPW_R_SIZE_MAX);
   if (bufsize == -1)          /* Value was indeterminate */
@@ -386,6 +397,10 @@ void UpdateOwnerGroup(const char* object, char* ogstr)
     ogstr[strlen(ogstr)-1] = 0; // Strip the : from the string
     strcpy(owner, ogstr);
     strcpy(group, ogstr);
+  } else if (!strchr(ogstr, ':')){
+    strcpy(owner, ogstr);
+    gid = oldgrp->gr_gid;
+    //strcpy(group, oldgrp);
   } else {
     strcpy(owner, "");
     strcpy(group, "");
@@ -401,16 +416,18 @@ void UpdateOwnerGroup(const char* object, char* ogstr)
       }
     } else {
       uid = presult->pw_uid;
-      s = getgrnam_r(group, &grp, buf, bufsize, &gresult);
-      free(buf);
-      if (gresult == NULL){
-        if (s == 0){
-          move(0,0);
-          clrtoeol();
-          mvprintw(0,0,"Invalid group: %s", group);
+      if (gid == -1){
+        s = getgrnam_r(group, &grp, buf, bufsize, &gresult);
+        free(buf);
+        if (gresult == NULL){
+          if (s == 0){
+            move(0,0);
+            clrtoeol();
+            mvprintw(0,0,"Invalid group: %s", group);
+          }
+        } else {
+          gid = gresult->gr_gid;
         }
-      } else {
-        gid = gresult->gr_gid;
       }
       mvprintw(0,66, "%d:%d", uid, gid); //test
     }
