@@ -360,14 +360,14 @@ int check_first_char(const char *str, const char *chk)
   }
 }
 
-void UpdateOwnerGroup(const char* object, const char* pwdstr, const char* grpstr)
+int UpdateOwnerGroup(const char* object, const char* pwdstr, const char* grpstr)
 {
   // char *buf;
   // size_t bufsize;
   struct stat sb;
   struct passwd *oldpwd;
   struct group *oldgrp;
-  int s, uid, gid;
+  int s, uid, gid, e;
 
   uid = -1;
   gid = -1;
@@ -388,7 +388,10 @@ void UpdateOwnerGroup(const char* object, const char* pwdstr, const char* grpstr
     gid= atoi(grpstr);
   }
 
-  mvprintw(0,66, "%d:%d", uid, gid); //test
+  //mvprintw(0,66, "%d:%d", uid, gid); //test
+  e = chown(object, uid, gid);
+
+  return e;
 
 }
 

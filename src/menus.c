@@ -6,6 +6,7 @@
 #include <sys/stat.h>
 #include <pwd.h>
 #include <grp.h>
+#include <errno.h>
 #include "functions.h"
 #include "main.h"
 #include "views.h"
@@ -389,6 +390,7 @@ void modify_group_input()
   struct group grp;
   struct group *gresult;
   size_t bufsize;
+  char errortxt[256];
 
   move(0,0);
   clrtoeol();
@@ -427,7 +429,19 @@ void modify_group_input()
     }
     strcat(ofile, ob[selected].name);
 
-    UpdateOwnerGroup(ofile, uids, gids);
+    if (UpdateOwnerGroup(ofile, uids, gids) == -1) {
+      move(0,0);
+      clrtoeol();
+      mvprintw(0,0,"Error: %s", strerror(errno));
+    } else{
+      ob = get_dir(currentpwd);
+      clear_workspace();
+      reorder_ob(ob, sortmode);
+      display_dir(currentpwd, ob, topfileref, selected);
+
+      directory_top_menu();
+      directory_view_menu_inputs0();
+    }
   }
 }
 
