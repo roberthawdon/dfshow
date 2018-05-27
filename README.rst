@@ -10,6 +10,7 @@ DF-SHOW
    :target: https://raw.github.com/roberthawdon/dfshow/develop/LICENSE
 
 .. |Travis Build| image:: https://img.shields.io/travis/roberthawdon/dfshow.svg
+   :target: https://travis-ci.org/roberthawdon/dfshow
 
 :Author: Robert Ian Hawdon (git@robertianhawdon.me.uk)
 :Source: https://github.com/roberthawdon/dfshow
