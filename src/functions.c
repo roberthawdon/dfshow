@@ -360,19 +360,13 @@ int check_first_char(const char *str, const char *chk)
   }
 }
 
-void UpdateOwnerGroup(const char* object, char* ogstr)
+void UpdateOwnerGroup(const char* object, const char* pwdstr, const char* grpstr)
 {
-  char owner[256];
-  char group[256];
-  char *buf;
-  size_t bufsize;
+  // char *buf;
+  // size_t bufsize;
   struct stat sb;
   struct passwd *oldpwd;
-  struct passwd pwd;
-  struct passwd *presult;
   struct group *oldgrp;
-  struct group grp;
-  struct group *gresult;
   int s, uid, gid;
 
   uid = -1;
@@ -383,55 +377,19 @@ void UpdateOwnerGroup(const char* object, char* ogstr)
   oldpwd = getpwuid(sb.st_uid);
   oldgrp = getgrgid(sb.st_gid);
 
-  bufsize = sysconf(_SC_GETPW_R_SIZE_MAX);
-  if (bufsize == -1)          /* Value was indeterminate */
-    bufsize = 16384;        /* Should be more than enough */
-
-  buf = malloc(bufsize);
-  if (buf == NULL) {
-    perror("malloc");
-    exit(EXIT_FAILURE);
-  }
-
-  if ( check_last_char(ogstr, ":") ){
-    ogstr[strlen(ogstr)-1] = 0; // Strip the : from the string
-    strcpy(owner, ogstr);
-    strcpy(group, ogstr);
-  } else if (!strchr(ogstr, ':')){
-    strcpy(owner, ogstr);
-    gid = oldgrp->gr_gid;
-    //strcpy(group, oldgrp);
+  if (pwdstr == NULL){
+    uid = oldpwd->pw_uid;
   } else {
-    strcpy(owner, "");
-    strcpy(group, "");
+    uid = atoi(pwdstr);
   }
-  if (strcmp(owner, "")){
-    s = getpwnam_r(owner, &pwd, buf, bufsize, &presult);
-    free(buf);
-    if (presult == NULL){
-      if (s == 0){
-        move(0,0);
-        clrtoeol();
-        mvprintw(0,0,"Invalid user: %s", owner);
-      }
-    } else {
-      uid = presult->pw_uid;
-      if (gid == -1){
-        s = getgrnam_r(group, &grp, buf, bufsize, &gresult);
-        free(buf);
-        if (gresult == NULL){
-          if (s == 0){
-            move(0,0);
-            clrtoeol();
-            mvprintw(0,0,"Invalid group: %s", group);
-          }
-        } else {
-          gid = gresult->gr_gid;
-        }
-      }
-      mvprintw(0,66, "%d:%d", uid, gid); //test
-    }
+  if (grpstr == NULL){
+    gid = oldgrp->gr_gid;
+  } else {
+    gid= atoi(grpstr);
   }
+
+  mvprintw(0,66, "%d:%d", uid, gid); //test
+
 }
 
 void set_history(char *pwd, int topfileref, int selected)
