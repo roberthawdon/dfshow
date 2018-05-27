@@ -4,6 +4,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <pwd.h>
+#include <grp.h>
+#include <errno.h>
 #include "functions.h"
 #include "main.h"
 #include "views.h"
@@ -17,6 +20,14 @@ int * pc = &c;
 
 char chpwd[1024];
 char selfile[1024];
+
+char ownerinput[256];
+char groupinput[256];
+char uids[24];
+char gids[24];
+
+int s;
+char *buf;
 
 extern results* ob;
 extern history* hs;
@@ -372,31 +383,112 @@ void show_directory_inputs()
     }
 }
 
-void modify_owner_input()
+void modify_group_input()
 {
   char ofile[1024];
-  char ownerinput[256];
+
+  struct group grp;
+  struct group *gresult;
+  size_t bufsize;
+  char errortxt[256];
+
   move(0,0);
   clrtoeol();
-  mvprintw(0, 0, "Modify Owner/Group:");
+  mvprintw(0, 0, "Set Group:");
   curs_set(TRUE);
-  move(0,20);
-  readline(ownerinput, 256, "");
+  move(0,11);
+  readline(groupinput, 256, "");
   curs_set(FALSE);
-  //Temp
 
-  if (strcmp(ownerinput,"")){
+  bufsize = sysconf(_SC_GETPW_R_SIZE_MAX);
+  if (bufsize == -1)          /* Value was indeterminate */
+    {
+      bufsize = 16384;        /* Should be more than enough */
+    }
+
+  buf = malloc(bufsize);
+  if (buf == NULL) {
+    perror("malloc");
+    exit(EXIT_FAILURE);
+  }
+
+  s = getgrnam_r(groupinput, &grp, buf, bufsize, &gresult);
+  free(buf);
+  if (gresult == NULL){
+    if (s == 0){
+      move(0,0);
+      clrtoeol();
+      mvprintw(0,0,"Invalid group: %s", groupinput);
+    }
+  } else {
+    sprintf(gids, "%d", gresult->gr_gid);
+
     strcpy(ofile, currentpwd);
     if (!check_last_char(ofile, "/")){
       strcat(ofile, "/");
     }
     strcat(ofile, ob[selected].name);
 
-    UpdateOwnerGroup(ofile, ownerinput);
-  } else {
-    directory_top_menu();
-    directory_view_menu_inputs0();
+    if (UpdateOwnerGroup(ofile, uids, gids) == -1) {
+      move(0,0);
+      clrtoeol();
+      mvprintw(0,0,"Error: %s", strerror(errno));
+    } else{
+      ob = get_dir(currentpwd);
+      clear_workspace();
+      reorder_ob(ob, sortmode);
+      display_dir(currentpwd, ob, topfileref, selected);
+
+      directory_top_menu();
+      directory_view_menu_inputs0();
+    }
   }
+}
+
+void modify_owner_input()
+{
+  struct passwd pwd;
+  struct passwd *presult;
+  size_t bufsize;
+
+  move(0,0);
+  clrtoeol();
+  mvprintw(0, 0, "Set Owner:");
+  curs_set(TRUE);
+  move(0,11);
+  readline(ownerinput, 256, "");
+  curs_set(FALSE);
+
+  bufsize = sysconf(_SC_GETPW_R_SIZE_MAX);
+  if (bufsize == -1)          /* Value was indeterminate */
+    {
+      bufsize = 16384;        /* Should be more than enough */
+    }
+
+  buf = malloc(bufsize);
+  if (buf == NULL) {
+    perror("malloc");
+    exit(EXIT_FAILURE);
+  }
+
+  s = getpwnam_r(ownerinput, &pwd, buf, bufsize, &presult);
+  free(buf);
+  if (presult == NULL){
+    if (s == 0){
+      move(0,0);
+      clrtoeol();
+      mvprintw(0,0,"Invalid user: %s", ownerinput);
+    }
+  } else {
+    sprintf(uids, "%d", presult->pw_uid);
+    modify_group_input();
+  }
+
+  // if (strcmp(ownerinput,"")){
+  // } else {
+  //   directory_top_menu();
+  //   directory_view_menu_inputs0();
+  // }
 }
 
 void modify_permissions_input()
