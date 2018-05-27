@@ -4,7 +4,7 @@ DF-SHOW
 |Maintenance yes| |GPLv3 license| |Travis Build|
 
 .. |Maintenance yes| image:: https://img.shields.io/badge/Maintained%3F-yes-green.svg
-   :target: https://GitHub.com/Naereen/StrapDown.js/graphs/commit-activity
+   :target: https://github.com/roberthawdon/dfshow/graphs/commit-activity
 
 .. |GPLv3 license| image:: https://img.shields.io/badge/License-GPLv3-blue.svg
    :target: https://raw.github.com/roberthawdon/dfshow/develop/LICENSE
