@@ -395,6 +395,26 @@ int UpdateOwnerGroup(const char* object, const char* pwdstr, const char* grpstr)
 
 }
 
+void RenameObject(const char* source, const char* dest)
+{
+  char sourceDevId[256];
+  char destDevId[256];
+  struct stat sourcebuffer;
+  struct stat destbuffer;
+
+  lstat(source, &sourcebuffer);
+  lstat(dest, &destbuffer);
+
+  sprintf(sourceDevId, "%d", sourcebuffer.st_dev);
+  sprintf(destDevId, "%d", destbuffer.st_dev);
+
+  if (!strcmp(sourceDevId, destDevId)) {
+    mvprintw(0,66,"PASS: %s:%s", sourceDevId, destDevId); // test pass
+  } else {
+    mvprintw(0,66,"FAIL: %s:%s", sourceDevId, destDevId); // test fail
+  }
+}
+
 void set_history(char *pwd, int topfileref, int selected)
 {
   if (sessionhistory == 0){

@@ -239,12 +239,19 @@ void edit_file_input()
 
 void rename_file_input(char *file)
 {
+  char dest[1024];
   move(0,0);
   clrtoeol();
   mvprintw(0, 0, "Rename file to:");
-  attron(COLOR_PAIR(3));
-  mvprintw(0, 16, "%s", file); // Placeholder
-  attron(COLOR_PAIR(1));
+  // attron(COLOR_PAIR(3));
+  // mvprintw(0, 16, "%s", file); // Placeholder
+  // attron(COLOR_PAIR(1));
+  curs_set(TRUE);
+  move(0,16);
+  readline(dest, 1024, file);
+  curs_set(FALSE);
+  RenameObject(file, dest);
+
 }
 
 void make_directory_input()
