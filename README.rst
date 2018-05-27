@@ -1,11 +1,21 @@
 DF-SHOW
 =======
 
+|Maintenance yes| |GPLv3 license| |Travis Build|
+
+.. |Maintenance yes| image:: https://img.shields.io/badge/Maintained%3F-yes-green.svg
+   :target: https://GitHub.com/Naereen/StrapDown.js/graphs/commit-activity
+
+.. |GPLv3 license| image:: https://img.shields.io/badge/License-GPLv3-blue.svg
+   :target: https://raw.github.com/roberthawdon/dfshow/develop/LICENSE
+
+.. |Travis Build| image:: https://img.shields.io/travis/roberthawdon/dfshow.svg
+
 :Author: Robert Ian Hawdon (git@robertianhawdon.me.uk)
 :Source: https://github.com/roberthawdon/dfshow
 :Version: pre-alpha
 
-**DF-SHOW (Directory File Show) is a POSIX rewrite of the SHOW application from Larry Kroeker's DF-EDIT (Directory File Editor) based on the Version 2.3d release from 1986.**
+**DF-SHOW (Directory File Show) is a POSIX rewrite of the SHOW application from Larry Kroeker's DF-EDIT (Directory File Editor) for MS-DOS and PC-DOS systems, based on the Version 2.3d release from 1986.**
 
 * `Bug Tracker`_
 
@@ -42,7 +52,7 @@ If the show directory utility is invoked without specifing a directory, then the
 Screenshots
 -----------
 
-*Directory View*
+**Directory View**
 
 .. image:: https://raw.github.com/roberthawdon/dfshow/develop/docs/images/show-terminal.png
    :alt: Directory Viewer
