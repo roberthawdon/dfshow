@@ -3,7 +3,7 @@ DF-SHOW
 
 :Author: Robert Ian Hawdon (git@robertianhawdon.me.uk)
 :Source: https://github.com/roberthawdon/dfshow
-:Version: alpha
+:Version: pre-alpha
 
 **DF-SHOW (Directory File Show) is a POSIX rewrite of the SHOW application from Larry Kroeker's DF-EDIT (Directory File Editor) based on the Version 2.3d release from 1986.**
 
@@ -24,6 +24,7 @@ Features
 * **Edit files.** Whilst DF-SHOW doesn't come with a text editor like DF-EDIT (for the reason there are many good, well established text editors already available), it can launch the user's default text editor for any given selected file.
 * **Copy files.** DF-SHOW can copy files to another destination.
 * **Rename files.** Users' can move files to a different file name.
+* **Delete files.** DF-SHOW also removes files at the user's request.
 * **Create directories.** Users' are also able to create new directories from within the DF-SHOW interface.
 * **Update permissions.** Owners, groups, and permissions can be set within the application.
 
