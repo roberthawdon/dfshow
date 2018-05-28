@@ -20,36 +20,58 @@
 #include <stdlib.h>
 #include <ncurses.h>
 #include <locale.h>
+#include <string.h>
+#include <unistd.h>
+#include "functions.h"
 #include "vars.h"
 #include "views.h"
+
+char currentpwd[1024];
 
 
 int exittoshell()
 {
+  history *hs;
   clear();
   endwin();
+  free(hs);
   exit(0);
   return 0;
 }
 
-int main()
+int main(int argc, char *argv[])
 {
+
+
   set_escdelay(10);
 
   setlocale(LC_ALL, "");
 
   initscr();
   start_color();
+  cbreak(); //Added for new method
   init_pair(1, COLOR_WHITE, COLOR_BLACK);
   init_pair(2, COLOR_GREEN, COLOR_BLACK);
   init_pair(3, COLOR_BLACK, COLOR_WHITE);
   init_pair(4, COLOR_BLUE, COLOR_BLACK);
+  init_pair(5, COLOR_RED, COLOR_BLACK);
   cbreak();
   // nodelay(stdscr, TRUE);
   noecho();
   curs_set(FALSE); // Hide Curser (Will want to bring it back later)
   keypad(stdscr, TRUE);
 
-  directory_view();
+  if ( argc < 2 ){
+    getcwd(currentpwd, sizeof(currentpwd));
+  } else {
+    strcpy(currentpwd, argv[1]);
+    chdir(currentpwd);
+  }
+  if (!check_dir(currentpwd)){
+    //strcpy(currentpwd, "/"); // If dir doesn't exist, default to root
+    quit_menu();
+  }
+
+  directory_view(currentpwd);
   return 0;
 }

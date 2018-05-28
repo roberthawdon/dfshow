@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <ncurses.h>
+#include <ctype.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <dirent.h>
@@ -10,20 +11,9 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <time.h>
+#include <sys/statvfs.h>
 #include "functions.h"
 #include "views.h"
-
-typedef struct {
-  char perm[11];
-  int hlink[4];
-  int hlinklens[5];
-  char owner[128];
-  char group[128];
-  int size[32];
-  int sizelens[32];
-  char date[17];
-  char name[512];
-} results;
 
 char hlinkstr[5], sizestr[32];
 
@@ -41,6 +31,209 @@ int sizeobjectstart;
 int datestart;
 int namestart;
 
+int totalfilecount;
+
+int selected;
+int topfileref = 0;
+int displaysize; // Calculate area to print
+int historyref = 0;
+int sessionhistory = 0;
+
+int showhidden = 0;
+
+unsigned long int savailable = 0;
+unsigned long int sused = 0;
+
+history *hs;
+
+void readline(char *buffer, int buflen, char *oldbuf)
+/* Read up to buflen-1 characters into `buffer`.
+ * A terminating '\0' character is added after the input.  */
+{
+  int old_curs = curs_set(1);
+  int pos;
+  int len;
+  int oldlen;
+  int x, y;
+
+  oldlen = strlen(oldbuf);
+  attron(COLOR_PAIR(3));
+
+  pos = oldlen;
+  len = oldlen;
+
+  getyx(stdscr, y, x);
+
+  strcpy(buffer, oldbuf);
+
+  for (;;) {
+    int c;
+
+    buffer[len] = ' ';
+    mvaddnstr(y, x, buffer, len+1); // Prints buffer on screen
+    move(y, x+pos); //
+    c = getch();
+
+    if (c == KEY_ENTER || c == '\n' || c == '\r') {
+      attron(COLOR_PAIR(1));
+      break;
+    } else if (isprint(c)) {
+      if (pos < buflen-1) {
+        memmove(buffer+pos+1, buffer+pos, len-pos);
+        buffer[pos++] = c;
+        len += 1;
+      } else {
+        beep();
+      }
+    } else if (c == KEY_LEFT) {
+      if (pos > 0) pos -= 1; else beep();
+    } else if (c == KEY_RIGHT) {
+      if (pos < len) pos += 1; else beep();
+    } else if ((c == KEY_BACKSPACE) || (c == 127)) {
+      if (pos > 0) {
+        memmove(buffer+pos-1, buffer+pos, len-pos);
+        pos -= 1;
+        len -= 1;
+        clrtoeol();
+      } else {
+        beep();
+      }
+    } else if (c == KEY_DC) {
+      if (pos < len) {
+        memmove(buffer+pos, buffer+pos+1, len-pos-1);
+        len -= 1;
+        clrtoeol();
+      } else {
+        beep();
+      }
+    } else {
+      beep();
+    }
+  }
+  buffer[len] = '\0';
+  if (old_curs != ERR) curs_set(old_curs);
+}
+
+char * dirFromPath (const char* myStr){
+
+  char *outStr = (char *) malloc(sizeof(myStr));
+
+  strcpy(outStr, myStr);
+
+  char *del = &outStr[strlen(outStr)];
+
+  while (del > outStr && *del != '/')
+    del--;
+
+  if (*del== '/')
+    *del= '\0';
+
+  return outStr;
+}
+
+void LaunchShell()
+{
+  clear();
+  endwin();
+  // system("clear"); // Not exactly sure if I want this yet.
+  printf("\nUse 'exit' to return to Show.\n\n");
+  system(getenv("SHELL"));
+  initscr();
+}
+
+
+void mk_dir(char *path)
+{
+  struct stat st = {0};
+
+  if (stat(path, &st) == -1) {
+    mkdir(path, 0755);
+  }
+}
+
+void copy_file(char *source_input, char *target_input)
+{
+  char ch;
+  FILE *source, *target;
+
+  source = fopen(source_input, "r");
+  target = fopen(target_input, "w");
+
+  while( ( ch = fgetc(source) ) != EOF )
+    fputc(ch, target);
+
+  fclose(source);
+  fclose(target);
+}
+
+void delete_file(char *source_input)
+{
+  remove(source_input);
+}
+
+void SendToPager(const char* object)
+{
+  char page[1024];
+  char esc[1024];
+  if ( getenv("PAGER")) {
+    strcpy(page, getenv("PAGER"));
+    strcat(page, " ");
+    strcpy(esc, "'");
+    strcat(esc, object);
+    strcat(esc, "'");
+    strcat(page, esc);
+    clear();
+    endwin();
+    system(page);
+    initscr();
+  }
+}
+
+void SendToEditor(const char* object)
+
+{
+  char editor[1024];
+  char esc[1024];
+  if ( getenv("EDITOR")) {
+    strcpy(editor, getenv("EDITOR"));
+    strcat(editor, " ");
+    strcpy(esc, "'");
+    strcat(esc, object);
+    strcat(esc, "'");
+    strcat(editor, esc);
+    clear();
+    endwin();
+    system(editor);
+    initscr();
+  }
+}
+
+long GetAvailableSpace(const char* path)
+{
+  struct statvfs stat;
+
+  if (statvfs(path, &stat) != 0) {
+    // error happens, just quits here
+    return -1;
+  }
+
+  // the available size is f_bsize * f_bavail
+  return stat.f_bsize * stat.f_bavail;
+}
+
+long GetUsedSpace(const char* path)
+{
+  struct statvfs stat;
+
+  if (statvfs(path, &stat) != 0) {
+    // error happens, just quits here
+    return -1;
+  }
+
+  // the available size is f_bsize * f_bavail
+  return (stat.f_bsize * stat.f_blocks) - (stat.f_bsize * stat.f_bavail);
+}
+
 int seglength(const void *seg, char *segname, int LEN)
 {
 
@@ -48,22 +241,21 @@ int seglength(const void *seg, char *segname, int LEN)
 
   results *dfseg = (results *)seg;
 
-
-  if (segname == "owner") {
+  if (!strcmp(segname, "owner")) {
     longest = strlen(dfseg[0].owner);
   }
-  else if (segname == "group") {
+  else if (!strcmp(segname, "group")) {
     longest = strlen(dfseg[0].group);
   }
-  else if (segname == "hlink") {
+  else if (!strcmp(segname, "hlink")) {
     sprintf(hlinkstr, "%d", *dfseg[0].hlink);
     longest = strlen(hlinkstr);
   }
-  else if (segname == "size") {
+  else if (!strcmp(segname, "size")) {
     sprintf(sizestr, "%d", *dfseg[0].size);
     longest = strlen(sizestr);
   }
-  else if (segname == "name") {
+  else if (!strcmp(segname, "name")) {
     longest = strlen(dfseg[0].name);
   }
   else {
@@ -74,21 +266,21 @@ int seglength(const void *seg, char *segname, int LEN)
 
   for(size_t i = 1; i < LEN; i++)
     {
-      if (segname == "owner") {
+      if (!strcmp(segname, "owner")) {
         len = strlen(dfseg[i].owner);
       }
-      else if (segname == "group") {
+      else if (!strcmp(segname, "group")) {
         len = strlen(dfseg[i].group);
       }
-      else if (segname == "hlink") {
+      else if (!strcmp(segname, "hlink")) {
         sprintf(hlinkstr, "%d", *dfseg[i].hlink);
         len = strlen(hlinkstr);
       }
-      else if (segname == "size") {
+      else if (!strcmp(segname, "size")) {
         sprintf(sizestr, "%d", *dfseg[i].size);
         len = strlen(sizestr);
       }
-      else if (segname == "name") {
+      else if (!strcmp(segname, "name")) {
         len = strlen(dfseg[i].name);
       }
       else {
@@ -119,25 +311,170 @@ int cmp_int(const void *lhs, const void *rhs)
   return (aa - bb);
 }
 
-int cmp_dflist(const void *lhs, const void *rhs)
+int cmp_dflist_name(const void *lhs, const void *rhs)
 {
-
-  //struct dfobject *lhs;
-  //struct dfobject *rhs;
 
   results *dforderA = (results *)lhs;
   results *dforderB = (results *)rhs;
 
   return strcmp(dforderA->name, dforderB->name);
 
-  //return (dforderA->size - dforderB->size);
+}
+
+int cmp_dflist_date(const void *lhs, const void *rhs)
+{
+  results *dforderA = (results *)lhs;
+  results *dforderB = (results *)rhs;
+
+  return strcmp(dforderA->date, dforderB->date);
 
 }
 
-int list_dir(char *pwd)
+int cmp_dflist_size(const void *lhs, const void *rhs)
 {
+  results *dforderA = (results *)lhs;
+  results *dforderB = (results *)rhs;
+
+  return (*dforderA->size - *dforderB->size);
+
+}
+
+int check_dir(char *pwd)
+{
+  const char *path = pwd;
+  struct stat sb;
+  if (stat(path, &sb) == 0 && S_ISDIR(sb.st_mode)){
+    DIR *folder = opendir ( path );
+    if (access ( path, F_OK ) != -1 ){
+      if ( folder ){
+        closedir ( folder );
+        return 1;
+      } else {
+        return 0;
+      }
+    } else {
+    return 0;
+    }
+  }
+  return 0;
+}
+
+int check_last_char(const char *str, const char *chk)
+{
+  if (!strcmp(&str[strlen(str) - 1], chk)){
+    return 1;
+  } else {
+    return 0;
+  }
+}
+
+int check_first_char(const char *str, const char *chk)
+{
+   if (str[0] == chk[0]){
+    return 1;
+  } else {
+    return 0;
+  }
+}
+
+int UpdateOwnerGroup(const char* object, const char* pwdstr, const char* grpstr)
+{
+  // char *buf;
+  // size_t bufsize;
+  struct stat sb;
+  struct passwd *oldpwd;
+  struct group *oldgrp;
+  int s, uid, gid, e;
+
+  uid = -1;
+  gid = -1;
+
+  lstat(object, &sb);
+
+  oldpwd = getpwuid(sb.st_uid);
+  oldgrp = getgrgid(sb.st_gid);
+
+  if (pwdstr == NULL){
+    uid = oldpwd->pw_uid;
+  } else {
+    uid = atoi(pwdstr);
+  }
+  if (grpstr == NULL){
+    gid = oldgrp->gr_gid;
+  } else {
+    gid= atoi(grpstr);
+  }
+
+  //mvprintw(0,66, "%d:%d", uid, gid); //test
+  e = chown(object, uid, gid);
+
+  return e;
+
+}
+
+int RenameObject(const char* source, const char* dest)
+{
+  char sourceDevId[256];
+  char destDevId[256];
+  char *destPath;
+  struct stat sourcebuffer;
+  struct stat destbuffer;
+  int e;
+
+  destPath = dirFromPath(dest);
+
+  // mvprintw(0,66,"Stripped: %s", dirFromPath(dest)); // test in the usual place
+
+  if (check_dir(destPath)){
+    lstat(source, &sourcebuffer);
+    lstat(destPath, &destbuffer);
+
+    sprintf(sourceDevId, "%d", sourcebuffer.st_dev);
+    sprintf(destDevId, "%d", destbuffer.st_dev);
+
+    if (!strcmp(sourceDevId, destDevId)) {
+      // Destination is on the same filesystem.
+      //mvprintw(0,66,"PASS: %s:%s %s", sourceDevId, destDevId, dest); // test pass
+      e = rename(source, dest);
+      return e;
+    } else {
+      // Destination is NOT in the same filesystem, the file will need copying then deleting.
+      //mvprintw(0,66,"FAIL: %s:%s", sourceDevId, destDevId); // test fail
+    }
+  } else {
+    // Destination directory not found
+    //mvprintw(0,66, "FAIL: NO DIR"); // test
+  }
+  free(destPath);
+}
+
+void set_history(char *pwd, int topfileref, int selected)
+{
+  if (sessionhistory == 0){
+    history *hs = malloc(sizeof(history));
+  }
+
+  if (historyref == sessionhistory) {
+    hs = realloc(hs, (historyref +1) * sizeof(history));
+    sessionhistory++;
+  }
+
+  strcpy(hs[historyref].path, pwd);
+  hs[historyref].topfileref = topfileref;
+  hs[historyref].selected = selected;
+  historyref++;
+
+
+  //mvprintw(0, 66, "%s", hs[historyref -1].path);
+
+}
+
+results* get_dir(char *pwd)
+{
+  savailable = GetAvailableSpace(pwd);
+  sused = 0; // Resetting used value
+  //sused = GetUsedSpace(pwd); // Original DF-EDIT added the sizes to show what was used in that directory, rather than the whole disk.
   size_t count = 0;
-  size_t list_count = 0;
   size_t file_count = 0;
   struct dirent *res;
   struct stat sb;
@@ -148,30 +485,19 @@ int list_dir(char *pwd)
   int         status;
   char filedatetime[17];
   char perms[11] = {0};
-  // char result[11][4][128][128][32][17][512];
 
-  //  struct dfobject {
-  //    char perm[11];
-  //    int hlink[4];
-  //    char owner[128];
-  //    char group[128];
-  //    int size[32];
-  //    char date[17];
-  //    char name[512];
-  //  };
-
-  results *ob = malloc(1024 * sizeof(results)); // Needs to be dynamic
+  results *ob = malloc(sizeof(results)); // Allocating a tiny amount of memory. We'll expand this on each file found.
 
   if (stat(path, &sb) == 0 && S_ISDIR(sb.st_mode)){
     DIR *folder = opendir ( path );
 
     if (access ( path, F_OK ) != -1 ){
       if ( folder ){
-        //while (( res = readdir( folder )) ) {
-        //    file_count++;
-        //}
         while ( ( res = readdir ( folder ) ) ){
-          //if ( strcmp( res->d_name, "." ) && strcmp( res->d_name, ".." ) ){
+          if ( showhidden == 0 && check_first_char(res->d_name, ".") && strcmp(res->d_name, ".") && strcmp(res->d_name, "..") ) {
+            continue; // Skipping hidden files
+          }
+          ob = realloc(ob, (count +1) * sizeof(results)); // Reallocating memory.
           lstat(res->d_name, &sb);
           struct passwd *pw = getpwuid(sb.st_uid);
           struct group *gr = getgrgid(sb.st_gid);
@@ -197,7 +523,7 @@ int list_dir(char *pwd)
           perms[9] = buffer.st_mode & S_IXOTH? 'x': '-';
 
           sprintf(hlinkstr, "%d", buffer.st_nlink);
-          sprintf(sizestr, "%d", buffer.st_size);
+          sprintf(sizestr, "%lu", buffer.st_size);
 
           // Writing our structure
           strcpy(ob[count].perm, perms);
@@ -210,94 +536,108 @@ int list_dir(char *pwd)
           strcpy(ob[count].date, filedatetime);
           strcpy(ob[count].name, res->d_name);
 
-          // grp = getgrgid(res->d_ino);
-          //mvprintw(4 + count, 4,"%s %i  %s %s      %i  %s  %s\n",ob[count].perm,buffer.st_nlink,pw->pw_name,ob[count].group,buffer.st_size,ob[count].date,ob[count].name);
-          // mvprintw(4 + count, 4,"%s",ob[count].perm);
-          // mvprintw(4 + count, 15,"%i",*ob[count].hlink);
-          // mvprintw(4 + count, 18,"%s",ob[count].owner);
-          // mvprintw(4 + count, 22,"%s",ob[count].group);
-          // mvprintw(4 + count, 35,"%i",*ob[count].size);
-          // mvprintw(4 + count, 42,"%s",ob[count].date);
-          // mvprintw(4 + count, 60,"%s",ob[count].name);
+          sused = sused + buffer.st_size; // Adding the size values
 
           count++;
-            //}
         }
 
-        qsort(ob, count, sizeof(results), cmp_dflist);
 
-        for(list_count; list_count < count; ){
-          //TEMP Emulate listed item
-          if (list_count == 4) {
-            attron(A_BOLD);
-            attron(COLOR_PAIR(4));
-          }
-
-          hlinklen = seglength(ob, "hlink", count);
-          ownerlen = seglength(ob, "owner", count);
-          grouplen = seglength(ob, "group", count);
-          sizelen = seglength(ob, "size", count);
-          namelen = seglength(ob, "name", count);
-
-          ownstart = 15 + hlinklen + 1;
-          groupstart = ownstart + ownerlen + 1;
-          if (ownerlen + 1 + grouplen < 16) {
-            sizestart = ownstart + 16;
-          } else {
-            sizestart = groupstart + grouplen + 1;
-          }
-          if (sizelen < 7) {
-            datestart = sizestart + 7;
-          } else {
-            datestart = sizestart + sizelen + 1;
-          }
-          sizeobjectstart = datestart - 1 - *ob[list_count].sizelens;
-          namestart = datestart + 18;
-          hlinkstart = ownstart - 1 - *ob[list_count].hlinklens;
-
-          mvprintw(4 + list_count, 4,"%s",ob[list_count].perm);
-          mvprintw(4 + list_count, hlinkstart,"%i",*ob[list_count].hlink);
-          mvprintw(4 + list_count, ownstart,"%s",ob[list_count].owner);
-          mvprintw(4 + list_count, groupstart,"%s",ob[list_count].group);
-          mvprintw(4 + list_count, sizeobjectstart,"%i",*ob[list_count].size);
-          mvprintw(4 + list_count, datestart,"%s",ob[list_count].date);
-          mvprintw(4 + list_count, namestart,"%s",ob[list_count].name);
-          //TEMP Emulate listed item
-          if (list_count == 4) {
-            attron(COLOR_PAIR(1));
-            attroff(A_BOLD);
-          }
-          list_count++;
-         }
-
-
-        // mvprintw(4 + count + 2, 4,"Hlink: %i",hlinklen);
-        // mvprintw(4 + count + 3, 4,"Owner: %i",ownerlen);
-        // mvprintw(4 + count + 4, 4,"Group: %i",grouplen);
-        // mvprintw(4 + count + 5, 4,"Size:  %i",sizelen);
-        // mvprintw(4 + count + 6, 4,"Name:  %i",namelen);
-
-        attron(COLOR_PAIR(2));
-        mvprintw(1, 2, "%s", pwd);
-        mvprintw(2, 2, "%i Objects   00000 Used 00000000 Available", count); // Parcial Placeholder for PWD info
-        mvprintw(3, 4, "---Attrs----");
-        mvprintw(3, ownstart, "-Owner & Group-");
-        mvprintw(3, datestart - 7, "-Size-");
-        mvprintw(3, datestart, "---Date & Time---");
-        mvprintw(3, namestart, "----Name----");
-        //mvprintw(3, 4, "----Attrs---- -Owner & Group-  -Size- ---Date & Time--- ----Name----"); // Header
-        attron(COLOR_PAIR(1));
-
+        totalfilecount = count;
         closedir ( folder );
-        free(ob); // Freeing memory
+
+        return ob;
       }else{
         perror ( "Could not open the directory" );
-        return 1;
+        return ob;
       }
     }
 
   }else{
     printf("The %s it cannot be opened or is not a directory\n", path);
-    return 1;
+    return ob;
   }
+  return ob;
+}
+
+results* reorder_ob(results* ob, char *order){
+  //mvprintw(2,66,"%i",*ob[0].sys);
+  int count = totalfilecount;
+
+  if ( !strcmp(order, "name")){
+    qsort(ob, count, sizeof(results), cmp_dflist_name);
+  }
+  else if ( !strcmp(order, "date")){
+    qsort(ob, count, sizeof(results), cmp_dflist_date);
+  }
+  else if ( !strcmp(order, "size")){
+    qsort(ob, count, sizeof(results), cmp_dflist_size);
+  }
+
+  return ob;
+}
+
+void display_dir(char *pwd, results* ob, int topfileref, int selected){
+
+  displaysize = LINES - 5;
+  size_t list_count = 0;
+  int count = totalfilecount;
+  selected = selected - topfileref;
+
+  if (displaysize > count){
+    displaysize = count;
+  }
+
+  for(list_count = 0; list_count < displaysize; ){
+    // Setting highlight
+    if (list_count == selected) {
+      attron(A_BOLD);
+      attron(COLOR_PAIR(4));
+    } else {
+      attroff(A_BOLD);
+      attron(COLOR_PAIR(1));
+    }
+
+    hlinklen = seglength(ob, "hlink", count);
+    ownerlen = seglength(ob, "owner", count);
+    grouplen = seglength(ob, "group", count);
+    sizelen = seglength(ob, "size", count);
+    namelen = seglength(ob, "name", count);
+
+    ownstart = 15 + hlinklen + 1;
+    groupstart = ownstart + ownerlen + 1;
+    if (ownerlen + 1 + grouplen < 16) {
+      sizestart = ownstart + 16;
+    } else {
+      sizestart = groupstart + grouplen + 1;
+    }
+    if (sizelen < 7) {
+      datestart = sizestart + 7;
+    } else {
+      datestart = sizestart + sizelen + 1;
+    }
+    sizeobjectstart = datestart - 1 - *ob[list_count + topfileref].sizelens;
+    namestart = datestart + 18;
+    hlinkstart = ownstart - 1 - *ob[list_count + topfileref].hlinklens;
+
+    mvprintw(4 + list_count, 4,"%s",ob[list_count + topfileref].perm);
+    mvprintw(4 + list_count, hlinkstart,"%i",*ob[list_count + topfileref].hlink);
+    mvprintw(4 + list_count, ownstart,"%s",ob[list_count + topfileref].owner);
+    mvprintw(4 + list_count, groupstart,"%s",ob[list_count + topfileref].group);
+    mvprintw(4 + list_count, sizeobjectstart,"%lu",*ob[list_count + topfileref].size);
+    mvprintw(4 + list_count, datestart,"%s",ob[list_count + topfileref].date);
+    mvprintw(4 + list_count, namestart,"%s",ob[list_count + topfileref].name);
+    list_count++;
+    }
+
+  //mvprintw(0, 66, "%d %d", historyref, sessionhistory);
+  attron(COLOR_PAIR(2));
+  attroff(A_BOLD); // Required to ensure the last selected item doesn't bold the header
+  mvprintw(1, 2, "%s", pwd);
+  mvprintw(2, 2, "%i Objects   %lu Used %lu Available", count, sused, savailable);// Parcial Placeholder for PWD info
+  mvprintw(3, 4, "---Attrs---");
+  mvprintw(3, ownstart, "-Owner & Group-");
+  mvprintw(3, datestart - 7, "-Size-");
+  mvprintw(3, datestart, "---Date & Time---");
+  mvprintw(3, namestart, "----Name----");
+  attron(COLOR_PAIR(1));
 }

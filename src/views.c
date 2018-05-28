@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include <ncurses.h>
 #include <unistd.h>
 #include "main.h"
@@ -6,16 +7,21 @@
 #include "menus.h"
 #include "vars.h"
 
-int directory_view()
+results *ob;
+extern int topfileref;
+
+int directory_view(char * currentpwd)
 {
-  char currentpwd[1024];
-  getcwd(currentpwd, sizeof(currentpwd));
+  topfileref = 0;
   clear();
   attron(COLOR_PAIR(1));
 
   directory_top_menu();
 
-  list_dir(currentpwd);
+  set_history(currentpwd, 0, 0);
+  ob = get_dir(currentpwd);
+  reorder_ob(ob, "name");
+  display_dir(currentpwd, ob, topfileref, 0);
 
   function_key_menu();
 
@@ -31,6 +37,7 @@ int directory_view()
       break;
     }
 
+  free(ob); //freeing memory
   return 0;
 }
 
@@ -45,4 +52,15 @@ int quit_menu()
   directory_change_menu_inputs();
 
   return 0;
+}
+
+void clear_workspace()
+{
+  size_t line_count = 1;
+  for (line_count = 1; line_count < (LINES - 1);)
+    {
+      move (line_count,0);
+      clrtoeol();
+      line_count++;
+    }
 }
