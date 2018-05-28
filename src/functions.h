@@ -17,6 +17,7 @@ typedef struct {
 } history;
 
 void readline(char *buffer, int buflen, char *oldbuf);
+char * dirFromPath (const char* myStr);
 int check_dir(char *pwd);
 void mk_dir(char *path);
 void copy_file(char *source_input, char *target_input);

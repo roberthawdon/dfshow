@@ -114,6 +114,23 @@ void readline(char *buffer, int buflen, char *oldbuf)
   if (old_curs != ERR) curs_set(old_curs);
 }
 
+char * dirFromPath (const char* myStr){
+
+  char *outStr = (char *) malloc(sizeof(myStr));
+
+  strcpy(outStr, myStr);
+
+  char *del = &outStr[strlen(outStr)];
+
+  while (del > outStr && *del != '/')
+    del--;
+
+  if (*del== '/')
+    *del= '\0';
+
+  return outStr;
+}
+
 void LaunchShell()
 {
   clear();
@@ -399,20 +416,32 @@ void RenameObject(const char* source, const char* dest)
 {
   char sourceDevId[256];
   char destDevId[256];
+  char *destPath;
   struct stat sourcebuffer;
   struct stat destbuffer;
 
-  lstat(source, &sourcebuffer);
-  lstat(dest, &destbuffer);
+  destPath = dirFromPath(dest);
 
-  sprintf(sourceDevId, "%d", sourcebuffer.st_dev);
-  sprintf(destDevId, "%d", destbuffer.st_dev);
+  // mvprintw(0,66,"Stripped: %s", dirFromPath(dest)); // test in the usual place
 
-  if (!strcmp(sourceDevId, destDevId)) {
-    mvprintw(0,66,"PASS: %s:%s", sourceDevId, destDevId); // test pass
+  if (check_dir(destPath)){
+    lstat(source, &sourcebuffer);
+    lstat(destPath, &destbuffer);
+
+    sprintf(sourceDevId, "%d", sourcebuffer.st_dev);
+    sprintf(destDevId, "%d", destbuffer.st_dev);
+
+    if (!strcmp(sourceDevId, destDevId)) {
+      // Destination is on the same filesystem.
+      mvprintw(0,66,"PASS: %s:%s %s", sourceDevId, destDevId, dest); // test pass
+    } else {
+      // Destination is NOT in the same filesystem, the file will need copying then deleting.
+      mvprintw(0,66,"FAIL: %s:%s", sourceDevId, destDevId); // test fail
+    }
   } else {
-    mvprintw(0,66,"FAIL: %s:%s", sourceDevId, destDevId); // test fail
+    mvprintw(0,66, "FAIL: NO DIR"); // test
   }
+  free(destPath);
 }
 
 void set_history(char *pwd, int topfileref, int selected)
