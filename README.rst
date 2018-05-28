@@ -55,5 +55,5 @@ Screenshots
 
 **Directory View**
 
-.. image:: https://raw.github.com/roberthawdon/dfshow/develop/docs/images/show-terminal.png
+.. image:: https://raw.github.com/roberthawdon/dfshow/master/docs/images/show-terminal.png
    :alt: Directory Viewer
