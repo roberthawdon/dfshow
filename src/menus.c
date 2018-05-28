@@ -252,6 +252,13 @@ void rename_file_input(char *file)
   curs_set(FALSE);
   RenameObject(file, dest);
 
+  ob = get_dir(currentpwd);
+  clear_workspace();
+  reorder_ob(ob, sortmode);
+  display_dir(currentpwd, ob, 0, selected);
+  directory_top_menu();
+  function_key_menu();
+  directory_view_menu_inputs0();
 }
 
 void make_directory_input()

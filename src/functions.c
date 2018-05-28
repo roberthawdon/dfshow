@@ -412,13 +412,14 @@ int UpdateOwnerGroup(const char* object, const char* pwdstr, const char* grpstr)
 
 }
 
-void RenameObject(const char* source, const char* dest)
+int RenameObject(const char* source, const char* dest)
 {
   char sourceDevId[256];
   char destDevId[256];
   char *destPath;
   struct stat sourcebuffer;
   struct stat destbuffer;
+  int e;
 
   destPath = dirFromPath(dest);
 
@@ -433,13 +434,16 @@ void RenameObject(const char* source, const char* dest)
 
     if (!strcmp(sourceDevId, destDevId)) {
       // Destination is on the same filesystem.
-      mvprintw(0,66,"PASS: %s:%s %s", sourceDevId, destDevId, dest); // test pass
+      //mvprintw(0,66,"PASS: %s:%s %s", sourceDevId, destDevId, dest); // test pass
+      e = rename(source, dest);
+      return e;
     } else {
       // Destination is NOT in the same filesystem, the file will need copying then deleting.
-      mvprintw(0,66,"FAIL: %s:%s", sourceDevId, destDevId); // test fail
+      //mvprintw(0,66,"FAIL: %s:%s", sourceDevId, destDevId); // test fail
     }
   } else {
-    mvprintw(0,66, "FAIL: NO DIR"); // test
+    // Destination directory not found
+    //mvprintw(0,66, "FAIL: NO DIR"); // test
   }
   free(destPath);
 }
