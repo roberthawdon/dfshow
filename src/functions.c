@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <ncurses.h>
+#include <ctype.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <dirent.h>
@@ -38,10 +39,174 @@ int displaysize; // Calculate area to print
 int historyref = 0;
 int sessionhistory = 0;
 
-long savailable = 0;
-long sused = 0;
+int showhidden = 0;
+
+unsigned long int savailable = 0;
+unsigned long int sused = 0;
 
 history *hs;
+
+void readline(char *buffer, int buflen, char *oldbuf)
+/* Read up to buflen-1 characters into `buffer`.
+ * A terminating '\0' character is added after the input.  */
+{
+  int old_curs = curs_set(1);
+  int pos;
+  int len;
+  int oldlen;
+  int x, y;
+
+  oldlen = strlen(oldbuf);
+  attron(COLOR_PAIR(3));
+
+  pos = oldlen;
+  len = oldlen;
+
+  getyx(stdscr, y, x);
+
+  strcpy(buffer, oldbuf);
+
+  for (;;) {
+    int c;
+
+    buffer[len] = ' ';
+    mvaddnstr(y, x, buffer, len+1); // Prints buffer on screen
+    move(y, x+pos); //
+    c = getch();
+
+    if (c == KEY_ENTER || c == '\n' || c == '\r') {
+      attron(COLOR_PAIR(1));
+      break;
+    } else if (isprint(c)) {
+      if (pos < buflen-1) {
+        memmove(buffer+pos+1, buffer+pos, len-pos);
+        buffer[pos++] = c;
+        len += 1;
+      } else {
+        beep();
+      }
+    } else if (c == KEY_LEFT) {
+      if (pos > 0) pos -= 1; else beep();
+    } else if (c == KEY_RIGHT) {
+      if (pos < len) pos += 1; else beep();
+    } else if ((c == KEY_BACKSPACE) || (c == 127)) {
+      if (pos > 0) {
+        memmove(buffer+pos-1, buffer+pos, len-pos);
+        pos -= 1;
+        len -= 1;
+        clrtoeol();
+      } else {
+        beep();
+      }
+    } else if (c == KEY_DC) {
+      if (pos < len) {
+        memmove(buffer+pos, buffer+pos+1, len-pos-1);
+        len -= 1;
+        clrtoeol();
+      } else {
+        beep();
+      }
+    } else {
+      beep();
+    }
+  }
+  buffer[len] = '\0';
+  if (old_curs != ERR) curs_set(old_curs);
+}
+
+char * dirFromPath (const char* myStr){
+
+  char *outStr = (char *) malloc(sizeof(myStr));
+
+  strcpy(outStr, myStr);
+
+  char *del = &outStr[strlen(outStr)];
+
+  while (del > outStr && *del != '/')
+    del--;
+
+  if (*del== '/')
+    *del= '\0';
+
+  return outStr;
+}
+
+void LaunchShell()
+{
+  clear();
+  endwin();
+  // system("clear"); // Not exactly sure if I want this yet.
+  printf("\nUse 'exit' to return to Show.\n\n");
+  system(getenv("SHELL"));
+  initscr();
+}
+
+
+void mk_dir(char *path)
+{
+  struct stat st = {0};
+
+  if (stat(path, &st) == -1) {
+    mkdir(path, 0755);
+  }
+}
+
+void copy_file(char *source_input, char *target_input)
+{
+  char ch;
+  FILE *source, *target;
+
+  source = fopen(source_input, "r");
+  target = fopen(target_input, "w");
+
+  while( ( ch = fgetc(source) ) != EOF )
+    fputc(ch, target);
+
+  fclose(source);
+  fclose(target);
+}
+
+void delete_file(char *source_input)
+{
+  remove(source_input);
+}
+
+void SendToPager(const char* object)
+{
+  char page[1024];
+  char esc[1024];
+  if ( getenv("PAGER")) {
+    strcpy(page, getenv("PAGER"));
+    strcat(page, " ");
+    strcpy(esc, "'");
+    strcat(esc, object);
+    strcat(esc, "'");
+    strcat(page, esc);
+    clear();
+    endwin();
+    system(page);
+    initscr();
+  }
+}
+
+void SendToEditor(const char* object)
+
+{
+  char editor[1024];
+  char esc[1024];
+  if ( getenv("EDITOR")) {
+    strcpy(editor, getenv("EDITOR"));
+    strcat(editor, " ");
+    strcpy(esc, "'");
+    strcat(esc, object);
+    strcat(esc, "'");
+    strcat(editor, esc);
+    clear();
+    endwin();
+    system(editor);
+    initscr();
+  }
+}
 
 long GetAvailableSpace(const char* path)
 {
@@ -203,6 +368,86 @@ int check_last_char(const char *str, const char *chk)
   }
 }
 
+int check_first_char(const char *str, const char *chk)
+{
+   if (str[0] == chk[0]){
+    return 1;
+  } else {
+    return 0;
+  }
+}
+
+int UpdateOwnerGroup(const char* object, const char* pwdstr, const char* grpstr)
+{
+  // char *buf;
+  // size_t bufsize;
+  struct stat sb;
+  struct passwd *oldpwd;
+  struct group *oldgrp;
+  int s, uid, gid, e;
+
+  uid = -1;
+  gid = -1;
+
+  lstat(object, &sb);
+
+  oldpwd = getpwuid(sb.st_uid);
+  oldgrp = getgrgid(sb.st_gid);
+
+  if (pwdstr == NULL){
+    uid = oldpwd->pw_uid;
+  } else {
+    uid = atoi(pwdstr);
+  }
+  if (grpstr == NULL){
+    gid = oldgrp->gr_gid;
+  } else {
+    gid= atoi(grpstr);
+  }
+
+  //mvprintw(0,66, "%d:%d", uid, gid); //test
+  e = chown(object, uid, gid);
+
+  return e;
+
+}
+
+int RenameObject(const char* source, const char* dest)
+{
+  char sourceDevId[256];
+  char destDevId[256];
+  char *destPath;
+  struct stat sourcebuffer;
+  struct stat destbuffer;
+  int e;
+
+  destPath = dirFromPath(dest);
+
+  // mvprintw(0,66,"Stripped: %s", dirFromPath(dest)); // test in the usual place
+
+  if (check_dir(destPath)){
+    lstat(source, &sourcebuffer);
+    lstat(destPath, &destbuffer);
+
+    sprintf(sourceDevId, "%d", sourcebuffer.st_dev);
+    sprintf(destDevId, "%d", destbuffer.st_dev);
+
+    if (!strcmp(sourceDevId, destDevId)) {
+      // Destination is on the same filesystem.
+      //mvprintw(0,66,"PASS: %s:%s %s", sourceDevId, destDevId, dest); // test pass
+      e = rename(source, dest);
+      return e;
+    } else {
+      // Destination is NOT in the same filesystem, the file will need copying then deleting.
+      //mvprintw(0,66,"FAIL: %s:%s", sourceDevId, destDevId); // test fail
+    }
+  } else {
+    // Destination directory not found
+    //mvprintw(0,66, "FAIL: NO DIR"); // test
+  }
+  free(destPath);
+}
+
 void set_history(char *pwd, int topfileref, int selected)
 {
   if (sessionhistory == 0){
@@ -249,6 +494,9 @@ results* get_dir(char *pwd)
     if (access ( path, F_OK ) != -1 ){
       if ( folder ){
         while ( ( res = readdir ( folder ) ) ){
+          if ( showhidden == 0 && check_first_char(res->d_name, ".") && strcmp(res->d_name, ".") && strcmp(res->d_name, "..") ) {
+            continue; // Skipping hidden files
+          }
           ob = realloc(ob, (count +1) * sizeof(results)); // Reallocating memory.
           lstat(res->d_name, &sb);
           struct passwd *pw = getpwuid(sb.st_uid);
@@ -275,7 +523,7 @@ results* get_dir(char *pwd)
           perms[9] = buffer.st_mode & S_IXOTH? 'x': '-';
 
           sprintf(hlinkstr, "%d", buffer.st_nlink);
-          sprintf(sizestr, "%lld", buffer.st_size);
+          sprintf(sizestr, "%lu", buffer.st_size);
 
           // Writing our structure
           strcpy(ob[count].perm, perms);
@@ -375,7 +623,7 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
     mvprintw(4 + list_count, hlinkstart,"%i",*ob[list_count + topfileref].hlink);
     mvprintw(4 + list_count, ownstart,"%s",ob[list_count + topfileref].owner);
     mvprintw(4 + list_count, groupstart,"%s",ob[list_count + topfileref].group);
-    mvprintw(4 + list_count, sizeobjectstart,"%lli",*ob[list_count + topfileref].size);
+    mvprintw(4 + list_count, sizeobjectstart,"%lu",*ob[list_count + topfileref].size);
     mvprintw(4 + list_count, datestart,"%s",ob[list_count + topfileref].date);
     mvprintw(4 + list_count, namestart,"%s",ob[list_count + topfileref].name);
     list_count++;
@@ -385,8 +633,8 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   attron(COLOR_PAIR(2));
   attroff(A_BOLD); // Required to ensure the last selected item doesn't bold the header
   mvprintw(1, 2, "%s", pwd);
-  mvprintw(2, 2, "%i Objects   %lli Used %lli Available", count, sused, savailable);// Parcial Placeholder for PWD info
-  mvprintw(3, 4, "----Attrs----");
+  mvprintw(2, 2, "%i Objects   %lu Used %lu Available", count, sused, savailable);// Parcial Placeholder for PWD info
+  mvprintw(3, 4, "---Attrs---");
   mvprintw(3, ownstart, "-Owner & Group-");
   mvprintw(3, datestart - 7, "-Size-");
   mvprintw(3, datestart, "---Date & Time---");

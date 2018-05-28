@@ -49,6 +49,7 @@ int main(int argc, char *argv[])
 
   initscr();
   start_color();
+  cbreak(); //Added for new method
   init_pair(1, COLOR_WHITE, COLOR_BLACK);
   init_pair(2, COLOR_GREEN, COLOR_BLACK);
   init_pair(3, COLOR_BLACK, COLOR_WHITE);
