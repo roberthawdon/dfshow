@@ -9,7 +9,7 @@ DF-SHOW
 .. |GPLv3 license| image:: https://img.shields.io/badge/License-GPLv3-blue.svg
    :target: https://raw.github.com/roberthawdon/dfshow/develop/LICENSE
 
-.. |Travis Build| image:: https://img.shields.io/travis/roberthawdon/dfshow.svg
+.. |Travis Build| image:: https://api.travis-ci.org/roberthawdon/dfshow.svg?branch=master
    :target: https://travis-ci.org/roberthawdon/dfshow
 
 :Author: Robert Ian Hawdon (git@robertianhawdon.me.uk)
