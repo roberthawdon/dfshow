@@ -7,7 +7,7 @@ DF-SHOW
    :target: https://github.com/roberthawdon/dfshow/graphs/commit-activity
 
 .. |GPLv3 license| image:: https://img.shields.io/badge/License-GPLv3-blue.svg
-   :target: https://raw.github.com/roberthawdon/dfshow/develop/LICENSE
+   :target: https://raw.github.com/roberthawdon/dfshow/master/LICENSE
 
 .. |Travis Build| image:: https://api.travis-ci.org/roberthawdon/dfshow.svg?branch=master
    :target: https://travis-ci.org/roberthawdon/dfshow
