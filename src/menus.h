@@ -18,3 +18,4 @@ void edit_file_input();
 void make_directory_input();
 void delete_file_confirm();
 void delete_file_confirm_input(char *file);
+void topLineMessage(const char *message);

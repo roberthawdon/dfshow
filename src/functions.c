@@ -14,6 +14,7 @@
 #include <sys/statvfs.h>
 #include "functions.h"
 #include "views.h"
+#include "menus.h"
 
 char hlinkstr[5], sizestr[32];
 
@@ -175,8 +176,12 @@ void SendToPager(const char* object)
 {
   char page[1024];
   char esc[1024];
+  int pset = 0;
   if ( getenv("PAGER")) {
     strcpy(page, getenv("PAGER"));
+    pset = 1;
+  }
+  if ( pset ) {
     strcat(page, " ");
     strcpy(esc, "'");
     strcat(esc, object);
@@ -186,6 +191,8 @@ void SendToPager(const char* object)
     endwin();
     system(page);
     initscr();
+  } else {
+    topLineMessage("Error: No pager set.");
   }
 }
 
@@ -194,8 +201,15 @@ void SendToEditor(const char* object)
 {
   char editor[1024];
   char esc[1024];
+  int eset = 0;
   if ( getenv("EDITOR")) {
     strcpy(editor, getenv("EDITOR"));
+    eset = 1;
+  } else if ( getenv("VISUAL")) {
+    strcpy(editor, getenv("VISUAL"));
+    eset = 1;
+  }
+  if ( eset ){
     strcat(editor, " ");
     strcpy(esc, "'");
     strcat(esc, object);
@@ -205,6 +219,8 @@ void SendToEditor(const char* object)
     endwin();
     system(editor);
     initscr();
+  } else {
+    topLineMessage("Error: No editor set.");
   }
 }
 

@@ -858,3 +858,21 @@ void directory_change_menu_inputs()
         }
     }
 }
+
+void topLineMessage(const char *message){
+  move(0,0);
+  clrtoeol();
+  mvprintw(0,0, "%s", message);
+  while(1)
+    {
+      *pc = getch();
+      switch(*pc)
+        {
+        default: // Where's the "any" key?
+          directory_top_menu();
+          directory_view_menu_inputs0();
+          break;
+        }
+    }
+}
+
