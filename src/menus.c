@@ -797,13 +797,20 @@ void directory_view_menu_inputs0()
           display_dir(currentpwd, ob, topfileref, selected);
           break;
         case 270: // F6
-          if ( *ob[selected].marked ){
-            *ob[selected].marked = 0;
-            clear_workspace();
-          } else {
-            *ob[selected].marked = 1;
+          strcpy(selfile, currentpwd);
+          if (!check_last_char(selfile, "/")){
+            strcat(selfile, "/");
           }
-          display_dir(currentpwd, ob, topfileref, selected);
+          strcat(selfile, ob[selected].name);
+          if (!check_dir(selfile)){
+            if ( *ob[selected].marked ){
+              *ob[selected].marked = 0;
+              clear_workspace();
+            } else {
+              *ob[selected].marked = 1;
+            }
+            display_dir(currentpwd, ob, topfileref, selected);
+          }
           break;
         case 271: // F7
           markall = 1;
