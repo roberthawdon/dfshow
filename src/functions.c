@@ -544,7 +544,7 @@ results* get_dir(char *pwd)
           sprintf(sizestr, "%lu", buffer.st_size);
 
           // Writing our structure
-          if ( markall ) {
+          if ( markall && !(buffer.st_mode & S_IFDIR) ) {
             *ob[count].marked = 1;
           } else {
             *ob[count].marked = 0;
