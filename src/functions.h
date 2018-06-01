@@ -1,4 +1,5 @@
 typedef struct {
+  int marked[1];
   char perm[11];
   int hlink[4];
   int hlinklens[5];

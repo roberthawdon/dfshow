@@ -542,6 +542,7 @@ results* get_dir(char *pwd)
           sprintf(sizestr, "%lu", buffer.st_size);
 
           // Writing our structure
+          *ob[count].marked = 0;
           strcpy(ob[count].perm, perms);
           *ob[count].hlink = buffer.st_nlink;
           *ob[count].hlinklens = strlen(hlinkstr);
@@ -635,6 +636,9 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
     namestart = datestart + 18;
     hlinkstart = ownstart - 1 - *ob[list_count + topfileref].hlinklens;
 
+    if ( *ob[list_count + topfileref].marked ){
+      mvprintw(4 + list_count, 2, "*");
+    }
     mvprintw(4 + list_count, 4,"%s",ob[list_count + topfileref].perm);
     mvprintw(4 + list_count, hlinkstart,"%i",*ob[list_count + topfileref].hlink);
     mvprintw(4 + list_count, ownstart,"%s",ob[list_count + topfileref].owner);
