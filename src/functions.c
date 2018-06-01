@@ -42,6 +42,8 @@ int sessionhistory = 0;
 
 int showhidden = 0;
 
+int markall = 0;
+
 unsigned long int savailable = 0;
 unsigned long int sused = 0;
 
@@ -542,7 +544,11 @@ results* get_dir(char *pwd)
           sprintf(sizestr, "%lu", buffer.st_size);
 
           // Writing our structure
-          *ob[count].marked = 0;
+          if ( markall ) {
+            *ob[count].marked = 1;
+          } else {
+            *ob[count].marked = 0;
+          }
           strcpy(ob[count].perm, perms);
           *ob[count].hlink = buffer.st_nlink;
           *ob[count].hlinklens = strlen(hlinkstr);

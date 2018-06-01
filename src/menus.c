@@ -39,6 +39,7 @@ extern int topfileref;
 extern int totalfilecount;
 extern int displaysize;
 extern int showhidden;
+extern int markall;
 
 void directory_top_menu()
 {
@@ -805,8 +806,18 @@ void directory_view_menu_inputs0()
           display_dir(currentpwd, ob, topfileref, selected);
           break;
         case 271: // F7
+          markall = 1;
+          ob = get_dir(currentpwd);
+          clear_workspace();
+          reorder_ob(ob, sortmode);
+          display_dir(currentpwd, ob, topfileref, selected);
           break;
         case 272: // F8
+          markall = 0;
+          ob = get_dir(currentpwd);
+          clear_workspace();
+          reorder_ob(ob, sortmode);
+          display_dir(currentpwd, ob, topfileref, selected);
           break;
         case 273: // F9
           sort_view();
