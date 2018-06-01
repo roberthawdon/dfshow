@@ -796,7 +796,12 @@ void directory_view_menu_inputs0()
           display_dir(currentpwd, ob, topfileref, selected);
           break;
         case 270: // F6
-          *ob[selected].marked = 1;
+          if ( *ob[selected].marked ){
+            *ob[selected].marked = 0;
+            clear_workspace();
+          } else {
+            *ob[selected].marked = 1;
+          }
           display_dir(currentpwd, ob, topfileref, selected);
           break;
         case 271: // F7
