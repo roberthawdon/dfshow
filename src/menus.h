@@ -19,5 +19,5 @@ void make_directory_input();
 void delete_file_confirm();
 void delete_multi_file_confirm(const char *filename);
 void delete_file_confirm_input(char *file);
-int delete_multi_file_confirm_input(char *filename, int all);
+void delete_multi_file_confirm_input(results* ob);
 void topLineMessage(const char *message);

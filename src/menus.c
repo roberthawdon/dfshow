@@ -372,34 +372,27 @@ void delete_file_confirm_input(char *file)
     }
 }
 
-int delete_multi_file_confirm_input(char *filename, int all)
+void delete_multi_file_confirm_input(results* ob)
 {
-  int returnval = 0; // 0 - no; 1 - yes; 2 - all; 3 - stop;
-  if ( all ) {
-    delete_file(filename);
-    returnval = 2;
-  } else {
-    while(1)
-      {
-        *pc = getch();
-        switch(*pc)
-          {
-          case 'y':
-            delete_file(filename);
-            returnval = 1;
-            break;
-          case 'a':
-            delete_file(filename);
-            returnval = 2;
-          case 's':
-            returnval = 3;
-          default:
-            break;
-          }
-      }
-  }
-  return(returnval);
+  while(1)
+    {
+      *pc = getch();
+      switch(*pc)
+        {
+        case 'y':
+          //delete_file(filename);
+          break;
+        case 'a':
+          //delete_file(filename);
+          break;
+        case 's':
+          break;
+        default:
+          break;
+        }
+    }
 }
+
 void sort_view_inputs()
 {
   while(1)
@@ -686,23 +679,8 @@ void directory_view_menu_inputs0()
           break;
         case 'd':
           if ( CheckMarked(ob) ) {
-            // topLineMessage("Multi file delete coming soon");
-            int i;
-            int all = 0;
-            for ( i = 0; i < totalfilecount; i++ ){
-              if ( *ob[i].marked == 1 ){
-                strcpy(selfile, currentpwd);
-                if (!check_last_char(selfile, "/")){
-                  strcat(selfile, "/");
-                }
-                strcat(selfile, ob[selected].name);
-                delete_multi_file_confirm(selfile);
-                all = delete_multi_file_confirm_input(selfile, all);
-                if ( all == 3 ){
-                  break;
-                }
-              }
-            }
+            topLineMessage("Multi file delete coming soon");
+            // delete_multi_file_confirm_input(ob);
           } else {
             strcpy(selfile, currentpwd);
             if (!check_last_char(selfile, "/")){
