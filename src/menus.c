@@ -41,6 +41,8 @@ extern int displaysize;
 extern int showhidden;
 extern int markall;
 
+void topLineMessage(const char *message);
+
 void directory_top_menu()
 {
   move(0, 0);
@@ -612,24 +614,32 @@ void directory_view_menu_inputs0()
       switch(*pc)
         {
         case 'c':
-          strcpy(selfile, currentpwd);
-          if (!check_last_char(selfile, "/")){
-            strcat(selfile, "/");
-          }
-          strcat(selfile, ob[selected].name);
-          if (!check_dir(selfile)){
-            copy_file_input(selfile);
+          if ( CheckMarked(ob) ) {
+            topLineMessage("Multi file copy coming soon");
+          } else {
+            strcpy(selfile, currentpwd);
+            if (!check_last_char(selfile, "/")){
+              strcat(selfile, "/");
+            }
+            strcat(selfile, ob[selected].name);
+            if (!check_dir(selfile)){
+              copy_file_input(selfile);
+            }
           }
           break;
         case 'd':
-          strcpy(selfile, currentpwd);
-          if (!check_last_char(selfile, "/")){
-            strcat(selfile, "/");
-          }
-          strcat(selfile, ob[selected].name);
-          if (!check_dir(selfile)){
-            delete_file_confirm();
-            delete_file_confirm_input(selfile);
+          if ( CheckMarked(ob) ) {
+            topLineMessage("Multi file delete coming soon");
+          } else {
+            strcpy(selfile, currentpwd);
+            if (!check_last_char(selfile, "/")){
+              strcat(selfile, "/");
+            }
+            strcat(selfile, ob[selected].name);
+            if (!check_dir(selfile)){
+              delete_file_confirm();
+              delete_file_confirm_input(selfile);
+            }
           }
           break;
         case 'e':
@@ -662,8 +672,12 @@ void directory_view_menu_inputs0()
           display_dir(currentpwd, ob, topfileref, selected);
           break;
         case 'm':
-          modify_key_menu();
-          modify_key_menu_inputs();
+          if ( CheckMarked(ob) ) {
+            topLineMessage("Multi file modify coming soon");
+          } else {
+            modify_key_menu();
+            modify_key_menu_inputs();
+          }
           break;
         case 'q':
           if (historyref > 1){
@@ -686,12 +700,16 @@ void directory_view_menu_inputs0()
           }
           break;
         case'r':
-          strcpy(selfile, currentpwd);
-          if (!check_last_char(selfile, "/")){
-            strcat(selfile, "/");
+          if ( CheckMarked(ob) ) {
+            topLineMessage("Multi file rename coming soon");
+          } else {
+            strcpy(selfile, currentpwd);
+            if (!check_last_char(selfile, "/")){
+              strcat(selfile, "/");
+            }
+            strcat(selfile, ob[selected].name);
+            rename_file_input(selfile);
           }
-          strcat(selfile, ob[selected].name);
-          rename_file_input(selfile);
           break;
         case 's':
           strcpy(chpwd, currentpwd);

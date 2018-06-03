@@ -466,6 +466,22 @@ int RenameObject(const char* source, const char* dest)
   free(destPath);
 }
 
+int CheckMarked(results* ob){
+  int i;
+  int count = totalfilecount;
+  int result = 0;
+
+  for (i = 0; i < totalfilecount; i++)
+    {
+      // if this customer record's state member is "CA"
+      if ( *ob[i].marked == 1 ){
+        result = 1;
+        break;
+      }
+    }
+  return(result);
+}
+
 void set_history(char *pwd, int topfileref, int selected)
 {
   if (sessionhistory == 0){
