@@ -473,7 +473,6 @@ int CheckMarked(results* ob){
 
   for (i = 0; i < totalfilecount; i++)
     {
-      // if this customer record's state member is "CA"
       if ( *ob[i].marked == 1 ){
         result = 1;
         break;
