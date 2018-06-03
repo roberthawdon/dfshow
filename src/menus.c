@@ -302,6 +302,35 @@ void delete_file_confirm()
   mvprintw(0, 19, "o)");
 }
 
+void delete_multi_file_confirm(const char *filename)
+{
+  size_t filenamelen;
+  filenamelen = strlen(filename);
+  move(0,0);
+  clrtoeol();
+  mvprintw(0,0, "Delete file [");
+  attron(A_BOLD);
+  mvprintw(0, 13, "%s", filename);
+  attroff(A_BOLD);
+  mvprintw(0, 13 + filenamelen, "]? (");
+  attron(A_BOLD);
+  mvprintw(0, 13 + filenamelen + 4, "Y");
+  attroff(A_BOLD);
+  mvprintw(0, 13 + filenamelen + 5, "es/");
+  attron(A_BOLD);
+  mvprintw(0, 13 + filenamelen + 8, "N");
+  attroff(A_BOLD);
+  mvprintw(0, 13 + filenamelen + 9, "o/");
+  attron(A_BOLD);
+  mvprintw(0, 13 + filenamelen + 11, "A");
+  attroff(A_BOLD);
+  mvprintw(0, 13 + filenamelen + 12, "ll/");
+  attron(A_BOLD);
+  mvprintw(0, 13 + filenamelen + 15, "S");
+  attroff(A_BOLD);
+  mvprintw(0, 13 + filenamelen + 16, "top)");
+}
+
 void sort_view()
 {
   move(0, 0);
@@ -343,6 +372,34 @@ void delete_file_confirm_input(char *file)
     }
 }
 
+int delete_multi_file_confirm_input(char *filename, int all)
+{
+  int returnval = 0; // 0 - no; 1 - yes; 2 - all; 3 - stop;
+  if ( all ) {
+    delete_file(filename);
+    returnval = 2;
+  } else {
+    while(1)
+      {
+        *pc = getch();
+        switch(*pc)
+          {
+          case 'y':
+            delete_file(filename);
+            returnval = 1;
+            break;
+          case 'a':
+            delete_file(filename);
+            returnval = 2;
+          case 's':
+            returnval = 3;
+          default:
+            break;
+          }
+      }
+  }
+  return(returnval);
+}
 void sort_view_inputs()
 {
   while(1)
@@ -629,7 +686,23 @@ void directory_view_menu_inputs0()
           break;
         case 'd':
           if ( CheckMarked(ob) ) {
-            topLineMessage("Multi file delete coming soon");
+            // topLineMessage("Multi file delete coming soon");
+            int i;
+            int all = 0;
+            for ( i = 0; i < totalfilecount; i++ ){
+              if ( *ob[i].marked == 1 ){
+                strcpy(selfile, currentpwd);
+                if (!check_last_char(selfile, "/")){
+                  strcat(selfile, "/");
+                }
+                strcat(selfile, ob[selected].name);
+                delete_multi_file_confirm(selfile);
+                all = delete_multi_file_confirm_input(selfile, all);
+                if ( all == 3 ){
+                  break;
+                }
+              }
+            }
           } else {
             strcpy(selfile, currentpwd);
             if (!check_last_char(selfile, "/")){

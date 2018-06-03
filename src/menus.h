@@ -17,5 +17,7 @@ void rename_file_input(char *file);
 void edit_file_input();
 void make_directory_input();
 void delete_file_confirm();
+void delete_multi_file_confirm(const char *filename);
 void delete_file_confirm_input(char *file);
+int delete_multi_file_confirm_input(char *filename, int all);
 void topLineMessage(const char *message);
