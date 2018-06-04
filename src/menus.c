@@ -374,21 +374,49 @@ void delete_file_confirm_input(char *file)
 
 void delete_multi_file_confirm_input(results* ob)
 {
-  while(1)
+  int i, k;
+  int allflag = 0;
+  int abortflag = 0;
+
+  for (i = 0; i < totalfilecount; i++)
     {
-      *pc = getch();
-      switch(*pc)
+      if ( *ob[i].marked && !abortflag )
         {
-        case 'y':
-          //delete_file(filename);
-          break;
-        case 'a':
-          //delete_file(filename);
-          break;
-        case 's':
-          break;
-        default:
-          break;
+          strcpy(selfile, currentpwd);
+          if (!check_last_char(selfile, "/")){
+            strcat(selfile, "/");
+          }
+          strcat(selfile, ob[i].name);
+          if ( allflag )
+            {
+              delete_file(selfile);
+            } else {
+            delete_multi_file_confirm(selfile);
+            k = 1;
+            while(k)
+              {
+                *pc = getch();
+                switch(*pc)
+                  {
+                  case 'y':
+                    delete_file(selfile);
+                    k = 0;
+                    break;
+                  case 'a':
+                    allflag = 1;
+                    k = 0;
+                    delete_file(selfile);
+                    break;
+                  case 's':
+                    abortflag = 1;
+                    k = 0;
+                    break;
+                  case 'n':
+                    k = 0;
+                    break;
+                  }
+              }
+          }
         }
     }
 }
@@ -679,8 +707,14 @@ void directory_view_menu_inputs0()
           break;
         case 'd':
           if ( CheckMarked(ob) ) {
-            topLineMessage("Multi file delete coming soon");
-            // delete_multi_file_confirm_input(ob);
+            //topLineMessage("Multi file delete coming soon");
+            delete_multi_file_confirm_input(ob);
+            ob = get_dir(currentpwd);
+            clear_workspace();
+            reorder_ob(ob, sortmode);
+            display_dir(currentpwd, ob, topfileref, selected);
+            directory_top_menu();
+            directory_view_menu_inputs0();
           } else {
             strcpy(selfile, currentpwd);
             if (!check_last_char(selfile, "/")){
@@ -884,6 +918,7 @@ void directory_view_menu_inputs0()
         case 271: // F7
           markall = 1;
           ob = get_dir(currentpwd);
+          markall = 0; // Leaving this set as 1 keeps things marked even after refresh. This is bad
           clear_workspace();
           reorder_ob(ob, sortmode);
           display_dir(currentpwd, ob, topfileref, selected);

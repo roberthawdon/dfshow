@@ -466,14 +466,14 @@ int RenameObject(const char* source, const char* dest)
   free(destPath);
 }
 
-int CheckMarked(results* ob){
+int CheckMarked(results* ob)
+{
   int i;
-  int count = totalfilecount;
   int result = 0;
 
   for (i = 0; i < totalfilecount; i++)
     {
-      if ( *ob[i].marked == 1 ){
+      if ( *ob[i].marked ){
         result = 1;
         break;
       }
