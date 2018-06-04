@@ -39,6 +39,9 @@ extern int topfileref;
 extern int totalfilecount;
 extern int displaysize;
 extern int showhidden;
+extern int markall;
+
+void topLineMessage(const char *message);
 
 void directory_top_menu()
 {
@@ -299,6 +302,35 @@ void delete_file_confirm()
   mvprintw(0, 19, "o)");
 }
 
+void delete_multi_file_confirm(const char *filename)
+{
+  size_t filenamelen;
+  filenamelen = strlen(filename);
+  move(0,0);
+  clrtoeol();
+  mvprintw(0,0, "Delete file [");
+  attron(A_BOLD);
+  mvprintw(0, 13, "%s", filename);
+  attroff(A_BOLD);
+  mvprintw(0, 13 + filenamelen, "]? (");
+  attron(A_BOLD);
+  mvprintw(0, 13 + filenamelen + 4, "Y");
+  attroff(A_BOLD);
+  mvprintw(0, 13 + filenamelen + 5, "es/");
+  attron(A_BOLD);
+  mvprintw(0, 13 + filenamelen + 8, "N");
+  attroff(A_BOLD);
+  mvprintw(0, 13 + filenamelen + 9, "o/");
+  attron(A_BOLD);
+  mvprintw(0, 13 + filenamelen + 11, "A");
+  attroff(A_BOLD);
+  mvprintw(0, 13 + filenamelen + 12, "ll/");
+  attron(A_BOLD);
+  mvprintw(0, 13 + filenamelen + 15, "S");
+  attroff(A_BOLD);
+  mvprintw(0, 13 + filenamelen + 16, "top)");
+}
+
 void sort_view()
 {
   move(0, 0);
@@ -336,6 +368,55 @@ void delete_file_confirm_input(char *file)
           directory_top_menu();
           directory_view_menu_inputs0();
           break;
+        }
+    }
+}
+
+void delete_multi_file_confirm_input(results* ob)
+{
+  int i, k;
+  int allflag = 0;
+  int abortflag = 0;
+
+  for (i = 0; i < totalfilecount; i++)
+    {
+      if ( *ob[i].marked && !abortflag )
+        {
+          strcpy(selfile, currentpwd);
+          if (!check_last_char(selfile, "/")){
+            strcat(selfile, "/");
+          }
+          strcat(selfile, ob[i].name);
+          if ( allflag )
+            {
+              delete_file(selfile);
+            } else {
+            delete_multi_file_confirm(selfile);
+            k = 1;
+            while(k)
+              {
+                *pc = getch();
+                switch(*pc)
+                  {
+                  case 'y':
+                    delete_file(selfile);
+                    k = 0;
+                    break;
+                  case 'a':
+                    allflag = 1;
+                    k = 0;
+                    delete_file(selfile);
+                    break;
+                  case 's':
+                    abortflag = 1;
+                    k = 0;
+                    break;
+                  case 'n':
+                    k = 0;
+                    break;
+                  }
+              }
+          }
         }
     }
 }
@@ -611,24 +692,39 @@ void directory_view_menu_inputs0()
       switch(*pc)
         {
         case 'c':
-          strcpy(selfile, currentpwd);
-          if (!check_last_char(selfile, "/")){
-            strcat(selfile, "/");
-          }
-          strcat(selfile, ob[selected].name);
-          if (!check_dir(selfile)){
-            copy_file_input(selfile);
+          if ( CheckMarked(ob) ) {
+            topLineMessage("Multi file copy coming soon");
+          } else {
+            strcpy(selfile, currentpwd);
+            if (!check_last_char(selfile, "/")){
+              strcat(selfile, "/");
+            }
+            strcat(selfile, ob[selected].name);
+            if (!check_dir(selfile)){
+              copy_file_input(selfile);
+            }
           }
           break;
         case 'd':
-          strcpy(selfile, currentpwd);
-          if (!check_last_char(selfile, "/")){
-            strcat(selfile, "/");
-          }
-          strcat(selfile, ob[selected].name);
-          if (!check_dir(selfile)){
-            delete_file_confirm();
-            delete_file_confirm_input(selfile);
+          if ( CheckMarked(ob) ) {
+            //topLineMessage("Multi file delete coming soon");
+            delete_multi_file_confirm_input(ob);
+            ob = get_dir(currentpwd);
+            clear_workspace();
+            reorder_ob(ob, sortmode);
+            display_dir(currentpwd, ob, topfileref, selected);
+            directory_top_menu();
+            directory_view_menu_inputs0();
+          } else {
+            strcpy(selfile, currentpwd);
+            if (!check_last_char(selfile, "/")){
+              strcat(selfile, "/");
+            }
+            strcat(selfile, ob[selected].name);
+            if (!check_dir(selfile)){
+              delete_file_confirm();
+              delete_file_confirm_input(selfile);
+            }
           }
           break;
         case 'e':
@@ -661,8 +757,12 @@ void directory_view_menu_inputs0()
           display_dir(currentpwd, ob, topfileref, selected);
           break;
         case 'm':
-          modify_key_menu();
-          modify_key_menu_inputs();
+          if ( CheckMarked(ob) ) {
+            topLineMessage("Multi file modify coming soon");
+          } else {
+            modify_key_menu();
+            modify_key_menu_inputs();
+          }
           break;
         case 'q':
           if (historyref > 1){
@@ -685,12 +785,16 @@ void directory_view_menu_inputs0()
           }
           break;
         case'r':
-          strcpy(selfile, currentpwd);
-          if (!check_last_char(selfile, "/")){
-            strcat(selfile, "/");
+          if ( CheckMarked(ob) ) {
+            topLineMessage("Multi file rename coming soon");
+          } else {
+            strcpy(selfile, currentpwd);
+            if (!check_last_char(selfile, "/")){
+              strcat(selfile, "/");
+            }
+            strcat(selfile, ob[selected].name);
+            rename_file_input(selfile);
           }
-          strcat(selfile, ob[selected].name);
-          rename_file_input(selfile);
           break;
         case 's':
           strcpy(chpwd, currentpwd);
@@ -796,10 +900,35 @@ void directory_view_menu_inputs0()
           display_dir(currentpwd, ob, topfileref, selected);
           break;
         case 270: // F6
+          strcpy(selfile, currentpwd);
+          if (!check_last_char(selfile, "/")){
+            strcat(selfile, "/");
+          }
+          strcat(selfile, ob[selected].name);
+          if (!check_dir(selfile)){
+            if ( *ob[selected].marked ){
+              *ob[selected].marked = 0;
+              clear_workspace();
+            } else {
+              *ob[selected].marked = 1;
+            }
+            display_dir(currentpwd, ob, topfileref, selected);
+          }
           break;
         case 271: // F7
+          markall = 1;
+          ob = get_dir(currentpwd);
+          markall = 0; // Leaving this set as 1 keeps things marked even after refresh. This is bad
+          clear_workspace();
+          reorder_ob(ob, sortmode);
+          display_dir(currentpwd, ob, topfileref, selected);
           break;
         case 272: // F8
+          markall = 0;
+          ob = get_dir(currentpwd);
+          clear_workspace();
+          reorder_ob(ob, sortmode);
+          display_dir(currentpwd, ob, topfileref, selected);
           break;
         case 273: // F9
           sort_view();

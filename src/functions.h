@@ -1,4 +1,5 @@
 typedef struct {
+  int marked[1];
   char perm[11];
   int hlink[4];
   int hlinklens[5];
@@ -42,3 +43,4 @@ void CheckEnv(const char* key);
 void LaunchShell();
 int UpdateOwnerGroup(const char* object, const char* pwdstr, const char* grpstr);
 int RenameObject(const char* source, const char* dest);
+int CheckMarked(results* ob);
