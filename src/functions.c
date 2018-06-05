@@ -12,6 +12,7 @@
 #include <unistd.h>
 #include <time.h>
 #include <sys/statvfs.h>
+#include <libgen.h>
 #include "functions.h"
 #include "views.h"
 #include "menus.h"
@@ -160,6 +161,14 @@ void copy_file(char *source_input, char *target_input)
   FILE *source, *target;
 
   source = fopen(source_input, "r");
+
+
+  if ( check_dir(target_input) ){
+    if ( !check_last_char(target_input, "/")){
+      strcat(target_input, "/");
+    }
+    strcat(target_input, basename(source_input));
+  }
   target = fopen(target_input, "w");
 
   while( ( ch = fgetc(source) ) != EOF )
