@@ -12,6 +12,7 @@
 #include <unistd.h>
 #include <time.h>
 #include <sys/statvfs.h>
+#include <libgen.h>
 #include "functions.h"
 #include "views.h"
 #include "menus.h"
@@ -157,10 +158,21 @@ void mk_dir(char *path)
 void copy_file(char *source_input, char *target_input)
 {
   char ch;
+  char targetmod[1024];
   FILE *source, *target;
 
+  strcpy(targetmod, target_input);
+
   source = fopen(source_input, "r");
-  target = fopen(target_input, "w");
+
+
+  if ( check_dir(targetmod) ){
+    if ( !check_last_char(targetmod, "/")){
+      strcat(targetmod, "/");
+    }
+    strcat(targetmod, basename(source_input));
+  }
+  target = fopen(targetmod, "w");
 
   while( ( ch = fgetc(source) ) != EOF )
     fputc(ch, target);
