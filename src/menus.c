@@ -227,6 +227,40 @@ void copy_file_input(char *file)
   directory_view_menu_inputs0();
 }
 
+void copy_multi_file_input(results* ob, char *input)
+{
+  int i;
+
+  char dest[1024];
+  move(0,0);
+  clrtoeol();
+  mvprintw(0, 0, "Copy multiple files to:");
+  curs_set(TRUE);
+  move(0, 24);
+  readline(dest, 1024, input);
+  curs_set(FALSE);
+  // Some actions
+
+  if ( check_dir(dest) ){
+    for (i = 0; i < totalfilecount; i++)
+      {
+        if ( *ob[i].marked )
+          {
+            strcpy(selfile, currentpwd);
+            if (!check_last_char(selfile, "/")){
+              strcat(selfile, "/");
+            }
+            strcat(selfile, ob[i].name);
+            copy_file(selfile, dest);
+          }
+      }
+  } else {
+    topLineMessage("Error: Directory Not Found.");
+  }
+  directory_top_menu();
+  directory_view_menu_inputs0();
+}
+
 void edit_file_input()
 {
   char filepath[1024];
@@ -693,7 +727,8 @@ void directory_view_menu_inputs0()
         {
         case 'c':
           if ( CheckMarked(ob) ) {
-            topLineMessage("Multi file copy coming soon");
+            copy_multi_file_input(ob, currentpwd);
+            //topLineMessage("Multi file copy coming soon");
           } else {
             strcpy(selfile, currentpwd);
             if (!check_last_char(selfile, "/")){
@@ -707,7 +742,6 @@ void directory_view_menu_inputs0()
           break;
         case 'd':
           if ( CheckMarked(ob) ) {
-            //topLineMessage("Multi file delete coming soon");
             delete_multi_file_confirm_input(ob);
             ob = get_dir(currentpwd);
             clear_workspace();

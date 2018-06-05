@@ -158,18 +158,21 @@ void mk_dir(char *path)
 void copy_file(char *source_input, char *target_input)
 {
   char ch;
+  char targetmod[1024];
   FILE *source, *target;
+
+  strcpy(targetmod, target_input);
 
   source = fopen(source_input, "r");
 
 
-  if ( check_dir(target_input) ){
-    if ( !check_last_char(target_input, "/")){
-      strcat(target_input, "/");
+  if ( check_dir(targetmod) ){
+    if ( !check_last_char(targetmod, "/")){
+      strcat(targetmod, "/");
     }
-    strcat(target_input, basename(source_input));
+    strcat(targetmod, basename(source_input));
   }
-  target = fopen(target_input, "w");
+  target = fopen(targetmod, "w");
 
   while( ( ch = fgetc(source) ) != EOF )
     fputc(ch, target);
