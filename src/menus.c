@@ -25,6 +25,7 @@ char ownerinput[256];
 char groupinput[256];
 char uids[24];
 char gids[24];
+char errmessage[256];
 
 int s;
 char *buf;
@@ -545,9 +546,11 @@ void modify_group_input()
   free(buf);
   if (gresult == NULL){
     if (s == 0){
-      move(0,0);
-      clrtoeol();
-      mvprintw(0,0,"Invalid group: %s", groupinput);
+      sprintf(errmessage, "Invalid group: %s", groupinput);
+      topLineMessage(errmessage);
+      // move(0,0);
+      // clrtoeol();
+      // mvprintw(0,0,"Invalid group: %s", groupinput);
     }
   } else {
     sprintf(gids, "%d", gresult->gr_gid);
@@ -559,9 +562,11 @@ void modify_group_input()
     strcat(ofile, ob[selected].name);
 
     if (UpdateOwnerGroup(ofile, uids, gids) == -1) {
-      move(0,0);
-      clrtoeol();
-      mvprintw(0,0,"Error: %s", strerror(errno));
+      sprintf(errmessage, "Error: %s", strerror(errno));
+      topLineMessage(errmessage);
+      // move(0,0);
+      // clrtoeol();
+      // mvprintw(0,0,"Error: %s", strerror(errno));
     } else{
       ob = get_dir(currentpwd);
       clear_workspace();
@@ -604,9 +609,11 @@ void modify_owner_input()
   free(buf);
   if (presult == NULL){
     if (s == 0){
-      move(0,0);
-      clrtoeol();
-      mvprintw(0,0,"Invalid user: %s", ownerinput);
+      sprintf(errmessage, "Invalid user: %s", ownerinput);
+      topLineMessage(errmessage);
+      // move(0,0);
+      // clrtoeol();
+      // mvprintw(0,0,"Invalid user: %s", ownerinput);
     }
   } else {
     sprintf(uids, "%d", presult->pw_uid);
@@ -1025,7 +1032,9 @@ void directory_change_menu_inputs()
 void topLineMessage(const char *message){
   move(0,0);
   clrtoeol();
+  attron(A_BOLD);
   mvprintw(0,0, "%s", message);
+  attroff(A_BOLD);
   while(1)
     {
       *pc = getch();
