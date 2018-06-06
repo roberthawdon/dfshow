@@ -25,6 +25,7 @@ char ownerinput[256];
 char groupinput[256];
 char uids[24];
 char gids[24];
+char errmessage[256];
 
 int s;
 char *buf;
@@ -207,6 +208,44 @@ void show_directory_input()
   directory_view_menu_inputs0();
 }
 
+int replace_file_confirm_input()
+{
+  while(1)
+    {
+      *pc = getch();
+      switch(*pc)
+        {
+        case 'y':
+          return 1;
+          break;
+        default:
+          return 0;
+          break;
+        }
+    }
+}
+
+void replace_file_confirm(char *filename)
+{
+  size_t filenamelen;
+  filenamelen = strlen(filename);
+  move(0,0);
+  clrtoeol();
+  mvprintw(0,0, "Replace file [");
+  attron(A_BOLD);
+  mvprintw(0, 14, "%s", filename);
+  attroff(A_BOLD);
+  mvprintw(0, 14 + filenamelen, "]? (");
+  attron(A_BOLD);
+  mvprintw(0, 14 + filenamelen + 4, "Y");
+  attroff(A_BOLD);
+  mvprintw(0, 14 + filenamelen + 5, "es/");
+  attron(A_BOLD);
+  mvprintw(0, 14 + filenamelen + 8, "N");
+  attroff(A_BOLD);
+  mvprintw(0, 14 + filenamelen + 9, "o)");
+}
+
 void copy_file_input(char *file)
 {
   char newfile[1024];
@@ -216,12 +255,25 @@ void copy_file_input(char *file)
   curs_set(TRUE);
   move(0,14);
   readline(newfile, 1024, file);
-  copy_file(file, newfile);
   curs_set(FALSE);
-  ob = get_dir(currentpwd);
-  clear_workspace();
-  reorder_ob(ob, sortmode);
-  display_dir(currentpwd, ob, 0, selected);
+  if ( check_file(newfile) )
+    {
+      replace_file_confirm(newfile);
+      if ( replace_file_confirm_input() )
+        {
+          copy_file(file, newfile);
+          ob = get_dir(currentpwd);
+          clear_workspace();
+          reorder_ob(ob, sortmode);
+          display_dir(currentpwd, ob, 0, selected);
+        }
+    } else {
+    copy_file(file, newfile);
+    ob = get_dir(currentpwd);
+    clear_workspace();
+    reorder_ob(ob, sortmode);
+    display_dir(currentpwd, ob, 0, selected);
+    }
   directory_top_menu();
   function_key_menu();
   directory_view_menu_inputs0();
@@ -232,6 +284,7 @@ void copy_multi_file_input(results* ob, char *input)
   int i;
 
   char dest[1024];
+  char destfile[1024];
   move(0,0);
   clrtoeol();
   mvprintw(0, 0, "Copy multiple files to:");
@@ -251,7 +304,21 @@ void copy_multi_file_input(results* ob, char *input)
               strcat(selfile, "/");
             }
             strcat(selfile, ob[i].name);
-            copy_file(selfile, dest);
+            strcpy(destfile, dest);
+            if (!check_last_char(destfile, "/")){
+              strcat(destfile, "/");
+            }
+            strcat(destfile, ob[i].name);
+            if ( check_file(destfile) )
+              {
+                replace_file_confirm(destfile);
+                if ( replace_file_confirm_input() )
+                  {
+                    copy_file(selfile, dest);
+                  }
+              } else {
+              copy_file(selfile, dest);
+            }
           }
       }
   } else {
@@ -545,9 +612,11 @@ void modify_group_input()
   free(buf);
   if (gresult == NULL){
     if (s == 0){
-      move(0,0);
-      clrtoeol();
-      mvprintw(0,0,"Invalid group: %s", groupinput);
+      sprintf(errmessage, "Invalid group: %s", groupinput);
+      topLineMessage(errmessage);
+      // move(0,0);
+      // clrtoeol();
+      // mvprintw(0,0,"Invalid group: %s", groupinput);
     }
   } else {
     sprintf(gids, "%d", gresult->gr_gid);
@@ -559,9 +628,11 @@ void modify_group_input()
     strcat(ofile, ob[selected].name);
 
     if (UpdateOwnerGroup(ofile, uids, gids) == -1) {
-      move(0,0);
-      clrtoeol();
-      mvprintw(0,0,"Error: %s", strerror(errno));
+      sprintf(errmessage, "Error: %s", strerror(errno));
+      topLineMessage(errmessage);
+      // move(0,0);
+      // clrtoeol();
+      // mvprintw(0,0,"Error: %s", strerror(errno));
     } else{
       ob = get_dir(currentpwd);
       clear_workspace();
@@ -604,9 +675,11 @@ void modify_owner_input()
   free(buf);
   if (presult == NULL){
     if (s == 0){
-      move(0,0);
-      clrtoeol();
-      mvprintw(0,0,"Invalid user: %s", ownerinput);
+      sprintf(errmessage, "Invalid user: %s", ownerinput);
+      topLineMessage(errmessage);
+      // move(0,0);
+      // clrtoeol();
+      // mvprintw(0,0,"Invalid user: %s", ownerinput);
     }
   } else {
     sprintf(uids, "%d", presult->pw_uid);
@@ -1025,7 +1098,9 @@ void directory_change_menu_inputs()
 void topLineMessage(const char *message){
   move(0,0);
   clrtoeol();
+  attron(A_BOLD);
   mvprintw(0,0, "%s", message);
+  attroff(A_BOLD);
   while(1)
     {
       *pc = getch();
