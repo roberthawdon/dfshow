@@ -13,6 +13,8 @@ void directory_view_menu_inputs1();
 void directory_change_menu_inputs();
 void show_directory_inputs();
 void copy_file_input(char *file);
+void replace_file_confirm(char *filename);
+int replace_file_confirm_input();
 void rename_file_input(char *file);
 void edit_file_input();
 void make_directory_input();

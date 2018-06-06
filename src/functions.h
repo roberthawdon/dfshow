@@ -20,6 +20,7 @@ typedef struct {
 void readline(char *buffer, int buflen, char *oldbuf);
 char * dirFromPath (const char* myStr);
 int check_dir(char *pwd);
+int check_file(char *file);
 void mk_dir(char *path);
 void copy_file(char *source_input, char *target_input);
 void delete_file(char *source_input);

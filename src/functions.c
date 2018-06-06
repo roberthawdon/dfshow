@@ -118,6 +118,14 @@ void readline(char *buffer, int buflen, char *oldbuf)
   if (old_curs != ERR) curs_set(old_curs);
 }
 
+int check_file(char *file){
+  if( access( file, F_OK ) != -1 ) {
+    return 1;
+  } else {
+    return 0;
+  }
+}
+
 char * dirFromPath (const char* myStr){
 
   char *outStr = (char *) malloc(sizeof(myStr));

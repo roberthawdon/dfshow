@@ -208,6 +208,44 @@ void show_directory_input()
   directory_view_menu_inputs0();
 }
 
+int replace_file_confirm_input()
+{
+  while(1)
+    {
+      *pc = getch();
+      switch(*pc)
+        {
+        case 'y':
+          return 1;
+          break;
+        default:
+          return 0;
+          break;
+        }
+    }
+}
+
+void replace_file_confirm(char *filename)
+{
+  size_t filenamelen;
+  filenamelen = strlen(filename);
+  move(0,0);
+  clrtoeol();
+  mvprintw(0,0, "Replace file [");
+  attron(A_BOLD);
+  mvprintw(0, 14, "%s", filename);
+  attroff(A_BOLD);
+  mvprintw(0, 14 + filenamelen, "]? (");
+  attron(A_BOLD);
+  mvprintw(0, 14 + filenamelen + 4, "Y");
+  attroff(A_BOLD);
+  mvprintw(0, 14 + filenamelen + 5, "es/");
+  attron(A_BOLD);
+  mvprintw(0, 14 + filenamelen + 8, "N");
+  attroff(A_BOLD);
+  mvprintw(0, 14 + filenamelen + 9, "o)");
+}
+
 void copy_file_input(char *file)
 {
   char newfile[1024];
@@ -217,12 +255,25 @@ void copy_file_input(char *file)
   curs_set(TRUE);
   move(0,14);
   readline(newfile, 1024, file);
-  copy_file(file, newfile);
   curs_set(FALSE);
-  ob = get_dir(currentpwd);
-  clear_workspace();
-  reorder_ob(ob, sortmode);
-  display_dir(currentpwd, ob, 0, selected);
+  if ( check_file(newfile) )
+    {
+      replace_file_confirm(newfile);
+      if ( replace_file_confirm_input() )
+        {
+          copy_file(file, newfile);
+          ob = get_dir(currentpwd);
+          clear_workspace();
+          reorder_ob(ob, sortmode);
+          display_dir(currentpwd, ob, 0, selected);
+        }
+    } else {
+    copy_file(file, newfile);
+    ob = get_dir(currentpwd);
+    clear_workspace();
+    reorder_ob(ob, sortmode);
+    display_dir(currentpwd, ob, 0, selected);
+    }
   directory_top_menu();
   function_key_menu();
   directory_view_menu_inputs0();
@@ -233,6 +284,7 @@ void copy_multi_file_input(results* ob, char *input)
   int i;
 
   char dest[1024];
+  char destfile[1024];
   move(0,0);
   clrtoeol();
   mvprintw(0, 0, "Copy multiple files to:");
@@ -252,7 +304,21 @@ void copy_multi_file_input(results* ob, char *input)
               strcat(selfile, "/");
             }
             strcat(selfile, ob[i].name);
-            copy_file(selfile, dest);
+            strcpy(destfile, dest);
+            if (!check_last_char(destfile, "/")){
+              strcat(destfile, "/");
+            }
+            strcat(destfile, ob[i].name);
+            if ( check_file(destfile) )
+              {
+                replace_file_confirm(destfile);
+                if ( replace_file_confirm_input() )
+                  {
+                    copy_file(selfile, dest);
+                  }
+              } else {
+              copy_file(selfile, dest);
+            }
           }
       }
   } else {
