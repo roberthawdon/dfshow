@@ -248,6 +248,7 @@ void replace_file_confirm(char *filename)
 
 void copy_file_input(char *file)
 {
+  // YUCK, repetition, this needs sorting
   char newfile[1024];
   move(0,0);
   clrtoeol();
@@ -343,6 +344,7 @@ void edit_file_input()
 
 void rename_file_input(char *file)
 {
+  // YUCK, repetition, this needs sorting
   char dest[1024];
   move(0,0);
   clrtoeol();
@@ -354,12 +356,24 @@ void rename_file_input(char *file)
   move(0,16);
   readline(dest, 1024, file);
   curs_set(FALSE);
-  RenameObject(file, dest);
-
-  ob = get_dir(currentpwd);
-  clear_workspace();
-  reorder_ob(ob, sortmode);
-  display_dir(currentpwd, ob, 0, selected);
+  if ( check_file(dest) )
+    {
+      replace_file_confirm(dest);
+      if ( replace_file_confirm_input() )
+        {
+          RenameObject(file, dest);
+          ob = get_dir(currentpwd);
+          clear_workspace();
+          reorder_ob(ob, sortmode);
+          display_dir(currentpwd, ob, 0, selected);
+        }
+    } else {
+    RenameObject(file, dest);
+    ob = get_dir(currentpwd);
+    clear_workspace();
+    reorder_ob(ob, sortmode);
+    display_dir(currentpwd, ob, 0, selected);
+  }
   directory_top_menu();
   function_key_menu();
   directory_view_menu_inputs0();
