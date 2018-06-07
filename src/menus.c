@@ -7,6 +7,7 @@
 #include <pwd.h>
 #include <grp.h>
 #include <errno.h>
+#include <libgen.h>
 #include "functions.h"
 #include "main.h"
 #include "views.h"
@@ -248,6 +249,7 @@ void replace_file_confirm(char *filename)
 
 void copy_file_input(char *file)
 {
+  // YUCK, repetition, this needs sorting
   char newfile[1024];
   move(0,0);
   clrtoeol();
@@ -328,6 +330,58 @@ void copy_multi_file_input(results* ob, char *input)
   directory_view_menu_inputs0();
 }
 
+void rename_multi_file_input(results* ob, char *input)
+{
+  int i;
+
+  char dest[1024];
+  char destfile[1024];
+  move(0,0);
+  clrtoeol();
+  mvprintw(0, 0, "Rename multiple files to:");
+  curs_set(TRUE);
+  move(0, 26);
+  readline(dest, 1024, input);
+  curs_set(FALSE);
+
+  if ( check_dir(dest) ){
+    for (i = 0; i < totalfilecount; i++)
+      {
+        if ( *ob[i].marked )
+          {
+            strcpy(selfile, currentpwd);
+            if (!check_last_char(selfile, "/")){
+              strcat(selfile, "/");
+            }
+            strcat(selfile, ob[i].name);
+            strcpy(destfile, dest);
+            if (!check_last_char(destfile, "/")){
+              strcat(destfile, "/");
+            }
+            strcat(destfile, ob[i].name);
+            if ( check_file(destfile) )
+              {
+                replace_file_confirm(destfile);
+                if ( replace_file_confirm_input() )
+                  {
+                    RenameObject(selfile, destfile);
+                  }
+              } else {
+              RenameObject(selfile, destfile);
+            }
+          }
+      }
+  } else {
+    topLineMessage("Error: Directory Not Found.");
+  }
+  ob = get_dir(currentpwd);
+  clear_workspace();
+  reorder_ob(ob, sortmode);
+  display_dir(currentpwd, ob, 0, selected);
+  directory_top_menu();
+  directory_view_menu_inputs0();
+}
+
 void edit_file_input()
 {
   char filepath[1024];
@@ -343,23 +397,33 @@ void edit_file_input()
 
 void rename_file_input(char *file)
 {
+  // YUCK, repetition, this needs sorting
   char dest[1024];
   move(0,0);
   clrtoeol();
   mvprintw(0, 0, "Rename file to:");
-  // attron(COLOR_PAIR(3));
-  // mvprintw(0, 16, "%s", file); // Placeholder
-  // attron(COLOR_PAIR(1));
   curs_set(TRUE);
   move(0,16);
   readline(dest, 1024, file);
   curs_set(FALSE);
-  RenameObject(file, dest);
-
-  ob = get_dir(currentpwd);
-  clear_workspace();
-  reorder_ob(ob, sortmode);
-  display_dir(currentpwd, ob, 0, selected);
+  if ( check_file(dest) )
+    {
+      replace_file_confirm(dest);
+      if ( replace_file_confirm_input() )
+        {
+          RenameObject(file, dest);
+          ob = get_dir(currentpwd);
+          clear_workspace();
+          reorder_ob(ob, sortmode);
+          display_dir(currentpwd, ob, 0, selected);
+        }
+    } else {
+    RenameObject(file, dest);
+    ob = get_dir(currentpwd);
+    clear_workspace();
+    reorder_ob(ob, sortmode);
+    display_dir(currentpwd, ob, 0, selected);
+  }
   directory_top_menu();
   function_key_menu();
   directory_view_menu_inputs0();
@@ -893,7 +957,8 @@ void directory_view_menu_inputs0()
           break;
         case'r':
           if ( CheckMarked(ob) ) {
-            topLineMessage("Multi file rename coming soon");
+            rename_multi_file_input(ob, currentpwd);
+            // topLineMessage("Multi file rename coming soon");
           } else {
             strcpy(selfile, currentpwd);
             if (!check_last_char(selfile, "/")){

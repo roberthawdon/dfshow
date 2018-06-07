@@ -43,5 +43,5 @@ void SendToEditor(const char* object);
 void CheckEnv(const char* key);
 void LaunchShell();
 int UpdateOwnerGroup(const char* object, const char* pwdstr, const char* grpstr);
-int RenameObject(const char* source, const char* dest);
+int RenameObject(char* source, char* dest);
 int CheckMarked(results* ob);
