@@ -651,6 +651,7 @@ void modify_group_input()
   struct group *gresult;
   size_t bufsize;
   char errortxt[256];
+  int i;
 
   move(0,0);
   clrtoeol();
@@ -678,34 +679,43 @@ void modify_group_input()
     if (s == 0){
       sprintf(errmessage, "Invalid group: %s", groupinput);
       topLineMessage(errmessage);
-      // move(0,0);
-      // clrtoeol();
-      // mvprintw(0,0,"Invalid group: %s", groupinput);
     }
   } else {
     sprintf(gids, "%d", gresult->gr_gid);
 
-    strcpy(ofile, currentpwd);
-    if (!check_last_char(ofile, "/")){
-      strcat(ofile, "/");
-    }
-    strcat(ofile, ob[selected].name);
+    if ( CheckMarked(ob) ){
+      //topLineMessage("Multi file owner coming soon");
+      for (i = 0; i < totalfilecount; i++)
+        {
+          if ( *ob[i].marked )
+            {
+              strcpy(ofile, currentpwd);
+              if (!check_last_char(ofile, "/")){
+                strcat(ofile, "/");
+              }
+              strcat(ofile, ob[i].name);
+              UpdateOwnerGroup(ofile, uids, gids);
+            }
+        }
+    } else {
+      strcpy(ofile, currentpwd);
+      if (!check_last_char(ofile, "/")){
+        strcat(ofile, "/");
+      }
+      strcat(ofile, ob[selected].name);
 
-    if (UpdateOwnerGroup(ofile, uids, gids) == -1) {
-      sprintf(errmessage, "Error: %s", strerror(errno));
-      topLineMessage(errmessage);
-      // move(0,0);
-      // clrtoeol();
-      // mvprintw(0,0,"Error: %s", strerror(errno));
-    } else{
-      ob = get_dir(currentpwd);
-      clear_workspace();
-      reorder_ob(ob, sortmode);
-      display_dir(currentpwd, ob, topfileref, selected);
-
-      directory_top_menu();
-      directory_view_menu_inputs0();
+      if (UpdateOwnerGroup(ofile, uids, gids) == -1) {
+        sprintf(errmessage, "Error: %s", strerror(errno));
+        topLineMessage(errmessage);
+      }
     }
+    ob = get_dir(currentpwd);
+    clear_workspace();
+    reorder_ob(ob, sortmode);
+    display_dir(currentpwd, ob, topfileref, selected);
+
+    directory_top_menu();
+    directory_view_menu_inputs0();
   }
 }
 
@@ -741,25 +751,16 @@ void modify_owner_input()
     if (s == 0){
       sprintf(errmessage, "Invalid user: %s", ownerinput);
       topLineMessage(errmessage);
-      // move(0,0);
-      // clrtoeol();
-      // mvprintw(0,0,"Invalid user: %s", ownerinput);
     }
   } else {
     sprintf(uids, "%d", presult->pw_uid);
     modify_group_input();
   }
-
-  // if (strcmp(ownerinput,"")){
-  // } else {
-  //   directory_top_menu();
-  //   directory_view_menu_inputs0();
-  // }
 }
 
 void modify_permissions_input()
 {
-  int newperm;
+  int newperm, i;
   char perms[4];
   char *ptr;
   char pfile[1024];
@@ -773,14 +774,28 @@ void modify_permissions_input()
 
   newperm = strtol(perms, &ptr, 8); // Convert string to Octal and then store it as an int. Yay, numbers.
 
-  strcpy(pfile, currentpwd);
-  if (!check_last_char(pfile, "/")){
-    strcat(pfile, "/");
+  if ( CheckMarked(ob) ) {
+    //topLineMessage("Multi file permissions coming soon");
+    for (i = 0; i < totalfilecount; i++)
+      {
+        if ( *ob[i].marked )
+          {
+            strcpy(pfile, currentpwd);
+            if (!check_last_char(pfile, "/")){
+              strcat(pfile, "/");
+            }
+            strcat(pfile, ob[i].name);
+            chmod(pfile, newperm);
+          }
+      }
+  } else {
+    strcpy(pfile, currentpwd);
+    if (!check_last_char(pfile, "/")){
+      strcat(pfile, "/");
+    }
+    strcat(pfile, ob[selected].name);
+    chmod(pfile, newperm);
   }
-  strcat(pfile, ob[selected].name);
-  chmod(pfile, newperm);
-
-
   ob = get_dir(currentpwd);
   clear_workspace();
   reorder_ob(ob, sortmode);
@@ -865,7 +880,6 @@ void directory_view_menu_inputs0()
         case 'c':
           if ( CheckMarked(ob) ) {
             copy_multi_file_input(ob, currentpwd);
-            //topLineMessage("Multi file copy coming soon");
           } else {
             strcpy(selfile, currentpwd);
             if (!check_last_char(selfile, "/")){
@@ -904,8 +918,6 @@ void directory_view_menu_inputs0()
             strcat(chpwd, "/");
           }
           strcat(chpwd, ob[selected].name);
-          //mvprintw(0, 66, "%s", chpwd);
-          //break;
           if (!check_dir(chpwd)){
             SendToEditor(chpwd);
             directory_top_menu();
@@ -928,12 +940,8 @@ void directory_view_menu_inputs0()
           display_dir(currentpwd, ob, topfileref, selected);
           break;
         case 'm':
-          if ( CheckMarked(ob) ) {
-            topLineMessage("Multi file modify coming soon");
-          } else {
-            modify_key_menu();
-            modify_key_menu_inputs();
-          }
+          modify_key_menu();
+          modify_key_menu_inputs();
           break;
         case 'q':
           if (historyref > 1){
@@ -958,7 +966,6 @@ void directory_view_menu_inputs0()
         case'r':
           if ( CheckMarked(ob) ) {
             rename_multi_file_input(ob, currentpwd);
-            // topLineMessage("Multi file rename coming soon");
           } else {
             strcpy(selfile, currentpwd);
             if (!check_last_char(selfile, "/")){
@@ -974,8 +981,6 @@ void directory_view_menu_inputs0()
             strcat(chpwd, "/");
           }
           strcat(chpwd, ob[selected].name);
-          //mvprintw(0, 66, "%s", chpwd);
-          //break;
           if (check_dir(chpwd)){
             set_history(chpwd, topfileref, selected);
             topfileref = 0;
@@ -1118,9 +1123,6 @@ void directory_view_menu_inputs0()
           //     mvprintw(LINES-2, 1, "Character pressed is = %3d Hopefully it can be printed as '%c'", c, c);
           //     refresh();
         }
-      //mvprintw(LINES-3, 1, "%i",totalfilecount);
-      //mvprintw(LINES-2, 1, "%i",selected);
-      //refresh();
     }
 }
 void directory_change_menu_inputs()
