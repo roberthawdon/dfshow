@@ -8,7 +8,12 @@
 #include "vars.h"
 
 results *ob;
+
 extern int topfileref;
+
+extern char fileMenuText[256];
+extern char globalMenuText[256];
+extern char functionMenuText[256];
 
 int directory_view(char * currentpwd)
 {
@@ -16,14 +21,18 @@ int directory_view(char * currentpwd)
   clear();
   attron(COLOR_PAIR(1));
 
-  directory_top_menu();
+  // directory_top_menu();
+
+  printMenu(0, 0, fileMenuText);
 
   set_history(currentpwd, 0, 0);
   ob = get_dir(currentpwd);
   reorder_ob(ob, "name");
   display_dir(currentpwd, ob, topfileref, 0);
 
-  function_key_menu();
+  // function_key_menu();
+
+  printMenu(LINES-1, 0, functionMenuText);
 
   refresh();
 
@@ -45,7 +54,7 @@ int quit_menu()
 {
   clear();
 
-  directory_change_menu();
+  printMenu(0, 0, globalMenuText);
 
   refresh();
 
