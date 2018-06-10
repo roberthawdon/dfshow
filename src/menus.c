@@ -47,6 +47,7 @@ extern char fileMenuText[256];
 extern char globalMenuText[256];
 extern char functionMenuText[256];
 extern char modifyMenuText[256];
+extern char sortMenuText[256];
 
 //char testMenu[256];
 
@@ -134,23 +135,9 @@ int replace_file_confirm_input()
 
 void replace_file_confirm(char *filename)
 {
-  size_t filenamelen;
-  filenamelen = strlen(filename);
-  move(0,0);
-  clrtoeol();
-  mvprintw(0,0, "Replace file [");
-  attron(A_BOLD);
-  mvprintw(0, 14, "%s", filename);
-  attroff(A_BOLD);
-  mvprintw(0, 14 + filenamelen, "]? (");
-  attron(A_BOLD);
-  mvprintw(0, 14 + filenamelen + 4, "Y");
-  attroff(A_BOLD);
-  mvprintw(0, 14 + filenamelen + 5, "es/");
-  attron(A_BOLD);
-  mvprintw(0, 14 + filenamelen + 8, "N");
-  attroff(A_BOLD);
-  mvprintw(0, 14 + filenamelen + 9, "o)");
+  char message[1024];
+  sprintf(message, "Replace file [<%s>]? (!Yes/!No)", filename);
+  printMenu(0,0, message);
 }
 
 void copy_file_input(char *file)
@@ -358,67 +345,11 @@ void make_directory_input()
   directory_view_menu_inputs0();
 }
 
-void delete_file_confirm()
-{
-  move(0,0);
-  clrtoeol();
-  mvprintw(0,0, "Delete file? (");
-  attron(A_BOLD);
-  mvprintw(0, 14, "Y");
-  attroff(A_BOLD);
-  mvprintw(0, 15, "es/");
-  attron(A_BOLD);
-  mvprintw(0, 18, "N");
-  attroff(A_BOLD);
-  mvprintw(0, 19, "o)");
-}
-
 void delete_multi_file_confirm(const char *filename)
 {
-  size_t filenamelen;
-  filenamelen = strlen(filename);
-  move(0,0);
-  clrtoeol();
-  mvprintw(0,0, "Delete file [");
-  attron(A_BOLD);
-  mvprintw(0, 13, "%s", filename);
-  attroff(A_BOLD);
-  mvprintw(0, 13 + filenamelen, "]? (");
-  attron(A_BOLD);
-  mvprintw(0, 13 + filenamelen + 4, "Y");
-  attroff(A_BOLD);
-  mvprintw(0, 13 + filenamelen + 5, "es/");
-  attron(A_BOLD);
-  mvprintw(0, 13 + filenamelen + 8, "N");
-  attroff(A_BOLD);
-  mvprintw(0, 13 + filenamelen + 9, "o/");
-  attron(A_BOLD);
-  mvprintw(0, 13 + filenamelen + 11, "A");
-  attroff(A_BOLD);
-  mvprintw(0, 13 + filenamelen + 12, "ll/");
-  attron(A_BOLD);
-  mvprintw(0, 13 + filenamelen + 15, "S");
-  attroff(A_BOLD);
-  mvprintw(0, 13 + filenamelen + 16, "top)");
-}
-
-void sort_view()
-{
-  move(0, 0);
-  clrtoeol();
-  mvprintw(0, 0, "Sort list by -");
-  attron(A_BOLD);
-  mvprintw(0, 15, "D");
-  attroff(A_BOLD);
-  mvprintw(0, 16, "ate & time,");
-  attron(A_BOLD);
-  mvprintw(0, 28, "N");
-  attroff(A_BOLD);
-  mvprintw(0, 29, "ame,");
-  attron(A_BOLD);
-  mvprintw(0, 34, "S");
-  attroff(A_BOLD);
-  mvprintw(0, 35, "ize");
+  char message[1024];
+  sprintf(message,"Delete file [<%s>]? (!Yes/!No/!All/!Stop)", filename);
+  printMenu(0,0, message);
 }
 
 void delete_file_confirm_input(char *file)
@@ -813,7 +744,7 @@ void directory_view_menu_inputs0()
             }
             strcat(selfile, ob[selected].name);
             if (!check_dir(selfile)){
-              delete_file_confirm();
+              printMenu(0,0, "Delete file? (!Yes/!No)");
               delete_file_confirm_input(selfile);
             }
           }
@@ -1014,7 +945,7 @@ void directory_view_menu_inputs0()
           display_dir(currentpwd, ob, topfileref, selected);
           break;
         case 273: // F9
-          sort_view();
+          printMenu(0, 0, sortMenuText);
           sort_view_inputs();
           break;
         case 262: // Home
