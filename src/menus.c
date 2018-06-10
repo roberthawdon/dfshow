@@ -760,7 +760,7 @@ void modify_owner_input()
 
 void modify_permissions_input()
 {
-  int newperm;
+  int newperm, i;
   char perms[4];
   char *ptr;
   char pfile[1024];
@@ -774,14 +774,28 @@ void modify_permissions_input()
 
   newperm = strtol(perms, &ptr, 8); // Convert string to Octal and then store it as an int. Yay, numbers.
 
-  strcpy(pfile, currentpwd);
-  if (!check_last_char(pfile, "/")){
-    strcat(pfile, "/");
+  if ( CheckMarked(ob) ) {
+    //topLineMessage("Multi file permissions coming soon");
+    for (i = 0; i < totalfilecount; i++)
+      {
+        if ( *ob[i].marked )
+          {
+            strcpy(pfile, currentpwd);
+            if (!check_last_char(pfile, "/")){
+              strcat(pfile, "/");
+            }
+            strcat(pfile, ob[i].name);
+            chmod(pfile, newperm);
+          }
+      }
+  } else {
+    strcpy(pfile, currentpwd);
+    if (!check_last_char(pfile, "/")){
+      strcat(pfile, "/");
+    }
+    strcat(pfile, ob[selected].name);
+    chmod(pfile, newperm);
   }
-  strcat(pfile, ob[selected].name);
-  chmod(pfile, newperm);
-
-
   ob = get_dir(currentpwd);
   clear_workspace();
   reorder_ob(ob, sortmode);
@@ -803,11 +817,7 @@ void modify_key_menu_inputs()
           modify_owner_input();
           break;
         case 'p':
-          if ( CheckMarked(ob) ) {
-            topLineMessage("Multi file permissions coming soon");
-          } else {
-            modify_permissions_input();
-          }
+          modify_permissions_input();
           break;
         case 27: // ESC Key
           directory_top_menu();
