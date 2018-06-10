@@ -651,6 +651,7 @@ void modify_group_input()
   struct group *gresult;
   size_t bufsize;
   char errortxt[256];
+  int i;
 
   move(0,0);
   clrtoeol();
@@ -682,24 +683,39 @@ void modify_group_input()
   } else {
     sprintf(gids, "%d", gresult->gr_gid);
 
-    strcpy(ofile, currentpwd);
-    if (!check_last_char(ofile, "/")){
-      strcat(ofile, "/");
-    }
-    strcat(ofile, ob[selected].name);
+    if ( CheckMarked(ob) ){
+      //topLineMessage("Multi file owner coming soon");
+      for (i = 0; i < totalfilecount; i++)
+        {
+          if ( *ob[i].marked )
+            {
+              strcpy(ofile, currentpwd);
+              if (!check_last_char(ofile, "/")){
+                strcat(ofile, "/");
+              }
+              strcat(ofile, ob[i].name);
+              UpdateOwnerGroup(ofile, uids, gids);
+            }
+        }
+    } else {
+      strcpy(ofile, currentpwd);
+      if (!check_last_char(ofile, "/")){
+        strcat(ofile, "/");
+      }
+      strcat(ofile, ob[selected].name);
 
-    if (UpdateOwnerGroup(ofile, uids, gids) == -1) {
-      sprintf(errmessage, "Error: %s", strerror(errno));
-      topLineMessage(errmessage);
-    } else{
-      ob = get_dir(currentpwd);
-      clear_workspace();
-      reorder_ob(ob, sortmode);
-      display_dir(currentpwd, ob, topfileref, selected);
-
-      directory_top_menu();
-      directory_view_menu_inputs0();
+      if (UpdateOwnerGroup(ofile, uids, gids) == -1) {
+        sprintf(errmessage, "Error: %s", strerror(errno));
+        topLineMessage(errmessage);
+      }
     }
+    ob = get_dir(currentpwd);
+    clear_workspace();
+    reorder_ob(ob, sortmode);
+    display_dir(currentpwd, ob, topfileref, selected);
+
+    directory_top_menu();
+    directory_view_menu_inputs0();
   }
 }
 
@@ -784,11 +800,7 @@ void modify_key_menu_inputs()
       switch(*pc)
         {
         case 'o':
-          if ( CheckMarked(ob) ) {
-            topLineMessage("Multi file owner coming soon");
-          } else {
-            modify_owner_input();
-          }
+          modify_owner_input();
           break;
         case 'p':
           if ( CheckMarked(ob) ) {
