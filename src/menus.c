@@ -43,139 +43,45 @@ extern int displaysize;
 extern int showhidden;
 extern int markall;
 
+extern char fileMenuText[256];
+extern char globalMenuText[256];
+extern char functionMenuText[256];
+extern char modifyMenuText[256];
+
+//char testMenu[256];
+
 void topLineMessage(const char *message);
 
-void directory_top_menu()
+void printMenu(int line, int col, char *menustring)
 {
-  move(0, 0);
+  int i, len, charcount;
+  charcount = 0;
+  move(line, col);
   clrtoeol();
-  attron(A_BOLD);
-  mvprintw(0, 0, "C");
-  attroff(A_BOLD);
-  mvprintw(0, 1, "opy,");
-  attron(A_BOLD);
-  mvprintw(0, 6, "M");
-  attroff(A_BOLD);
-  mvprintw(0, 7, "ove,");
-  attron(A_BOLD);
-  mvprintw(0, 6, "D");
-  attroff(A_BOLD);
-  mvprintw(0, 7, "elete,");
-  attron(A_BOLD);
-  mvprintw(0, 14, "E");
-  attroff(A_BOLD);
-  mvprintw(0, 15, "dit,");
-  attron(A_BOLD);
-  mvprintw(0, 20, "H");
-  attroff(A_BOLD);
-  mvprintw(0, 21, "idden,");
-  attron(A_BOLD);
-  mvprintw(0, 28, "M");
-  attroff(A_BOLD);
-  mvprintw(0, 29, "odify,");
-  attron(A_BOLD);
-  mvprintw(0, 36, "Q");
-  attroff(A_BOLD);
-  mvprintw(0, 37, "uit,");
-  attron(A_BOLD);
-  mvprintw(0, 42, "R");
-  attroff(A_BOLD);
-  mvprintw(0, 43, "ename,");
-  attron(A_BOLD);
-  mvprintw(0, 50, "S");
-  attroff(A_BOLD);
-  mvprintw(0, 51, "how");
-}
-
-void directory_change_menu()
-{
-  move(0, 0);
-  clrtoeol();
-  attron(A_BOLD);
-  mvprintw(0, 0, "C");
-  attroff(A_BOLD);
-  mvprintw(0, 1, "hange dir,");
-  attron(A_BOLD);
-  mvprintw(0, 12, "R");
-  attroff(A_BOLD);
-  mvprintw(0, 13, "un command,");
-  attron(A_BOLD);
-  mvprintw(0, 25, "E");
-  attroff(A_BOLD);
-  mvprintw(0, 26, "dit file,");
-  attron(A_BOLD);
-  mvprintw(0, 36, "H");
-  attroff(A_BOLD);
-  mvprintw(0, 37, "elp,");
-  attron(A_BOLD);
-  mvprintw(0, 42, "M");
-  attroff(A_BOLD);
-  mvprintw(0, 43, "ake dir,");
-  attron(A_BOLD);
-  mvprintw(0, 52, "Q");
-  attroff(A_BOLD);
-  mvprintw(0, 53, "uit,");
-  attron(A_BOLD);
-  mvprintw(0, 58, "S");
-  attroff(A_BOLD);
-  mvprintw(0, 59, "how dir");
-}
-
-void function_key_menu()
-{
-  move(LINES-1, 0);
-  clrtoeol();
-  attron(A_BOLD);
-  mvprintw(LINES-1, 0, "F1");
-  attroff(A_BOLD);
-  mvprintw(LINES-1, 2, "-Down");
-  attron(A_BOLD);
-  mvprintw(LINES-1, 8, "F2");
-  attroff(A_BOLD);
-  mvprintw(LINES-1, 10, "-Up");
-  attron(A_BOLD);
-  mvprintw(LINES-1, 14, "F3");
-  attroff(A_BOLD);
-  mvprintw(LINES-1, 16, "-Top");
-  attron(A_BOLD);
-  mvprintw(LINES-1, 21, "F4");
-  attroff(A_BOLD);
-  mvprintw(LINES-1, 23, "-Bottom");
-  attron(A_BOLD);
-  mvprintw(LINES-1, 31, "F5");
-  attroff(A_BOLD);
-  mvprintw(LINES-1, 33, "-Refresh");
-  attron(A_BOLD);
-  mvprintw(LINES-1, 42, "F6");
-  attroff(A_BOLD);
-  mvprintw(LINES-1, 44, "-Mark/Unmark");
-  attron(A_BOLD);
-  mvprintw(LINES-1, 57, "F7");
-  attroff(A_BOLD);
-  mvprintw(LINES-1, 59, "-All");
-  attron(A_BOLD);
-  mvprintw(LINES-1, 64, "F8");
-  attroff(A_BOLD);
-  mvprintw(LINES-1, 66, "-None");
-  attron(A_BOLD);
-  mvprintw(LINES-1, 72, "F9");
-  attroff(A_BOLD);
-  mvprintw(LINES-1, 74, "-Sort");
-}
-
-void modify_key_menu()
-{
-  move(0, 0);
-  clrtoeol();
-  mvprintw(0, 0, "Modify:");
-  attron(A_BOLD);
-  mvprintw(0, 8, "O");
-  attroff(A_BOLD);
-  mvprintw(0, 9, "wner/Group,");
-  attron(A_BOLD);
-  mvprintw(0, 21, "P");
-  attroff(A_BOLD);
-  mvprintw(0, 22, "ermissions");
+  len = strlen(menustring);
+  for (i = 0; i < len; i++)
+     {
+      if ( menustring[i] == '!' ) {
+          i++;
+          attron(A_BOLD);
+          mvprintw(line, col + charcount, "%c", menustring[i]);
+          attroff(A_BOLD);
+          charcount++;
+        } else if ( menustring[i] == '<' ) {
+          i++;
+          attron(A_BOLD);
+          mvprintw(line, col + charcount, "%c", menustring[i]);
+          charcount++;
+        } else if ( menustring[i] == '>' ) {
+          i++;
+          attroff(A_BOLD);
+          mvprintw(line, col + charcount, "%c", menustring[i]);
+          charcount++;
+        } else {
+          mvprintw(line, col + charcount, "%c", menustring[i]);
+          charcount++;
+        }
+    }
 }
 
 void directory_view_menu_inputs0(); // Needed to allow menu inputs to switch between each other
@@ -204,8 +110,8 @@ void show_directory_input()
   clear_workspace();
   reorder_ob(ob, sortmode);
   display_dir(currentpwd, ob, 0, selected);
-  directory_top_menu();
-  function_key_menu();
+  printMenu(0, 0, fileMenuText);
+  printMenu(LINES-1, 0, functionMenuText);
   directory_view_menu_inputs0();
 }
 
@@ -276,8 +182,8 @@ void copy_file_input(char *file)
     reorder_ob(ob, sortmode);
     display_dir(currentpwd, ob, 0, selected);
     }
-  directory_top_menu();
-  function_key_menu();
+  printMenu(0, 0, fileMenuText);
+  printMenu(LINES-1, 0, functionMenuText);
   directory_view_menu_inputs0();
 }
 
@@ -326,7 +232,7 @@ void copy_multi_file_input(results* ob, char *input)
   } else {
     topLineMessage("Error: Directory Not Found.");
   }
-  directory_top_menu();
+  printMenu(0, 0, fileMenuText);
   directory_view_menu_inputs0();
 }
 
@@ -378,7 +284,7 @@ void rename_multi_file_input(results* ob, char *input)
   clear_workspace();
   reorder_ob(ob, sortmode);
   display_dir(currentpwd, ob, 0, selected);
-  directory_top_menu();
+  printMenu(0, 0, fileMenuText);
   directory_view_menu_inputs0();
 }
 
@@ -424,8 +330,8 @@ void rename_file_input(char *file)
     reorder_ob(ob, sortmode);
     display_dir(currentpwd, ob, 0, selected);
   }
-  directory_top_menu();
-  function_key_menu();
+  printMenu(0, 0, fileMenuText);
+  printMenu(LINES-1, 0, functionMenuText);
   directory_view_menu_inputs0();
 }
 
@@ -447,8 +353,8 @@ void make_directory_input()
   clear_workspace();
   reorder_ob(ob, sortmode);
   display_dir(currentpwd, ob, 0, selected);
-  directory_top_menu();
-  function_key_menu();
+  printMenu(0, 0, fileMenuText);
+  printMenu(LINES-1, 0, functionMenuText);
   directory_view_menu_inputs0();
 }
 
@@ -530,7 +436,7 @@ void delete_file_confirm_input(char *file)
           display_dir(currentpwd, ob, topfileref, selected);
           // Not breaking here, intentionally dropping through to the default
         default:
-          directory_top_menu();
+          printMenu(0, 0, fileMenuText);
           directory_view_menu_inputs0();
           break;
         }
@@ -598,7 +504,7 @@ void sort_view_inputs()
           strcpy(sortmode, "name");
           reorder_ob(ob, sortmode);
           display_dir(currentpwd, ob, topfileref, selected);
-          directory_top_menu();
+          printMenu(0, 0, fileMenuText);
           directory_view_menu_inputs0();
           break;
         case 'd':
@@ -606,7 +512,7 @@ void sort_view_inputs()
           strcpy(sortmode, "date");
           reorder_ob(ob, sortmode);
           display_dir(currentpwd, ob, topfileref, selected);
-          directory_top_menu();
+          printMenu(0, 0, fileMenuText);
           directory_view_menu_inputs0();
           break;
         case 's':
@@ -614,11 +520,11 @@ void sort_view_inputs()
           strcpy(sortmode, "size");
           reorder_ob(ob, sortmode);
           display_dir(currentpwd, ob, topfileref, selected);
-          directory_top_menu();
+          printMenu(0, 0, fileMenuText);
           directory_view_menu_inputs0();
           break;
         case 27: // ESC Key
-          directory_top_menu();
+          printMenu(0, 0, fileMenuText);
           directory_view_menu_inputs0();
           break;
         }
@@ -636,7 +542,7 @@ void show_directory_inputs()
             //   directory_view(currentpwd);
           //   break;
         case 27: // ESC Key
-          directory_top_menu();
+          printMenu(0, 0, fileMenuText);
           directory_view_menu_inputs0();
           break;
         }
@@ -714,7 +620,7 @@ void modify_group_input()
     reorder_ob(ob, sortmode);
     display_dir(currentpwd, ob, topfileref, selected);
 
-    directory_top_menu();
+    printMenu(0, 0, fileMenuText);
     directory_view_menu_inputs0();
   }
 }
@@ -801,7 +707,7 @@ void modify_permissions_input()
   reorder_ob(ob, sortmode);
   display_dir(currentpwd, ob, topfileref, selected);
 
-  directory_top_menu();
+  printMenu(0, 0, fileMenuText);
   directory_view_menu_inputs0();
 
 }
@@ -820,7 +726,7 @@ void modify_key_menu_inputs()
           modify_permissions_input();
           break;
         case 27: // ESC Key
-          directory_top_menu();
+          printMenu(0, 0, fileMenuText);
           directory_view_menu_inputs0();
           break;
         }
@@ -839,15 +745,15 @@ void directory_view_menu_inputs1()
           break;
         case 'r':
           LaunchShell();
-          directory_top_menu();
-          function_key_menu();
+          printMenu(0, 0, fileMenuText);
+          printMenu(LINES-1, 0, functionMenuText);
           display_dir(currentpwd, ob, topfileref, selected);
           directory_view_menu_inputs0();
           break;
         case 'e':
           edit_file_input();
-          directory_top_menu();
-          function_key_menu();
+          printMenu(0, 0, fileMenuText);
+          printMenu(LINES-1, 0, functionMenuText);
           display_dir(currentpwd, ob, topfileref, selected);
           directory_view_menu_inputs0();
           break;
@@ -860,7 +766,7 @@ void directory_view_menu_inputs1()
           break;
         case 27:
           inputmode = 0; // Don't think this does anything
-          directory_top_menu();
+          printMenu(0, 0, fileMenuText);
           directory_view_menu_inputs0();
           break;
           /* default:
@@ -898,7 +804,7 @@ void directory_view_menu_inputs0()
             clear_workspace();
             reorder_ob(ob, sortmode);
             display_dir(currentpwd, ob, topfileref, selected);
-            directory_top_menu();
+            printMenu(0, 0, fileMenuText);
             directory_view_menu_inputs0();
           } else {
             strcpy(selfile, currentpwd);
@@ -920,8 +826,8 @@ void directory_view_menu_inputs0()
           strcat(chpwd, ob[selected].name);
           if (!check_dir(chpwd)){
             SendToEditor(chpwd);
-            directory_top_menu();
-            function_key_menu();
+            printMenu(0, 0, fileMenuText);
+            printMenu(LINES-1, 0, functionMenuText);
             display_dir(currentpwd, ob, topfileref, selected);
           }
           break;
@@ -940,7 +846,7 @@ void directory_view_menu_inputs0()
           display_dir(currentpwd, ob, topfileref, selected);
           break;
         case 'm':
-          modify_key_menu();
+          printMenu(0, 0, modifyMenuText);
           modify_key_menu_inputs();
           break;
         case 'q':
@@ -993,14 +899,14 @@ void directory_view_menu_inputs0()
             display_dir(currentpwd, ob, topfileref, selected);
           } else {
             SendToPager(chpwd);
-            directory_top_menu();
-            function_key_menu();
+            printMenu(0, 0, fileMenuText);
+            printMenu(LINES-1, 0, functionMenuText);
             display_dir(currentpwd, ob, topfileref, selected);
           }
           break;
         case 27:
           inputmode = 1;
-          directory_change_menu();
+          printMenu(0, 0, globalMenuText);
           directory_view_menu_inputs1();
           break;
         case 10: // Enter - Falls through
@@ -1137,14 +1043,14 @@ void directory_change_menu_inputs()
           break;
         case 'r':
           LaunchShell();
-          directory_change_menu();
-          //directory_top_menu();
-          //function_key_menu();
+          printMenu(0, 0, globalMenuText);
+          //printMenu(0, 0, fileMenuText);
+          //printMenu(LINES-1, 0, functionMenuText);
           //display_dir(currentpwd, ob, topfileref, selected);
           break;
         case 'e':
           edit_file_input();
-          directory_change_menu();
+          printMenu(0, 0, globalMenuText);
           break;
         case 'q':
           exittoshell();
@@ -1174,7 +1080,7 @@ void topLineMessage(const char *message){
       switch(*pc)
         {
         default: // Where's the "any" key?
-          directory_top_menu();
+          printMenu(0, 0, fileMenuText);
           directory_view_menu_inputs0();
           break;
         }

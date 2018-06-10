@@ -1,7 +1,3 @@
-void directory_top_menu();
-void directory_change_menu();
-void function_key_menu();
-void modify_key_menu();
 void modify_key_menu_inputs();
 void modify_owner_input();
 void modify_group_input();
@@ -26,3 +22,4 @@ void copy_multi_file_input(results* ob, char *input);
 void copy_multi_file(results* ob, char *dest);
 void rename_multi_file_input(results* ob, char *input);
 void topLineMessage(const char *message);
+void printMenu(int line, int col, char *menustring);

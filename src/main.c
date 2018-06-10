@@ -28,6 +28,11 @@
 
 char currentpwd[1024];
 
+char fileMenuText[256];
+char globalMenuText[256];
+char functionMenuText[256];
+char modifyMenuText[256];
+
 
 int exittoshell()
 {
@@ -42,6 +47,11 @@ int exittoshell()
 int main(int argc, char *argv[])
 {
 
+  // Writing Menus
+  strcpy(fileMenuText, "!Copy, !Delete, !Edit, !Hidden, !Modify, !Quit, !Rename, !Show");
+  strcpy(globalMenuText, "!Change dir, !Run command, !Edit file, !Help, !Make dir, !Quit, !Show dir");
+  strcpy(functionMenuText, "<F1>-Down <F2>-Up <F3>-Top <F4>-Bottom <F5>-Refresh <F6>-Mark/Unmark <F7>-All <F8>-None <F9>-Sort");
+  strcpy(modifyMenuText, "Modify: !Owner/Group, !Permissions");
 
   set_escdelay(10);
 
