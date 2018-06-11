@@ -118,6 +118,81 @@ void readline(char *buffer, int buflen, char *oldbuf)
   if (old_curs != ERR) curs_set(old_curs);
 }
 
+void padstring(char *str, int len, char c)
+{
+  int slen = strlen(str);
+  // loop up to len-1 to leave space for null terminator
+  for(; slen < len-1;slen++)
+    {
+      str[slen] = c;
+    }
+  // add the null terminator
+  str[slen] = 0;
+}
+
+char *genPadding(int num_of_spaces) {
+  char *dest = malloc (sizeof (char) * num_of_spaces);
+  sprintf(dest, "%*s", num_of_spaces, " ");
+  return dest;
+}
+
+void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int sizelen, int namelen, int selected, int listref, int topref, results* ob){
+
+  int i;
+
+  char entry[1024], marked[2];
+  int maxlen = COLS - start;
+
+  int currentitem = listref + topref;
+  int ogminlen = 15;
+
+  int oggap = ownerlen - strlen(ob[currentitem].owner) + 1;
+
+  int oglen = (strlen(ob[currentitem].owner) + oggap + strlen(ob[currentitem].group));
+
+  int ogpad = 0;
+
+  int entrylen = 0;
+
+  if ( (ogminlen - oglen) > 0 ) {
+    ogpad = ogminlen - oglen;
+  }
+
+  char *s1, *s2, *s3;
+  char *sizestring = malloc (sizeof (char) * sizelen);
+
+  sprintf(sizestring, "%lu", *ob[currentitem].size);
+
+  s1 = genPadding(hlinkstart);
+  s2 = genPadding(oggap);
+  s3 = genPadding(sizelen - strlen(sizestring) + 1 + ogpad);
+
+  if ( *ob[listref].marked ){
+    strcpy(marked, "*");
+  } else {
+    strcpy(marked, " ");
+  }
+
+
+
+  sprintf(entry, "%s %s%s%i %s%s%s%s%lu %s  %s", marked, ob[currentitem].perm, s1, *ob[currentitem].hlink, ob[currentitem].owner, s2, ob[currentitem].group, s3, *ob[currentitem].size, ob[currentitem].date, ob[currentitem].name);
+
+  entrylen = strlen(entry);
+  //mvprintw(4 + listref, start, "%s", entry);
+
+  for ( i = 0; i < maxlen; i++ ){
+    mvprintw(4 + listref, start + i,"%c", entry[i]);
+    if ( i == entrylen ){
+      break;
+    }
+  }
+
+  free(s1);
+  free(s2);
+  free(s3);
+  free(sizestring);
+}
+
 int check_file(char *file){
   if( access( file, F_OK ) != -1 ) {
     return 1;
@@ -664,8 +739,8 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
     sizelen = seglength(ob, "size", count);
     namelen = seglength(ob, "name", count);
 
-    ownstart = 15 + hlinklen + 1;
-    groupstart = ownstart + ownerlen + 1;
+    ownstart = hlinklen + 2;
+    groupstart = ownerlen - strlen(ob[list_count + topfileref].owner) + 1;
     if (ownerlen + 1 + grouplen < 16) {
       sizestart = ownstart + 16;
     } else {
@@ -680,16 +755,18 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
     namestart = datestart + 18;
     hlinkstart = ownstart - 1 - *ob[list_count + topfileref].hlinklens;
 
-    if ( *ob[list_count + topfileref].marked ){
-      mvprintw(4 + list_count, 2, "*");
-    }
-    mvprintw(4 + list_count, 4,"%s",ob[list_count + topfileref].perm);
-    mvprintw(4 + list_count, hlinkstart,"%i",*ob[list_count + topfileref].hlink);
-    mvprintw(4 + list_count, ownstart,"%s",ob[list_count + topfileref].owner);
-    mvprintw(4 + list_count, groupstart,"%s",ob[list_count + topfileref].group);
-    mvprintw(4 + list_count, sizeobjectstart,"%lu",*ob[list_count + topfileref].size);
-    mvprintw(4 + list_count, datestart,"%s",ob[list_count + topfileref].date);
-    mvprintw(4 + list_count, namestart,"%s",ob[list_count + topfileref].name);
+    printEntry(2, hlinklen, ownerlen, grouplen, sizelen, namelen, 0, list_count, topfileref, ob);
+
+    // if ( *ob[list_count + topfileref].marked ){
+    //   mvprintw(4 + list_count, 2, "*");
+    // }
+    // mvprintw(4 + list_count, 4,"%s",ob[list_count + topfileref].perm);
+    // mvprintw(4 + list_count, hlinkstart,"%i",*ob[list_count + topfileref].hlink);
+    // mvprintw(4 + list_count, ownstart,"%s",ob[list_count + topfileref].owner);
+    // mvprintw(4 + list_count, groupstart,"%s",ob[list_count + topfileref].group);
+    // mvprintw(4 + list_count, sizeobjectstart,"%lu",*ob[list_count + topfileref].size);
+    // mvprintw(4 + list_count, datestart,"%s",ob[list_count + topfileref].date);
+    // mvprintw(4 + list_count, namestart,"%s",ob[list_count + topfileref].name);
     list_count++;
     }
 
@@ -699,9 +776,9 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   mvprintw(1, 2, "%s", pwd);
   mvprintw(2, 2, "%i Objects   %lu Used %lu Available", count, sused, savailable);// Parcial Placeholder for PWD info
   mvprintw(3, 4, "---Attrs---");
-  mvprintw(3, ownstart, "-Owner & Group-");
-  mvprintw(3, datestart - 7, "-Size-");
-  mvprintw(3, datestart, "---Date & Time---");
-  mvprintw(3, namestart, "----Name----");
+  mvprintw(3, 14 + ownstart, "-Owner & Group-");
+  mvprintw(3, 14 + datestart - 7, "-Size-");
+  mvprintw(3, 14 + datestart, "---Date & Time---");
+  mvprintw(3, 14 + namestart, "----Name----");
   attron(COLOR_PAIR(1));
 }
