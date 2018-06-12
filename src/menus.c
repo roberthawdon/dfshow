@@ -8,6 +8,7 @@
 #include <grp.h>
 #include <errno.h>
 #include <libgen.h>
+#include <signal.h>
 #include "functions.h"
 #include "main.h"
 #include "views.h"
@@ -48,6 +49,8 @@ extern char globalMenuText[256];
 extern char functionMenuText[256];
 extern char modifyMenuText[256];
 extern char sortMenuText[256];
+
+extern struct sigaction sa;
 
 //char testMenu[256];
 
@@ -711,6 +714,8 @@ void directory_view_menu_inputs0()
 {
   while(1)
     {
+      //signal(SIGWINCH, refreshScreen );
+      //sigaction(SIGWINCH, &sa, NULL);
       *pc = getch();
       switch(*pc)
         {
@@ -947,6 +952,9 @@ void directory_view_menu_inputs0()
         case 273: // F9
           printMenu(0, 0, sortMenuText);
           sort_view_inputs();
+          break;
+        case 274: // F10
+          refreshScreen();
           break;
         case 262: // Home
           selected = topfileref;

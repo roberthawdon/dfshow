@@ -50,6 +50,8 @@ unsigned long int sused = 0;
 
 history *hs;
 
+extern char currentpwd[1024];
+
 void readline(char *buffer, int buflen, char *oldbuf)
 /* Read up to buflen-1 characters into `buffer`.
  * A terminating '\0' character is added after the input.  */
