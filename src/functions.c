@@ -147,12 +147,14 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int sizelen
 
   int currentitem = listref + topref;
   int ogminlen = 15;
+  int sizeminlen = 6;
 
   int oggap = ownerlen - strlen(ob[currentitem].owner) + 1;
 
   int oglen = (strlen(ob[currentitem].owner) + oggap + strlen(ob[currentitem].group));
 
   int ogpad = 0;
+  int sizepad = 0;
 
   int entrylen = 0;
 
@@ -165,9 +167,16 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int sizelen
 
   sprintf(sizestring, "%lu", *ob[currentitem].size);
 
+  // Redefining width of Size value if the all sizes are smaller than the header.
+  if ( sizelen < sizeminlen ) {
+    sizelen = sizeminlen;
+  }
+
+  sizepad = sizelen - strlen(sizestring) + 1 + ogpad;
+
   s1 = genPadding(hlinkstart);
   s2 = genPadding(oggap);
-  s3 = genPadding(sizelen - strlen(sizestring) + 1 + ogpad);
+  s3 = genPadding(sizepad);
 
   if ( *ob[listref].marked ){
     strcpy(marked, "*");
@@ -176,11 +185,21 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int sizelen
   }
 
 
+  // mvprintw(4 + listref, 1, "%d", sizepad);
 
   sprintf(entry, "%s %s%s%i %s%s%s%s%lu %s  %s", marked, ob[currentitem].perm, s1, *ob[currentitem].hlink, ob[currentitem].owner, s2, ob[currentitem].group, s3, *ob[currentitem].size, ob[currentitem].date, ob[currentitem].name);
 
   entrylen = strlen(entry);
-  //mvprintw(4 + listref, start, "%s", entry);
+  // mvprintw(4 + listref, start, "%s", entry);
+
+  // Setting highlight
+  if (selected) {
+    attron(A_BOLD);
+    attron(COLOR_PAIR(4));
+  } else {
+    attroff(A_BOLD);
+    attron(COLOR_PAIR(1));
+  }
 
   for ( i = 0; i < maxlen; i++ ){
     mvprintw(4 + listref, start + i,"%c", entry[i]);
@@ -720,6 +739,7 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   size_t list_count = 0;
   int count = totalfilecount;
   selected = selected - topfileref;
+  int printSelect = 0;
 
   if (displaysize > count){
     displaysize = count;
@@ -728,11 +748,9 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   for(list_count = 0; list_count < displaysize; ){
     // Setting highlight
     if (list_count == selected) {
-      attron(A_BOLD);
-      attron(COLOR_PAIR(4));
+      printSelect = 1;
     } else {
-      attroff(A_BOLD);
-      attron(COLOR_PAIR(1));
+      printSelect = 0;
     }
 
     hlinklen = seglength(ob, "hlink", count);
@@ -757,7 +775,7 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
     namestart = datestart + 18;
     hlinkstart = ownstart - 1 - *ob[list_count + topfileref].hlinklens;
 
-    printEntry(2, hlinklen, ownerlen, grouplen, sizelen, namelen, 0, list_count, topfileref, ob);
+    printEntry(2, hlinklen, ownerlen, grouplen, sizelen, namelen, printSelect, list_count, topfileref, ob);
 
     // if ( *ob[list_count + topfileref].marked ){
     //   mvprintw(4 + list_count, 2, "*");
