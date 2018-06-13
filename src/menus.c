@@ -691,6 +691,9 @@ void directory_view_menu_inputs1()
           display_dir(currentpwd, ob, topfileref, selected);
           directory_view_menu_inputs0();
           break;
+        case 'h':
+          topLineMessage("Documentation coming soon");
+          break;
         case 'q':
           quit_menu();
           break;
@@ -990,6 +993,9 @@ void directory_change_menu_inputs()
         case 'e':
           edit_file_input();
           printMenu(0, 0, globalMenuText);
+          break;
+        case 'h':
+          topLineMessage("Documentation coming soon");
           break;
         case 'q':
           exittoshell();
