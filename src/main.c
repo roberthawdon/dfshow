@@ -76,7 +76,7 @@ int main(int argc, char *argv[])
 {
   // Writing Menus
   strcpy(fileMenuText, "!Copy, !Delete, !Edit, !Hidden, !Modify, !Quit, !Rename, !Show");
-  strcpy(globalMenuText, "!Change dir, !Run command, !Edit file, !Help, !Make dir, !Quit, !Show dir");
+  strcpy(globalMenuText, "!Run command, !Edit file, !Help, !Make dir, !Quit, !Show dir");
   strcpy(functionMenuText, "<F1>-Down <F2>-Up <F3>-Top <F4>-Bottom <F5>-Refresh <F6>-Mark/Unmark <F7>-All <F8>-None <F9>-Sort");
   strcpy(modifyMenuText, "Modify: !Owner/Group, !Permissions");
   strcpy(sortMenuText, "Sort list by - !Date & time, !Name, !Size");
