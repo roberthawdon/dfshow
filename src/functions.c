@@ -13,6 +13,7 @@
 #include <time.h>
 #include <sys/statvfs.h>
 #include <libgen.h>
+#include <errno.h>
 #include "functions.h"
 #include "views.h"
 #include "menus.h"
@@ -290,11 +291,12 @@ void delete_file(char *source_input)
   remove(source_input);
 }
 
-void SendToPager(const char* object)
+int SendToPager(const char* object)
 {
   char page[1024];
   char esc[1024];
   int pset = 0;
+  int e = 0;
   if ( getenv("PAGER")) {
     strcpy(page, getenv("PAGER"));
     pset = 1;
@@ -305,16 +307,21 @@ void SendToPager(const char* object)
     strcat(esc, object);
     strcat(esc, "'");
     strcat(page, esc);
-    clear();
-    endwin();
-    system(page);
-    initscr();
+    if (access(object, R_OK) == 0){
+      clear();
+      endwin();
+      e = system(page);
+      initscr();
+      return e;
+    } else {
+      topLineMessage("Error: Permission denied");
+    }
   } else {
-    topLineMessage("Error: No pager set.");
+    topLineMessage("Error: No pager set");
   }
 }
 
-void SendToEditor(const char* object)
+int SendToEditor(const char* object)
 
 {
   char editor[1024];

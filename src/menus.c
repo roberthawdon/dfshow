@@ -715,6 +715,7 @@ void directory_view_menu_inputs1()
 
 void directory_view_menu_inputs0()
 {
+  int e = 0;
   while(1)
     {
       //signal(SIGWINCH, refreshScreen );
@@ -837,7 +838,7 @@ void directory_view_menu_inputs0()
             reorder_ob(ob, sortmode);
             display_dir(currentpwd, ob, topfileref, selected);
           } else {
-            SendToPager(chpwd);
+            e = SendToPager(chpwd);
             printMenu(0, 0, fileMenuText);
             printMenu(LINES-1, 0, functionMenuText);
             display_dir(currentpwd, ob, topfileref, selected);
