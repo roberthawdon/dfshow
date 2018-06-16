@@ -135,8 +135,22 @@ void padstring(char *str, int len, char c)
 
 char *genPadding(int num_of_spaces) {
   char *dest = malloc (sizeof (char) * num_of_spaces);
-  sprintf(dest, "%*s", num_of_spaces, " ");
+  if (num_of_spaces > 0){
+    sprintf(dest, "%*s", num_of_spaces, " ");
+  } else {
+    strcpy(dest, "");
+  }
   return dest;
+}
+
+void printLine(int line, int col, char *textString){
+  int i;
+  for ( i = 0; i < strlen(textString) ; i++){
+    mvprintw(line, col + i, "%c", textString[i]);
+    if ( (col + i) == COLS ){
+      break;
+    }
+  }
 }
 
 void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int sizelen, int namelen, int selected, int listref, int topref, results* ob){
@@ -147,8 +161,8 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int sizelen
   int maxlen = COLS - start;
 
   int currentitem = listref + topref;
-  int ogminlen = 15;
-  int sizeminlen = 6;
+  int ogminlen = 15; // Length of "Owner & Group" heading
+  int sizeminlen = 6; // Length of "Size" heading
 
   int oggap = ownerlen - strlen(ob[currentitem].owner) + 1;
 
@@ -747,6 +761,15 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   int count = totalfilecount;
   selected = selected - topfileref;
   int printSelect = 0;
+  char headAttrs[12], headOG[16], headSize[7], headDT[18], headName[13];
+  char sizeHeader[256], headings[256];
+  int i, s1, s2, s3;
+
+  strcpy(headAttrs, "---Attrs---");
+  strcpy(headOG, "-Owner & Group-");
+  strcpy(headSize, "-Size-");
+  strcpy(headDT, "---Date & Time---");
+  strcpy(headName, "----Name----");
 
   if (displaysize > count){
     displaysize = count;
@@ -767,45 +790,54 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
     namelen = seglength(ob, "name", count);
 
     ownstart = hlinklen + 2;
-    groupstart = ownerlen - strlen(ob[list_count + topfileref].owner) + 1;
-    if (ownerlen + 1 + grouplen < 16) {
-      sizestart = ownstart + 16;
-    } else {
-      sizestart = groupstart + grouplen + 1;
-    }
-    if (sizelen < 7) {
-      datestart = sizestart + 7;
-    } else {
-      datestart = sizestart + sizelen + 1;
-    }
-    sizeobjectstart = datestart - 1 - *ob[list_count + topfileref].sizelens;
-    namestart = datestart + 18;
+    // groupstart = ownerlen - strlen(ob[list_count + topfileref].owner) + 1;
+    // if (ownerlen + 1 + grouplen < 16) {
+    //   sizestart = ownstart + 16;
+    // } else {
+    //   sizestart = groupstart + grouplen + 1;
+    // }
+    // if (sizelen < 7) {
+    //   datestart = sizestart + 7;
+    // } else {
+    //   datestart = sizestart + sizelen + 1;
+    // }
+    // sizeobjectstart = datestart - 1 - *ob[list_count + topfileref].sizelens;
+    // namestart = datestart + 18;
     hlinkstart = ownstart - 1 - *ob[list_count + topfileref].hlinklens;
 
     printEntry(2, hlinklen, ownerlen, grouplen, sizelen, namelen, printSelect, list_count, topfileref, ob);
 
-    // if ( *ob[list_count + topfileref].marked ){
-    //   mvprintw(4 + list_count, 2, "*");
-    // }
-    // mvprintw(4 + list_count, 4,"%s",ob[list_count + topfileref].perm);
-    // mvprintw(4 + list_count, hlinkstart,"%i",*ob[list_count + topfileref].hlink);
-    // mvprintw(4 + list_count, ownstart,"%s",ob[list_count + topfileref].owner);
-    // mvprintw(4 + list_count, groupstart,"%s",ob[list_count + topfileref].group);
-    // mvprintw(4 + list_count, sizeobjectstart,"%lu",*ob[list_count + topfileref].size);
-    // mvprintw(4 + list_count, datestart,"%s",ob[list_count + topfileref].date);
-    // mvprintw(4 + list_count, namestart,"%s",ob[list_count + topfileref].name);
     list_count++;
     }
 
   //mvprintw(0, 66, "%d %d", historyref, sessionhistory);
+
+
+  if ( (ownerlen + grouplen + 1) > strlen(headOG)){
+    s1 = (ownerlen + grouplen + 1) - strlen(headOG);
+  } else {
+    s1 = 1;
+  }
+
+  if ( sizelen > strlen(headSize)) {
+    s2 = sizelen - strlen(headSize);
+  } else {
+    s2 = 0;
+  }
+
+  sprintf(sizeHeader, "%i Objects   %lu Used %lu Available", count, sused, savailable);
+  sprintf(headings, "%s%s%s%s%s%s%s%s%s%s", headAttrs, genPadding(hlinklen + 1), headOG, genPadding(s1), genPadding(s2), headSize, genPadding(1), headDT, genPadding(1), headName);
+
   attron(COLOR_PAIR(2));
   attroff(A_BOLD); // Required to ensure the last selected item doesn't bold the header
-  mvprintw(1, 2, "%s", pwd);
-  mvprintw(2, 2, "%i Objects   %lu Used %lu Available", count, sused, savailable);// Parcial Placeholder for PWD info
-  mvprintw(3, 4, "---Attrs---");
-  mvprintw(3, 14 + ownstart, "-Owner & Group-");
-  mvprintw(3, 14 + datestart - 7, "-Size-");
-  mvprintw(3, 14 + datestart, "---Date & Time---");
-  mvprintw(3, 14 + namestart, "----Name----");
+  printLine(1, 2, pwd);
+  printLine(2, 2, sizeHeader);
+
+  printLine (3, 4, headings);
+  // mvprintw(3, 4, "---Attrs---");
+  // mvprintw(3, 14 + ownstart, "-Owner & Group-");
+  // mvprintw(3, 14 + datestart - 7, "-Size-");
+  // mvprintw(3, 14 + datestart, "---Date & Time---");
+  // mvprintw(3, 14 + namestart, "----Name----");
   attron(COLOR_PAIR(1));
 }
