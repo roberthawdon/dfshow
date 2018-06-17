@@ -39,6 +39,7 @@ char sortMenuText[256];
 extern results* ob;
 extern int topfileref;
 extern int selected;
+extern int totalfilecount;
 extern char sortmode[5];
 
 struct sigaction sa;
@@ -49,6 +50,15 @@ void refreshScreen()
   reorder_ob(ob, sortmode);
   printMenu(0, 0, fileMenuText);
   printMenu(LINES-1, 0, functionMenuText);
+  if ( (selected - topfileref) > (LINES - 6 )) {
+    topfileref = selected - (LINES - 6);
+  } else if ( topfileref + (LINES - 6) > totalfilecount ) {
+    if (totalfilecount < (LINES - 6)){
+      topfileref = 0;
+    } else {
+      topfileref = totalfilecount - (LINES - 5);
+    }
+  }
   display_dir(currentpwd, ob, topfileref, selected);
 }
 
