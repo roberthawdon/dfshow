@@ -723,6 +723,12 @@ results* get_dir(char *pwd)
         totalfilecount = count;
         closedir ( folder );
 
+        hlinklen = seglength(ob, "hlink", count);
+        ownerlen = seglength(ob, "owner", count);
+        grouplen = seglength(ob, "group", count);
+        sizelen = seglength(ob, "size", count);
+        namelen = seglength(ob, "name", count);
+
         return ob;
       }else{
         perror ( "Could not open the directory" );
@@ -782,12 +788,6 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
     } else {
       printSelect = 0;
     }
-
-    hlinklen = seglength(ob, "hlink", count);
-    ownerlen = seglength(ob, "owner", count);
-    grouplen = seglength(ob, "group", count);
-    sizelen = seglength(ob, "size", count);
-    namelen = seglength(ob, "name", count);
 
     ownstart = hlinklen + 2;
     // groupstart = ownerlen - strlen(ob[list_count + topfileref].owner) + 1;
