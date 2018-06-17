@@ -71,17 +71,21 @@ void printMenu(int line, int col, char *menustring)
           mvprintw(line, col + charcount, "%c", menustring[i]);
           attroff(A_BOLD);
           charcount++;
-        } else if ( menustring[i] == '<' ) {
+      } else if ( menustring[i] == '<' ) {
           i++;
           attron(A_BOLD);
           mvprintw(line, col + charcount, "%c", menustring[i]);
           charcount++;
-        } else if ( menustring[i] == '>' ) {
+      } else if ( menustring[i] == '>' ) {
           i++;
           attroff(A_BOLD);
           mvprintw(line, col + charcount, "%c", menustring[i]);
           charcount++;
-        } else {
+      } else if ( menustring[i] == '\\' ) {
+          i++;
+          mvprintw(line, col + charcount, "%c", menustring[i]);
+          charcount++;
+      } else {
           mvprintw(line, col + charcount, "%c", menustring[i]);
           charcount++;
         }
