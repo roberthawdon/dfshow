@@ -12,9 +12,7 @@
 #include "functions.h"
 #include "main.h"
 #include "views.h"
-#include "vars.h"
 
-int inputmode = 0;
 char sortmode[5] = "name";
 
 int c;
@@ -706,7 +704,6 @@ void directory_view_menu_inputs1()
           show_directory_inputs();
           break;
         case 27:
-          inputmode = 0; // Don't think this does anything
           printMenu(0, 0, fileMenuText);
           directory_view_menu_inputs0();
           break;
@@ -849,7 +846,6 @@ void directory_view_menu_inputs0()
           }
           break;
         case 27:
-          inputmode = 1;
           printMenu(0, 0, globalMenuText);
           directory_view_menu_inputs1();
           break;

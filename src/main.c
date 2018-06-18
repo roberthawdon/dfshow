@@ -24,7 +24,6 @@
 #include <unistd.h>
 #include <signal.h>
 #include "functions.h"
-#include "vars.h"
 #include "views.h"
 #include "menus.h"
 

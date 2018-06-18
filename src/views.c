@@ -5,7 +5,6 @@
 #include "views.h"
 #include "functions.h"
 #include "menus.h"
-#include "vars.h"
 
 results *ob;
 
@@ -36,15 +35,7 @@ int directory_view(char * currentpwd)
 
   refresh();
 
-  switch(inputmode)
-    {
-    case 0:
-      directory_view_menu_inputs0();
-      break;
-    case 1:
-      directory_view_menu_inputs1();
-      break;
-    }
+  directory_view_menu_inputs0();
 
   free(ob); //freeing memory
   return 0;
