@@ -52,6 +52,7 @@ unsigned long int sused = 0;
 history *hs;
 
 extern char currentpwd[1024];
+extern int viewMode;
 
 void readline(char *buffer, int buflen, char *oldbuf)
 /* Read up to buflen-1 characters into `buffer`.
@@ -62,6 +63,7 @@ void readline(char *buffer, int buflen, char *oldbuf)
   int len;
   int oldlen;
   int x, y;
+  int oldMode = viewMode;
 
   oldlen = strlen(oldbuf);
   attron(COLOR_PAIR(3));
@@ -113,6 +115,12 @@ void readline(char *buffer, int buflen, char *oldbuf)
       } else {
         beep();
       }
+    } else if (c == 27) {
+      pos = oldlen;
+      len = oldlen;
+      strcpy(buffer, oldbuf); //abort
+      attron(COLOR_PAIR(1));
+      break;
     } else {
       beep();
     }
@@ -840,4 +848,17 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   // mvprintw(3, 14 + datestart, "---Date & Time---");
   // mvprintw(3, 14 + namestart, "----Name----");
   attron(COLOR_PAIR(1));
+}
+
+void resizeDisplayDir(results* ob){
+  if ( (selected - topfileref) > (LINES - 6 )) {
+    topfileref = selected - (LINES - 6);
+  } else if ( topfileref + (LINES - 6) > totalfilecount ) {
+    if (totalfilecount < (LINES - 6)){
+      topfileref = 0;
+    } else {
+      topfileref = totalfilecount - (LINES - 5);
+    }
+  }
+  display_dir(currentpwd, ob, topfileref, selected);
 }

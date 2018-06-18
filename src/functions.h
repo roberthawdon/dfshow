@@ -49,3 +49,4 @@ void printLine(int line, int col, char *textString);
 void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int sizelen, int namelen, int selected, int listref, int topref, results* ob);
 void padstring(char *str, int len, char c);
 char *genPadding(int num_of_spaces);
+void resizeDisplayDir();

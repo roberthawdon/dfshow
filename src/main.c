@@ -35,6 +35,8 @@ char functionMenuText[256];
 char modifyMenuText[256];
 char sortMenuText[256];
 
+int viewMode = 0;
+
 extern results* ob;
 extern int topfileref;
 extern int selected;
@@ -45,20 +47,32 @@ struct sigaction sa;
 
 void refreshScreen()
 {
-  ob = get_dir(currentpwd);
-  reorder_ob(ob, sortmode);
-  printMenu(0, 0, fileMenuText);
-  printMenu(LINES-1, 0, functionMenuText);
-  if ( (selected - topfileref) > (LINES - 6 )) {
-    topfileref = selected - (LINES - 6);
-  } else if ( topfileref + (LINES - 6) > totalfilecount ) {
-    if (totalfilecount < (LINES - 6)){
-      topfileref = 0;
-    } else {
-      topfileref = totalfilecount - (LINES - 5);
+  switch(viewMode)
+    {
+    case 0:
+      printMenu(0, 0, fileMenuText);
+      printMenu(LINES-1, 0, functionMenuText);
+      resizeDisplayDir(ob);
+      break;
+    case 1:
+      printMenu(0, 0, globalMenuText);
+      printMenu(LINES-1, 0, functionMenuText);
+      resizeDisplayDir(ob);
+      break;
+    case 2:
+      printMenu(0, 0, modifyMenuText);
+      printMenu(LINES-1, 0, functionMenuText);
+      resizeDisplayDir(ob);
+      break;
+    case 3:
+      printMenu(0, 0, sortMenuText);
+      printMenu(LINES-1, 0, functionMenuText);
+      resizeDisplayDir(ob);
+      break;
+    case 4:
+      printMenu(0, 0, globalMenuText);
+      break;
     }
-  }
-  display_dir(currentpwd, ob, topfileref, selected);
 }
 
 void sigwinchHandle(int sig){
