@@ -116,9 +116,12 @@ void readline(char *buffer, int buflen, char *oldbuf)
         beep();
       }
     } else if (c == 27) {
-      pos = oldlen;
-      len = oldlen;
-      strcpy(buffer, oldbuf); //abort
+      //pos = oldlen;
+      //len = oldlen;
+      //strcpy(buffer, oldbuf); //abort
+      pos = 0;
+      len = 0;
+      strcpy(buffer, ""); //abort by blanking
       attron(COLOR_PAIR(1));
       break;
     } else {

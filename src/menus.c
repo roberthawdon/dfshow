@@ -104,7 +104,7 @@ void show_directory_input()
   move(0,33);
   readline(currentpwd, 1024, oldpwd);
   curs_set(FALSE);
-  if (strcmp(currentpwd, oldpwd)){
+  if (strcmp(currentpwd, oldpwd) && strcmp(currentpwd, "")){
     if (!check_dir(currentpwd)){
       quit_menu();
     }
@@ -160,7 +160,7 @@ void copy_file_input(char *file)
   readline(newfile, 1024, file);
   curs_set(FALSE);
   // If the two values don't match, we want to do the copy
-  if ( strcmp(newfile, file)) {
+  if ( strcmp(newfile, file) && strcmp(newfile, "")) {
     if ( check_file(newfile) )
       {
         replace_file_confirm(newfile);
@@ -198,7 +198,7 @@ void copy_multi_file_input(results* ob, char *input)
   move(0, 24);
   readline(dest, 1024, input);
   curs_set(FALSE);
-  if ( strcmp(dest, input)) {
+  if ( strcmp(dest, input) && strcmp(dest, "")) {
 
     if ( check_dir(dest) ){
       for (i = 0; i < totalfilecount; i++)
@@ -248,7 +248,7 @@ void rename_multi_file_input(results* ob, char *input)
   move(0, 26);
   readline(dest, 1024, input);
   curs_set(FALSE);
-  if (strcmp(dest, input)){
+  if (strcmp(dest, input) && strcmp(dest, "")){
     if ( check_dir(dest) ){
       for (i = 0; i < totalfilecount; i++)
         {
@@ -313,7 +313,7 @@ void rename_file_input(char *file)
   move(0,16);
   readline(dest, 1024, file);
   curs_set(FALSE);
-  if (strcmp(dest, file)){
+  if (strcmp(dest, file) && strcmp(dest, "")){
     if ( check_file(dest) )
       {
         replace_file_confirm(dest);
@@ -350,12 +350,14 @@ void make_directory_input()
     strcat(currentpwd, "/");
   }
   readline(newdir, 1024, currentpwd);
-  mk_dir(newdir);
-  curs_set(FALSE);
-  ob = get_dir(currentpwd);
-  clear_workspace();
-  reorder_ob(ob, sortmode);
-  display_dir(currentpwd, ob, 0, selected);
+  if (strcmp(newdir, currentpwd) && strcmp(newdir, "")){
+    mk_dir(newdir);
+    curs_set(FALSE);
+    ob = get_dir(currentpwd);
+    clear_workspace();
+    reorder_ob(ob, sortmode);
+    display_dir(currentpwd, ob, 0, selected);
+  }
   printMenu(0, 0, fileMenuText);
   printMenu(LINES-1, 0, functionMenuText);
   directory_view_menu_inputs0();
