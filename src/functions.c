@@ -175,6 +175,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int sizelen
   int oggap = ownerlen - strlen(ob[currentitem].owner) + 1;
 
   int oglen = (strlen(ob[currentitem].owner) + oggap + strlen(ob[currentitem].group));
+  int ogseglen = ownerlen + oggap + grouplen;
 
   int ogpad = 0;
   int sizepad = 0;
@@ -183,6 +184,8 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int sizelen
 
   if ( (ogminlen - oglen) > 0 ) {
     ogpad = ogminlen - oglen;
+  } else {
+    ogpad = ogseglen - oglen;
   }
 
   char *s1, *s2, *s3;
@@ -208,7 +211,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int sizelen
   }
 
 
-  // mvprintw(4 + listref, 1, "%d", sizepad);
+  // mvprintw(4 + listref, 180, "%d %d %d - %d", ownerlen, oggap, grouplen, ogseglen);
 
   sprintf(entry, "%s %s%s%i %s%s%s%s%lu %s  %s", marked, ob[currentitem].perm, s1, *ob[currentitem].hlink, ob[currentitem].owner, s2, ob[currentitem].group, s3, *ob[currentitem].size, ob[currentitem].date, ob[currentitem].name);
 
@@ -822,7 +825,7 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
 
 
   if ( (ownerlen + grouplen + 1) > strlen(headOG)){
-    s1 = (ownerlen + grouplen + 1) - strlen(headOG);
+    s1 = (ownerlen + grouplen + 1) - strlen(headOG) + 1;
   } else {
     s1 = 1;
   }
