@@ -823,7 +823,7 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
 
   //mvprintw(0, 66, "%d %d", historyref, sessionhistory);
 
-
+  // the space between the largest owner and largest group should always end up being 1... in theory.
   if ( (ownerlen + grouplen + 1) > strlen(headOG)){
     s1 = (ownerlen + grouplen + 1) - strlen(headOG) + 1;
   } else {
