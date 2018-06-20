@@ -145,7 +145,7 @@ void padstring(char *str, int len, char c)
 }
 
 char *genPadding(int num_of_spaces) {
-  char *dest = malloc (sizeof (char) * num_of_spaces);
+  char *dest = malloc (sizeof (char) * num_of_spaces + 1);
   if (num_of_spaces > 0){
     sprintf(dest, "%*s", num_of_spaces, " ");
   } else {
@@ -178,7 +178,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int sizelen
   int oggap = ownerlen - strlen(ob[currentitem].owner) + 1;
 
   int oglen = (strlen(ob[currentitem].owner) + oggap + strlen(ob[currentitem].group));
-  int ogseglen = ownerlen + oggap + grouplen;
+  int ogseglen = ownerlen + 1 + grouplen; // Distance between longest owner and longest group is always 1
 
   int ogpad = 0;
   int sizepad = 0;
@@ -192,7 +192,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int sizelen
   }
 
   char *s1, *s2, *s3;
-  char *sizestring = malloc (sizeof (char) * sizelen);
+  char *sizestring = malloc (sizeof (char) * sizelen + 1);
 
   sprintf(sizestring, "%lu", *ob[currentitem].size);
 
@@ -201,7 +201,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int sizelen
     sizelen = sizeminlen;
   }
 
-  sizepad = sizelen - strlen(sizestring) + 1 + ogpad;
+  sizepad = (sizelen - strlen(sizestring)) + ogpad + 1;
 
   s1 = genPadding(hlinkstart);
   s2 = genPadding(oggap);
@@ -212,9 +212,6 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int sizelen
   } else {
     strcpy(marked, " ");
   }
-
-
-  // mvprintw(4 + listref, 180, "%d %d %d - %d", ownerlen, oggap, grouplen, ogseglen);
 
   sprintf(entry, "%s %s%s%i %s%s%s%s%lu %s  %s", marked, ob[currentitem].perm, s1, *ob[currentitem].hlink, ob[currentitem].owner, s2, ob[currentitem].group, s3, *ob[currentitem].size, ob[currentitem].date, ob[currentitem].name);
 
