@@ -352,6 +352,7 @@ int SendToEditor(const char* object)
   char editor[1024];
   char esc[1024];
   int eset = 0;
+  int e = 0;
   if ( getenv("EDITOR")) {
     strcpy(editor, getenv("EDITOR"));
     eset = 1;
@@ -365,10 +366,15 @@ int SendToEditor(const char* object)
     strcat(esc, object);
     strcat(esc, "'");
     strcat(editor, esc);
-    clear();
-    endwin();
-    system(editor);
-    initscr();
+    if (access(object, R_OK) == 0){
+      clear();
+      endwin();
+      e = system(editor);
+      initscr();
+      return e;
+    } else {
+      topLineMessage("Error: Permission denied");
+    }
   } else {
     topLineMessage("Error: No editor set.");
   }
