@@ -14,6 +14,7 @@
 #include <sys/statvfs.h>
 #include <libgen.h>
 #include <errno.h>
+#include <wchar.h>
 #include "functions.h"
 #include "views.h"
 #include "menus.h"
@@ -168,7 +169,8 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int sizelen
 
   int i;
 
-  char entry[1024], marked[2];
+  char marked[2];
+  wchar_t entry[1024];
   int maxlen = COLS - start;
 
   int currentitem = listref + topref;
@@ -213,9 +215,9 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int sizelen
     strcpy(marked, " ");
   }
 
-  sprintf(entry, "%s %s%s%i %s%s%s%s%lu %s  %s", marked, ob[currentitem].perm, s1, *ob[currentitem].hlink, ob[currentitem].owner, s2, ob[currentitem].group, s3, *ob[currentitem].size, ob[currentitem].date, ob[currentitem].name);
+  swprintf(entry, 1024, L"%s %s%s%i %s%s%s%s%lu %s  %s", marked, ob[currentitem].perm, s1, *ob[currentitem].hlink, ob[currentitem].owner, s2, ob[currentitem].group, s3, *ob[currentitem].size, ob[currentitem].date, ob[currentitem].name);
 
-  entrylen = strlen(entry);
+  entrylen = wcslen(entry);
   // mvprintw(4 + listref, start, "%s", entry);
 
   // Setting highlight
@@ -228,7 +230,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int sizelen
   }
 
   for ( i = 0; i < maxlen; i++ ){
-    mvprintw(4 + listref, start + i,"%c", entry[i]);
+    mvprintw(4 + listref, start + i,"%lc", entry[i]);
     if ( i == entrylen ){
       break;
     }
