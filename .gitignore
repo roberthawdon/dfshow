@@ -13,4 +13,6 @@ depcomp
 install-sh
 missing
 show
+*.exe
+*.stackdump
 

@@ -13,6 +13,8 @@
 #include <time.h>
 #include <sys/statvfs.h>
 #include <libgen.h>
+#include <errno.h>
+#include <wchar.h>
 #include "functions.h"
 #include "views.h"
 #include "menus.h"
@@ -50,6 +52,9 @@ unsigned long int sused = 0;
 
 history *hs;
 
+extern char currentpwd[1024];
+extern int viewMode;
+
 void readline(char *buffer, int buflen, char *oldbuf)
 /* Read up to buflen-1 characters into `buffer`.
  * A terminating '\0' character is added after the input.  */
@@ -59,6 +64,7 @@ void readline(char *buffer, int buflen, char *oldbuf)
   int len;
   int oldlen;
   int x, y;
+  int oldMode = viewMode;
 
   oldlen = strlen(oldbuf);
   attron(COLOR_PAIR(3));
@@ -110,12 +116,130 @@ void readline(char *buffer, int buflen, char *oldbuf)
       } else {
         beep();
       }
+    } else if (c == 27) {
+      //pos = oldlen;
+      //len = oldlen;
+      //strcpy(buffer, oldbuf); //abort
+      pos = 0;
+      len = 0;
+      strcpy(buffer, ""); //abort by blanking
+      attron(COLOR_PAIR(1));
+      break;
     } else {
       beep();
     }
   }
   buffer[len] = '\0';
   if (old_curs != ERR) curs_set(old_curs);
+}
+
+void padstring(char *str, int len, char c)
+{
+  int slen = strlen(str);
+  // loop up to len-1 to leave space for null terminator
+  for(; slen < len-1;slen++)
+    {
+      str[slen] = c;
+    }
+  // add the null terminator
+  str[slen] = 0;
+}
+
+char *genPadding(int num_of_spaces) {
+  char *dest = malloc (sizeof (char) * num_of_spaces + 1);
+  if (num_of_spaces > 0){
+    sprintf(dest, "%*s", num_of_spaces, " ");
+  } else {
+    strcpy(dest, "");
+  }
+  return dest;
+}
+
+void printLine(int line, int col, char *textString){
+  int i;
+  for ( i = 0; i < strlen(textString) ; i++){
+    mvprintw(line, col + i, "%c", textString[i]);
+    if ( (col + i) == COLS ){
+      break;
+    }
+  }
+}
+
+void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int sizelen, int namelen, int selected, int listref, int topref, results* ob){
+
+  int i;
+
+  char marked[2];
+  wchar_t entry[1024];
+  int maxlen = COLS - start;
+
+  int currentitem = listref + topref;
+  int ogminlen = 15; // Length of "Owner & Group" heading
+  int sizeminlen = 6; // Length of "Size" heading
+
+  int oggap = ownerlen - strlen(ob[currentitem].owner) + 1;
+
+  int oglen = (strlen(ob[currentitem].owner) + oggap + strlen(ob[currentitem].group));
+  int ogseglen = ownerlen + 1 + grouplen; // Distance between longest owner and longest group is always 1
+
+  int ogpad = 0;
+  int sizepad = 0;
+
+  int entrylen = 0;
+
+  if ( (ogminlen - oglen) > 0 ) {
+    ogpad = ogminlen - oglen;
+  } else {
+    ogpad = ogseglen - oglen;
+  }
+
+  char *s1, *s2, *s3;
+  char *sizestring = malloc (sizeof (char) * sizelen + 1);
+
+  sprintf(sizestring, "%lu", *ob[currentitem].size);
+
+  // Redefining width of Size value if the all sizes are smaller than the header.
+  if ( sizelen < sizeminlen ) {
+    sizelen = sizeminlen;
+  }
+
+  sizepad = (sizelen - strlen(sizestring)) + ogpad + 1;
+
+  s1 = genPadding(hlinkstart);
+  s2 = genPadding(oggap);
+  s3 = genPadding(sizepad);
+
+  if ( *ob[listref].marked ){
+    strcpy(marked, "*");
+  } else {
+    strcpy(marked, " ");
+  }
+
+  swprintf(entry, 1024, L"%s %s%s%i %s%s%s%s%lu %s  %s", marked, ob[currentitem].perm, s1, *ob[currentitem].hlink, ob[currentitem].owner, s2, ob[currentitem].group, s3, *ob[currentitem].size, ob[currentitem].date, ob[currentitem].name);
+
+  entrylen = wcslen(entry);
+  // mvprintw(4 + listref, start, "%s", entry);
+
+  // Setting highlight
+  if (selected) {
+    attron(A_BOLD);
+    attron(COLOR_PAIR(4));
+  } else {
+    attroff(A_BOLD);
+    attron(COLOR_PAIR(1));
+  }
+
+  for ( i = 0; i < maxlen; i++ ){
+    mvprintw(4 + listref, start + i,"%lc", entry[i]);
+    if ( i == entrylen ){
+      break;
+    }
+  }
+
+  free(s1);
+  free(s2);
+  free(s3);
+  free(sizestring);
 }
 
 int check_file(char *file){
@@ -194,11 +318,12 @@ void delete_file(char *source_input)
   remove(source_input);
 }
 
-void SendToPager(const char* object)
+int SendToPager(const char* object)
 {
   char page[1024];
   char esc[1024];
   int pset = 0;
+  int e = 0;
   if ( getenv("PAGER")) {
     strcpy(page, getenv("PAGER"));
     pset = 1;
@@ -209,21 +334,27 @@ void SendToPager(const char* object)
     strcat(esc, object);
     strcat(esc, "'");
     strcat(page, esc);
-    clear();
-    endwin();
-    system(page);
-    initscr();
+    if (access(object, R_OK) == 0){
+      clear();
+      endwin();
+      e = system(page);
+      initscr();
+      return e;
+    } else {
+      topLineMessage("Error: Permission denied");
+    }
   } else {
-    topLineMessage("Error: No pager set.");
+    topLineMessage("Error: No pager set");
   }
 }
 
-void SendToEditor(const char* object)
+int SendToEditor(const char* object)
 
 {
   char editor[1024];
   char esc[1024];
   int eset = 0;
+  int e = 0;
   if ( getenv("EDITOR")) {
     strcpy(editor, getenv("EDITOR"));
     eset = 1;
@@ -237,10 +368,15 @@ void SendToEditor(const char* object)
     strcat(esc, object);
     strcat(esc, "'");
     strcat(editor, esc);
-    clear();
-    endwin();
-    system(editor);
-    initscr();
+    if (access(object, R_OK) == 0){
+      clear();
+      endwin();
+      e = system(editor);
+      initscr();
+      return e;
+    } else {
+      topLineMessage("Error: Permission denied");
+    }
   } else {
     topLineMessage("Error: No editor set.");
   }
@@ -606,6 +742,12 @@ results* get_dir(char *pwd)
         totalfilecount = count;
         closedir ( folder );
 
+        hlinklen = seglength(ob, "hlink", count);
+        ownerlen = seglength(ob, "owner", count);
+        grouplen = seglength(ob, "group", count);
+        sizelen = seglength(ob, "size", count);
+        namelen = seglength(ob, "name", count);
+
         return ob;
       }else{
         perror ( "Could not open the directory" );
@@ -643,6 +785,16 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   size_t list_count = 0;
   int count = totalfilecount;
   selected = selected - topfileref;
+  int printSelect = 0;
+  char headAttrs[12], headOG[16], headSize[7], headDT[18], headName[13];
+  char sizeHeader[256], headings[256];
+  int i, s1, s2, s3;
+
+  strcpy(headAttrs, "---Attrs---");
+  strcpy(headOG, "-Owner & Group-");
+  strcpy(headSize, "-Size-");
+  strcpy(headDT, "---Date & Time---");
+  strcpy(headName, "----Name----");
 
   if (displaysize > count){
     displaysize = count;
@@ -651,57 +803,73 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   for(list_count = 0; list_count < displaysize; ){
     // Setting highlight
     if (list_count == selected) {
-      attron(A_BOLD);
-      attron(COLOR_PAIR(4));
+      printSelect = 1;
     } else {
-      attroff(A_BOLD);
-      attron(COLOR_PAIR(1));
+      printSelect = 0;
     }
 
-    hlinklen = seglength(ob, "hlink", count);
-    ownerlen = seglength(ob, "owner", count);
-    grouplen = seglength(ob, "group", count);
-    sizelen = seglength(ob, "size", count);
-    namelen = seglength(ob, "name", count);
-
-    ownstart = 15 + hlinklen + 1;
-    groupstart = ownstart + ownerlen + 1;
-    if (ownerlen + 1 + grouplen < 16) {
-      sizestart = ownstart + 16;
-    } else {
-      sizestart = groupstart + grouplen + 1;
-    }
-    if (sizelen < 7) {
-      datestart = sizestart + 7;
-    } else {
-      datestart = sizestart + sizelen + 1;
-    }
-    sizeobjectstart = datestart - 1 - *ob[list_count + topfileref].sizelens;
-    namestart = datestart + 18;
+    ownstart = hlinklen + 2;
+    // groupstart = ownerlen - strlen(ob[list_count + topfileref].owner) + 1;
+    // if (ownerlen + 1 + grouplen < 16) {
+    //   sizestart = ownstart + 16;
+    // } else {
+    //   sizestart = groupstart + grouplen + 1;
+    // }
+    // if (sizelen < 7) {
+    //   datestart = sizestart + 7;
+    // } else {
+    //   datestart = sizestart + sizelen + 1;
+    // }
+    // sizeobjectstart = datestart - 1 - *ob[list_count + topfileref].sizelens;
+    // namestart = datestart + 18;
     hlinkstart = ownstart - 1 - *ob[list_count + topfileref].hlinklens;
 
-    if ( *ob[list_count + topfileref].marked ){
-      mvprintw(4 + list_count, 2, "*");
-    }
-    mvprintw(4 + list_count, 4,"%s",ob[list_count + topfileref].perm);
-    mvprintw(4 + list_count, hlinkstart,"%i",*ob[list_count + topfileref].hlink);
-    mvprintw(4 + list_count, ownstart,"%s",ob[list_count + topfileref].owner);
-    mvprintw(4 + list_count, groupstart,"%s",ob[list_count + topfileref].group);
-    mvprintw(4 + list_count, sizeobjectstart,"%lu",*ob[list_count + topfileref].size);
-    mvprintw(4 + list_count, datestart,"%s",ob[list_count + topfileref].date);
-    mvprintw(4 + list_count, namestart,"%s",ob[list_count + topfileref].name);
+    printEntry(2, hlinklen, ownerlen, grouplen, sizelen, namelen, printSelect, list_count, topfileref, ob);
+
     list_count++;
     }
 
   //mvprintw(0, 66, "%d %d", historyref, sessionhistory);
+
+  // the space between the largest owner and largest group should always end up being 1... in theory.
+  if ( (ownerlen + grouplen + 1) > strlen(headOG)){
+    s1 = (ownerlen + grouplen + 1) - strlen(headOG) + 1;
+  } else {
+    s1 = 1;
+  }
+
+  if ( sizelen > strlen(headSize)) {
+    s2 = sizelen - strlen(headSize);
+  } else {
+    s2 = 0;
+  }
+
+  sprintf(sizeHeader, "%i Objects   %lu Used %lu Available", count, sused, savailable);
+  sprintf(headings, "%s%s%s%s%s%s%s%s%s%s", headAttrs, genPadding(hlinklen + 1), headOG, genPadding(s1), genPadding(s2), headSize, genPadding(1), headDT, genPadding(1), headName);
+
   attron(COLOR_PAIR(2));
   attroff(A_BOLD); // Required to ensure the last selected item doesn't bold the header
-  mvprintw(1, 2, "%s", pwd);
-  mvprintw(2, 2, "%i Objects   %lu Used %lu Available", count, sused, savailable);// Parcial Placeholder for PWD info
-  mvprintw(3, 4, "---Attrs---");
-  mvprintw(3, ownstart, "-Owner & Group-");
-  mvprintw(3, datestart - 7, "-Size-");
-  mvprintw(3, datestart, "---Date & Time---");
-  mvprintw(3, namestart, "----Name----");
+  printLine(1, 2, pwd);
+  printLine(2, 2, sizeHeader);
+
+  printLine (3, 4, headings);
+  // mvprintw(3, 4, "---Attrs---");
+  // mvprintw(3, 14 + ownstart, "-Owner & Group-");
+  // mvprintw(3, 14 + datestart - 7, "-Size-");
+  // mvprintw(3, 14 + datestart, "---Date & Time---");
+  // mvprintw(3, 14 + namestart, "----Name----");
   attron(COLOR_PAIR(1));
+}
+
+void resizeDisplayDir(results* ob){
+  if ( (selected - topfileref) > (LINES - 6 )) {
+    topfileref = selected - (LINES - 6);
+  } else if ( topfileref + (LINES - 6) > totalfilecount ) {
+    if (totalfilecount < (LINES - 6)){
+      topfileref = 0;
+    } else {
+      topfileref = totalfilecount - (LINES - 5);
+    }
+  }
+  display_dir(currentpwd, ob, topfileref, selected);
 }

@@ -1,1 +1,2 @@
+void refreshScreen();
 int exittoshell();

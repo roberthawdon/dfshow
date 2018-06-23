@@ -22,9 +22,10 @@
 #include <locale.h>
 #include <string.h>
 #include <unistd.h>
+#include <signal.h>
 #include "functions.h"
-#include "vars.h"
 #include "views.h"
+#include "menus.h"
 
 char currentpwd[1024];
 
@@ -33,6 +34,55 @@ char globalMenuText[256];
 char functionMenuText[256];
 char modifyMenuText[256];
 char sortMenuText[256];
+
+int viewMode = 0;
+
+extern results* ob;
+extern int topfileref;
+extern int selected;
+extern int totalfilecount;
+extern char sortmode[5];
+
+struct sigaction sa;
+
+void refreshScreen()
+{
+  switch(viewMode)
+    {
+    case 0:
+      printMenu(0, 0, fileMenuText);
+      printMenu(LINES-1, 0, functionMenuText);
+      resizeDisplayDir(ob);
+      break;
+    case 1:
+      printMenu(0, 0, globalMenuText);
+      printMenu(LINES-1, 0, functionMenuText);
+      resizeDisplayDir(ob);
+      break;
+    case 2:
+      printMenu(0, 0, modifyMenuText);
+      printMenu(LINES-1, 0, functionMenuText);
+      resizeDisplayDir(ob);
+      break;
+    case 3:
+      printMenu(0, 0, sortMenuText);
+      printMenu(LINES-1, 0, functionMenuText);
+      resizeDisplayDir(ob);
+      break;
+    case 4:
+      printMenu(0, 0, globalMenuText);
+      break;
+    }
+}
+
+void sigwinchHandle(int sig){
+  endwin();
+  clear();
+  refresh();
+  initscr();
+  //mvprintw(0,0,"%d:%d", LINES, COLS);
+  refreshScreen();
+}
 
 
 int exittoshell()
@@ -47,10 +97,9 @@ int exittoshell()
 
 int main(int argc, char *argv[])
 {
-
   // Writing Menus
   strcpy(fileMenuText, "!Copy, !Delete, !Edit, !Hidden, !Modify, !Quit, !Rename, !Show");
-  strcpy(globalMenuText, "!Change dir, !Run command, !Edit file, !Help, !Make dir, !Quit, !Show dir");
+  strcpy(globalMenuText, "!Run command, !Edit file, !Help, !Make dir, !Quit, !Show dir");
   strcpy(functionMenuText, "<F1>-Down <F2>-Up <F3>-Top <F4>-Bottom <F5>-Refresh <F6>-Mark/Unmark <F7>-All <F8>-None <F9>-Sort");
   strcpy(modifyMenuText, "Modify: !Owner/Group, !Permissions");
   strcpy(sortMenuText, "Sort list by - !Date & time, !Name, !Size");
@@ -60,6 +109,12 @@ int main(int argc, char *argv[])
   setlocale(LC_ALL, "");
 
   initscr();
+
+
+  memset(&sa, 0, sizeof(struct sigaction));
+  sa.sa_handler = sigwinchHandle;
+  sigaction(SIGWINCH, &sa, NULL);
+
   start_color();
   cbreak(); //Added for new method
   init_pair(1, COLOR_WHITE, COLOR_BLACK);

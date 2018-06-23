@@ -8,12 +8,11 @@
 #include <grp.h>
 #include <errno.h>
 #include <libgen.h>
+#include <signal.h>
 #include "functions.h"
 #include "main.h"
 #include "views.h"
-#include "vars.h"
 
-int inputmode = 0;
 char sortmode[5] = "name";
 
 int c;
@@ -42,12 +41,15 @@ extern int totalfilecount;
 extern int displaysize;
 extern int showhidden;
 extern int markall;
+extern int viewMode;
 
 extern char fileMenuText[256];
 extern char globalMenuText[256];
 extern char functionMenuText[256];
 extern char modifyMenuText[256];
 extern char sortMenuText[256];
+
+extern struct sigaction sa;
 
 //char testMenu[256];
 
@@ -68,17 +70,21 @@ void printMenu(int line, int col, char *menustring)
           mvprintw(line, col + charcount, "%c", menustring[i]);
           attroff(A_BOLD);
           charcount++;
-        } else if ( menustring[i] == '<' ) {
+      } else if ( menustring[i] == '<' ) {
           i++;
           attron(A_BOLD);
           mvprintw(line, col + charcount, "%c", menustring[i]);
           charcount++;
-        } else if ( menustring[i] == '>' ) {
+      } else if ( menustring[i] == '>' ) {
           i++;
           attroff(A_BOLD);
           mvprintw(line, col + charcount, "%c", menustring[i]);
           charcount++;
-        } else {
+      } else if ( menustring[i] == '\\' ) {
+          i++;
+          mvprintw(line, col + charcount, "%c", menustring[i]);
+          charcount++;
+      } else {
           mvprintw(line, col + charcount, "%c", menustring[i]);
           charcount++;
         }
@@ -98,19 +104,21 @@ void show_directory_input()
   move(0,33);
   readline(currentpwd, 1024, oldpwd);
   curs_set(FALSE);
-  if (!check_dir(currentpwd)){
-    quit_menu();
+  if (strcmp(currentpwd, oldpwd) && strcmp(currentpwd, "")){
+    if (!check_dir(currentpwd)){
+      quit_menu();
+    }
+    if (strcmp(oldpwd,currentpwd)){
+      set_history(currentpwd, topfileref, selected);
+    }
+    topfileref = 0;
+    selected = 0;
+    chdir(currentpwd);
+    ob = get_dir(currentpwd);
+    clear_workspace();
+    reorder_ob(ob, sortmode);
+    display_dir(currentpwd, ob, 0, selected);
   }
-  if (strcmp(oldpwd,currentpwd)){
-    set_history(currentpwd, topfileref, selected);
-  }
-  topfileref = 0;
-  selected = 0;
-  chdir(currentpwd);
-  ob = get_dir(currentpwd);
-  clear_workspace();
-  reorder_ob(ob, sortmode);
-  display_dir(currentpwd, ob, 0, selected);
   printMenu(0, 0, fileMenuText);
   printMenu(LINES-1, 0, functionMenuText);
   directory_view_menu_inputs0();
@@ -151,24 +159,27 @@ void copy_file_input(char *file)
   move(0,14);
   readline(newfile, 1024, file);
   curs_set(FALSE);
-  if ( check_file(newfile) )
-    {
-      replace_file_confirm(newfile);
-      if ( replace_file_confirm_input() )
-        {
-          copy_file(file, newfile);
-          ob = get_dir(currentpwd);
-          clear_workspace();
-          reorder_ob(ob, sortmode);
-          display_dir(currentpwd, ob, 0, selected);
-        }
-    } else {
-    copy_file(file, newfile);
-    ob = get_dir(currentpwd);
-    clear_workspace();
-    reorder_ob(ob, sortmode);
-    display_dir(currentpwd, ob, 0, selected);
+  // If the two values don't match, we want to do the copy
+  if ( strcmp(newfile, file) && strcmp(newfile, "")) {
+    if ( check_file(newfile) )
+      {
+        replace_file_confirm(newfile);
+        if ( replace_file_confirm_input() )
+          {
+            copy_file(file, newfile);
+            ob = get_dir(currentpwd);
+            clear_workspace();
+            reorder_ob(ob, sortmode);
+            display_dir(currentpwd, ob, 0, selected);
+          }
+      } else {
+      copy_file(file, newfile);
+      ob = get_dir(currentpwd);
+      clear_workspace();
+      reorder_ob(ob, sortmode);
+      display_dir(currentpwd, ob, 0, selected);
     }
+  }
   printMenu(0, 0, fileMenuText);
   printMenu(LINES-1, 0, functionMenuText);
   directory_view_menu_inputs0();
@@ -187,37 +198,38 @@ void copy_multi_file_input(results* ob, char *input)
   move(0, 24);
   readline(dest, 1024, input);
   curs_set(FALSE);
-  // Some actions
+  if ( strcmp(dest, input) && strcmp(dest, "")) {
 
-  if ( check_dir(dest) ){
-    for (i = 0; i < totalfilecount; i++)
-      {
-        if ( *ob[i].marked )
-          {
-            strcpy(selfile, currentpwd);
-            if (!check_last_char(selfile, "/")){
-              strcat(selfile, "/");
+    if ( check_dir(dest) ){
+      for (i = 0; i < totalfilecount; i++)
+        {
+          if ( *ob[i].marked )
+            {
+              strcpy(selfile, currentpwd);
+              if (!check_last_char(selfile, "/")){
+                strcat(selfile, "/");
+              }
+              strcat(selfile, ob[i].name);
+              strcpy(destfile, dest);
+              if (!check_last_char(destfile, "/")){
+                strcat(destfile, "/");
+              }
+              strcat(destfile, ob[i].name);
+              if ( check_file(destfile) )
+                {
+                  replace_file_confirm(destfile);
+                  if ( replace_file_confirm_input() )
+                    {
+                      copy_file(selfile, dest);
+                    }
+                } else {
+                copy_file(selfile, dest);
+              }
             }
-            strcat(selfile, ob[i].name);
-            strcpy(destfile, dest);
-            if (!check_last_char(destfile, "/")){
-              strcat(destfile, "/");
-            }
-            strcat(destfile, ob[i].name);
-            if ( check_file(destfile) )
-              {
-                replace_file_confirm(destfile);
-                if ( replace_file_confirm_input() )
-                  {
-                    copy_file(selfile, dest);
-                  }
-              } else {
-              copy_file(selfile, dest);
-            }
-          }
-      }
-  } else {
-    topLineMessage("Error: Directory Not Found.");
+        }
+    } else {
+      topLineMessage("Error: Directory Not Found.");
+    }
   }
   printMenu(0, 0, fileMenuText);
   directory_view_menu_inputs0();
@@ -236,41 +248,43 @@ void rename_multi_file_input(results* ob, char *input)
   move(0, 26);
   readline(dest, 1024, input);
   curs_set(FALSE);
-
-  if ( check_dir(dest) ){
-    for (i = 0; i < totalfilecount; i++)
-      {
-        if ( *ob[i].marked )
-          {
-            strcpy(selfile, currentpwd);
-            if (!check_last_char(selfile, "/")){
-              strcat(selfile, "/");
+  if (strcmp(dest, input) && strcmp(dest, "")){
+    if ( check_dir(dest) ){
+      for (i = 0; i < totalfilecount; i++)
+        {
+          if ( *ob[i].marked )
+            {
+              strcpy(selfile, currentpwd);
+              if (!check_last_char(selfile, "/")){
+                strcat(selfile, "/");
+              }
+              strcat(selfile, ob[i].name);
+              strcpy(destfile, dest);
+              if (!check_last_char(destfile, "/")){
+                strcat(destfile, "/");
+              }
+              strcat(destfile, ob[i].name);
+              if ( check_file(destfile) )
+                {
+                  replace_file_confirm(destfile);
+                  if ( replace_file_confirm_input() )
+                    {
+                      RenameObject(selfile, destfile);
+                    }
+                } else {
+                RenameObject(selfile, destfile);
+              }
             }
-            strcat(selfile, ob[i].name);
-            strcpy(destfile, dest);
-            if (!check_last_char(destfile, "/")){
-              strcat(destfile, "/");
-            }
-            strcat(destfile, ob[i].name);
-            if ( check_file(destfile) )
-              {
-                replace_file_confirm(destfile);
-                if ( replace_file_confirm_input() )
-                  {
-                    RenameObject(selfile, destfile);
-                  }
-              } else {
-              RenameObject(selfile, destfile);
-            }
-          }
-      }
-  } else {
-    topLineMessage("Error: Directory Not Found.");
+        }
+    } else {
+      topLineMessage("Error: Directory Not Found.");
+    }
+    ob = get_dir(currentpwd);
+    clear_workspace();
+    reorder_ob(ob, sortmode);
+    display_dir(currentpwd, ob, 0, selected);
   }
-  ob = get_dir(currentpwd);
-  clear_workspace();
-  reorder_ob(ob, sortmode);
-  display_dir(currentpwd, ob, 0, selected);
+
   printMenu(0, 0, fileMenuText);
   directory_view_menu_inputs0();
 }
@@ -299,23 +313,25 @@ void rename_file_input(char *file)
   move(0,16);
   readline(dest, 1024, file);
   curs_set(FALSE);
-  if ( check_file(dest) )
-    {
-      replace_file_confirm(dest);
-      if ( replace_file_confirm_input() )
-        {
-          RenameObject(file, dest);
-          ob = get_dir(currentpwd);
-          clear_workspace();
-          reorder_ob(ob, sortmode);
-          display_dir(currentpwd, ob, 0, selected);
-        }
-    } else {
-    RenameObject(file, dest);
-    ob = get_dir(currentpwd);
-    clear_workspace();
-    reorder_ob(ob, sortmode);
-    display_dir(currentpwd, ob, 0, selected);
+  if (strcmp(dest, file) && strcmp(dest, "")){
+    if ( check_file(dest) )
+      {
+        replace_file_confirm(dest);
+        if ( replace_file_confirm_input() )
+          {
+            RenameObject(file, dest);
+            ob = get_dir(currentpwd);
+            clear_workspace();
+            reorder_ob(ob, sortmode);
+            display_dir(currentpwd, ob, 0, selected);
+          }
+      } else {
+      RenameObject(file, dest);
+      ob = get_dir(currentpwd);
+      clear_workspace();
+      reorder_ob(ob, sortmode);
+      display_dir(currentpwd, ob, 0, selected);
+    }
   }
   printMenu(0, 0, fileMenuText);
   printMenu(LINES-1, 0, functionMenuText);
@@ -334,12 +350,14 @@ void make_directory_input()
     strcat(currentpwd, "/");
   }
   readline(newdir, 1024, currentpwd);
-  mk_dir(newdir);
-  curs_set(FALSE);
-  ob = get_dir(currentpwd);
-  clear_workspace();
-  reorder_ob(ob, sortmode);
-  display_dir(currentpwd, ob, 0, selected);
+  if (strcmp(newdir, currentpwd) && strcmp(newdir, "")){
+    mk_dir(newdir);
+    curs_set(FALSE);
+    ob = get_dir(currentpwd);
+    clear_workspace();
+    reorder_ob(ob, sortmode);
+    display_dir(currentpwd, ob, 0, selected);
+  }
   printMenu(0, 0, fileMenuText);
   printMenu(LINES-1, 0, functionMenuText);
   directory_view_menu_inputs0();
@@ -425,6 +443,7 @@ void delete_multi_file_confirm_input(results* ob)
 
 void sort_view_inputs()
 {
+  viewMode = 3;
   while(1)
     {
       *pc = getch();
@@ -645,6 +664,7 @@ void modify_permissions_input()
 
 void modify_key_menu_inputs()
 {
+  viewMode = 2;
   while(1)
     {
       *pc = getch();
@@ -666,6 +686,7 @@ void modify_key_menu_inputs()
 
 void directory_view_menu_inputs1()
 {
+  viewMode = 1;
   while(1)
     {
       *pc = getch();
@@ -688,6 +709,9 @@ void directory_view_menu_inputs1()
           display_dir(currentpwd, ob, topfileref, selected);
           directory_view_menu_inputs0();
           break;
+        case 'h':
+          topLineMessage("Documentation coming soon");
+          break;
         case 'q':
           quit_menu();
           break;
@@ -696,7 +720,6 @@ void directory_view_menu_inputs1()
           show_directory_inputs();
           break;
         case 27:
-          inputmode = 0; // Don't think this does anything
           printMenu(0, 0, fileMenuText);
           directory_view_menu_inputs0();
           break;
@@ -709,8 +732,12 @@ void directory_view_menu_inputs1()
 
 void directory_view_menu_inputs0()
 {
+  viewMode = 0;
+  int e = 0;
   while(1)
     {
+      //signal(SIGWINCH, refreshScreen );
+      //sigaction(SIGWINCH, &sa, NULL);
       *pc = getch();
       switch(*pc)
         {
@@ -829,14 +856,13 @@ void directory_view_menu_inputs0()
             reorder_ob(ob, sortmode);
             display_dir(currentpwd, ob, topfileref, selected);
           } else {
-            SendToPager(chpwd);
+            e = SendToPager(chpwd);
             printMenu(0, 0, fileMenuText);
             printMenu(LINES-1, 0, functionMenuText);
             display_dir(currentpwd, ob, topfileref, selected);
           }
           break;
         case 27:
-          inputmode = 1;
           printMenu(0, 0, globalMenuText);
           directory_view_menu_inputs1();
           break;
@@ -948,6 +974,9 @@ void directory_view_menu_inputs0()
           printMenu(0, 0, sortMenuText);
           sort_view_inputs();
           break;
+        case 274: // F10
+          refreshScreen();
+          break;
         case 262: // Home
           selected = topfileref;
           display_dir(currentpwd, ob, topfileref, selected);
@@ -964,6 +993,7 @@ void directory_view_menu_inputs0()
 }
 void directory_change_menu_inputs()
 {
+  viewMode = 4;
   while(1)
     {
       *pc = getch();
@@ -982,6 +1012,9 @@ void directory_change_menu_inputs()
         case 'e':
           edit_file_input();
           printMenu(0, 0, globalMenuText);
+          break;
+        case 'h':
+          topLineMessage("Documentation coming soon");
           break;
         case 'q':
           exittoshell();
