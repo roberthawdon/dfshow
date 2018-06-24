@@ -23,6 +23,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <signal.h>
+#include <getopt.h>
 #include "functions.h"
 #include "views.h"
 #include "menus.h"
@@ -42,6 +43,7 @@ extern int topfileref;
 extern int selected;
 extern int totalfilecount;
 extern char sortmode[5];
+extern int showhidden;
 
 struct sigaction sa;
 
@@ -97,6 +99,38 @@ int exittoshell()
 
 int main(int argc, char *argv[])
 {
+
+  int c;
+
+  // Getting arguments
+  while (1)
+    {
+      static struct option long_options[] =
+        {
+         {"all",     no_argument,       0, 'a'},
+         {0, 0, 0, 0}
+        };
+      int option_index = 0;
+
+      c = getopt_long(argc, argv, "a", long_options, &option_index);
+
+      if ( c == -1 ){
+        break;
+      }
+
+    switch(c){
+    case 'a':
+      showhidden = 1;
+      break;
+    default:
+      // abort();
+      exit(2);
+    }
+  }
+
+
+
+
   // Writing Menus
   strcpy(fileMenuText, "!Copy, !Delete, !Edit, !Hidden, !Modify, !Quit, !Rename, !Show");
   strcpy(globalMenuText, "!Run command, !Edit file, !Help, !Make dir, !Quit, !Show dir");
@@ -128,12 +162,16 @@ int main(int argc, char *argv[])
   curs_set(FALSE); // Hide Curser (Will want to bring it back later)
   keypad(stdscr, TRUE);
 
-  if ( argc < 2 ){
-    getcwd(currentpwd, sizeof(currentpwd));
-  } else {
-    strcpy(currentpwd, argv[1]);
+
+
+  // Remaining arguments passed as working directory
+  if (optind < argc){
+    strcpy(currentpwd, argv[optind]);
     chdir(currentpwd);
+  } else {
+    getcwd(currentpwd, sizeof(currentpwd));
   }
+
   if (!check_dir(currentpwd)){
     //strcpy(currentpwd, "/"); // If dir doesn't exist, default to root
     quit_menu();
