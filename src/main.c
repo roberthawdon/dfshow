@@ -38,6 +38,9 @@ char sortMenuText[256];
 
 int viewMode = 0;
 
+char sortmode[5] = "name";
+int reverse = 0;
+
 extern results* ob;
 extern int topfileref;
 extern int selected;
@@ -109,11 +112,12 @@ int main(int argc, char *argv[])
         {
          {"all",            no_argument,       0, 'a'},
          {"almost-all",     no_argument,       0, 'A'},
+         {"reverse",        no_argument,       0, 'r'},
          {0, 0, 0, 0}
         };
       int option_index = 0;
 
-      c = getopt_long(argc, argv, "aA", long_options, &option_index);
+      c = getopt_long(argc, argv, "aAStr", long_options, &option_index);
 
       if ( c == -1 ){
         break;
@@ -124,6 +128,15 @@ int main(int argc, char *argv[])
       // Dropthourgh
     case 'a':
       showhidden = 1;
+      break;
+    case 'S':
+      strcpy(sortmode, "size");
+      break;
+    case 't':
+      strcpy(sortmode, "date");
+      break;
+    case 'r':
+      reverse = 1;
       break;
     default:
       // abort();

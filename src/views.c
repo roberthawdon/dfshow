@@ -14,6 +14,8 @@ extern char fileMenuText[256];
 extern char globalMenuText[256];
 extern char functionMenuText[256];
 
+extern char sortmode[5];
+
 int directory_view(char * currentpwd)
 {
   topfileref = 0;
@@ -26,7 +28,7 @@ int directory_view(char * currentpwd)
 
   set_history(currentpwd, 0, 0);
   ob = get_dir(currentpwd);
-  reorder_ob(ob, "name");
+  reorder_ob(ob, sortmode);
   display_dir(currentpwd, ob, topfileref, 0);
 
   // function_key_menu();

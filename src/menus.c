@@ -13,8 +13,6 @@
 #include "main.h"
 #include "views.h"
 
-char sortmode[5] = "name";
-
 int c;
 int * pc = &c;
 
@@ -43,6 +41,8 @@ extern int showhidden;
 extern int markall;
 extern int viewMode;
 
+extern int reverse;
+
 extern char fileMenuText[256];
 extern char globalMenuText[256];
 extern char functionMenuText[256];
@@ -50,6 +50,8 @@ extern char modifyMenuText[256];
 extern char sortMenuText[256];
 
 extern struct sigaction sa;
+
+extern char sortmode[5];
 
 //char testMenu[256];
 
@@ -449,35 +451,40 @@ void sort_view_inputs()
       *pc = getch();
       switch(*pc)
         {
-        case 'n':
-          clear_workspace();
-          strcpy(sortmode, "name");
-          reorder_ob(ob, sortmode);
-          display_dir(currentpwd, ob, topfileref, selected);
-          printMenu(0, 0, fileMenuText);
-          directory_view_menu_inputs0();
-          break;
-        case 'd':
-          clear_workspace();
-          strcpy(sortmode, "date");
-          reorder_ob(ob, sortmode);
-          display_dir(currentpwd, ob, topfileref, selected);
-          printMenu(0, 0, fileMenuText);
-          directory_view_menu_inputs0();
-          break;
-        case 's':
-          clear_workspace();
-          strcpy(sortmode, "size");
-          reorder_ob(ob, sortmode);
-          display_dir(currentpwd, ob, topfileref, selected);
-          printMenu(0, 0, fileMenuText);
-          directory_view_menu_inputs0();
-          break;
         case 27: // ESC Key
           printMenu(0, 0, fileMenuText);
           directory_view_menu_inputs0();
           break;
+        case 'n':
+          strcpy(sortmode, "name");
+          reverse = 0;
+          break;
+        case 'd':
+          strcpy(sortmode, "date");
+          reverse = 0;
+          break;
+        case 's':
+          strcpy(sortmode, "size");
+          reverse = 0;
+          break;
+        case 'N':
+          strcpy(sortmode, "name");
+          reverse = 1;
+          break;
+        case 'D':
+          strcpy(sortmode, "date");
+          reverse = 1;
+          break;
+        case 'S':
+          strcpy(sortmode, "size");
+          reverse = 1;
+          break;
         }
+      clear_workspace();
+      reorder_ob(ob, sortmode);
+      display_dir(currentpwd, ob, topfileref, selected);
+      printMenu(0, 0, fileMenuText);
+      directory_view_menu_inputs0();
     }
 }
 

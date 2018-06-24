@@ -54,6 +54,7 @@ history *hs;
 
 extern char currentpwd[1024];
 extern int viewMode;
+extern int reverse;
 
 void readline(char *buffer, int buflen, char *oldbuf)
 /* Read up to buflen-1 characters into `buffer`.
@@ -491,7 +492,13 @@ int cmp_dflist_name(const void *lhs, const void *rhs)
   results *dforderA = (results *)lhs;
   results *dforderB = (results *)rhs;
 
-  return strcmp(dforderA->name, dforderB->name);
+  if (reverse){
+    // Names in reverse order
+    return strcmp(dforderB->name, dforderA->name);
+  } else {
+    // Names alphabetical
+    return strcmp(dforderA->name, dforderB->name);
+  }
 
 }
 
@@ -500,7 +507,13 @@ int cmp_dflist_date(const void *lhs, const void *rhs)
   results *dforderA = (results *)lhs;
   results *dforderB = (results *)rhs;
 
-  return strcmp(dforderA->date, dforderB->date);
+  if (reverse){
+    // Oldest to Newest
+    return strcmp(dforderA->date, dforderB->date);
+  } else {
+    // Newest to Oldest
+    return strcmp(dforderB->date, dforderA->date);
+  }
 
 }
 
@@ -509,7 +522,13 @@ int cmp_dflist_size(const void *lhs, const void *rhs)
   results *dforderA = (results *)lhs;
   results *dforderB = (results *)rhs;
 
-  return (*dforderA->size - *dforderB->size);
+  if (reverse) {
+    // Smallest to largest
+    return (*dforderA->size - *dforderB->size);
+  } else {
+    // Largest to smallest
+    return (*dforderB->size - *dforderA->size);
+  }
 
 }
 
