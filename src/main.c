@@ -107,18 +107,21 @@ int main(int argc, char *argv[])
     {
       static struct option long_options[] =
         {
-         {"all",     no_argument,       0, 'a'},
+         {"all",            no_argument,       0, 'a'},
+         {"almost-all",     no_argument,       0, 'A'},
          {0, 0, 0, 0}
         };
       int option_index = 0;
 
-      c = getopt_long(argc, argv, "a", long_options, &option_index);
+      c = getopt_long(argc, argv, "aA", long_options, &option_index);
 
       if ( c == -1 ){
         break;
       }
 
     switch(c){
+    case 'A':
+      // Dropthourgh
     case 'a':
       showhidden = 1;
       break;
