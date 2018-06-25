@@ -27,6 +27,7 @@
 #include "functions.h"
 #include "views.h"
 #include "menus.h"
+#include "main.h"
 
 char currentpwd[1024];
 
@@ -100,6 +101,27 @@ int exittoshell()
   return 0;
 }
 
+void printHelp(){
+  printf (("Usage: %s [OPTION]... [FILE]...\n"), "show");
+  fputs (("\n\
+DF-SHOW: An interactive directory and file browser written for POSIX systems.\n\
+Based on the SHOW application from the PC-DOS DF-EDIT suite by Larry Kroeker.\n"), stdout);
+  fputs (("\n\
+Sorts objects alphabetically if -St is not set.\n\
+"), stdout);
+  fputs (("\n\
+  -a, --all                  do not ignore entries starting with .\n\
+  -r, --reverse              reverse order while sorting\n\
+  -S                         sort file by size, largest first\n\
+  -t                         sort by modification time, newest first\n\
+      --help                 displays this help message, then exits\n"), stdout);
+  fputs (("\n\
+Exit status:\n\
+ 0  if OK,\n\
+ 1  if minor problems (e.g., cannot access subdirectory)\n\
+ 2  if major problems (e.g., cannot access command-line arguement)\n"), stdout);
+}
+
 int main(int argc, char *argv[])
 {
 
@@ -113,6 +135,7 @@ int main(int argc, char *argv[])
          {"all",            no_argument,       0, 'a'},
          {"almost-all",     no_argument,       0, 'A'},
          {"reverse",        no_argument,       0, 'r'},
+         {"help",           no_argument,       0, GETOPT_HELP_CHAR},
          {0, 0, 0, 0}
         };
       int option_index = 0;
@@ -138,6 +161,9 @@ int main(int argc, char *argv[])
     case 'r':
       reverse = 1;
       break;
+    case GETOPT_HELP_CHAR:
+      printHelp();
+      exit(0);
     default:
       // abort();
       exit(2);
