@@ -110,6 +110,7 @@ Based on the SHOW application from the PC-DOS DF-EDIT suite by Larry Kroeker.\n"
 Sorts objects alphabetically if -St is not set.\n\
 "), stdout);
   fputs (("\n\
+Application Options:\n\
   -a, --all                  do not ignore entries starting with .\n\
   -r, --reverse              reverse order while sorting\n\
   -S                         sort file by size, largest first\n\
@@ -118,8 +119,10 @@ Sorts objects alphabetically if -St is not set.\n\
   fputs (("\n\
 Exit status:\n\
  0  if OK,\n\
- 1  if minor problems (e.g., cannot access subdirectory)\n\
- 2  if major problems (e.g., cannot access command-line arguement)\n"), stdout);
+ 1  if minor problems (e.g., cannot access subdirectory),\n\
+ 2  if major problems (e.g., cannot access command-line arguement).\n"), stdout);
+  fputs (("\n\
+Please report any bugs to: <https://github.com/roberthawdon/dfshow/issues>\n"), stdout);
 }
 
 int main(int argc, char *argv[])
