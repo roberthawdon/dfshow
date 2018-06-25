@@ -112,9 +112,11 @@ Sorts objects alphabetically if -St is not set.\n\
   fputs (("\n\
 Application Options:\n\
   -a, --all                  do not ignore entries starting with .\n\
+  -f                         do not sort, enables -aU\n\
   -r, --reverse              reverse order while sorting\n\
   -S                         sort file by size, largest first\n\
   -t                         sort by modification time, newest first\n\
+  -U                         do not sort; lists objects in directory order\n\
       --help                 displays this help message, then exits\n"), stdout);
   fputs (("\n\
 Exit status:\n\
@@ -143,7 +145,7 @@ int main(int argc, char *argv[])
         };
       int option_index = 0;
 
-      c = getopt_long(argc, argv, "aAStr", long_options, &option_index);
+      c = getopt_long(argc, argv, "aAfStrU", long_options, &option_index);
 
       if ( c == -1 ){
         break;
@@ -155,6 +157,10 @@ int main(int argc, char *argv[])
     case 'a':
       showhidden = 1;
       break;
+    case 'f':
+      strcpy(sortmode, "none"); // This can be set to anything non valid
+      showhidden = 1;
+      break;
     case 'S':
       strcpy(sortmode, "size");
       break;
@@ -163,6 +169,9 @@ int main(int argc, char *argv[])
       break;
     case 'r':
       reverse = 1;
+      break;
+    case 'U':
+      strcpy(sortmode, "none"); // Again, invalid
       break;
     case GETOPT_HELP_CHAR:
       printHelp(argv[0]);
