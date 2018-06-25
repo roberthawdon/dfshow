@@ -101,8 +101,8 @@ int exittoshell()
   return 0;
 }
 
-void printHelp(){
-  printf (("Usage: %s [OPTION]... [FILE]...\n"), "show");
+void printHelp(char *programName){
+  printf (("Usage: %s [OPTION]... [FILE]...\n"), programName);
   fputs (("\n\
 DF-SHOW: An interactive directory and file browser written for POSIX systems.\n\
 Based on the SHOW application from the PC-DOS DF-EDIT suite by Larry Kroeker.\n"), stdout);
@@ -165,7 +165,7 @@ int main(int argc, char *argv[])
       reverse = 1;
       break;
     case GETOPT_HELP_CHAR:
-      printHelp();
+      printHelp(argv[0]);
       exit(0);
     default:
       // abort();
