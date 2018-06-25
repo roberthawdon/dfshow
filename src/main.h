@@ -10,3 +10,4 @@ enum
 void refreshScreen();
 int exittoshell();
 void printHelp();
+void printVersion();

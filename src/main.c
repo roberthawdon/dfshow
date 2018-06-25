@@ -117,7 +117,8 @@ Application Options:\n\
   -S                         sort file by size, largest first\n\
   -t                         sort by modification time, newest first\n\
   -U                         do not sort; lists objects in directory order\n\
-      --help                 displays this help message, then exits\n"), stdout);
+      --help                 displays this help message, then exits\n\
+      --version              displays version, then exits\n"), stdout);
   fputs (("\n\
 Exit status:\n\
  0  if OK,\n\
@@ -125,6 +126,15 @@ Exit status:\n\
  2  if major problems (e.g., cannot access command-line arguement).\n"), stdout);
   fputs (("\n\
 Please report any bugs to: <https://github.com/roberthawdon/dfshow/issues>\n"), stdout);
+}
+
+void printVersion(char *programName){
+  printf (("%s %s\n"), programName, "0.0.2"); // Needs to be dynamic
+  fputs (("\
+Copyright (C) 2018 Robert Ian Hawdon\n\
+License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.\n\
+This program comes with ABSOLUTELY NO WARRANTY. This is free software, and you\n\
+are welcome to redistribute it under certain conditions.\n"), stdout);
 }
 
 int main(int argc, char *argv[])
@@ -141,6 +151,7 @@ int main(int argc, char *argv[])
          {"almost-all",     no_argument,       0, 'A'},
          {"reverse",        no_argument,       0, 'r'},
          {"help",           no_argument,       0, GETOPT_HELP_CHAR},
+         {"version",        no_argument,       0, GETOPT_VERSION_CHAR},
          {0, 0, 0, 0}
         };
       int option_index = 0;
@@ -176,6 +187,11 @@ int main(int argc, char *argv[])
     case GETOPT_HELP_CHAR:
       printHelp(argv[0]);
       exit(0);
+      break;
+    case GETOPT_VERSION_CHAR:
+      printVersion(argv[0]);
+      exit(0);
+      break;
     default:
       // abort();
       exit(2);
