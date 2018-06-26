@@ -188,6 +188,7 @@ int main(int argc, char *argv[])
       human = 1;
       break;
     case GETOPT_SI_CHAR:
+      human = 1;
       si = 1;
       break;
     case 'r':
