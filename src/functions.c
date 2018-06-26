@@ -55,6 +55,8 @@ history *hs;
 extern char currentpwd[1024];
 extern int viewMode;
 extern int reverse;
+extern int human;
+extern int si;
 
 void readline(char *buffer, int buflen, char *oldbuf)
 /* Read up to buflen-1 characters into `buffer`.
@@ -134,6 +136,30 @@ void readline(char *buffer, int buflen, char *oldbuf)
   if (old_curs != ERR) curs_set(old_curs);
 }
 
+char *readableSize(double size, char *buf, int si){
+  int i = 0;
+  int powers = 1024;
+  if (si){
+    powers = 1000;
+  }
+  const char* units[] = {"", "K", "M", "G", "T", "P", "E", "Z", "Y"};
+  char unitOut[2];
+  while ( size >= powers){
+    size /= powers;
+    i++;
+    if ( i == 10 ){
+      break; // Come back and see me when 1024+ YB is an everyday occurance
+    }
+  }
+  sprintf(unitOut, "%s", units[i]);
+  if (si){
+    // si units used
+    unitOut[0] = tolower(*unitOut);
+  }
+  sprintf(buf, "%.*f%s", i, size, unitOut);
+  return (buf);
+}
+
 void padstring(char *str, int len, char c)
 {
   int slen = strlen(str);
@@ -188,16 +214,23 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int sizelen
 
   int entrylen = 0;
 
-  if ( (ogminlen - oglen) > 0 ) {
+  if ( (ogminlen - ogseglen) > 0 ) {
     ogpad = ogminlen - oglen;
   } else {
     ogpad = ogseglen - oglen;
   }
 
   char *s1, *s2, *s3;
-  char *sizestring = malloc (sizeof (char) * sizelen + 1);
 
-  sprintf(sizestring, "%lu", *ob[currentitem].size);
+  char *sizestring;
+
+  if (human){
+    sizestring = malloc (sizeof (char) * 10);
+    readableSize(*ob[currentitem].size, sizestring, si);
+  } else {
+    sizestring = malloc (sizeof (char) * sizelen + 1);
+    sprintf(sizestring, "%lu", *ob[currentitem].size);
+  }
 
   // Redefining width of Size value if the all sizes are smaller than the header.
   if ( sizelen < sizeminlen ) {
@@ -216,7 +249,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int sizelen
     strcpy(marked, " ");
   }
 
-  swprintf(entry, 1024, L"%s %s%s%i %s%s%s%s%lu %s  %s", marked, ob[currentitem].perm, s1, *ob[currentitem].hlink, ob[currentitem].owner, s2, ob[currentitem].group, s3, *ob[currentitem].size, ob[currentitem].date, ob[currentitem].name);
+  swprintf(entry, 1024, L"%s %s%s%i %s%s%s%s%s %s  %s", marked, ob[currentitem].perm, s1, *ob[currentitem].hlink, ob[currentitem].owner, s2, ob[currentitem].group, s3, sizestring, ob[currentitem].date, ob[currentitem].name);
 
   entrylen = wcslen(entry);
   // mvprintw(4 + listref, start, "%s", entry);
@@ -757,7 +790,6 @@ results* get_dir(char *pwd)
           count++;
         }
 
-
         totalfilecount = count;
         closedir ( folder );
 
@@ -809,6 +841,20 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   char sizeHeader[256], headings[256];
   int i, s1, s2, s3;
 
+  char *susedString, *savailableString; 
+
+  if (human) {
+    susedString = malloc (sizeof (char) * 10);
+    savailableString = malloc (sizeof (char) * 10);
+    readableSize(sused, susedString, si);
+    readableSize(savailable, savailableString, si);
+  } else {
+    susedString = malloc (sizeof (char) * sizeof(sused) + 1);
+    savailableString = malloc (sizeof (char) * sizeof(savailable) + 1);
+    sprintf(susedString, "%lu", sused);
+    sprintf(savailableString, "%lu", savailable);
+  }
+
   strcpy(headAttrs, "---Attrs---");
   strcpy(headOG, "-Owner & Group-");
   strcpy(headSize, "-Size-");
@@ -828,19 +874,6 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
     }
 
     ownstart = hlinklen + 2;
-    // groupstart = ownerlen - strlen(ob[list_count + topfileref].owner) + 1;
-    // if (ownerlen + 1 + grouplen < 16) {
-    //   sizestart = ownstart + 16;
-    // } else {
-    //   sizestart = groupstart + grouplen + 1;
-    // }
-    // if (sizelen < 7) {
-    //   datestart = sizestart + 7;
-    // } else {
-    //   datestart = sizestart + sizelen + 1;
-    // }
-    // sizeobjectstart = datestart - 1 - *ob[list_count + topfileref].sizelens;
-    // namestart = datestart + 18;
     hlinkstart = ownstart - 1 - *ob[list_count + topfileref].hlinklens;
 
     printEntry(2, hlinklen, ownerlen, grouplen, sizelen, namelen, printSelect, list_count, topfileref, ob);
@@ -863,7 +896,7 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
     s2 = 0;
   }
 
-  sprintf(sizeHeader, "%i Objects   %lu Used %lu Available", count, sused, savailable);
+  sprintf(sizeHeader, "%i Objects   %s Used %s Available", count, susedString, savailableString);
   sprintf(headings, "%s%s%s%s%s%s%s%s%s%s", headAttrs, genPadding(hlinklen + 1), headOG, genPadding(s1), genPadding(s2), headSize, genPadding(1), headDT, genPadding(1), headName);
 
   attron(COLOR_PAIR(2));
@@ -872,12 +905,9 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   printLine(2, 2, sizeHeader);
 
   printLine (3, 4, headings);
-  // mvprintw(3, 4, "---Attrs---");
-  // mvprintw(3, 14 + ownstart, "-Owner & Group-");
-  // mvprintw(3, 14 + datestart - 7, "-Size-");
-  // mvprintw(3, 14 + datestart, "---Date & Time---");
-  // mvprintw(3, 14 + namestart, "----Name----");
   attron(COLOR_PAIR(1));
+  free(susedString);
+  free(savailableString);
 }
 
 void resizeDisplayDir(results* ob){

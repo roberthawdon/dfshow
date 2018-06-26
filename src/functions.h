@@ -50,3 +50,4 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int sizelen
 void padstring(char *str, int len, char c);
 char *genPadding(int num_of_spaces);
 void resizeDisplayDir(results* ob);
+char *readableSize(double size, char *buf, int si);

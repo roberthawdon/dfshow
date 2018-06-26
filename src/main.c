@@ -41,6 +41,8 @@ int viewMode = 0;
 
 char sortmode[5] = "name";
 int reverse = 0;
+int human = 0;
+int si = 0;
 
 extern results* ob;
 extern int topfileref;
@@ -113,6 +115,7 @@ Sorts objects alphabetically if -St is not set.\n\
 Application Options:\n\
   -a, --all                  do not ignore entries starting with .\n\
   -f                         do not sort, enables -aU\n\
+  -h, --human-readable       print sizes like 1K 234M 2G etc.\n\
   -r, --reverse              reverse order while sorting\n\
   -S                         sort file by size, largest first\n\
   -t                         sort by modification time, newest first\n\
@@ -149,6 +152,7 @@ int main(int argc, char *argv[])
         {
          {"all",            no_argument,       0, 'a'},
          {"almost-all",     no_argument,       0, 'A'},
+         {"human-readable", no_argument,       0, 'h'},
          {"reverse",        no_argument,       0, 'r'},
          {"help",           no_argument,       0, GETOPT_HELP_CHAR},
          {"version",        no_argument,       0, GETOPT_VERSION_CHAR},
@@ -156,7 +160,7 @@ int main(int argc, char *argv[])
         };
       int option_index = 0;
 
-      c = getopt_long(argc, argv, "aAfStrU", long_options, &option_index);
+      c = getopt_long(argc, argv, "aAfSthrU", long_options, &option_index);
 
       if ( c == -1 ){
         break;
@@ -177,6 +181,9 @@ int main(int argc, char *argv[])
       break;
     case 't':
       strcpy(sortmode, "date");
+      break;
+    case 'h':
+      human = 1;
       break;
     case 'r':
       reverse = 1;
