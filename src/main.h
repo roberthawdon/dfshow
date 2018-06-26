@@ -4,7 +4,8 @@
 enum
   {
    GETOPT_HELP_CHAR = (CHAR_MIN - 2),
-   GETOPT_VERSION_CHAR = (CHAR_MIN - 3)
+   GETOPT_VERSION_CHAR = (CHAR_MIN - 3),
+   GETOPT_SI_CHAR = (CHAR_MIN - 4)
   };
 
 void refreshScreen();

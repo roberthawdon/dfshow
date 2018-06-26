@@ -116,6 +116,7 @@ Application Options:\n\
   -a, --all                  do not ignore entries starting with .\n\
   -f                         do not sort, enables -aU\n\
   -h, --human-readable       print sizes like 1K 234M 2G etc.\n\
+      --si                   use powers of 1000 not 1024\n\
   -r, --reverse              reverse order while sorting\n\
   -S                         sort file by size, largest first\n\
   -t                         sort by modification time, newest first\n\
@@ -154,6 +155,7 @@ int main(int argc, char *argv[])
          {"almost-all",     no_argument,       0, 'A'},
          {"human-readable", no_argument,       0, 'h'},
          {"reverse",        no_argument,       0, 'r'},
+         {"si",             no_argument,       0, GETOPT_SI_CHAR},
          {"help",           no_argument,       0, GETOPT_HELP_CHAR},
          {"version",        no_argument,       0, GETOPT_VERSION_CHAR},
          {0, 0, 0, 0}
@@ -184,6 +186,9 @@ int main(int argc, char *argv[])
       break;
     case 'h':
       human = 1;
+      break;
+    case GETOPT_SI_CHAR:
+      si = 1;
       break;
     case 'r':
       reverse = 1;
