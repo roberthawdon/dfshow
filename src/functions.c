@@ -253,7 +253,7 @@ int check_file(char *file){
 
 char * dirFromPath (const char* myStr){
 
-  char *outStr = (char *) malloc(sizeof(myStr));
+  char *outStr = (char *) malloc(strlen(myStr) + 1);
 
   strcpy(outStr, myStr);
 
