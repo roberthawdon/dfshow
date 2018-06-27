@@ -460,7 +460,11 @@ int seglength(const void *seg, char *segname, int LEN)
     longest = strlen(hlinkstr);
   }
   else if (!strcmp(segname, "size")) {
-    sprintf(sizestr, "%d", *dfseg[0].size);
+    if (human){
+      readableSize(*dfseg[0].size, sizestr, si);
+    } else {
+      sprintf(sizestr, "%d", *dfseg[0].size);
+    }
     longest = strlen(sizestr);
   }
   else if (!strcmp(segname, "name")) {
@@ -485,7 +489,11 @@ int seglength(const void *seg, char *segname, int LEN)
         len = strlen(hlinkstr);
       }
       else if (!strcmp(segname, "size")) {
-        sprintf(sizestr, "%d", *dfseg[i].size);
+        if (human){
+          readableSize(*dfseg[i].size, sizestr, si);
+        } else {
+          sprintf(sizestr, "%d", *dfseg[i].size);
+        }
         len = strlen(sizestr);
       }
       else if (!strcmp(segname, "name")) {
@@ -837,11 +845,11 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   int count = totalfilecount;
   selected = selected - topfileref;
   int printSelect = 0;
-  char headAttrs[12], headOG[16], headSize[7], headDT[18], headName[13];
+  char headAttrs[12], headOG[25], headSize[7], headDT[18], headName[13];
   char sizeHeader[256], headings[256];
   int i, s1, s2, s3;
 
-  char *susedString, *savailableString; 
+  char *susedString, *savailableString;
 
   if (human) {
     susedString = malloc (sizeof (char) * 10);
