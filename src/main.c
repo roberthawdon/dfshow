@@ -43,6 +43,7 @@ char sortmode[5] = "name";
 int reverse = 0;
 int human = 0;
 int si = 0;
+int ogavis = 3;
 
 extern results* ob;
 extern int topfileref;
@@ -115,6 +116,8 @@ Sorts objects alphabetically if -St is not set.\n\
 Application Options:\n\
   -a, --all                  do not ignore entries starting with .\n\
   -f                         do not sort, enables -aU\n\
+  -g                         only show group\n\
+  -G, --no-group             do not show group\n\
   -h, --human-readable       print sizes like 1K 234M 2G etc.\n\
       --si                   use powers of 1000 not 1024\n\
   -r, --reverse              reverse order while sorting\n\
@@ -154,6 +157,7 @@ int main(int argc, char *argv[])
          {"all",            no_argument,       0, 'a'},
          {"almost-all",     no_argument,       0, 'A'},
          {"human-readable", no_argument,       0, 'h'},
+         {"no-group",       no_argument,       0, 'G'},
          {"reverse",        no_argument,       0, 'r'},
          {"si",             no_argument,       0, GETOPT_SI_CHAR},
          {"help",           no_argument,       0, GETOPT_HELP_CHAR},
@@ -162,7 +166,7 @@ int main(int argc, char *argv[])
         };
       int option_index = 0;
 
-      c = getopt_long(argc, argv, "aAfSthrU", long_options, &option_index);
+      c = getopt_long(argc, argv, "aAfgGhrStU", long_options, &option_index);
 
       if ( c == -1 ){
         break;
@@ -183,6 +187,12 @@ int main(int argc, char *argv[])
       break;
     case 't':
       strcpy(sortmode, "date");
+      break;
+    case 'g':
+      ogavis--;
+      break;
+    case 'G':
+      ogavis = ogavis - 2;
       break;
     case 'h':
       human = 1;

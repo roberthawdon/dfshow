@@ -20,6 +20,7 @@
 #include "menus.h"
 
 char hlinkstr[5], sizestr[32];
+char headAttrs[12], headOG[25], headSize[7], headDT[18], headName[13];
 
 int hlinklen;
 int ownerlen;
@@ -57,6 +58,7 @@ extern int viewMode;
 extern int reverse;
 extern int human;
 extern int si;
+extern int ogavis;
 
 void readline(char *buffer, int buflen, char *oldbuf)
 /* Read up to buflen-1 characters into `buffer`.
@@ -201,12 +203,35 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int sizelen
   int maxlen = COLS - start;
 
   int currentitem = listref + topref;
-  int ogminlen = 15; // Length of "Owner & Group" heading
-  int sizeminlen = 6; // Length of "Size" heading
+  int ogminlen = strlen(headOG); // Length of "Owner & Group" heading
+  int sizeminlen = strlen(headSize); // Length of "Size" heading
 
   int oggap = ownerlen - strlen(ob[currentitem].owner) + 1;
 
   int oglen = (strlen(ob[currentitem].owner) + oggap + strlen(ob[currentitem].group));
+
+  char *ogaval;
+
+  // Owner, Group, Author
+  ogaval = malloc (sizeof (char) * oglen + 1); // Needs modifying when Author comes along
+  switch(ogavis){
+  case 0:
+    strcpy(ogaval,"");
+    break;
+  case 1:
+    sprintf(ogaval, "%s", ob[currentitem].owner);
+    break;
+  case 2:
+    sprintf(ogaval, "%s", ob[currentitem].group);
+    break;
+  case 3:
+    sprintf(ogaval, "%s%s%s", ob[currentitem].owner, genPadding(oggap), ob[currentitem].group);
+    break;
+  default:
+    sprintf(ogaval, "%s%s%s", ob[currentitem].owner, genPadding(oggap), ob[currentitem].group);
+    break;
+  }
+
   int ogseglen = ownerlen + 1 + grouplen; // Distance between longest owner and longest group is always 1
 
   int ogpad = 0;
@@ -214,10 +239,14 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int sizelen
 
   int entrylen = 0;
 
-  if ( (ogminlen - ogseglen) > 0 ) {
-    ogpad = ogminlen - oglen;
+  if (!ogavis){
+    ogpad = 0;
   } else {
-    ogpad = ogseglen - oglen;
+    if ( (ogminlen - ogseglen) > 0 ) {
+      ogpad = ogminlen - strlen(ogaval);
+    } else {
+      ogpad = ogseglen - strlen(ogaval);
+    }
   }
 
   char *s1, *s2, *s3;
@@ -249,7 +278,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int sizelen
     strcpy(marked, " ");
   }
 
-  swprintf(entry, 1024, L"%s %s%s%i %s%s%s%s%s %s  %s", marked, ob[currentitem].perm, s1, *ob[currentitem].hlink, ob[currentitem].owner, s2, ob[currentitem].group, s3, sizestring, ob[currentitem].date, ob[currentitem].name);
+  swprintf(entry, 1024, L"%s %s%s%i %s%s%s %s  %s", marked, ob[currentitem].perm, s1, *ob[currentitem].hlink, ogaval, s3, sizestring, ob[currentitem].date, ob[currentitem].name);
 
   entrylen = wcslen(entry);
   // mvprintw(4 + listref, start, "%s", entry);
@@ -274,6 +303,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int sizelen
   free(s2);
   free(s3);
   free(sizestring);
+  free(ogaval);
 }
 
 int check_file(char *file){
@@ -845,7 +875,6 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   int count = totalfilecount;
   selected = selected - topfileref;
   int printSelect = 0;
-  char headAttrs[12], headOG[25], headSize[7], headDT[18], headName[13];
   char sizeHeader[256], headings[256];
   int i, s1, s2, s3;
 
@@ -864,10 +893,40 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   }
 
   strcpy(headAttrs, "---Attrs---");
-  strcpy(headOG, "-Owner & Group-");
   strcpy(headSize, "-Size-");
   strcpy(headDT, "---Date & Time---");
   strcpy(headName, "----Name----");
+
+  // Decide which owner header we need:
+  switch(ogavis){
+  case 0:
+    strcpy(headOG, "");
+    break;
+  case 1:
+    strcpy(headOG, "-Owner-");
+    break;
+  case 2:
+    strcpy(headOG, "-Group-");
+    break;
+  case 3:
+    strcpy(headOG, "-Owner & Group-");
+    break;
+  case 4:
+    strcpy(headOG, "-Author-");
+    break;
+  case 5:
+    strcpy(headOG, "-Owner & Author-");
+    break;
+  case 6:
+    strcpy(headOG, "-Group & Author-");
+    break;
+  case 7:
+    strcpy(headOG, "-Owner, Group, & Author-"); // I like the Oxford comma, deal with it.
+    break;
+  default:
+    strcpy(headOG, "-Owner & Group-"); // This should never be called, but we'd rather be safe.
+    break;
+  }
 
   if (displaysize > count){
     displaysize = count;
@@ -892,10 +951,14 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   //mvprintw(0, 66, "%d %d", historyref, sessionhistory);
 
   // the space between the largest owner and largest group should always end up being 1... in theory.
-  if ( (ownerlen + grouplen + 1) > strlen(headOG)){
-    s1 = (ownerlen + grouplen + 1) - strlen(headOG) + 1;
-  } else {
+  if (!ogavis){
     s1 = 1;
+  } else {
+    if ( (ownerlen + grouplen + 1) > strlen(headOG)){
+      s1 = (ownerlen + grouplen + 1) - strlen(headOG) + 1;
+    } else {
+      s1 = 1;
+    }
   }
 
   if ( sizelen > strlen(headSize)) {
