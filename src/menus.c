@@ -106,7 +106,7 @@ void show_directory_input()
   move(0,33);
   readline(currentpwd, 1024, oldpwd);
   curs_set(FALSE);
-  if (strcmp(currentpwd, oldpwd) && strcmp(currentpwd, "")){
+  if (strcmp(currentpwd, oldpwd) && strcmp(currentpwd, "") || !historyref){
     if (!check_dir(currentpwd)){
       quit_menu();
     }
@@ -830,7 +830,7 @@ void directory_view_menu_inputs0()
             }
             break;
           } else {
-            historyref--;
+            historyref = 0; // Reset historyref here. A hacky workaround due to the value occasionally dipping to minus numbers.
             quit_menu();
           }
           break;
