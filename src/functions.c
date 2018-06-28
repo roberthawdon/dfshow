@@ -19,6 +19,11 @@
 #include "views.h"
 #include "menus.h"
 
+// It turns out most systems don't have an ST_AUTHOR, so for those systems, we set the author as the owner. Yup, `ls` does this too.
+#if ! HAVE_STRUCT_STAT_ST_AUTHOR
+# define st_author st_uid
+#endif
+
 char hlinkstr[5], sizestr[32];
 char headAttrs[12], headOG[25], headSize[7], headDT[18], headName[13];
 
@@ -229,6 +234,18 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int sizelen
     break;
   case 3:
     sprintf(ogaval, "%s%s%s", ob[currentitem].owner, genPadding(oggap), ob[currentitem].group);
+    break;
+  case 4:
+    sprintf(ogaval, "%s", ob[currentitem].author);
+    break;
+  case 5:
+    sprintf(ogaval, "%s%s%s", ob[currentitem].owner, genPadding(oggap), ob[currentitem].author);
+    break;
+  case 6:
+    sprintf(ogaval, "%s%s%s", ob[currentitem].group, genPadding(oggap), ob[currentitem].author);
+    break;
+  case 7:
+    sprintf(ogaval, "%s%s%s%s%s", ob[currentitem].owner, genPadding(oggap), ob[currentitem].group, genPadding(oggap), ob[currentitem].author);
     break;
   default:
     sprintf(ogaval, "%s%s%s", ob[currentitem].owner, genPadding(oggap), ob[currentitem].group);
@@ -765,6 +782,7 @@ results* get_dir(char *pwd)
   struct stat sb;
   struct group *gr;
   struct passwd *pw;
+  struct passwd *au;
   const char *path = pwd;
   struct stat buffer;
   int         status;
@@ -789,6 +807,7 @@ results* get_dir(char *pwd)
           lstat(res->d_name, &sb);
           struct passwd *pw = getpwuid(sb.st_uid);
           struct group *gr = getgrgid(sb.st_gid);
+          struct passwd *au = getpwuid(sb.st_author);
           status = lstat(res->d_name, &buffer);
           strftime(filedatetime, 20, "%Y-%m-%d %H:%M", localtime(&(buffer.st_mtime)));
 
@@ -824,6 +843,7 @@ results* get_dir(char *pwd)
           *ob[count].hlinklens = strlen(hlinkstr);
           strcpy(ob[count].owner, pw->pw_name);
           strcpy(ob[count].group, gr->gr_name);
+          strcpy(ob[count].author, au->pw_name);
           *ob[count].size = buffer.st_size;
           *ob[count].sizelens = strlen(sizestr);
           strcpy(ob[count].date, filedatetime);

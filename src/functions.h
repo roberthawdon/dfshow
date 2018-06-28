@@ -5,6 +5,7 @@ typedef struct {
   int hlinklens[5];
   char owner[128];
   char group[128];
+  char author[128];
   unsigned long int size[32];
   int sizelens[32];
   char date[17];
