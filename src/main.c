@@ -44,6 +44,7 @@ int reverse = 0;
 int human = 0;
 int si = 0;
 int ogavis = 3;
+int showbackup = 1;
 
 extern results* ob;
 extern int topfileref;
@@ -115,6 +116,7 @@ Sorts objects alphabetically if -St is not set.\n\
   fputs (("\n\
 Application Options:\n\
   -a, --all                  do not ignore entries starting with .\n\
+  -B, --ignore-backups       do not list implied entries ending with ~\n\
   -f                         do not sort, enables -aU\n\
   -g                         only show group\n\
   -G, --no-group             do not show group\n\
@@ -156,6 +158,7 @@ int main(int argc, char *argv[])
         {
          {"all",            no_argument,       0, 'a'},
          {"almost-all",     no_argument,       0, 'A'},
+         {"ignore-backups", no_argument,       0, 'B'},
          {"human-readable", no_argument,       0, 'h'},
          {"no-group",       no_argument,       0, 'G'},
          {"reverse",        no_argument,       0, 'r'},
@@ -166,7 +169,7 @@ int main(int argc, char *argv[])
         };
       int option_index = 0;
 
-      c = getopt_long(argc, argv, "aAfgGhrStU", long_options, &option_index);
+      c = getopt_long(argc, argv, "aABfgGhrStU", long_options, &option_index);
 
       if ( c == -1 ){
         break;
@@ -177,6 +180,9 @@ int main(int argc, char *argv[])
       // Dropthourgh
     case 'a':
       showhidden = 1;
+      break;
+    case 'B':
+      showbackup = 0;
       break;
     case 'f':
       strcpy(sortmode, "none"); // This can be set to anything non valid

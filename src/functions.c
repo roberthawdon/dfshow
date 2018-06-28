@@ -61,6 +61,7 @@ extern int reverse;
 extern int human;
 extern int si;
 extern int ogavis;
+extern int showbackup;
 
 void readline(char *buffer, int buflen, char *oldbuf)
 /* Read up to buflen-1 characters into `buffer`.
@@ -780,6 +781,9 @@ results* get_dir(char *pwd)
         while ( ( res = readdir ( folder ) ) ){
           if ( showhidden == 0 && check_first_char(res->d_name, ".") && strcmp(res->d_name, ".") && strcmp(res->d_name, "..") ) {
             continue; // Skipping hidden files
+          }
+          if ( !showbackup && check_last_char(res->d_name, "~") ) {
+            continue; // Skipping backup files
           }
           ob = realloc(ob, (count +1) * sizeof(results)); // Reallocating memory.
           lstat(res->d_name, &sb);
