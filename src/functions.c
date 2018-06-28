@@ -28,6 +28,8 @@ int grouplen;
 int sizelen;
 int namelen;
 
+int ogalen;
+
 int hlinkstart;
 int ownstart;
 int groupstart;
@@ -232,7 +234,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int sizelen
     break;
   }
 
-  int ogseglen = ownerlen + 1 + grouplen; // Distance between longest owner and longest group is always 1
+  int ogseglen = ogalen + 1; // Distance between longest owner and longest group is always 1
 
   int ogpad = 0;
   int sizepad = 0;
@@ -904,27 +906,35 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
     break;
   case 1:
     strcpy(headOG, "-Owner-");
+    ogalen = ownerlen;
     break;
   case 2:
     strcpy(headOG, "-Group-");
+    ogalen = grouplen;
     break;
   case 3:
     strcpy(headOG, "-Owner & Group-");
+    ogalen = ownerlen + grouplen;
     break;
   case 4:
     strcpy(headOG, "-Author-");
+    ogalen = 20; //test
     break;
   case 5:
     strcpy(headOG, "-Owner & Author-");
+    ogalen = ownerlen + 20;
     break;
   case 6:
     strcpy(headOG, "-Group & Author-");
+    ogalen = grouplen + 20;
     break;
   case 7:
     strcpy(headOG, "-Owner, Group, & Author-"); // I like the Oxford comma, deal with it.
+    ogalen = ownerlen + grouplen + 20;
     break;
   default:
     strcpy(headOG, "-Owner & Group-"); // This should never be called, but we'd rather be safe.
+    ogalen = ownerlen + grouplen;
     break;
   }
 
@@ -954,8 +964,8 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   if (!ogavis){
     s1 = 1;
   } else {
-    if ( (ownerlen + grouplen + 1) > strlen(headOG)){
-      s1 = (ownerlen + grouplen + 1) - strlen(headOG) + 1;
+    if ( (ogalen + 1) > strlen(headOG)){
+      s1 = (ogalen + 1) - strlen(headOG) + 1;
     } else {
       s1 = 1;
     }
