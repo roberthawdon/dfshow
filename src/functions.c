@@ -30,6 +30,7 @@ char headAttrs[12], headOG[25], headSize[7], headDT[18], headName[13];
 int hlinklen;
 int ownerlen;
 int grouplen;
+int authorlen;
 int sizelen;
 int namelen;
 
@@ -505,6 +506,9 @@ int seglength(const void *seg, char *segname, int LEN)
   else if (!strcmp(segname, "group")) {
     longest = strlen(dfseg[0].group);
   }
+  else if (!strcmp(segname, "author")) {
+    longest = strlen(dfseg[0].author);
+  }
   else if (!strcmp(segname, "hlink")) {
     sprintf(hlinkstr, "%d", *dfseg[0].hlink);
     longest = strlen(hlinkstr);
@@ -533,6 +537,9 @@ int seglength(const void *seg, char *segname, int LEN)
       }
       else if (!strcmp(segname, "group")) {
         len = strlen(dfseg[i].group);
+      }
+      else if (!strcmp(segname, "author")) {
+        len = strlen(dfseg[i].author);
       }
       else if (!strcmp(segname, "hlink")) {
         sprintf(hlinkstr, "%d", *dfseg[i].hlink);
@@ -860,6 +867,7 @@ results* get_dir(char *pwd)
         hlinklen = seglength(ob, "hlink", count);
         ownerlen = seglength(ob, "owner", count);
         grouplen = seglength(ob, "group", count);
+        authorlen = seglength(ob, "author", count);
         sizelen = seglength(ob, "size", count);
         namelen = seglength(ob, "name", count);
 
@@ -942,19 +950,19 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
     break;
   case 4:
     strcpy(headOG, "-Author-");
-    ogalen = 20; //test
+    ogalen = authorlen; //test
     break;
   case 5:
     strcpy(headOG, "-Owner & Author-");
-    ogalen = ownerlen + 20;
+    ogalen = ownerlen + authorlen;
     break;
   case 6:
     strcpy(headOG, "-Group & Author-");
-    ogalen = grouplen + 20;
+    ogalen = grouplen + authorlen;
     break;
   case 7:
     strcpy(headOG, "-Owner, Group, & Author-"); // I like the Oxford comma, deal with it.
-    ogalen = ownerlen + grouplen + 20;
+    ogalen = ownerlen + grouplen + authorlen;
     break;
   default:
     strcpy(headOG, "-Owner & Group-"); // This should never be called, but we'd rather be safe.
