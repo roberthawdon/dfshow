@@ -813,9 +813,6 @@ results* get_dir(char *pwd)
           }
           ob = realloc(ob, (count +1) * sizeof(results)); // Reallocating memory.
           lstat(res->d_name, &sb);
-          pw = getpwuid(sb.st_uid);
-          gr = getgrgid(sb.st_gid);
-          au = getpwuid(sb.st_author);
           status = lstat(res->d_name, &buffer);
           strftime(filedatetime, 20, "%Y-%m-%d %H:%M", localtime(&(buffer.st_mtime)));
 
@@ -849,9 +846,28 @@ results* get_dir(char *pwd)
           strcpy(ob[count].perm, perms);
           *ob[count].hlink = buffer.st_nlink;
           *ob[count].hlinklens = strlen(hlinkstr);
-          strcpy(ob[count].owner, pw->pw_name);
-          strcpy(ob[count].group, gr->gr_name);
-          strcpy(ob[count].author, au->pw_name);
+
+          if (!getpwuid(sb.st_uid)){
+            sprintf(ob[count].owner, "%i", sb.st_uid);
+          } else {
+            pw = getpwuid(sb.st_uid);
+            strcpy(ob[count].owner, pw->pw_name);
+          }
+
+          if (!getgrgid(sb.st_gid)){
+            sprintf(ob[count].group, "%i", sb.st_gid);
+          } else {
+            gr = getgrgid(sb.st_gid);
+            strcpy(ob[count].group, gr->gr_name);
+          }
+
+          if (!getpwuid(sb.st_author)){
+            sprintf(ob[count].author, "%i", sb.st_author);
+          } else {
+            au = getpwuid(sb.st_author);
+            strcpy(ob[count].author, au->pw_name);
+          }
+
           *ob[count].size = buffer.st_size;
           *ob[count].sizelens = strlen(sizestr);
           strcpy(ob[count].date, filedatetime);
