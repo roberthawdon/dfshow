@@ -242,7 +242,8 @@ int main(int argc, char *argv[])
   strcpy(modifyMenuText, "Modify: !Owner/Group, !Permissions");
   strcpy(sortMenuText, "Sort list by - !Date & time, !Name, !Size");
 
-  set_escdelay(10);
+  // set_escdelay(10);
+  ESCDELAY = 10;
 
   setlocale(LC_ALL, "");
 
