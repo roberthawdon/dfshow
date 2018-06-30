@@ -77,7 +77,7 @@ void readline(char *buffer, int buflen, char *oldbuf)
   int pos;
   int len;
   int oldlen;
-  int x, y;
+  int x, y, c;
   int oldMode = viewMode;
 
   oldlen = strlen(oldbuf);
@@ -91,7 +91,6 @@ void readline(char *buffer, int buflen, char *oldbuf)
   strcpy(buffer, oldbuf);
 
   for (;;) {
-    int c;
 
     buffer[len] = ' ';
     mvaddnstr(y, x, buffer, len+1); // Prints buffer on screen
@@ -150,11 +149,11 @@ void readline(char *buffer, int buflen, char *oldbuf)
 char *readableSize(double size, char *buf, int si){
   int i = 0;
   int powers = 1024;
+  const char* units[] = {"", "K", "M", "G", "T", "P", "E", "Z", "Y"};
+  char unitOut[2];
   if (si){
     powers = 1000;
   }
-  const char* units[] = {"", "K", "M", "G", "T", "P", "E", "Z", "Y"};
-  char unitOut[2];
   while ( size >= powers){
     size /= powers;
     i++;
@@ -221,6 +220,17 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int sizelen
 
   char *ogaval;
 
+  int ogseglen = ogalen + 1; // Distance between longest owner and longest group is always 1
+
+  int ogpad = 0;
+  int sizepad = 0;
+
+  int entrylen = 0;
+
+  char *s1, *s2, *s3;
+
+  char *sizestring;
+
   // Owner, Group, Author
   ogaval = malloc (sizeof (char) * oglen + 1); // Needs modifying when Author comes along
   switch(ogavis){
@@ -253,13 +263,6 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int sizelen
     break;
   }
 
-  int ogseglen = ogalen + 1; // Distance between longest owner and longest group is always 1
-
-  int ogpad = 0;
-  int sizepad = 0;
-
-  int entrylen = 0;
-
   if (!ogavis){
     ogpad = 0;
   } else {
@@ -269,10 +272,6 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int sizelen
       ogpad = ogseglen - strlen(ogaval);
     }
   }
-
-  char *s1, *s2, *s3;
-
-  char *sizestring;
 
   if (human){
     sizestring = malloc (sizeof (char) * 10);
@@ -338,10 +337,9 @@ int check_file(char *file){
 char * dirFromPath (const char* myStr){
 
   char *outStr = (char *) malloc(strlen(myStr) + 1);
+  char *del = &outStr[strlen(outStr)];
 
   strcpy(outStr, myStr);
-
-  char *del = &outStr[strlen(outStr)];
 
   while (del > outStr && *del != '/')
     del--;
@@ -500,6 +498,10 @@ int seglength(const void *seg, char *segname, int LEN)
 
   results *dfseg = (results *)seg;
 
+  size_t j = 0;
+
+  size_t i;
+
   if (!strcmp(segname, "owner")) {
     longest = strlen(dfseg[0].owner);
   }
@@ -528,9 +530,7 @@ int seglength(const void *seg, char *segname, int LEN)
     longest = 0;
   }
 
-  size_t j = 0;
-
-  for(size_t i = 1; i < LEN; i++)
+  for(i = 1; i < LEN; i++)
     {
       if (!strcmp(segname, "owner")) {
         len = strlen(dfseg[i].owner);
@@ -780,8 +780,6 @@ void set_history(char *pwd, int topfileref, int selected)
 
 results* get_dir(char *pwd)
 {
-  savailable = GetAvailableSpace(pwd);
-  sused = 0; // Resetting used value
   //sused = GetUsedSpace(pwd); // Original DF-EDIT added the sizes to show what was used in that directory, rather than the whole disk.
   size_t count = 0;
   size_t file_count = 0;
@@ -798,6 +796,9 @@ results* get_dir(char *pwd)
 
   results *ob = malloc(sizeof(results)); // Allocating a tiny amount of memory. We'll expand this on each file found.
 
+  savailable = GetAvailableSpace(pwd);
+  sused = 0; // Resetting used value
+
   if (stat(path, &sb) == 0 && S_ISDIR(sb.st_mode)){
     DIR *folder = opendir ( path );
 
@@ -812,9 +813,9 @@ results* get_dir(char *pwd)
           }
           ob = realloc(ob, (count +1) * sizeof(results)); // Reallocating memory.
           lstat(res->d_name, &sb);
-          struct passwd *pw = getpwuid(sb.st_uid);
-          struct group *gr = getgrgid(sb.st_gid);
-          struct passwd *au = getpwuid(sb.st_author);
+          pw = getpwuid(sb.st_uid);
+          gr = getgrgid(sb.st_gid);
+          au = getpwuid(sb.st_author);
           status = lstat(res->d_name, &buffer);
           strftime(filedatetime, 20, "%Y-%m-%d %H:%M", localtime(&(buffer.st_mtime)));
 
@@ -904,15 +905,16 @@ results* reorder_ob(results* ob, char *order){
 
 void display_dir(char *pwd, results* ob, int topfileref, int selected){
 
-  displaysize = LINES - 5;
   size_t list_count = 0;
   int count = totalfilecount;
-  selected = selected - topfileref;
   int printSelect = 0;
   char sizeHeader[256], headings[256];
   int i, s1, s2, s3;
 
   char *susedString, *savailableString;
+
+  displaysize = LINES - 5;
+  selected = selected - topfileref;
 
   if (human) {
     susedString = malloc (sizeof (char) * 10);

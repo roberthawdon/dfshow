@@ -739,8 +739,8 @@ void directory_view_menu_inputs1()
 
 void directory_view_menu_inputs0()
 {
-  viewMode = 0;
   int e = 0;
+  viewMode = 0;
   while(1)
     {
       //signal(SIGWINCH, refreshScreen );
