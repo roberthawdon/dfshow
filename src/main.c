@@ -16,6 +16,7 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <ncurses.h>
@@ -140,7 +141,7 @@ Please report any bugs to: <https://github.com/roberthawdon/dfshow/issues>\n"), 
 }
 
 void printVersion(char* programName){
-  printf (("%s %s\n"), programName, VERSION); // Needs to be dynamic
+  printf (("%s %s\n"), programName, VERSION);
   fputs (("\
 Copyright (C) 2018 Robert Ian Hawdon\n\
 License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.\n\
