@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <ncurses.h>
 #include <ctype.h>
@@ -15,6 +16,12 @@
 #include <libgen.h>
 #include <errno.h>
 #include <wchar.h>
+
+#if HAVE_HURD_H
+# include <hurd.h>
+#endif
+
+#include "config.h"
 #include "functions.h"
 #include "views.h"
 #include "menus.h"

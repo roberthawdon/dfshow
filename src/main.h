@@ -11,5 +11,5 @@ enum
 
 void refreshScreen();
 int exittoshell();
-void printHelp();
-void printVersion();
+void printHelp(char* programName);
+void printVersion(char* programName);

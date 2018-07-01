@@ -24,6 +24,7 @@
 #include <unistd.h>
 #include <signal.h>
 #include <getopt.h>
+#include "config.h"
 #include "functions.h"
 #include "views.h"
 #include "menus.h"
@@ -105,7 +106,7 @@ int exittoshell()
   return 0;
 }
 
-void printHelp(char *programName){
+void printHelp(char* programName){
   printf (("Usage: %s [OPTION]... [FILE]...\n"), programName);
   fputs (("\n\
 DF-SHOW: An interactive directory and file browser written for POSIX systems.\n\
@@ -138,8 +139,8 @@ Exit status:\n\
 Please report any bugs to: <https://github.com/roberthawdon/dfshow/issues>\n"), stdout);
 }
 
-void printVersion(char *programName){
-  printf (("%s %s\n"), programName, "0.0.2"); // Needs to be dynamic
+void printVersion(char* programName){
+  printf (("%s %s\n"), programName, VERSION); // Needs to be dynamic
   fputs (("\
 Copyright (C) 2018 Robert Ian Hawdon\n\
 License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.\n\
