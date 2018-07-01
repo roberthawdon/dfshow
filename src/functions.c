@@ -202,7 +202,7 @@ void printLine(int line, int col, char *textString){
   }
 }
 
-void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int sizelen, int namelen, int selected, int listref, int topref, results* ob){
+void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorlen, int sizelen, int namelen, int selected, int listref, int topref, results* ob){
 
   int i;
 
@@ -214,9 +214,9 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int sizelen
   int ogminlen = strlen(headOG); // Length of "Owner & Group" heading
   int sizeminlen = strlen(headSize); // Length of "Size" heading
 
-  int oggap = ownerlen - strlen(ob[currentitem].owner) + 1;
+  int oggap, gagap = 0;
 
-  int oglen = (strlen(ob[currentitem].owner) + oggap + strlen(ob[currentitem].group));
+  int oglen = 0;
 
   char *ogaval;
 
@@ -232,33 +232,55 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int sizelen
   char *sizestring;
 
   // Owner, Group, Author
-  ogaval = malloc (sizeof (char) * oglen + 1); // Needs modifying when Author comes along
   switch(ogavis){
   case 0:
+    ogaval = malloc (sizeof (char));
     strcpy(ogaval,"");
     break;
   case 1:
+    oglen = (strlen(ob[currentitem].owner));
+    ogaval = malloc (sizeof (char) * oglen + 2);
     sprintf(ogaval, "%s", ob[currentitem].owner);
     break;
   case 2:
+    oglen = (strlen(ob[currentitem].group));
+    ogaval = malloc (sizeof (char) * oglen + 1);
     sprintf(ogaval, "%s", ob[currentitem].group);
     break;
   case 3:
+    oggap = ownerlen - strlen(ob[currentitem].owner) + 1;
+    oglen = (strlen(ob[currentitem].owner) + oggap + strlen(ob[currentitem].group));
+    ogaval = malloc (sizeof (char) * oglen + 1);
     sprintf(ogaval, "%s%s%s", ob[currentitem].owner, genPadding(oggap), ob[currentitem].group);
     break;
   case 4:
+    oglen = (strlen(ob[currentitem].author));
+    ogaval = malloc (sizeof (char) * oglen + 1);
     sprintf(ogaval, "%s", ob[currentitem].author);
     break;
   case 5:
+    oggap = ownerlen - strlen(ob[currentitem].owner) + 1;
+    oglen = (strlen(ob[currentitem].owner) + oggap + strlen(ob[currentitem].author));
+    ogaval = malloc (sizeof (char) * oglen + 1);
     sprintf(ogaval, "%s%s%s", ob[currentitem].owner, genPadding(oggap), ob[currentitem].author);
     break;
   case 6:
-    sprintf(ogaval, "%s%s%s", ob[currentitem].group, genPadding(oggap), ob[currentitem].author);
+    gagap = grouplen - strlen(ob[currentitem].group) + 1;
+    oglen = (strlen(ob[currentitem].group) + gagap + strlen(ob[currentitem].author));
+    ogaval = malloc (sizeof (char) * oglen + 1);
+    sprintf(ogaval, "%s%s%s", ob[currentitem].group, genPadding(gagap), ob[currentitem].author);
     break;
   case 7:
-    sprintf(ogaval, "%s%s%s%s%s", ob[currentitem].owner, genPadding(oggap), ob[currentitem].group, genPadding(oggap), ob[currentitem].author);
+    oggap = ownerlen - strlen(ob[currentitem].owner) + 1;
+    gagap = grouplen - strlen(ob[currentitem].group) + 1;
+    oglen = (strlen(ob[currentitem].owner) + oggap + strlen(ob[currentitem].group) + gagap + strlen(ob[currentitem].author));
+    ogaval = malloc (sizeof (char) * oglen + 1);
+    sprintf(ogaval, "%s%s%s%s%s", ob[currentitem].owner, genPadding(oggap), ob[currentitem].group, genPadding(gagap), ob[currentitem].author);
     break;
   default:
+    oggap = ownerlen - strlen(ob[currentitem].owner) + 1;
+    oglen = (strlen(ob[currentitem].owner) + oggap + strlen(ob[currentitem].group));
+    ogaval = malloc (sizeof (char) * oglen + 1);
     sprintf(ogaval, "%s%s%s", ob[currentitem].owner, genPadding(oggap), ob[currentitem].group);
     break;
   }
@@ -289,8 +311,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int sizelen
   sizepad = (sizelen - strlen(sizestring)) + ogpad + 1;
 
   s1 = genPadding(hlinkstart);
-  s2 = genPadding(oggap);
-  s3 = genPadding(sizepad);
+  s2 = genPadding(sizepad);
 
   if ( *ob[listref].marked ){
     strcpy(marked, "*");
@@ -298,7 +319,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int sizelen
     strcpy(marked, " ");
   }
 
-  swprintf(entry, 1024, L"%s %s%s%i %s%s%s %s  %s", marked, ob[currentitem].perm, s1, *ob[currentitem].hlink, ogaval, s3, sizestring, ob[currentitem].date, ob[currentitem].name);
+  swprintf(entry, 1024, L"%s %s%s%i %s%s%s %s  %s", marked, ob[currentitem].perm, s1, *ob[currentitem].hlink, ogaval, s2, sizestring, ob[currentitem].date, ob[currentitem].name);
 
   entrylen = wcslen(entry);
   // mvprintw(4 + listref, start, "%s", entry);
@@ -321,7 +342,6 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int sizelen
 
   free(s1);
   free(s2);
-  free(s3);
   free(sizestring);
   free(ogaval);
 }
@@ -1003,7 +1023,7 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
     ownstart = hlinklen + 2;
     hlinkstart = ownstart - 1 - *ob[list_count + topfileref].hlinklens;
 
-    printEntry(2, hlinklen, ownerlen, grouplen, sizelen, namelen, printSelect, list_count, topfileref, ob);
+    printEntry(2, hlinklen, ownerlen, grouplen, authorlen, sizelen, namelen, printSelect, list_count, topfileref, ob);
 
     list_count++;
     }
