@@ -111,27 +111,30 @@ int exittoshell()
 void printHelp(char* programName){
   printf (("Usage: %s [OPTION]... [FILE]...\n"), programName);
   fputs (("\n\
-DF-SHOW: An interactive directory and file browser written for POSIX systems.\n\
+DF-SHOW: An interactive directory/file browser written for Unix-like systems.\n\
 Based on the SHOW application from the PC-DOS DF-EDIT suite by Larry Kroeker.\n"), stdout);
   fputs (("\n\
 Sorts objects alphabetically if -St is not set.\n\
 "), stdout);
   fputs (("\n\
 Application Options:\n\
-  -a, --all                  do not ignore entries starting with .\n\
-      --author               prints the author of each file\n\
-  -B, --ignore-backups       do not list implied entries ending with ~\n\
-  -f                         do not sort, enables -aU\n\
-  -g                         only show group\n\
-  -G, --no-group             do not show group\n\
-  -h, --human-readable       print sizes like 1K 234M 2G etc.\n\
-      --si                   as above, but use powers of 1000 not 1024\n\
-  -r, --reverse              reverse order while sorting\n\
-  -S                         sort file by size, largest first\n\
-  -t                         sort by modification time, newest first\n\
-  -U                         do not sort; lists objects in directory order\n\
-      --help                 displays this help message, then exits\n\
-      --version              displays version, then exits\n"), stdout);
+  -a, --all                    do not ignore entries starting with .\n\
+      --author                 prints the author of each file\n\
+  -B, --ignore-backups         do not list implied entries ending with ~\n\
+  -f                           do not sort, enables -aU\n\
+  -g                           only show group\n\
+  -G, --no-group               do not show group\n\
+  -h, --human-readable         print sizes like 1K 234M 2G etc.\n\
+      --si                     as above, but use powers of 1000 not 1024\n\
+  -r, --reverse                reverse order while sorting\n\
+  -S                           sort file by size, largest first\n\
+      --time-style=TIME_STYLE  time/date format, see TIME_STYLE section below\n\
+  -t                           sort by modification time, newest first\n\
+  -U                           do not sort; lists objects in directory order\n\
+      --help                   displays this help message, then exits\n\
+      --version                displays version, then exits\n"), stdout);
+  fputs (("\n\
+The TIME_STYLE arguement can be: full-iso; long-iso; iso; locale.\n"), stdout);
   fputs (("\n\
 Exit status:\n\
  0  if OK,\n\

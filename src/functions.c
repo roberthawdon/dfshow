@@ -119,6 +119,9 @@ char *dateString(time_t date, char *style)
     long_time_format[0] = long_time_format[1] = "%Y-%m-%d %H:%M";
   } else if ( !strcmp(style, "full-iso") ) {
     long_time_format[0] = long_time_format[1] = "%Y-%m-%d %H:%M:%S %z";
+  } else if ( !strcmp(style, "iso") ) {
+    long_time_format[0] = "%Y-%m-%d ";
+    long_time_format[1] = "%m-%d %H:%M";
   }
   strftime(outputString, 32, long_time_format[recent], localtime(&(date)));
   return (outputString);
