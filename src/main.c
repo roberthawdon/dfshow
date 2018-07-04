@@ -140,8 +140,7 @@ Exit status:\n\
  0  if OK,\n\
  1  if minor problems (e.g., cannot access subdirectory),\n\
  2  if major problems (e.g., cannot access command-line arguement).\n"), stdout);
-  fputs (("\n\
-Please report any bugs to: <https://github.com/roberthawdon/dfshow/issues>\n"), stdout);
+  printf ("\nPlease report any bugs to: <%s>\n", PACKAGE_BUGREPORT);
 }
 
 void printVersion(char* programName){
