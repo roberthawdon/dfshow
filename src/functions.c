@@ -57,6 +57,7 @@ int ownerlen;
 int grouplen;
 int authorlen;
 int sizelen;
+int datelen;
 int namelen;
 
 int ogalen;
@@ -260,7 +261,7 @@ void printLine(int line, int col, char *textString){
   }
 }
 
-void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorlen, int sizelen, int namelen, int selected, int listref, int topref, results* ob){
+void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorlen, int sizelen, int datelen, int namelen, int selected, int listref, int topref, results* ob){
 
   int i;
 
@@ -271,6 +272,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   int currentitem = listref + topref;
   int ogminlen = strlen(headOG); // Length of "Owner & Group" heading
   int sizeminlen = strlen(headSize); // Length of "Size" heading
+  int dateminlen = strlen(headDT); // Length of "Date" heading
 
   int oggap, gagap = 0;
 
@@ -285,13 +287,11 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
 
   int entrylen = 0;
 
+  int datepad = 0;
+
   char *s1, *s2, *s3;
 
   char *sizestring;
-
-  char *filedate;
-
-  filedate = dateString(ob[currentitem].date, timestyle);
 
   // Owner, Group, Author
   switch(ogavis){
@@ -372,8 +372,15 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
 
   sizepad = (sizelen - strlen(sizestring)) + ogpad + 1;
 
+  if ( (dateminlen - datelen) > 0 ) {
+    datepad = dateminlen - strlen(ob[currentitem].datedisplay);
+  } else {
+    datepad = datelen - strlen(ob[currentitem].datedisplay);
+  }
+
   s1 = genPadding(hlinkstart);
   s2 = genPadding(sizepad);
+  s3 = genPadding(datepad);
 
   if ( *ob[listref].marked ){
     strcpy(marked, "*");
@@ -381,7 +388,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
     strcpy(marked, " ");
   }
 
-  swprintf(entry, 1024, L"%s %s%s%i %s%s%s %s  %s", marked, ob[currentitem].perm, s1, *ob[currentitem].hlink, ogaval, s2, sizestring, filedate, ob[currentitem].name);
+  swprintf(entry, 1024, L"%s %s%s%i %s%s%s %s%s %s", marked, ob[currentitem].perm, s1, *ob[currentitem].hlink, ogaval, s2, sizestring, ob[currentitem].datedisplay, s3, ob[currentitem].name);
 
   entrylen = wcslen(entry);
   // mvprintw(4 + listref, start, "%s", entry);
@@ -404,7 +411,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
 
   free(s1);
   free(s2);
-  free(filedate);
+  free(s3);
   free(sizestring);
   free(ogaval);
 }
@@ -606,6 +613,9 @@ int seglength(const void *seg, char *segname, int LEN)
     }
     longest = strlen(sizestr);
   }
+  else if (!strcmp(segname, "datedisplay")) {
+    longest = strlen(dfseg[0].datedisplay);
+  }
   else if (!strcmp(segname, "name")) {
     longest = strlen(dfseg[0].name);
   }
@@ -635,6 +645,9 @@ int seglength(const void *seg, char *segname, int LEN)
           sprintf(sizestr, "%d", *dfseg[i].size);
         }
         len = strlen(sizestr);
+      }
+      else if (!strcmp(segname, "datedisplay")) {
+        len = strlen(dfseg[i].datedisplay);
       }
       else if (!strcmp(segname, "name")) {
         len = strlen(dfseg[i].name);
@@ -874,8 +887,8 @@ results* get_dir(char *pwd)
   const char *path = pwd;
   struct stat buffer;
   int         status;
-  char filedatetime[17];
   char perms[11] = {0};
+  char *filedate;
 
   results *ob = malloc(sizeof(results)); // Allocating a tiny amount of memory. We'll expand this on each file found.
 
@@ -898,7 +911,6 @@ results* get_dir(char *pwd)
           ob = realloc(ob, (count +1) * sizeof(results)); // Reallocating memory.
           lstat(res->d_name, &sb);
           status = lstat(res->d_name, &buffer);
-          // strftime(filedatetime, 20, "%Y-%m-%d %H:%M", localtime(&(buffer.st_mtime)));
 
 
           if ( buffer.st_mode & S_IFDIR ) {
@@ -955,10 +967,15 @@ results* get_dir(char *pwd)
           *ob[count].size = buffer.st_size;
           *ob[count].sizelens = strlen(sizestr);
           ob[count].date = buffer.st_mtime;
+
+          filedate = dateString(ob[count].date, timestyle);
+          strcpy(ob[count].datedisplay, filedate);
+
           strcpy(ob[count].name, res->d_name);
 
           sused = sused + buffer.st_size; // Adding the size values
 
+          free(filedate);
           count++;
         }
 
@@ -970,6 +987,7 @@ results* get_dir(char *pwd)
         grouplen = seglength(ob, "group", count);
         authorlen = seglength(ob, "author", count);
         sizelen = seglength(ob, "size", count);
+        datelen = seglength(ob, "datedisplay", count);
         namelen = seglength(ob, "name", count);
 
         return ob;
@@ -1087,7 +1105,7 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
     ownstart = hlinklen + 2;
     hlinkstart = ownstart - 1 - *ob[list_count + topfileref].hlinklens;
 
-    printEntry(2, hlinklen, ownerlen, grouplen, authorlen, sizelen, namelen, printSelect, list_count, topfileref, ob);
+    printEntry(2, hlinklen, ownerlen, grouplen, authorlen, sizelen, datelen, namelen, printSelect, list_count, topfileref, ob);
 
     list_count++;
     }
@@ -1111,8 +1129,14 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
     s2 = 0;
   }
 
+  if ( datelen > strlen(headDT)) {
+    s3 = (datelen - strlen(headDT)) + 1;
+  } else {
+    s3 = 1;
+  }
+
   sprintf(sizeHeader, "%i Objects   %s Used %s Available", count, susedString, savailableString);
-  sprintf(headings, "%s%s%s%s%s%s%s%s%s%s", headAttrs, genPadding(hlinklen + 1), headOG, genPadding(s1), genPadding(s2), headSize, genPadding(1), headDT, genPadding(1), headName);
+  sprintf(headings, "%s%s%s%s%s%s%s%s%s%s", headAttrs, genPadding(hlinklen + 1), headOG, genPadding(s1), genPadding(s2), headSize, genPadding(1), headDT, genPadding(s3), headName);
 
   attron(COLOR_PAIR(2));
   attroff(A_BOLD); // Required to ensure the last selected item doesn't bold the header
