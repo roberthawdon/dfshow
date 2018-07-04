@@ -42,6 +42,7 @@ char sortMenuText[256];
 int viewMode = 0;
 
 char sortmode[5] = "name";
+char timestyle[9] = "long-iso";
 int reverse = 0;
 int human = 0;
 int si = 0;

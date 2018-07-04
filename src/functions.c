@@ -87,12 +87,33 @@ unsigned long int sused = 0;
 history *hs;
 
 extern char currentpwd[1024];
+extern char timestyle[9];
 extern int viewMode;
 extern int reverse;
 extern int human;
 extern int si;
 extern int ogavis;
 extern int showbackup;
+
+// /* Formatting time in a similar fashion to `ls` */
+// static char const *long_time_format[2] =
+//   {
+//    // With year, intended for if the file is older than 6 months.
+//    N_("%b %e  %Y"),
+//    // Without year, for recent files.
+//    N_("%b %e %H:%M")
+//   };
+
+char *dateString(time_t date, char *style)
+{
+  char *outputString = malloc (sizeof (char) * 32);
+  if ( !strcmp(style, "long-iso") ) {
+    strftime(outputString, 20, "%Y-%m-%d %H:%M", localtime(&(date)));
+  } else {
+    printf(outputString, "%i", date);
+  }
+  return (outputString);
+}
 
 void readline(char *buffer, int buflen, char *oldbuf)
 /* Read up to buflen-1 characters into `buffer`.
@@ -256,6 +277,10 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
 
   char *sizestring;
 
+  char *filedate;
+
+  filedate = dateString(ob[currentitem].date, timestyle);
+
   // Owner, Group, Author
   switch(ogavis){
   case 0:
@@ -344,7 +369,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
     strcpy(marked, " ");
   }
 
-  swprintf(entry, 1024, L"%s %s%s%i %s%s%s %s  %s", marked, ob[currentitem].perm, s1, *ob[currentitem].hlink, ogaval, s2, sizestring, ob[currentitem].date, ob[currentitem].name);
+  swprintf(entry, 1024, L"%s %s%s%i %s%s%s %s  %s", marked, ob[currentitem].perm, s1, *ob[currentitem].hlink, ogaval, s2, sizestring, filedate, ob[currentitem].name);
 
   entrylen = wcslen(entry);
   // mvprintw(4 + listref, start, "%s", entry);
@@ -367,6 +392,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
 
   free(s1);
   free(s2);
+  free(filedate);
   free(sizestring);
   free(ogaval);
 }
@@ -652,10 +678,10 @@ int cmp_dflist_date(const void *lhs, const void *rhs)
 
   if (reverse){
     // Oldest to Newest
-    return strcmp(dforderA->date, dforderB->date);
+    return (dforderA->date - dforderB->date);
   } else {
     // Newest to Oldest
-    return strcmp(dforderB->date, dforderA->date);
+    return (dforderB->date - dforderA->date);
   }
 
 }
@@ -859,7 +885,7 @@ results* get_dir(char *pwd)
           ob = realloc(ob, (count +1) * sizeof(results)); // Reallocating memory.
           lstat(res->d_name, &sb);
           status = lstat(res->d_name, &buffer);
-          strftime(filedatetime, 20, "%Y-%m-%d %H:%M", localtime(&(buffer.st_mtime)));
+          // strftime(filedatetime, 20, "%Y-%m-%d %H:%M", localtime(&(buffer.st_mtime)));
 
 
           if ( buffer.st_mode & S_IFDIR ) {
@@ -915,7 +941,7 @@ results* get_dir(char *pwd)
 
           *ob[count].size = buffer.st_size;
           *ob[count].sizelens = strlen(sizestr);
-          strcpy(ob[count].date, filedatetime);
+          ob[count].date = buffer.st_mtime;
           strcpy(ob[count].name, res->d_name);
 
           sused = sused + buffer.st_size; // Adding the size values

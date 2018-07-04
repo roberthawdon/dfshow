@@ -8,7 +8,7 @@ typedef struct {
   char author[128];
   unsigned long int size[32];
   int sizelens[32];
-  char date[17];
+  time_t date;
   char name[512];
 } results;
 
@@ -18,6 +18,7 @@ typedef struct {
   int selected;
 } history;
 
+char *dateString(time_t date, char *style);
 void readline(char *buffer, int buflen, char *oldbuf);
 char * dirFromPath (const char* myStr);
 int check_dir(char *pwd);
