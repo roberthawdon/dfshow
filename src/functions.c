@@ -86,6 +86,8 @@ unsigned long int sused = 0;
 
 history *hs;
 
+time_t currenttime;
+
 extern char currentpwd[1024];
 extern char timestyle[9];
 extern int viewMode;
@@ -95,23 +97,30 @@ extern int si;
 extern int ogavis;
 extern int showbackup;
 
-// /* Formatting time in a similar fashion to `ls` */
-// static char const *long_time_format[2] =
-//   {
-//    // With year, intended for if the file is older than 6 months.
-//    N_("%b %e  %Y"),
-//    // Without year, for recent files.
-//    N_("%b %e %H:%M")
-//   };
+/* Formatting time in a similar fashion to `ls` */
+static char const *long_time_format[2] =
+  {
+   // With year, intended for if the file is older than 6 months.
+   "%b %e  %Y",
+   // Without year, for recent files.
+   "%b %e %H:%M"
+  };
 
 char *dateString(time_t date, char *style)
 {
-  char *outputString = malloc (sizeof (char) * 32);
-  if ( !strcmp(style, "long-iso") ) {
-    strftime(outputString, 20, "%Y-%m-%d %H:%M", localtime(&(date)));
-  } else {
-    printf(outputString, "%i", date);
+  char *outputString = malloc (sizeof (char) * 33);
+  bool recent = 0;
+
+  if ( date > (currenttime - 31556952) ) {
+    recent = 1;
   }
+
+  if ( !strcmp(style, "long-iso") ) {
+    long_time_format[0] = long_time_format[1] = "%Y-%m-%d %H:%M";
+  } else if ( !strcmp(style, "full-iso") ) {
+    long_time_format[0] = long_time_format[1] = "%Y-%m-%d %H:%M:%S %z";
+  }
+  strftime(outputString, 32, long_time_format[recent], localtime(&(date)));
   return (outputString);
 }
 
@@ -867,6 +876,7 @@ results* get_dir(char *pwd)
 
   results *ob = malloc(sizeof(results)); // Allocating a tiny amount of memory. We'll expand this on each file found.
 
+  time ( &currenttime );
   savailable = GetAvailableSpace(pwd);
   sused = 0; // Resetting used value
 

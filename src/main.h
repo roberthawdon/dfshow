@@ -6,7 +6,8 @@ enum
    GETOPT_HELP_CHAR = (CHAR_MIN - 2),
    GETOPT_VERSION_CHAR = (CHAR_MIN - 3),
    GETOPT_SI_CHAR = (CHAR_MIN - 4),
-   GETOPT_AUTHOR_CHAR = (CHAR_MIN - 5)
+   GETOPT_AUTHOR_CHAR = (CHAR_MIN - 5),
+   GETOPT_TIMESTYLE_CHAR = (CHAR_MIN - 6)
   };
 
 void refreshScreen();

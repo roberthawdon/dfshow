@@ -167,6 +167,7 @@ int main(int argc, char *argv[])
          {"human-readable", no_argument,       0, 'h'},
          {"no-group",       no_argument,       0, 'G'},
          {"reverse",        no_argument,       0, 'r'},
+         {"time-style",     required_argument, 0, GETOPT_TIMESTYLE_CHAR},
          {"si",             no_argument,       0, GETOPT_SI_CHAR},
          {"help",           no_argument,       0, GETOPT_HELP_CHAR},
          {"version",        no_argument,       0, GETOPT_VERSION_CHAR},
@@ -198,6 +199,9 @@ int main(int argc, char *argv[])
       break;
     case 'S':
       strcpy(sortmode, "size");
+      break;
+    case GETOPT_TIMESTYLE_CHAR:
+      strcpy(timestyle, optarg);
       break;
     case 't':
       strcpy(sortmode, "date");
