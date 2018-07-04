@@ -58,6 +58,15 @@ extern int showhidden;
 
 struct sigaction sa;
 
+int checkStyle(char* styleinput)
+{
+  if ( (strcmp(styleinput, "long-iso") && (strcmp(styleinput, "full-iso") && strcmp(styleinput, "iso") && strcmp(styleinput, "locale") ))){
+      return 0;
+    } else {
+      return 1;
+    }
+}
+
 void refreshScreen()
 {
   switch(viewMode)
@@ -204,6 +213,17 @@ int main(int argc, char *argv[])
       break;
     case GETOPT_TIMESTYLE_CHAR:
       strcpy(timestyle, optarg);
+      if (!checkStyle(timestyle)){
+        printf("%s: invalid argument '%s' for 'time style'\n", argv[0], timestyle);
+        fputs (("\
+Valid arguments are:\n\
+  - full-iso\n\
+  - long-iso\n\
+  - iso\n\
+  - locale\n"), stdout);
+        printf("Try '%s --help' for more information.\n", argv[0]);
+        exit(2);
+      }
       break;
     case 't':
       strcpy(sortmode, "date");
