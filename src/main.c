@@ -47,6 +47,7 @@ int reverse = 0;
 int human = 0;
 int si = 0;
 int ogavis = 3;
+int ogapad = 1;
 int showbackup = 1;
 
 extern results* ob;
@@ -262,6 +263,10 @@ Valid arguments are:\n\
   }
 
 
+  // If all author is also requested, the padding needs adjusting.
+  if ( ogavis == 7 ){
+    ogapad = 2;
+  }
 
 
   // Writing Menus
