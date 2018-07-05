@@ -282,7 +282,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
 
   char *ogaval;
 
-  int ogseglen = ogalen + 1; // Distance between longest owner and longest group is always 1
+  int ogseglen = ogalen + ogapad;
 
   int ogpad = 0;
   int sizepad = 0;
