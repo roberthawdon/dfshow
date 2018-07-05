@@ -1120,7 +1120,7 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
 
   // the space between the largest owner and largest group should always end up being 1... in theory.
   // 2018-07-05: That assumption was solid, until we added a third element (Owner, Group, and Author)
-  if ( ogavis = 7 ){
+  if ( ogavis == 7 ){
     ogapad = 2;
   }
   if (!ogavis){
