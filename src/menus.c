@@ -125,7 +125,7 @@ void show_directory_input()
   move(0,33);
   readline(currentpwd, 1024, oldpwd);
   curs_set(FALSE);
-  if (strcmp(currentpwd, oldpwd) && strcmp(currentpwd, "") || !historyref){
+  if ((strcmp(currentpwd, oldpwd) && strcmp(currentpwd, "")) || !historyref){
     if (!check_dir(currentpwd)){
       quit_menu();
     }
