@@ -62,6 +62,7 @@ int datelen;
 int namelen;
 
 int ogalen;
+int ogapad = 1;
 
 int hlinkstart;
 int ownstart;
@@ -371,7 +372,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
     sizelen = sizeminlen;
   }
 
-  sizepad = (sizelen - strlen(sizestring)) + ogpad + 1;
+  sizepad = (sizelen - strlen(sizestring)) + ogpad + ogapad;
 
   if ( (dateminlen - datelen) > 0 ) {
     datepad = dateminlen - strlen(ob[currentitem].datedisplay);
@@ -1118,11 +1119,15 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   //mvprintw(0, 66, "%d %d", historyref, sessionhistory);
 
   // the space between the largest owner and largest group should always end up being 1... in theory.
+  // 2018-07-05: That assumption was solid, until we added a third element (Owner, Group, and Author)
+  if ( ogavis = 7 ){
+    ogapad = 2;
+  }
   if (!ogavis){
     s1 = 1;
   } else {
-    if ( (ogalen + 1) > strlen(headOG)){
-      s1 = (ogalen + 1) - strlen(headOG) + 1;
+    if ( (ogalen + ogapad) > strlen(headOG)){
+      s1 = (ogalen + ogapad) - strlen(headOG) + ogapad;
     } else {
       s1 = 1;
     }
