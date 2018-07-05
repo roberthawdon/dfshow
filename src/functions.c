@@ -565,7 +565,8 @@ long GetAvailableSpace(const char* path)
   }
 
   // the available size is f_bsize * f_bavail
-  return stat.f_bsize * stat.f_bavail;
+  //return stat.f_bsize * stat.f_bavail;
+  return stat.f_bavail * stat.f_frsize;
 }
 
 long GetUsedSpace(const char* path)
