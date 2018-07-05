@@ -34,6 +34,7 @@
 #include <libgen.h>
 #include <errno.h>
 #include <wchar.h>
+#include <math.h>
 
 #if HAVE_HURD_H
 # include <hurd.h>
@@ -519,6 +520,7 @@ int SendToPager(const char* object)
   } else {
     topLineMessage("Error: No pager set");
   }
+  return 0;
 }
 
 int SendToEditor(const char* object)
@@ -553,9 +555,10 @@ int SendToEditor(const char* object)
   } else {
     topLineMessage("Error: No editor set.");
   }
+  return 0;
 }
 
-long GetAvailableSpace(const char* path)
+size_t GetAvailableSpace(const char* path)
 {
   struct statvfs stat;
 
@@ -610,7 +613,7 @@ int seglength(const void *seg, char *segname, int LEN)
     if (human){
       readableSize(*dfseg[0].size, sizestr, si);
     } else {
-      sprintf(sizestr, "%d", *dfseg[0].size);
+      sprintf(sizestr, "%lu", *dfseg[0].size);
     }
     longest = strlen(sizestr);
   }
@@ -643,7 +646,7 @@ int seglength(const void *seg, char *segname, int LEN)
         if (human){
           readableSize(*dfseg[i].size, sizestr, si);
         } else {
-          sprintf(sizestr, "%d", *dfseg[i].size);
+          sprintf(sizestr, "%lu", *dfseg[i].size);
         }
         len = strlen(sizestr);
       }
@@ -837,6 +840,7 @@ int RenameObject(char* source, char* dest)
     free(destPath);
   }
   free(destPath);
+  return 0;
 }
 
 int CheckMarked(results* ob)
@@ -932,7 +936,7 @@ results* get_dir(char *pwd)
           perms[9] = buffer.st_mode & S_IXOTH? 'x': '-';
 
           sprintf(hlinkstr, "%d", buffer.st_nlink);
-          sprintf(sizestr, "%lu", buffer.st_size);
+          sprintf(sizestr, "%lld", buffer.st_size);
 
           // Writing our structure
           if ( markall && !(buffer.st_mode & S_IFDIR) ) {
@@ -1041,8 +1045,8 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
     readableSize(sused, susedString, si);
     readableSize(savailable, savailableString, si);
   } else {
-    susedString = malloc (sizeof (char) * sizeof(sused) + 1);
-    savailableString = malloc (sizeof (char) * sizeof(savailable) + 1);
+    susedString = malloc (sizeof (char) * log10(sused) + 1);
+    savailableString = malloc (sizeof (char) * log10(savailable) + 1);
     sprintf(susedString, "%lu", sused);
     sprintf(savailableString, "%lu", savailable);
   }
