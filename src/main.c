@@ -29,6 +29,7 @@
 #include "functions.h"
 #include "views.h"
 #include "menus.h"
+#include "colors.h"
 #include "main.h"
 
 char currentpwd[1024];
@@ -49,6 +50,7 @@ int si = 0;
 int ogavis = 3;
 int ogapad = 1;
 int showbackup = 1;
+int colormode = 0;
 
 extern results* ob;
 extern int topfileref;
@@ -127,7 +129,7 @@ Based on the SHOW application from the PC-DOS DF-EDIT suite by Larry Kroeker.\n"
 Sorts objects alphabetically if -St is not set.\n\
 "), stdout);
   fputs (("\n\
-Application Options:\n\
+Options shared with ls:\n\
   -a, --all                    do not ignore entries starting with .\n\
       --author                 prints the author of each file\n\
   -B, --ignore-backups         do not list implied entries ending with ~\n\
@@ -141,10 +143,13 @@ Application Options:\n\
       --time-style=TIME_STYLE  time/date format, see TIME_STYLE section below\n\
   -t                           sort by modification time, newest first\n\
   -U                           do not sort; lists objects in directory order\n\
-      --help                   displays this help message, then exits\n\
+      --help                   displays help message, then exits\n\
       --version                displays version, then exits\n"), stdout);
   fputs (("\n\
 The TIME_STYLE arguement can be: full-iso; long-iso; iso; locale.\n"), stdout);
+  fputs (("\n\
+Options specific to show:\n\
+      --monochrome             compatability mode for monochrome displays\n"), stdout);
   fputs (("\n\
 Exit status:\n\
  0  if OK,\n\
@@ -183,6 +188,7 @@ int main(int argc, char *argv[])
          {"si",             no_argument,       0, GETOPT_SI_CHAR},
          {"help",           no_argument,       0, GETOPT_HELP_CHAR},
          {"version",        no_argument,       0, GETOPT_VERSION_CHAR},
+         {"monochrome",     no_argument,       0, GETOPT_MONOCHROME_CHAR},
          {0, 0, 0, 0}
         };
       int option_index = 0;
@@ -248,6 +254,9 @@ Valid arguments are:\n\
     case 'U':
       strcpy(sortmode, "none"); // Again, invalid
       break;
+    case GETOPT_MONOCHROME_CHAR:
+      colormode = 1;
+      break;
     case GETOPT_HELP_CHAR:
       printHelp(argv[0]);
       exit(0);
@@ -290,11 +299,7 @@ Valid arguments are:\n\
 
   start_color();
   cbreak(); //Added for new method
-  init_pair(1, COLOR_WHITE, COLOR_BLACK);
-  init_pair(2, COLOR_GREEN, COLOR_BLACK);
-  init_pair(3, COLOR_BLACK, COLOR_WHITE);
-  init_pair(4, COLOR_BLUE, COLOR_BLACK);
-  init_pair(5, COLOR_RED, COLOR_BLACK);
+  setColorMode(colormode);
   cbreak();
   // nodelay(stdscr, TRUE);
   noecho();

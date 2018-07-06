@@ -1,0 +1,1 @@
+void setColorMode(int mode);
