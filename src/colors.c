@@ -25,6 +25,15 @@
 extern int colormode;
 
 void setColorMode(int mode){
+  /*
+    Pairs:
+    1    : Command Lines
+    2    : Information Lines
+    3    : Text Input
+    4    : Selected Block Lines
+    5    : Display Lines
+    6    : Danger Lines
+   */
   switch(mode){
   case 0:
     init_pair(1, COLOR_WHITE, COLOR_BLACK);
