@@ -578,12 +578,16 @@ size_t GetAvailableSpace(const char* path)
   struct statvfs stat;
 
   if (statvfs(path, &stat) != 0) {
-    // error happens, just quits here
-    return -1;
+    // error happens, just quits here, but returns 0
+    return 0;
   }
 
   // the available size is f_bsize * f_bavail
   //return stat.f_bsize * stat.f_bavail;
+  // // endwin();
+  // // clear();
+  // // printf("f_bavail: %i\nf_frsize: %i\n", stat.f_bavail, stat.f_frsize);
+  // // exit(0);
   return stat.f_bavail * stat.f_frsize;
 }
 
@@ -1061,8 +1065,16 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
     readableSize(sused, susedString, si);
     readableSize(savailable, savailableString, si);
   } else {
-    susedString = malloc (sizeof (char) * log10(sused) + 1);
-    savailableString = malloc (sizeof (char) * log10(savailable) + 1);
+    if (sused == 0){
+      susedString = malloc (sizeof (char) * 1);
+    } else {
+      susedString = malloc (sizeof (char) * log10(sused) + 1);
+    }
+    if (savailable == 0){
+      savailableString = malloc (sizeof (char) * 1);
+    } else {
+      savailableString = malloc (sizeof (char) * log10(savailable) + 1);
+    }
     sprintf(susedString, "%lu", sused);
     sprintf(savailableString, "%lu", savailable);
   }
