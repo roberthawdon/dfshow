@@ -150,7 +150,9 @@ Options shared with ls:\n\
 The TIME_STYLE arguement can be: full-iso; long-iso; iso; locale.\n"), stdout);
   fputs (("\n\
 Options specific to show:\n\
-      --monochrome             compatability mode for monochrome displays\n"), stdout);
+      --monochrome             compatability mode for monochrome displays\n\
+      --no-danger              turns off danger colors when running with\n\
+                               elevated privileges\n"), stdout);
   fputs (("\n\
 Exit status:\n\
  0  if OK,\n\
