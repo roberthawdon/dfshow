@@ -110,6 +110,19 @@ static char const *long_time_format[2] =
    "%b %e %H:%M"
   };
 
+int findResultByName(results *ob, char *name)
+{
+  int i;
+  for(i = 0; i < totalfilecount; ){
+    if ( !strcmp(ob[i].name, name) ) {
+      return i;
+    }
+    i++;
+  }
+  //If there's no match, we'll fall back to the top item in the list
+  return 0;
+}
+
 char *dateString(time_t date, char *style)
 {
   char *outputString = malloc (sizeof (char) * 33);
@@ -860,7 +873,7 @@ int CheckMarked(results* ob)
   return(result);
 }
 
-void set_history(char *pwd, int topfileref, int selected)
+void set_history(char *pwd, char *name, int topfileref, int selected)
 {
   if (sessionhistory == 0){
     history *hs = malloc(sizeof(history));
@@ -872,6 +885,7 @@ void set_history(char *pwd, int topfileref, int selected)
   }
 
   strcpy(hs[historyref].path, pwd);
+  strcpy(hs[historyref].name, name);
   hs[historyref].topfileref = topfileref;
   hs[historyref].selected = selected;
   historyref++;
@@ -1034,7 +1048,7 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   int count = totalfilecount;
   int printSelect = 0;
   char sizeHeader[256], headings[256];
-  int i, s1, s2, s3;
+  int i, s1, s2, s3, displaycount;
 
   char *susedString, *savailableString;
 
@@ -1098,10 +1112,12 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   }
 
   if (displaysize > count){
-    displaysize = count;
+    displaycount = count;
+  } else {
+    displaycount = displaysize;
   }
 
-  for(list_count = 0; list_count < displaysize; ){
+  for(list_count = 0; list_count < displaycount; ){
     // Setting highlight
     if (list_count == selected) {
       printSelect = 1;
@@ -1162,6 +1178,7 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
 }
 
 void resizeDisplayDir(results* ob){
+  displaysize = (LINES - 5);
   if ( (selected - topfileref) > (LINES - 6 )) {
     topfileref = selected - (LINES - 6);
   } else if ( topfileref + (LINES - 6) > totalfilecount ) {

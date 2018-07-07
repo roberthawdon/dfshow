@@ -43,6 +43,7 @@ char groupinput[256];
 char uids[24];
 char gids[24];
 char errmessage[256];
+char currentfilename[512];
 
 int s;
 char *buf;
@@ -130,7 +131,7 @@ void show_directory_input()
       quit_menu();
     }
     if (strcmp(oldpwd,currentpwd)){
-      set_history(currentpwd, topfileref, selected);
+      set_history(currentpwd, ob[selected].name, topfileref, selected);
     }
     topfileref = 0;
     selected = 0;
@@ -816,6 +817,7 @@ void directory_view_menu_inputs0()
           }
           break;
         case 'h':
+          strcpy(currentfilename, ob[selected].name);
           if (showhidden == 0) {
             showhidden = 1;
           } else {
@@ -824,9 +826,20 @@ void directory_view_menu_inputs0()
           ob = get_dir(currentpwd);
           clear_workspace();
           reorder_ob(ob, sortmode);
-          // Selecting top item to avoid buffer underflows
-          selected = 0;
-          topfileref = 0;
+          // // Selecting top item to avoid buffer underflows
+          // selected = 0;
+          // topfileref = 0;
+          selected = findResultByName(ob, currentfilename);
+          if ( (topfileref > totalfilecount) ){
+            // If the top file ref exceeds the number of files, we'll want to do something about that
+            topfileref = totalfilecount - (displaysize);
+          } else if ( (selected - topfileref) > (displaysize) ) {
+            // We don't want the selected item off the bottom of the screen
+            topfileref = selected - displaysize + 1;
+          } else if ( (selected - topfileref) < 0 ) {
+            // We certainly don't want the top file ref in the negatives
+            topfileref = 0;
+          }
           display_dir(currentpwd, ob, topfileref, selected);
           break;
         case 'm':
@@ -836,15 +849,31 @@ void directory_view_menu_inputs0()
         case 'q':
           if (historyref > 1){
             strcpy(chpwd, hs[historyref - 2].path);
-            selected = hs[historyref - 1].selected;
-            topfileref = hs[historyref - 1].topfileref;
             historyref--;
             if (check_dir(chpwd)){
               strcpy(currentpwd, chpwd);
               chdir(currentpwd);
               ob = get_dir(currentpwd);
-              clear_workspace();
               reorder_ob(ob, sortmode);
+              //selected = hs[historyref].selected;
+              selected = findResultByName(ob, hs[historyref].name);
+              topfileref = hs[historyref].topfileref;
+              if ( (topfileref > totalfilecount) ){
+                // If the top file ref exceeds the number of files, we'll want to do something about that
+                topfileref = totalfilecount - (displaysize);
+              } else if ( (selected - topfileref) > (displaysize) ) {
+                // We don't want the selected item off the bottom of the screen
+                topfileref = selected - displaysize + 1;
+              } else if ( (selected - topfileref) < 0 ) {
+                // We certainly don't want the top file ref in the negatives
+                topfileref = 0;
+              }
+              if (topfileref < 0){
+                // Likewise, we don't want the topfileref < 0 here either
+                topfileref = 0;
+              }
+              clear_workspace();
+              // mvprintw(2,0,"totalfilecount: %i\ntopfileref: %i\nselected: %i\ndisplaysize: %i\nLINES: %i", totalfilecount, topfileref, selected, displaysize, LINES);
               display_dir(currentpwd, ob, topfileref, selected);
             }
             break;
@@ -872,7 +901,7 @@ void directory_view_menu_inputs0()
           }
           strcat(chpwd, ob[selected].name);
           if (check_dir(chpwd)){
-            set_history(chpwd, topfileref, selected);
+            set_history(chpwd, ob[selected].name, topfileref, selected);
             topfileref = 0;
             selected = 0;
             strcpy(currentpwd, chpwd);
