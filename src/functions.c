@@ -401,7 +401,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
     attron(COLOR_PAIR(4));
   } else {
     attroff(A_BOLD);
-    attron(COLOR_PAIR(1));
+    attron(COLOR_PAIR(5));
   }
 
   for ( i = 0; i < maxlen; i++ ){
