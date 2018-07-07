@@ -130,9 +130,7 @@ void show_directory_input()
     if (!check_dir(currentpwd)){
       quit_menu();
     }
-    if (strcmp(oldpwd,currentpwd)){
-      set_history(currentpwd, ob[selected].name, topfileref, selected);
-    }
+    set_history(currentpwd, ob[selected].name, topfileref, selected);
     topfileref = 0;
     selected = 0;
     chdir(currentpwd);
