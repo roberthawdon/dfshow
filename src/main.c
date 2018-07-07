@@ -51,6 +51,7 @@ int ogavis = 3;
 int ogapad = 1;
 int showbackup = 1;
 int colormode = 0;
+int danger = 0;
 
 extern results* ob;
 extern int topfileref;
@@ -169,8 +170,13 @@ are welcome to redistribute it under certain conditions.\n"), stdout);
 
 int main(int argc, char *argv[])
 {
-
+  uid_t uid=getuid(), euid=geteuid();
   int c;
+
+  // Check if we're root to display danger
+  if (uid == 0 || euid == 0){
+    danger = 1;
+  }
 
   // Getting arguments
   while (1)
@@ -189,6 +195,7 @@ int main(int argc, char *argv[])
          {"help",           no_argument,       0, GETOPT_HELP_CHAR},
          {"version",        no_argument,       0, GETOPT_VERSION_CHAR},
          {"monochrome",     no_argument,       0, GETOPT_MONOCHROME_CHAR},
+         {"no-danger",      no_argument,       0, GETOPT_NODANGER_CHAR},
          {0, 0, 0, 0}
         };
       int option_index = 0;
@@ -256,6 +263,9 @@ Valid arguments are:\n\
       break;
     case GETOPT_MONOCHROME_CHAR:
       colormode = 1;
+      break;
+    case GETOPT_NODANGER_CHAR:
+      danger = 0;
       break;
     case GETOPT_HELP_CHAR:
       printHelp(argv[0]);

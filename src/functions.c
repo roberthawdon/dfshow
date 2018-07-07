@@ -99,6 +99,7 @@ extern int si;
 extern int ogavis;
 extern int ogapad;
 extern int showbackup;
+extern int danger;
 
 /* Formatting time in a similar fashion to `ls` */
 static char const *long_time_format[2] =
@@ -1145,7 +1146,11 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   sprintf(sizeHeader, "%i Objects   %s Used %s Available", count, susedString, savailableString);
   sprintf(headings, "%s%s%s%s%s%s%s%s%s%s", headAttrs, genPadding(hlinklen + 1), headOG, genPadding(s1), genPadding(s2), headSize, genPadding(1), headDT, genPadding(s3), headName);
 
-  attron(COLOR_PAIR(2));
+  if ( danger ) {
+    attron(COLOR_PAIR(6));
+  } else {
+    attron(COLOR_PAIR(2));
+  }
   attroff(A_BOLD); // Required to ensure the last selected item doesn't bold the header
   printLine(1, 2, pwd);
   printLine(2, 2, sizeHeader);

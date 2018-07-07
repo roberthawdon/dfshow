@@ -1,4 +1,3 @@
-
 /*
   DF-SHOW - A clone of 'SHOW' directory browser from DF-EDIT by Larry Kroeker
   Copyright (C) 2018  Robert Ian Hawdon
