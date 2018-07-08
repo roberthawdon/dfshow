@@ -1,0 +1,431 @@
+.\" generated with Ronn/v0.7.3
+.\" http://github.com/rtomayko/ronn/tree/0.7.3
+.
+.TH "SHOW" "1" "July 2018" "" ""
+.
+.SH "NAME"
+\fBshow\fR \- An interactive directory/file browser written for Unix\-like systems\.
+.
+.SH "USAGE"
+\fBshow\fR \fI<options\fR> [\fItarget\fR]
+.
+.SH "DESCRIPTION"
+DF\-SHOW is an interactive directory/file browser written for Unix\-like systems\. Based on the SHOW application from the PC\-DOS DF\-EDIT suite by Larry Kroeker\.
+.
+.SH "OPTIONS"
+The following options are shared with \fBls\fR:
+.
+.TP
+\fB\-a\fR, \fB\-\-all\fR
+Does not ignore files or directories starting with \fB\.\fR\. The \fB\.\fR and \fB\.\.\fR objects are never hidden due to their navigational functions in \fBshow\fR\.
+.
+.TP
+\fB\-\-author\fR
+Prints the author of the file in the output\.
+.
+.TP
+\fB\-B\fR, \fB\-\-ignore\-backups\fR
+Hides files ending in \fB~\fR, often used as backup files\.
+.
+.TP
+\fB\-f\fR
+Does not sort the output, this is equivilent to running \fBshow\fR with \fB\-aU\fR\.
+.
+.TP
+\fB\-g\fR
+Only displays the group of each object\. Can be paird with \fB\-\-author\fR\.
+.
+.TP
+\fB\-G\fR, \fB\-\-no\-group\fR
+Omits the group of each object in the output\.
+.
+.TP
+\fB\-h\fR, \fB\-\-human\-readable\fR
+Displays the file sizes in a human readable format\. For example, 1024 Bytes will be represented as 1M\.
+.
+.TP
+\fB\-\-si\fR
+As above, but uses powers of 1000\. (1000 = 1m)
+.
+.TP
+\fB\-r\fR, \fB\-\-reverse\fR
+Reverse the order of sorting\. Can be paird with \fB\-S\fR or \fB\-t\fR
+.
+.TP
+\fB\-S\fR
+Sorts files and directories by size, largest first\.
+.
+.TP
+\fB\-\-time\-style\fR=[\fITIME_STYLE\fR]
+Time/Date format\. Can be set to \fBfull\-iso\fR, \fBlong\-iso\fR, \fBiso\fR, or \fBlocale\fR\.
+.
+.TP
+\fB\-t\fR
+Sorts by modification time, newset first\.
+.
+.TP
+\fB\-U\fR
+Displays output in the order they\'re found\.
+.
+.TP
+\fB\-\-help\fR
+Displays help message, then exits\.
+.
+.TP
+\fB\-\-version\fR
+Displays program version, then exits\.
+.
+.P
+The following options are specific to \fBshow\fR:
+.
+.TP
+\fB\-\-monochrome\fR
+Compatibility mode for monochrome displays\.
+.
+.TP
+\fB\-\-no\-danger\fR
+Disables the danger colour scheme when running with elevated privileges\.
+.
+.SH "OVERVIEW"
+The \fBshow\fR application lets users view the names of files and directories on a disk with information about the files\. Files can be copied, moved, viewed, and edited (in your system\'s default editor)\. The application is run using the show command\. The output is similar to the \fBls\fR command\.
+.
+.P
+The screen is devided into three parts\. The first is the command bar which displays the functions available, their hotkeys, and aditional prompts when requested\. The commands are described in more detail in the \fICOMMANDS\fR and \fIGLOBAL COMMANDS\fR sections\.
+.
+.P
+The second part is the middle of the screen between the top and bottom rows\. This displays information for the files and directories and is known as the display window\. The top three rows of the display window are header lines which identify the information being displayed in each column, the number of objects in the current directory, the total space used by the files in the current directory, the remaining disk space on the mounted partition the directory resides, and the current path\. Each line gives the object\'s permissions, hard links, the owner and group information, size of the object, date and time of the last modification, as well as the name of each file or directory\.
+.
+.P
+The third part is known as the function bar, each function can be accessed by its numeric function key\. The functions are described in more deatail in the \fIFUNCTIONS\fR section\.
+.
+.SH "COMMANDS"
+Several commands are provided which can be used on a single file or multiple files\. These commands provide a lot of the functions supported by standard Unix commands, but in a convenient user interface\. The file to be operated on is selected by navigating the cursor on the line of the desired file\. The highlighed (first character) of the command is used to invoke its function\. Multiple files can be selected using the "Mark/Unmark" function\. The following is a list of valid commands and a brief description of each\.
+.
+.TP
+\fBCopy\fR
+Copy file or marked files to a specified destination\.
+.
+.TP
+\fBDelete\fR
+Delete file or marked files\.
+.
+.TP
+\fBEdit\fR
+Invoke the system\'s text editor\.
+.
+.TP
+\fBHidden\fR
+Toggle the visibility of hidden objects\.
+.
+.TP
+\fBModify\fR
+Change the owner/group or permissions of files\.
+.
+.TP
+\fBQuit\fR
+Quit current directory\.
+.
+.TP
+\fBRename\fR
+Rename/move file or marked files\.
+.
+.TP
+\fBShow\fR
+Show file or directory\.
+.
+.P
+Each of the commands are described in the following paragraphs\. If the command has any additional propts, they are also described here\.
+.
+.TP
+\fBCopy\fR
+Copy the selected file, or marked files to another file location\. When using this command, only the destination must be specified\. The destination file name is requested by one of the following prompts\. An empty response to the prompt or the \fIESC\fR key is used to abort the command\. If there are no marked files, a single file copy is requested; otherwise, a multiple file copy is requested\.
+.
+.IP
+\fBCopy file to:\fR
+.
+.IP
+\fBCopy multiple files to:\fR
+.
+.IP
+If the destination file already exists, confirmation to replace the file is requested by the following prompt\.
+.
+.IP
+\fBReplace file [<file name>]? (Yes/No)\fR
+.
+.TP
+\fBDelete\fR
+Delete the selected file, or marked files\. As this is a destructive process, confirmation is requested by one of the following prompts\. If there are no marked files, a single file delete is requested; otherwise, a multiple delete is requested\.
+.
+.IP
+\fBDelete file? (Yes/No)\fR
+.
+.IP
+\fBDelete file [<file name>]? (Yes/No/All/Stop)\fR
+.
+.IP
+For single files, a "Y" will delete files and anything else will abort the delete file operation\. For multiple files, confirmation for all files is requested\. A "Y" will delete the prompted file, an "N" will not delete the file, an "A" will delete all the marked files without further confirmation, and an "S" will stop the multiple delete command\.
+.
+.TP
+\fBEdit\fR
+This invokes the default text editor\. Please consult the \fBman\fR pages of your preferred editor for more information\. The edit command utilizes the \fBVISUAL\fR or \fBEDITOR\fR environment variable\. If this has not been set, the following message is displayed\.
+.
+.IP
+\fBError: No editor set\fR
+.
+.IP
+To resolve this, set a variable to your preferred editor in your shell\'s user preference file\.
+.
+.IP
+\fBexport VISUAL=/usr/bin/vi\fR
+.
+.TP
+\fBHidden\fR
+This toggles the display of hidden files and directories\. This allows adjustment of the \fB\-a\fR option whilst in the application\. If the currently selected object is hidden by this toggle, the cursor is returned to the top of the directory\.
+.
+.TP
+\fBModify\fR
+Modify the owner/group properties or changes the permissions of an object, or multiple objects\. When invoked, the following prompt is displayed\.
+.
+.IP
+\fBModify: Owner/Group, Permissions\fR
+.
+.IP
+Selecting "O" will bring up two prompts\.
+.
+.IP
+\fBSet Owner:\fR
+.
+.IP
+\fBSet Group:\fR
+.
+.IP
+If the names of the owner or group is invalid, an error will be displayed to the user\.
+.
+.IP
+Selecting "P" will bring up the following prompt\.
+.
+.IP
+\fBModify Permissions:\fR
+.
+.IP
+The syntax is a 3 or 4 digit octect\. See the \fBman\fR pages for \fBchmod\fR for further information\.
+.
+.TP
+\fBQuit\fR
+Closes the current directory currently displayed\. The application will return you to the previous directory you were viewing\. If there are no previous directory, a blank screen showing the global commands is displayed\.
+.
+.TP
+\fBRename\fR
+Rename the selected file, or marked files to a new file name\. The new file name is requested by one of the following prompts\. After a file is renamed, the new file information line is into the list (providing the file has been renamed to the same directory) and the old information line is removed\. Files can only be moved to locations on the same mounted partition\. An empty response to the prompt or the \fIESC\fR key will abort the command\. If there are no marked files, a single file rename is requested; otherwise a multiple file rename is requested\.
+.
+.IP
+\fBRename file to:\fR \fBRename multiple files to:\fR
+.
+.TP
+\fBShow\fR
+Will either display the contents of a directory, or open the contents of a file\. The show file command utilizes the \fBPAGER\fR environment variable\. If this has not been set, the following message is displayed\.
+.
+.IP
+\fBError: No pager set\fR
+.
+.IP
+To resolve this, set a variable to your preferred pager in your shell\'s user preference file\.
+.
+.IP
+\fBexport PAGER=/usr/bin/less\fR
+.
+.SH "FUNCTIONS"
+In order to select objects to be used by the commands described in the previous section, the cursor must be moved to the line of the desired object\. The functions to move the cursor and the list of files in the display window are described here\. A list of the valid functions and their associated function keys is given list\.
+.
+.TP
+\fBF1\fR, \fBPgDn\fR
+Page Down
+.
+.TP
+\fBF2\fR, \fBPgUp\fR
+Page Up
+.
+.TP
+\fBF3\fR
+Top of List
+.
+.TP
+\fBF4\fR
+Bottom of List
+.
+.TP
+\fBF5\fR
+Refresh Directory
+.
+.TP
+\fBF6\fR
+Mark/Unmark File
+.
+.TP
+\fBF7\fR
+Mark All Files
+.
+.TP
+\fBF8\fR
+Unmark All Files
+.
+.TP
+\fBF9\fR
+Sort List
+.
+.TP
+\fBHOME\fR
+Top of Display
+.
+.TP
+\fBEND\fR
+Bottom of Display
+.
+.TP
+\fBDown\fR, \fBRETURN\fR
+Down One Line
+.
+.TP
+\fBUp\fR
+Up One Line
+.
+.TP
+\fBESC\fR
+Global Commands
+.
+.P
+The display functions with their associated key assignments are described here\.
+.
+.TP
+\fBPage Down\fR
+\fBF1, PgDn\fR: Scroll the display window down or forward a page on the list of files\. The cursor is left in the same relative row of the window unless the end of the list is reached\. If the last file of the list is already displayed in the window, the list is not scrolled, but the cursor is placed on the last file in the list\.
+.
+.TP
+\fBPage Up\fR
+\fBF2, PgUp\fR: Scroll the display window up or backward a page on the list of files\. The cursor is left in the same relative row of the window unless the beginning of the list is reached\. If the first file of the list is already displayed in the window, the list is not scrolled, but the cursor is placed on the first file in the list\.
+.
+.TP
+\fBTop of List\fR
+\fBF3\fR: Display the beginning of the list of files in the window and place the cursor on the first file in the list\.
+.
+.TP
+\fBBottom of List\fR
+\fBF4\fR: Display the end of the list of files in the display window and place the cursor on the last file of the list\.
+.
+.TP
+\fBRefresh Directory\fR
+\fBF5\fR: Rereads the directory\. This function is useful to update the list of files after several new files have been created or updated outside of the application\.
+.
+.TP
+\fBMark/Unmark File\fR
+\fBF6\fR: Toggle the file mark on the current file\. The file mark is indicated with an "*" in front of the file name\.
+.
+.TP
+\fBMark All Files\fR
+\fBF7\fR: Set the file mark on all the files but not directories in the list\.
+.
+.TP
+\fBUnmark All Files\fR
+\fBF8\fR: Remove the file marks from all files in the list\.
+.
+.TP
+\fBSort List\fR
+\fBF9\fR: Normally, the file list is sorted by file name alphabetically\. This function allows the files to be listed based on another sorting criteria which is requested by the following promt\.
+.
+.IP
+\fBSort list by \- Date & time, Name, Size\fR
+.
+.IP
+The option is selected by using the first letter of the option name\.
+.
+.IP
+\fBDate & time\fR: Sort the list on date and time so the newest files are at the top of the list\.
+.
+.IP
+\fBName\fR: Sort the list on the file name\.
+.
+.IP
+\fBSize\fR: Sort the list on file size so the largest are at the top of the list\.
+.
+.IP
+Using \fISHIFT\fR whilst selecting an option performs that action in reverse order\.
+.
+.TP
+\fBTop of Display\fR
+\fBHOME\fR: Move the cursor to the first file on the current display\.
+.
+.TP
+\fBBottom of Display\fR
+\fBEND\fR: Move the cursor to the last file on the current display\.
+.
+.TP
+\fBDown One Line\fR
+\fBDown Arrow, Return\fR: Move the cursor down one line to the next file in the display\. If the cursor is on the bottom row of the window, the window is scrolled down one line\. If the present line is the last file in the list, the cursor is not repositioned\.
+.
+.TP
+\fBUp One Line\fR
+\fBUp Arrow\fR: Move the cursor up one line to the next file in the display\. If the cursor is on the top row of the window, the window is scrolled up one line\. If the present line is the first file in the list, the cursor is not repositioned\.
+.
+.TP
+\fBGlobal Commands\fR
+\fBESC\fR: Invoke the \fIGLOBAL COMMANDS\fR described in the next section\. This allows another directory to be displayed without terminating the current display\.
+.
+.SH "GLOBAL COMMANDS"
+When a file group display is terminated with the Quit command, one of the following commands can be used to display another group of files, invoke the editor for a fire, or terminate the application completely\. The first character of the command is used to invoke the desired function\. The command line is shown below\.
+.
+.P
+\fBRun command, Edit file, Help, Make dir, Quit, Show dir\fR
+.
+.P
+These commands are desctibed below\.
+.
+.TP
+\fBRun command\fR
+Invoke your shell\. The \fBshow\fR application is still resident, so the "exit" command will return to the application\.
+.
+.TP
+\fBEdit file\fR
+Invoke the default text editor to edit the specified file\. The file name is requested by the following prompt\. An empty response is used to abort this command\.
+.
+.IP
+\fBEdit File \- Enter pathname:\fR
+.
+.TP
+\fBHelp\fR
+Launches the \fBman\fR pages for \fBshow\fR\.
+.
+.TP
+\fBMake dir\fR
+Make a new directory\. The directory name is requested by the following prompt\. An empty response is used to abort this command\.
+.
+.IP
+\fBMake Directory \- Enter pathname:\fR
+.
+.TP
+\fBQuit\fR
+Terminate \fBshow\fR\.
+.
+.TP
+\fBShow dir\fR
+Invoke the application to display another directory\. The directory name is requrested by the following prompt\. An empty response is used to abort this command\.
+.
+.IP
+\fBShow Directory \- Enter pathnem:\fR
+.
+.SH "SECURITY CONSIDERATIONS"
+DF\-SHOW is designed to be run as a non privileged user, and obays restrictions set by the system\. It is possible to launch \fBshow\fR as root\. When this occurs, \fBshow\fR warns the user by displaying the informational messages in a different color\.
+.
+.SH "AUTHOR"
+Written by Robert Ian Hawdon\.
+.
+.SH "COPYRIGHT"
+Copyright (C) 2018 License GPLv3+: GNU GPL version 3 or later \fIhttps://gnu\.org/licenses/gpl\.html\fR\.
+.
+.P
+This program comes with ABSOLUTELY NO WARRANTY\. This is free software, and you are welcome to redistribute it under certain conditions\.
+.
+.SH "SEE ALSO"
+chmod(1), chown(1)
+.
+.P
+DF\-SHOW on GitHub: \fIhttps://github\.com/roberthawdon/dfshow\fR
