@@ -466,6 +466,14 @@ void LaunchShell()
   initscr();
 }
 
+void showManPage()
+{
+  clear();
+  endwin();
+  // system("clear"); // Not exactly sure if I want this yet.
+  system("man show");
+  initscr();
+}
 
 void mk_dir(char *path)
 {

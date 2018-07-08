@@ -47,6 +47,7 @@ int SendToPager(const char* object);
 int SendToEditor(const char* object);
 void CheckEnv(const char* key);
 void LaunchShell();
+void showManPage();
 int UpdateOwnerGroup(const char* object, const char* pwdstr, const char* grpstr);
 int RenameObject(char* source, char* dest);
 int CheckMarked(results* ob);
