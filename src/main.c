@@ -52,6 +52,7 @@ int ogapad = 1;
 int showbackup = 1;
 int colormode = 0;
 int danger = 0;
+int invalidstart = 0;
 
 extern results* ob;
 extern int topfileref;
@@ -330,6 +331,7 @@ Valid arguments are:\n\
 
   if (!check_dir(currentpwd)){
     //strcpy(currentpwd, "/"); // If dir doesn't exist, default to root
+    invalidstart = 1;
     quit_menu();
   }
 

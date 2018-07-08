@@ -63,6 +63,8 @@ extern int viewMode;
 
 extern int reverse;
 
+extern int invalidstart;
+
 extern char fileMenuText[256];
 extern char globalMenuText[256];
 extern char functionMenuText[256];
@@ -130,7 +132,12 @@ void show_directory_input()
     if (!check_dir(currentpwd)){
       quit_menu();
     }
-    set_history(currentpwd, ob[selected].name, topfileref, selected);
+    if ( invalidstart ){
+      invalidstart = 0;
+      set_history(currentpwd, "", 0, 0);
+    } else {
+      set_history(currentpwd, ob[selected].name, topfileref, selected);
+    }
     topfileref = 0;
     selected = 0;
     chdir(currentpwd);
