@@ -1,3 +1,22 @@
+/*
+  DF-SHOW - A clone of 'SHOW' directory browser from DF-EDIT by Larry Kroeker
+  Copyright (C) 2018  Robert Ian Hawdon
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+#define _GNU_SOURCE
 #include <ncurses.h>
 #include <unistd.h>
 #include <string.h>
@@ -13,8 +32,6 @@
 #include "main.h"
 #include "views.h"
 
-char sortmode[5] = "name";
-
 int c;
 int * pc = &c;
 
@@ -26,6 +43,7 @@ char groupinput[256];
 char uids[24];
 char gids[24];
 char errmessage[256];
+char currentfilename[512];
 
 int s;
 char *buf;
@@ -43,6 +61,10 @@ extern int showhidden;
 extern int markall;
 extern int viewMode;
 
+extern int reverse;
+
+extern int invalidstart;
+
 extern char fileMenuText[256];
 extern char globalMenuText[256];
 extern char functionMenuText[256];
@@ -50,6 +72,8 @@ extern char modifyMenuText[256];
 extern char sortMenuText[256];
 
 extern struct sigaction sa;
+
+extern char sortmode[5];
 
 //char testMenu[256];
 
@@ -104,12 +128,15 @@ void show_directory_input()
   move(0,33);
   readline(currentpwd, 1024, oldpwd);
   curs_set(FALSE);
-  if (strcmp(currentpwd, oldpwd) && strcmp(currentpwd, "")){
+  if ((strcmp(currentpwd, oldpwd) && strcmp(currentpwd, "")) || !historyref){
     if (!check_dir(currentpwd)){
       quit_menu();
     }
-    if (strcmp(oldpwd,currentpwd)){
-      set_history(currentpwd, topfileref, selected);
+    if ( invalidstart ){
+      invalidstart = 0;
+      set_history(currentpwd, "", 0, 0);
+    } else {
+      set_history(currentpwd, ob[selected].name, topfileref, selected);
     }
     topfileref = 0;
     selected = 0;
@@ -449,35 +476,40 @@ void sort_view_inputs()
       *pc = getch();
       switch(*pc)
         {
-        case 'n':
-          clear_workspace();
-          strcpy(sortmode, "name");
-          reorder_ob(ob, sortmode);
-          display_dir(currentpwd, ob, topfileref, selected);
-          printMenu(0, 0, fileMenuText);
-          directory_view_menu_inputs0();
-          break;
-        case 'd':
-          clear_workspace();
-          strcpy(sortmode, "date");
-          reorder_ob(ob, sortmode);
-          display_dir(currentpwd, ob, topfileref, selected);
-          printMenu(0, 0, fileMenuText);
-          directory_view_menu_inputs0();
-          break;
-        case 's':
-          clear_workspace();
-          strcpy(sortmode, "size");
-          reorder_ob(ob, sortmode);
-          display_dir(currentpwd, ob, topfileref, selected);
-          printMenu(0, 0, fileMenuText);
-          directory_view_menu_inputs0();
-          break;
         case 27: // ESC Key
           printMenu(0, 0, fileMenuText);
           directory_view_menu_inputs0();
           break;
+        case 'n':
+          strcpy(sortmode, "name");
+          reverse = 0;
+          break;
+        case 'd':
+          strcpy(sortmode, "date");
+          reverse = 0;
+          break;
+        case 's':
+          strcpy(sortmode, "size");
+          reverse = 0;
+          break;
+        case 'N':
+          strcpy(sortmode, "name");
+          reverse = 1;
+          break;
+        case 'D':
+          strcpy(sortmode, "date");
+          reverse = 1;
+          break;
+        case 'S':
+          strcpy(sortmode, "size");
+          reverse = 1;
+          break;
         }
+      clear_workspace();
+      reorder_ob(ob, sortmode);
+      display_dir(currentpwd, ob, topfileref, selected);
+      printMenu(0, 0, fileMenuText);
+      directory_view_menu_inputs0();
     }
 }
 
@@ -732,8 +764,8 @@ void directory_view_menu_inputs1()
 
 void directory_view_menu_inputs0()
 {
-  viewMode = 0;
   int e = 0;
+  viewMode = 0;
   while(1)
     {
       //signal(SIGWINCH, refreshScreen );
@@ -790,6 +822,7 @@ void directory_view_menu_inputs0()
           }
           break;
         case 'h':
+          strcpy(currentfilename, ob[selected].name);
           if (showhidden == 0) {
             showhidden = 1;
           } else {
@@ -798,9 +831,20 @@ void directory_view_menu_inputs0()
           ob = get_dir(currentpwd);
           clear_workspace();
           reorder_ob(ob, sortmode);
-          // Selecting top item to avoid buffer underflows
-          selected = 0;
-          topfileref = 0;
+          // // Selecting top item to avoid buffer underflows
+          // selected = 0;
+          // topfileref = 0;
+          selected = findResultByName(ob, currentfilename);
+          if ( (topfileref > totalfilecount) ){
+            // If the top file ref exceeds the number of files, we'll want to do something about that
+            topfileref = totalfilecount - (displaysize);
+          } else if ( (selected - topfileref) > (displaysize) ) {
+            // We don't want the selected item off the bottom of the screen
+            topfileref = selected - displaysize + 1;
+          } else if ( (selected - topfileref) < 0 ) {
+            // We certainly don't want the top file ref in the negatives
+            topfileref = 0;
+          }
           display_dir(currentpwd, ob, topfileref, selected);
           break;
         case 'm':
@@ -810,20 +854,36 @@ void directory_view_menu_inputs0()
         case 'q':
           if (historyref > 1){
             strcpy(chpwd, hs[historyref - 2].path);
-            selected = hs[historyref - 1].selected;
-            topfileref = hs[historyref - 1].topfileref;
             historyref--;
             if (check_dir(chpwd)){
               strcpy(currentpwd, chpwd);
               chdir(currentpwd);
               ob = get_dir(currentpwd);
-              clear_workspace();
               reorder_ob(ob, sortmode);
+              //selected = hs[historyref].selected;
+              selected = findResultByName(ob, hs[historyref].name);
+              topfileref = hs[historyref].topfileref;
+              if ( (topfileref > totalfilecount) ){
+                // If the top file ref exceeds the number of files, we'll want to do something about that
+                topfileref = totalfilecount - (displaysize);
+              } else if ( (selected - topfileref) > (displaysize) ) {
+                // We don't want the selected item off the bottom of the screen
+                topfileref = selected - displaysize + 1;
+              } else if ( (selected - topfileref) < 0 ) {
+                // We certainly don't want the top file ref in the negatives
+                topfileref = 0;
+              }
+              if (topfileref < 0){
+                // Likewise, we don't want the topfileref < 0 here either
+                topfileref = 0;
+              }
+              clear_workspace();
+              // mvprintw(2,0,"totalfilecount: %i\ntopfileref: %i\nselected: %i\ndisplaysize: %i\nLINES: %i", totalfilecount, topfileref, selected, displaysize, LINES);
               display_dir(currentpwd, ob, topfileref, selected);
             }
             break;
           } else {
-            historyref--;
+            historyref = 0; // Reset historyref here. A hacky workaround due to the value occasionally dipping to minus numbers.
             quit_menu();
           }
           break;
@@ -846,7 +906,7 @@ void directory_view_menu_inputs0()
           }
           strcat(chpwd, ob[selected].name);
           if (check_dir(chpwd)){
-            set_history(chpwd, topfileref, selected);
+            set_history(chpwd, ob[selected].name, topfileref, selected);
             topfileref = 0;
             selected = 0;
             strcpy(currentpwd, chpwd);

@@ -53,7 +53,18 @@ If the show directory utility is invoked without specifing a directory, then the
 Screenshots
 -----------
 
-**Directory View**
+**Directory View - Linux**
 
-.. image:: https://raw.github.com/roberthawdon/dfshow/master/docs/images/show-terminal.png
-   :alt: Directory Viewer
+.. image:: https://user-images.githubusercontent.com/4301139/42421530-ed1d3660-82ce-11e8-9b93-e36a65ae2fc0.png
+   :alt: Directory Viewer Under Linux
+
+**Directory View - MacOS**
+
+.. image:: https://user-images.githubusercontent.com/4301139/42421531-f09ca60e-82ce-11e8-94c9-ce4d8ad9226a.png
+   :alt: Show running under MacOS
+
+**Directory View - Debian HURD**
+*HURD supports the author flag on files, ``show`` is able to show this.*
+
+.. image:: https://user-images.githubusercontent.com/4301139/42421533-f39b6fe8-82ce-11e8-8975-068d82dc741f.png
+   :alt: Show running under Debian HURD

@@ -1,3 +1,22 @@
+/*
+  DF-SHOW - A clone of 'SHOW' directory browser from DF-EDIT by Larry Kroeker
+  Copyright (C) 2018  Robert Ian Hawdon
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <ncurses.h>
 #include <ctype.h>
@@ -15,17 +34,34 @@
 #include <libgen.h>
 #include <errno.h>
 #include <wchar.h>
+#include <math.h>
+
+#if HAVE_HURD_H
+# include <hurd.h>
+#endif
+
+#include "config.h"
 #include "functions.h"
 #include "views.h"
 #include "menus.h"
 
+// It turns out most systems don't have an ST_AUTHOR, so for those systems, we set the author as the owner. Yup, `ls` does this too.
+#if ! HAVE_STRUCT_STAT_ST_AUTHOR
+# define st_author st_uid
+#endif
+
 char hlinkstr[5], sizestr[32];
+char headAttrs[12], headOG[25], headSize[7], headDT[18], headName[13];
 
 int hlinklen;
 int ownerlen;
 int grouplen;
+int authorlen;
 int sizelen;
+int datelen;
 int namelen;
+
+int ogalen;
 
 int hlinkstart;
 int ownstart;
@@ -52,8 +88,61 @@ unsigned long int sused = 0;
 
 history *hs;
 
+time_t currenttime;
+
 extern char currentpwd[1024];
+extern char timestyle[9];
 extern int viewMode;
+extern int reverse;
+extern int human;
+extern int si;
+extern int ogavis;
+extern int ogapad;
+extern int showbackup;
+extern int danger;
+
+/* Formatting time in a similar fashion to `ls` */
+static char const *long_time_format[2] =
+  {
+   // With year, intended for if the file is older than 6 months.
+   "%b %e  %Y",
+   // Without year, for recent files.
+   "%b %e %H:%M"
+  };
+
+int findResultByName(results *ob, char *name)
+{
+  int i;
+  for(i = 0; i < totalfilecount; ){
+    if ( !strcmp(ob[i].name, name) ) {
+      return i;
+    }
+    i++;
+  }
+  //If there's no match, we'll fall back to the top item in the list
+  return 0;
+}
+
+char *dateString(time_t date, char *style)
+{
+  char *outputString = malloc (sizeof (char) * 33);
+  bool recent = 0;
+
+  if ( date > (currenttime - 31556952) ) {
+    recent = 1;
+  }
+
+  if ( !strcmp(style, "long-iso") ) {
+    long_time_format[0] = long_time_format[1] = "%Y-%m-%d %H:%M";
+  } else if ( !strcmp(style, "full-iso") ) {
+    long_time_format[0] = long_time_format[1] = "%Y-%m-%d %H:%M:%S %z";
+  } else if ( !strcmp(style, "iso") ) {
+    long_time_format[0] = "%Y-%m-%d ";
+    long_time_format[1] = "%m-%d %H:%M";
+  }
+  strftime(outputString, 32, long_time_format[recent], localtime(&(date)));
+  return (outputString);
+}
 
 void readline(char *buffer, int buflen, char *oldbuf)
 /* Read up to buflen-1 characters into `buffer`.
@@ -63,7 +152,7 @@ void readline(char *buffer, int buflen, char *oldbuf)
   int pos;
   int len;
   int oldlen;
-  int x, y;
+  int x, y, c;
   int oldMode = viewMode;
 
   oldlen = strlen(oldbuf);
@@ -77,7 +166,6 @@ void readline(char *buffer, int buflen, char *oldbuf)
   strcpy(buffer, oldbuf);
 
   for (;;) {
-    int c;
 
     buffer[len] = ' ';
     mvaddnstr(y, x, buffer, len+1); // Prints buffer on screen
@@ -133,6 +221,30 @@ void readline(char *buffer, int buflen, char *oldbuf)
   if (old_curs != ERR) curs_set(old_curs);
 }
 
+char *readableSize(double size, char *buf, int si){
+  int i = 0;
+  int powers = 1024;
+  const char* units[] = {"", "K", "M", "G", "T", "P", "E", "Z", "Y"};
+  char unitOut[2];
+  if (si){
+    powers = 1000;
+  }
+  while ( size >= powers){
+    size /= powers;
+    i++;
+    if ( i == 10 ){
+      break; // Come back and see me when 1024+ YB is an everyday occurance
+    }
+  }
+  sprintf(unitOut, "%s", units[i]);
+  if (si){
+    // si units used
+    unitOut[0] = tolower(*unitOut);
+  }
+  sprintf(buf, "%.*f%s", i, size, unitOut);
+  return (buf);
+}
+
 void padstring(char *str, int len, char c)
 {
   int slen = strlen(str);
@@ -165,7 +277,7 @@ void printLine(int line, int col, char *textString){
   }
 }
 
-void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int sizelen, int namelen, int selected, int listref, int topref, results* ob){
+void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorlen, int sizelen, int datelen, int namelen, int selected, int listref, int topref, results* ob){
 
   int i;
 
@@ -174,29 +286,100 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int sizelen
   int maxlen = COLS - start;
 
   int currentitem = listref + topref;
-  int ogminlen = 15; // Length of "Owner & Group" heading
-  int sizeminlen = 6; // Length of "Size" heading
+  int ogminlen = strlen(headOG); // Length of "Owner & Group" heading
+  int sizeminlen = strlen(headSize); // Length of "Size" heading
+  int dateminlen = strlen(headDT); // Length of "Date" heading
 
-  int oggap = ownerlen - strlen(ob[currentitem].owner) + 1;
+  int oggap, gagap = 0;
 
-  int oglen = (strlen(ob[currentitem].owner) + oggap + strlen(ob[currentitem].group));
-  int ogseglen = ownerlen + 1 + grouplen; // Distance between longest owner and longest group is always 1
+  int oglen = 0;
+
+  char *ogaval;
+
+  int ogseglen = ogalen + ogapad;
 
   int ogpad = 0;
   int sizepad = 0;
 
   int entrylen = 0;
 
-  if ( (ogminlen - oglen) > 0 ) {
-    ogpad = ogminlen - oglen;
-  } else {
-    ogpad = ogseglen - oglen;
-  }
+  int datepad = 0;
 
   char *s1, *s2, *s3;
-  char *sizestring = malloc (sizeof (char) * sizelen + 1);
 
-  sprintf(sizestring, "%lu", *ob[currentitem].size);
+  char *sizestring;
+
+  // Owner, Group, Author
+  switch(ogavis){
+  case 0:
+    ogaval = malloc (sizeof (char));
+    strcpy(ogaval,"");
+    break;
+  case 1:
+    oglen = (strlen(ob[currentitem].owner));
+    ogaval = malloc (sizeof (char) * oglen + 2);
+    sprintf(ogaval, "%s", ob[currentitem].owner);
+    break;
+  case 2:
+    oglen = (strlen(ob[currentitem].group));
+    ogaval = malloc (sizeof (char) * oglen + 1);
+    sprintf(ogaval, "%s", ob[currentitem].group);
+    break;
+  case 3:
+    oggap = ownerlen - strlen(ob[currentitem].owner) + 1;
+    oglen = (strlen(ob[currentitem].owner) + oggap + strlen(ob[currentitem].group));
+    ogaval = malloc (sizeof (char) * oglen + 1);
+    sprintf(ogaval, "%s%s%s", ob[currentitem].owner, genPadding(oggap), ob[currentitem].group);
+    break;
+  case 4:
+    oglen = (strlen(ob[currentitem].author));
+    ogaval = malloc (sizeof (char) * oglen + 1);
+    sprintf(ogaval, "%s", ob[currentitem].author);
+    break;
+  case 5:
+    oggap = ownerlen - strlen(ob[currentitem].owner) + 1;
+    oglen = (strlen(ob[currentitem].owner) + oggap + strlen(ob[currentitem].author));
+    ogaval = malloc (sizeof (char) * oglen + 1);
+    sprintf(ogaval, "%s%s%s", ob[currentitem].owner, genPadding(oggap), ob[currentitem].author);
+    break;
+  case 6:
+    gagap = grouplen - strlen(ob[currentitem].group) + 1;
+    oglen = (strlen(ob[currentitem].group) + gagap + strlen(ob[currentitem].author));
+    ogaval = malloc (sizeof (char) * oglen + 1);
+    sprintf(ogaval, "%s%s%s", ob[currentitem].group, genPadding(gagap), ob[currentitem].author);
+    break;
+  case 7:
+    oggap = ownerlen - strlen(ob[currentitem].owner) + 1;
+    gagap = grouplen - strlen(ob[currentitem].group) + 1;
+    oglen = (strlen(ob[currentitem].owner) + oggap + strlen(ob[currentitem].group) + gagap + strlen(ob[currentitem].author));
+    ogaval = malloc (sizeof (char) * oglen + 1);
+    sprintf(ogaval, "%s%s%s%s%s", ob[currentitem].owner, genPadding(oggap), ob[currentitem].group, genPadding(gagap), ob[currentitem].author);
+    break;
+  default:
+    oggap = ownerlen - strlen(ob[currentitem].owner) + 1;
+    oglen = (strlen(ob[currentitem].owner) + oggap + strlen(ob[currentitem].group));
+    ogaval = malloc (sizeof (char) * oglen + 1);
+    sprintf(ogaval, "%s%s%s", ob[currentitem].owner, genPadding(oggap), ob[currentitem].group);
+    break;
+  }
+
+  if (!ogavis){
+    ogpad = 0;
+  } else {
+    if ( (ogminlen - ogseglen) > 0 ) {
+      ogpad = ogminlen - strlen(ogaval);
+    } else {
+      ogpad = ogseglen - strlen(ogaval);
+    }
+  }
+
+  if (human){
+    sizestring = malloc (sizeof (char) * 10);
+    readableSize(*ob[currentitem].size, sizestring, si);
+  } else {
+    sizestring = malloc (sizeof (char) * sizelen + 1);
+    sprintf(sizestring, "%lu", *ob[currentitem].size);
+  }
 
   // Redefining width of Size value if the all sizes are smaller than the header.
   if ( sizelen < sizeminlen ) {
@@ -205,9 +388,15 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int sizelen
 
   sizepad = (sizelen - strlen(sizestring)) + ogpad + 1;
 
+  if ( (dateminlen - datelen) > 0 ) {
+    datepad = dateminlen - strlen(ob[currentitem].datedisplay);
+  } else {
+    datepad = datelen - strlen(ob[currentitem].datedisplay);
+  }
+
   s1 = genPadding(hlinkstart);
-  s2 = genPadding(oggap);
-  s3 = genPadding(sizepad);
+  s2 = genPadding(sizepad);
+  s3 = genPadding(datepad);
 
   if ( *ob[listref].marked ){
     strcpy(marked, "*");
@@ -215,7 +404,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int sizelen
     strcpy(marked, " ");
   }
 
-  swprintf(entry, 1024, L"%s %s%s%i %s%s%s%s%lu %s  %s", marked, ob[currentitem].perm, s1, *ob[currentitem].hlink, ob[currentitem].owner, s2, ob[currentitem].group, s3, *ob[currentitem].size, ob[currentitem].date, ob[currentitem].name);
+  swprintf(entry, 1024, L"%s %s%s%i %s%s%s %s%s %s", marked, ob[currentitem].perm, s1, *ob[currentitem].hlink, ogaval, s2, sizestring, ob[currentitem].datedisplay, s3, ob[currentitem].name);
 
   entrylen = wcslen(entry);
   // mvprintw(4 + listref, start, "%s", entry);
@@ -226,7 +415,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int sizelen
     attron(COLOR_PAIR(4));
   } else {
     attroff(A_BOLD);
-    attron(COLOR_PAIR(1));
+    attron(COLOR_PAIR(5));
   }
 
   for ( i = 0; i < maxlen; i++ ){
@@ -240,6 +429,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int sizelen
   free(s2);
   free(s3);
   free(sizestring);
+  free(ogaval);
 }
 
 int check_file(char *file){
@@ -252,11 +442,10 @@ int check_file(char *file){
 
 char * dirFromPath (const char* myStr){
 
-  char *outStr = (char *) malloc(sizeof(myStr));
+  char *outStr = (char *) malloc(strlen(myStr) + 1);
+  char *del = &outStr[strlen(outStr)];
 
   strcpy(outStr, myStr);
-
-  char *del = &outStr[strlen(outStr)];
 
   while (del > outStr && *del != '/')
     del--;
@@ -346,6 +535,7 @@ int SendToPager(const char* object)
   } else {
     topLineMessage("Error: No pager set");
   }
+  return 0;
 }
 
 int SendToEditor(const char* object)
@@ -380,19 +570,25 @@ int SendToEditor(const char* object)
   } else {
     topLineMessage("Error: No editor set.");
   }
+  return 0;
 }
 
-long GetAvailableSpace(const char* path)
+size_t GetAvailableSpace(const char* path)
 {
   struct statvfs stat;
 
   if (statvfs(path, &stat) != 0) {
-    // error happens, just quits here
-    return -1;
+    // error happens, just quits here, but returns 0
+    return 0;
   }
 
   // the available size is f_bsize * f_bavail
-  return stat.f_bsize * stat.f_bavail;
+  //return stat.f_bsize * stat.f_bavail;
+  // // endwin();
+  // // clear();
+  // // printf("f_bavail: %i\nf_frsize: %i\n", stat.f_bavail, stat.f_frsize);
+  // // exit(0);
+  return stat.f_bavail * stat.f_frsize;
 }
 
 long GetUsedSpace(const char* path)
@@ -415,19 +611,33 @@ int seglength(const void *seg, char *segname, int LEN)
 
   results *dfseg = (results *)seg;
 
+  size_t j = 0;
+
+  size_t i;
+
   if (!strcmp(segname, "owner")) {
     longest = strlen(dfseg[0].owner);
   }
   else if (!strcmp(segname, "group")) {
     longest = strlen(dfseg[0].group);
   }
+  else if (!strcmp(segname, "author")) {
+    longest = strlen(dfseg[0].author);
+  }
   else if (!strcmp(segname, "hlink")) {
     sprintf(hlinkstr, "%d", *dfseg[0].hlink);
     longest = strlen(hlinkstr);
   }
   else if (!strcmp(segname, "size")) {
-    sprintf(sizestr, "%d", *dfseg[0].size);
+    if (human){
+      readableSize(*dfseg[0].size, sizestr, si);
+    } else {
+      sprintf(sizestr, "%lu", *dfseg[0].size);
+    }
     longest = strlen(sizestr);
+  }
+  else if (!strcmp(segname, "datedisplay")) {
+    longest = strlen(dfseg[0].datedisplay);
   }
   else if (!strcmp(segname, "name")) {
     longest = strlen(dfseg[0].name);
@@ -436,9 +646,7 @@ int seglength(const void *seg, char *segname, int LEN)
     longest = 0;
   }
 
-  size_t j = 0;
-
-  for(size_t i = 1; i < LEN; i++)
+  for(i = 1; i < LEN; i++)
     {
       if (!strcmp(segname, "owner")) {
         len = strlen(dfseg[i].owner);
@@ -446,13 +654,23 @@ int seglength(const void *seg, char *segname, int LEN)
       else if (!strcmp(segname, "group")) {
         len = strlen(dfseg[i].group);
       }
+      else if (!strcmp(segname, "author")) {
+        len = strlen(dfseg[i].author);
+      }
       else if (!strcmp(segname, "hlink")) {
         sprintf(hlinkstr, "%d", *dfseg[i].hlink);
         len = strlen(hlinkstr);
       }
       else if (!strcmp(segname, "size")) {
-        sprintf(sizestr, "%d", *dfseg[i].size);
+        if (human){
+          readableSize(*dfseg[i].size, sizestr, si);
+        } else {
+          sprintf(sizestr, "%lu", *dfseg[i].size);
+        }
         len = strlen(sizestr);
+      }
+      else if (!strcmp(segname, "datedisplay")) {
+        len = strlen(dfseg[i].datedisplay);
       }
       else if (!strcmp(segname, "name")) {
         len = strlen(dfseg[i].name);
@@ -491,7 +709,13 @@ int cmp_dflist_name(const void *lhs, const void *rhs)
   results *dforderA = (results *)lhs;
   results *dforderB = (results *)rhs;
 
-  return strcmp(dforderA->name, dforderB->name);
+  if (reverse){
+    // Names in reverse order
+    return strcmp(dforderB->name, dforderA->name);
+  } else {
+    // Names alphabetical
+    return strcmp(dforderA->name, dforderB->name);
+  }
 
 }
 
@@ -500,7 +724,13 @@ int cmp_dflist_date(const void *lhs, const void *rhs)
   results *dforderA = (results *)lhs;
   results *dforderB = (results *)rhs;
 
-  return strcmp(dforderA->date, dforderB->date);
+  if (reverse){
+    // Oldest to Newest
+    return (dforderA->date - dforderB->date);
+  } else {
+    // Newest to Oldest
+    return (dforderB->date - dforderA->date);
+  }
 
 }
 
@@ -509,7 +739,13 @@ int cmp_dflist_size(const void *lhs, const void *rhs)
   results *dforderA = (results *)lhs;
   results *dforderB = (results *)rhs;
 
-  return (*dforderA->size - *dforderB->size);
+  if (reverse) {
+    // Smallest to largest
+    return (*dforderA->size - *dforderB->size);
+  } else {
+    // Largest to smallest
+    return (*dforderB->size - *dforderA->size);
+  }
 
 }
 
@@ -623,6 +859,7 @@ int RenameObject(char* source, char* dest)
     free(destPath);
   }
   free(destPath);
+  return 0;
 }
 
 int CheckMarked(results* ob)
@@ -640,7 +877,7 @@ int CheckMarked(results* ob)
   return(result);
 }
 
-void set_history(char *pwd, int topfileref, int selected)
+void set_history(char *pwd, char *name, int topfileref, int selected)
 {
   if (sessionhistory == 0){
     history *hs = malloc(sizeof(history));
@@ -652,6 +889,7 @@ void set_history(char *pwd, int topfileref, int selected)
   }
 
   strcpy(hs[historyref].path, pwd);
+  strcpy(hs[historyref].name, name);
   hs[historyref].topfileref = topfileref;
   hs[historyref].selected = selected;
   historyref++;
@@ -663,8 +901,6 @@ void set_history(char *pwd, int topfileref, int selected)
 
 results* get_dir(char *pwd)
 {
-  savailable = GetAvailableSpace(pwd);
-  sused = 0; // Resetting used value
   //sused = GetUsedSpace(pwd); // Original DF-EDIT added the sizes to show what was used in that directory, rather than the whole disk.
   size_t count = 0;
   size_t file_count = 0;
@@ -672,13 +908,18 @@ results* get_dir(char *pwd)
   struct stat sb;
   struct group *gr;
   struct passwd *pw;
+  struct passwd *au;
   const char *path = pwd;
   struct stat buffer;
   int         status;
-  char filedatetime[17];
   char perms[11] = {0};
+  char *filedate;
 
   results *ob = malloc(sizeof(results)); // Allocating a tiny amount of memory. We'll expand this on each file found.
+
+  time ( &currenttime );
+  savailable = GetAvailableSpace(pwd);
+  sused = 0; // Resetting used value
 
   if (stat(path, &sb) == 0 && S_ISDIR(sb.st_mode)){
     DIR *folder = opendir ( path );
@@ -689,12 +930,12 @@ results* get_dir(char *pwd)
           if ( showhidden == 0 && check_first_char(res->d_name, ".") && strcmp(res->d_name, ".") && strcmp(res->d_name, "..") ) {
             continue; // Skipping hidden files
           }
+          if ( !showbackup && check_last_char(res->d_name, "~") ) {
+            continue; // Skipping backup files
+          }
           ob = realloc(ob, (count +1) * sizeof(results)); // Reallocating memory.
           lstat(res->d_name, &sb);
-          struct passwd *pw = getpwuid(sb.st_uid);
-          struct group *gr = getgrgid(sb.st_gid);
           status = lstat(res->d_name, &buffer);
-          strftime(filedatetime, 20, "%Y-%m-%d %H:%M", localtime(&(buffer.st_mtime)));
 
 
           if ( buffer.st_mode & S_IFDIR ) {
@@ -715,7 +956,7 @@ results* get_dir(char *pwd)
           perms[9] = buffer.st_mode & S_IXOTH? 'x': '-';
 
           sprintf(hlinkstr, "%d", buffer.st_nlink);
-          sprintf(sizestr, "%lu", buffer.st_size);
+          sprintf(sizestr, "%lld", buffer.st_size);
 
           // Writing our structure
           if ( markall && !(buffer.st_mode & S_IFDIR) ) {
@@ -726,18 +967,42 @@ results* get_dir(char *pwd)
           strcpy(ob[count].perm, perms);
           *ob[count].hlink = buffer.st_nlink;
           *ob[count].hlinklens = strlen(hlinkstr);
-          strcpy(ob[count].owner, pw->pw_name);
-          strcpy(ob[count].group, gr->gr_name);
+
+          if (!getpwuid(sb.st_uid)){
+            sprintf(ob[count].owner, "%i", sb.st_uid);
+          } else {
+            pw = getpwuid(sb.st_uid);
+            strcpy(ob[count].owner, pw->pw_name);
+          }
+
+          if (!getgrgid(sb.st_gid)){
+            sprintf(ob[count].group, "%i", sb.st_gid);
+          } else {
+            gr = getgrgid(sb.st_gid);
+            strcpy(ob[count].group, gr->gr_name);
+          }
+
+          if (!getpwuid(sb.st_author)){
+            sprintf(ob[count].author, "%i", sb.st_author);
+          } else {
+            au = getpwuid(sb.st_author);
+            strcpy(ob[count].author, au->pw_name);
+          }
+
           *ob[count].size = buffer.st_size;
           *ob[count].sizelens = strlen(sizestr);
-          strcpy(ob[count].date, filedatetime);
+          ob[count].date = buffer.st_mtime;
+
+          filedate = dateString(ob[count].date, timestyle);
+          strcpy(ob[count].datedisplay, filedate);
+
           strcpy(ob[count].name, res->d_name);
 
           sused = sused + buffer.st_size; // Adding the size values
 
+          free(filedate);
           count++;
         }
-
 
         totalfilecount = count;
         closedir ( folder );
@@ -745,7 +1010,9 @@ results* get_dir(char *pwd)
         hlinklen = seglength(ob, "hlink", count);
         ownerlen = seglength(ob, "owner", count);
         grouplen = seglength(ob, "group", count);
+        authorlen = seglength(ob, "author", count);
         sizelen = seglength(ob, "size", count);
+        datelen = seglength(ob, "datedisplay", count);
         namelen = seglength(ob, "name", count);
 
         return ob;
@@ -781,26 +1048,88 @@ results* reorder_ob(results* ob, char *order){
 
 void display_dir(char *pwd, results* ob, int topfileref, int selected){
 
-  displaysize = LINES - 5;
   size_t list_count = 0;
   int count = totalfilecount;
-  selected = selected - topfileref;
   int printSelect = 0;
-  char headAttrs[12], headOG[16], headSize[7], headDT[18], headName[13];
   char sizeHeader[256], headings[256];
-  int i, s1, s2, s3;
+  int i, s1, s2, s3, displaycount;
+
+  char *susedString, *savailableString;
+
+  displaysize = LINES - 5;
+  selected = selected - topfileref;
+
+  if (human) {
+    susedString = malloc (sizeof (char) * 10);
+    savailableString = malloc (sizeof (char) * 10);
+    readableSize(sused, susedString, si);
+    readableSize(savailable, savailableString, si);
+  } else {
+    if (sused == 0){
+      susedString = malloc (sizeof (char) * 1);
+    } else {
+      susedString = malloc (sizeof (char) * log10(sused) + 1);
+    }
+    if (savailable == 0){
+      savailableString = malloc (sizeof (char) * 1);
+    } else {
+      savailableString = malloc (sizeof (char) * log10(savailable) + 1);
+    }
+    sprintf(susedString, "%lu", sused);
+    sprintf(savailableString, "%lu", savailable);
+  }
 
   strcpy(headAttrs, "---Attrs---");
-  strcpy(headOG, "-Owner & Group-");
   strcpy(headSize, "-Size-");
   strcpy(headDT, "---Date & Time---");
   strcpy(headName, "----Name----");
 
-  if (displaysize > count){
-    displaysize = count;
+  // Decide which owner header we need:
+  switch(ogavis){
+  case 0:
+    strcpy(headOG, "");
+    break;
+  case 1:
+    strcpy(headOG, "-Owner-");
+    ogalen = ownerlen;
+    break;
+  case 2:
+    strcpy(headOG, "-Group-");
+    ogalen = grouplen;
+    break;
+  case 3:
+    strcpy(headOG, "-Owner & Group-");
+    ogalen = ownerlen + grouplen;
+    break;
+  case 4:
+    strcpy(headOG, "-Author-");
+    ogalen = authorlen; //test
+    break;
+  case 5:
+    strcpy(headOG, "-Owner & Author-");
+    ogalen = ownerlen + authorlen;
+    break;
+  case 6:
+    strcpy(headOG, "-Group & Author-");
+    ogalen = grouplen + authorlen;
+    break;
+  case 7:
+    strcpy(headOG, "-Owner, Group, & Author-"); // I like the Oxford comma, deal with it.
+    ogalen = ownerlen + grouplen + authorlen;
+    break;
+  default:
+    strcpy(headOG, "-Owner & Group-"); // This should never be called, but we'd rather be safe.
+    ogalen = ownerlen + grouplen;
+    break;
   }
 
-  for(list_count = 0; list_count < displaysize; ){
+  if (displaysize > count){
+    displaycount = count;
+  } else {
+    displaycount = displaysize;
+  }
+
+  for(list_count = 0; list_count < displaycount; ){
     // Setting highlight
     if (list_count == selected) {
       printSelect = 1;
@@ -809,22 +1138,9 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
     }
 
     ownstart = hlinklen + 2;
-    // groupstart = ownerlen - strlen(ob[list_count + topfileref].owner) + 1;
-    // if (ownerlen + 1 + grouplen < 16) {
-    //   sizestart = ownstart + 16;
-    // } else {
-    //   sizestart = groupstart + grouplen + 1;
-    // }
-    // if (sizelen < 7) {
-    //   datestart = sizestart + 7;
-    // } else {
-    //   datestart = sizestart + sizelen + 1;
-    // }
-    // sizeobjectstart = datestart - 1 - *ob[list_count + topfileref].sizelens;
-    // namestart = datestart + 18;
     hlinkstart = ownstart - 1 - *ob[list_count + topfileref].hlinklens;
 
-    printEntry(2, hlinklen, ownerlen, grouplen, sizelen, namelen, printSelect, list_count, topfileref, ob);
+    printEntry(2, hlinklen, ownerlen, grouplen, authorlen, sizelen, datelen, namelen, printSelect, list_count, topfileref, ob);
 
     list_count++;
     }
@@ -832,10 +1148,15 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   //mvprintw(0, 66, "%d %d", historyref, sessionhistory);
 
   // the space between the largest owner and largest group should always end up being 1... in theory.
-  if ( (ownerlen + grouplen + 1) > strlen(headOG)){
-    s1 = (ownerlen + grouplen + 1) - strlen(headOG) + 1;
-  } else {
+  // 2018-07-05: That assumption was solid, until we added a third element (Owner, Group, and Author)
+  if (!ogavis){
     s1 = 1;
+  } else {
+    if ( (ogalen + ogapad) > strlen(headOG)){
+      s1 = (ogalen + ogapad) - strlen(headOG) + 1;
+    } else {
+      s1 = 1;
+    }
   }
 
   if ( sizelen > strlen(headSize)) {
@@ -844,24 +1165,32 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
     s2 = 0;
   }
 
-  sprintf(sizeHeader, "%i Objects   %lu Used %lu Available", count, sused, savailable);
-  sprintf(headings, "%s%s%s%s%s%s%s%s%s%s", headAttrs, genPadding(hlinklen + 1), headOG, genPadding(s1), genPadding(s2), headSize, genPadding(1), headDT, genPadding(1), headName);
+  if ( datelen > strlen(headDT)) {
+    s3 = (datelen - strlen(headDT)) + 1;
+  } else {
+    s3 = 1;
+  }
 
-  attron(COLOR_PAIR(2));
+  sprintf(sizeHeader, "%i Objects   %s Used %s Available", count, susedString, savailableString);
+  sprintf(headings, "%s%s%s%s%s%s%s%s%s%s", headAttrs, genPadding(hlinklen + 1), headOG, genPadding(s1), genPadding(s2), headSize, genPadding(1), headDT, genPadding(s3), headName);
+
+  if ( danger ) {
+    attron(COLOR_PAIR(6));
+  } else {
+    attron(COLOR_PAIR(2));
+  }
   attroff(A_BOLD); // Required to ensure the last selected item doesn't bold the header
   printLine(1, 2, pwd);
   printLine(2, 2, sizeHeader);
 
   printLine (3, 4, headings);
-  // mvprintw(3, 4, "---Attrs---");
-  // mvprintw(3, 14 + ownstart, "-Owner & Group-");
-  // mvprintw(3, 14 + datestart - 7, "-Size-");
-  // mvprintw(3, 14 + datestart, "---Date & Time---");
-  // mvprintw(3, 14 + namestart, "----Name----");
   attron(COLOR_PAIR(1));
+  free(susedString);
+  free(savailableString);
 }
 
 void resizeDisplayDir(results* ob){
+  displaysize = (LINES - 5);
   if ( (selected - topfileref) > (LINES - 6 )) {
     topfileref = selected - (LINES - 6);
   } else if ( topfileref + (LINES - 6) > totalfilecount ) {

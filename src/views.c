@@ -1,3 +1,22 @@
+/*
+  DF-SHOW - A clone of 'SHOW' directory browser from DF-EDIT by Larry Kroeker
+  Copyright (C) 2018  Robert Ian Hawdon
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+#define _GNU_SOURCE
 #include <stdlib.h>
 #include <ncurses.h>
 #include <unistd.h>
@@ -14,6 +33,8 @@ extern char fileMenuText[256];
 extern char globalMenuText[256];
 extern char functionMenuText[256];
 
+extern char sortmode[5];
+
 int directory_view(char * currentpwd)
 {
   topfileref = 0;
@@ -24,9 +45,9 @@ int directory_view(char * currentpwd)
 
   printMenu(0, 0, fileMenuText);
 
-  set_history(currentpwd, 0, 0);
+  set_history(currentpwd, "", 0, 0);
   ob = get_dir(currentpwd);
-  reorder_ob(ob, "name");
+  reorder_ob(ob, sortmode);
   display_dir(currentpwd, ob, topfileref, 0);
 
   // function_key_menu();

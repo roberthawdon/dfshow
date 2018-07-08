@@ -1,6 +1,7 @@
 language: c
 script:
   - aclocal
+  - autoheader
   - autoconf
   - automake --add-missing
   - ./configure
