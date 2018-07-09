@@ -57,6 +57,7 @@ extern int selected;
 extern int topfileref;
 extern int totalfilecount;
 extern int displaysize;
+extern int displaycount;
 extern int showhidden;
 extern int markall;
 extern int viewMode;
@@ -958,13 +959,13 @@ void directory_view_menu_inputs0()
           break;
         case 338: // PgDn - Drop through
         case 265: // F1
-          if (selected < totalfilecount) {
+          if (selected < (totalfilecount - 1) ) {
             clear_workspace();
-            topfileref = topfileref + displaysize;
-            if (topfileref > (totalfilecount - displaysize)){
-              topfileref = totalfilecount - displaysize;
+            topfileref = topfileref + displaycount;
+            if (topfileref > (totalfilecount - displaycount)){
+              topfileref = totalfilecount - displaycount;
             }
-            selected = selected + displaysize;
+            selected = selected + displaycount;
             if (selected > totalfilecount - 1){
               selected = totalfilecount - 1;
             }

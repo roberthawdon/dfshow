@@ -76,6 +76,7 @@ int totalfilecount;
 int selected;
 int topfileref = 0;
 int displaysize; // Calculate area to print
+int displaycount;
 int historyref = 0;
 int sessionhistory = 0;
 
@@ -1060,7 +1061,7 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   int count = totalfilecount;
   int printSelect = 0;
   char sizeHeader[256], headings[256];
-  int i, s1, s2, s3, displaycount;
+  int i, s1, s2, s3;
 
   char *susedString, *savailableString;
 
