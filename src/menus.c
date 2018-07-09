@@ -1048,7 +1048,7 @@ void directory_view_menu_inputs0()
           display_dir(currentpwd, ob, topfileref, selected);
           break;
         case 360: // End
-          selected = topfileref + (displaysize - 1);
+          selected = topfileref + (displaycount - 1);
           display_dir(currentpwd, ob, topfileref, selected);
           break;
           // default:
