@@ -956,10 +956,30 @@ results* get_dir(char *pwd)
           }
           perms[1] = buffer.st_mode & S_IRUSR? 'r': '-';
           perms[2] = buffer.st_mode & S_IWUSR? 'w': '-';
-          perms[3] = buffer.st_mode & S_IXUSR? 'x': '-';
+
+          if ( (buffer.st_mode & S_ISUID) && (buffer.st_mode & S_IXUSR) ){
+            perms[3] = 's';
+          } else if ( (buffer.st_mode & S_ISUID) ){
+            perms[3] = 'S';
+          } else if ( (buffer.st_mode & S_IXUSR) ){
+            perms[3] = 'x';
+          } else {
+            perms[3] = '-';
+          }
+
           perms[4] = buffer.st_mode & S_IRGRP? 'r': '-';
           perms[5] = buffer.st_mode & S_IWGRP? 'w': '-';
-          perms[6] = buffer.st_mode & S_IXGRP? 'x': '-';
+
+          if ( (buffer.st_mode & S_ISGID) && (buffer.st_mode & S_IXGRP) ){
+            perms[6] = 's';
+          } else if ( (buffer.st_mode & S_ISGID) ){
+            perms[6] = 'S';
+          } else if ( (buffer.st_mode & S_IXGRP) ){
+            perms[6] = 'x';
+          } else {
+            perms[6] = '-';
+          }
+
           perms[7] = buffer.st_mode & S_IROTH? 'r': '-';
           perms[8] = buffer.st_mode & S_IWOTH? 'w': '-';
           perms[9] = buffer.st_mode & S_IXOTH? 'x': '-';
