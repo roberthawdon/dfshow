@@ -851,6 +851,9 @@ void directory_view_menu_inputs0()
             // We certainly don't want the top file ref in the negatives
             topfileref = 0;
           }
+          if ( totalfilecount < displaysize ){
+            topfileref = 0;
+          }
           display_dir(currentpwd, ob, topfileref, selected);
           break;
         case 'm':
