@@ -21,6 +21,7 @@ typedef struct {
   int selected;
 } history;
 
+char *str_replace(char *orig, char *rep, char *with);
 int findResultByName(results *ob, char *name);
 char *dateString(time_t date, char *style);
 void readline(char *buffer, int buflen, char *oldbuf);
@@ -44,8 +45,8 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected);
 void set_history(char *pwd, char *name, int topfileref, int selected);
 size_t GetAvailableSpace(const char* path);
 long GetUsedSpace(const char* path);
-int SendToPager(const char* object);
-int SendToEditor(const char* object);
+int SendToPager(char* object);
+int SendToEditor(char* object);
 void CheckEnv(const char* key);
 void LaunchShell();
 void showManPage();
