@@ -1087,7 +1087,7 @@ results* get_dir(char *pwd)
           strcpy(ob[count].name, res->d_name);
 
           if (S_ISLNK(buffer.st_mode)) {
-            slinklen = readlink(res->d_name, ob[count].slink, sizeof(ob[count].slink - 1));
+            slinklen = readlink(res->d_name, ob[count].slink, 1023);
             ob[count].slink[slinklen] = '\0';
 
           } else {
