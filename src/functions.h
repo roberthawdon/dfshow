@@ -11,6 +11,7 @@ typedef struct {
   time_t date;
   char datedisplay[33];
   char name[512];
+  char slink[1024];
 } results;
 
 typedef struct {

@@ -405,7 +405,12 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
     strcpy(marked, " ");
   }
 
-  swprintf(entry, 1024, L"%s %s%s%i %s%s%s %s%s %s", marked, ob[currentitem].perm, s1, *ob[currentitem].hlink, ogaval, s2, sizestring, ob[currentitem].datedisplay, s3, ob[currentitem].name);
+  if ( !strcmp(ob[currentitem].slink, "") ){
+    swprintf(entry, 1024, L"%s %s%s%i %s%s%s %s%s %s", marked, ob[currentitem].perm, s1, *ob[currentitem].hlink, ogaval, s2, sizestring, ob[currentitem].datedisplay, s3, ob[currentitem].name);
+  } else {
+    swprintf(entry, 1024, L"%s %s%s%i %s%s%s %s%s %s -> %s", marked, ob[currentitem].perm, s1, *ob[currentitem].hlink, ogaval, s2, sizestring, ob[currentitem].datedisplay, s3, ob[currentitem].name, ob[currentitem].slink);
+  }
+
 
   entrylen = wcslen(entry);
   // mvprintw(4 + listref, start, "%s", entry);
@@ -923,6 +928,7 @@ results* get_dir(char *pwd)
   int         status;
   char perms[11] = {0};
   char *filedate;
+  ssize_t slinklen;
 
   results *ob = malloc(sizeof(results)); // Allocating a tiny amount of memory. We'll expand this on each file found.
 
@@ -1026,6 +1032,15 @@ results* get_dir(char *pwd)
           strcpy(ob[count].datedisplay, filedate);
 
           strcpy(ob[count].name, res->d_name);
+
+          if (S_ISLNK(buffer.st_mode)) {
+            //strcpy(ob[count].slink, realpath(res->d_name, NULL));
+            slinklen = readlink(res->d_name, ob[count].slink, 1024);
+            ob[count].slink[slinklen] = '\0';
+
+          } else {
+            strcpy(ob[count].slink, "");
+          }
 
           sused = sused + buffer.st_size; // Adding the size values
 
