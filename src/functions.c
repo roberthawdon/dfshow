@@ -101,6 +101,7 @@ extern int ogavis;
 extern int ogapad;
 extern int showbackup;
 extern int danger;
+extern int filecolors;
 
 /* Formatting time in a similar fashion to `ls` */
 static char const *long_time_format[2] =
@@ -331,7 +332,9 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   int i;
 
   char marked[2];
-  wchar_t entry[1024];
+  wchar_t entryMeta[1024];
+  wchar_t entryName[1024];
+  wchar_t entrySLink[1024];
   int maxlen = COLS - start;
 
   int currentitem = listref + topref;
@@ -350,7 +353,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   int ogpad = 0;
   int sizepad = 0;
 
-  int entrylen = 0;
+  int entryMetaLen, entryNameLen, entrySLinkLen = 0;
 
   int datepad = 0;
 
@@ -453,14 +456,20 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
     strcpy(marked, " ");
   }
 
+  swprintf(entryMeta, 1024, L"%s %s%s%i %s%s%s %s%s", marked, ob[currentitem].perm, s1, *ob[currentitem].hlink, ogaval, s2, sizestring, ob[currentitem].datedisplay, s3);
+
+  swprintf(entryName, 1024, L"%s", ob[currentitem].name);
+
   if ( !strcmp(ob[currentitem].slink, "") ){
-    swprintf(entry, 1024, L"%s %s%s%i %s%s%s %s%s %s", marked, ob[currentitem].perm, s1, *ob[currentitem].hlink, ogaval, s2, sizestring, ob[currentitem].datedisplay, s3, ob[currentitem].name);
+    swprintf(entrySLink, 1024, L"");
   } else {
-    swprintf(entry, 1024, L"%s %s%s%i %s%s%s %s%s %s -> %s", marked, ob[currentitem].perm, s1, *ob[currentitem].hlink, ogaval, s2, sizestring, ob[currentitem].datedisplay, s3, ob[currentitem].name, ob[currentitem].slink);
+    swprintf(entrySLink, 1024, L"%s", ob[currentitem].slink);
   }
 
 
-  entrylen = wcslen(entry);
+  entryMetaLen = wcslen(entryMeta);
+  entryNameLen = wcslen(entryName);
+  entrySLinkLen = wcslen(entrySLink);
   // mvprintw(4 + listref, start, "%s", entry);
 
   // Setting highlight
@@ -473,10 +482,57 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   }
 
   for ( i = 0; i < maxlen; i++ ){
-    mvprintw(4 + listref, start + i,"%lc", entry[i]);
-    if ( i == entrylen ){
+    mvprintw(4 + listref, start + i,"%lc", entryMeta[i]);
+    if ( i == entryMetaLen ){
       break;
     }
+  }
+
+  if (filecolors && !selected){
+    if ( strcmp(ob[currentitem].slink, "" )) {
+        attron(A_BOLD);
+      } else {
+        if (ob[currentitem].bold){
+          attron(A_BOLD);
+        }
+        attron(COLOR_PAIR(ob[currentitem].color));
+      }
+  }
+
+  for ( i = 0; i < maxlen; i++ ){
+    mvprintw(4 + listref, (entryMetaLen + 1 + start) + i,"%lc", entryName[i]);
+    if ( i == entryNameLen ){
+      break;
+    }
+  }
+
+  if ( strcmp(ob[currentitem].slink, "") ){
+    if (!selected){
+      attroff(A_BOLD);
+      attron(COLOR_PAIR(5));
+    }
+    mvprintw(4 + listref, (entryMetaLen + entryNameLen + 2 + start),"->");
+  }
+
+  if (filecolors && !selected){
+    if ( strcmp(ob[currentitem].slink, "" )) {
+      if (ob[currentitem].bold){
+        attron(A_BOLD);
+      }
+      attron(COLOR_PAIR(ob[currentitem].color));
+    }
+  }
+
+  for ( i = 0; i < maxlen; i++ ){
+    mvprintw(4 + listref, (entryMetaLen + entryNameLen + 5 + start) + i,"%lc", entrySLink[i]);
+    if ( i == entrySLinkLen ){
+      break;
+    }
+  }
+
+  if (filecolors && !selected){
+    attroff(A_BOLD);
+    attron(COLOR_PAIR(5));
   }
 
   free(s1);
@@ -979,6 +1035,8 @@ results* get_dir(char *pwd)
   const char *path = pwd;
   struct stat buffer;
   int         status;
+  int typecolor;
+  int typebold;
   char perms[11] = {0};
   char *filedate;
   ssize_t slinklen;
@@ -1005,9 +1063,13 @@ results* get_dir(char *pwd)
           lstat(res->d_name, &sb);
           status = lstat(res->d_name, &buffer);
 
+          typecolor = 5;
+          typebold = 0;
 
           if ( buffer.st_mode & S_IFDIR ) {
             perms[0] = 'd';
+            typebold = 1; // Hard to see selection
+            typecolor = 7;
           } else if ( S_ISLNK(buffer.st_mode) ) {
             perms[0] = 'l';
           } else {
@@ -1018,10 +1080,20 @@ results* get_dir(char *pwd)
 
           if ( (buffer.st_mode & S_ISUID) && (buffer.st_mode & S_IXUSR) ){
             perms[3] = 's';
+            if (typecolor != 7){
+              typecolor = 10;
+            }
           } else if ( (buffer.st_mode & S_ISUID) ){
             perms[3] = 'S';
+            if (typecolor != 7){
+              typecolor = 10;
+            }
           } else if ( (buffer.st_mode & S_IXUSR) ){
             perms[3] = 'x';
+            if (typecolor != 7){
+              typebold = 1;
+              typecolor = 9;
+            }
           } else {
             perms[3] = '-';
           }
@@ -1031,10 +1103,20 @@ results* get_dir(char *pwd)
 
           if ( (buffer.st_mode & S_ISGID) && (buffer.st_mode & S_IXGRP) ){
             perms[6] = 's';
+            if (typecolor != 7){
+              typecolor = 11;
+            }
           } else if ( (buffer.st_mode & S_ISGID) ){
             perms[6] = 'S';
+            if (typecolor != 7){
+              typecolor = 11;
+            }
           } else if ( (buffer.st_mode & S_IXGRP) ){
             perms[6] = 'x';
+            if (typecolor != 7){
+              typebold = 1;
+              typecolor = 9;
+            }
           } else {
             perms[6] = '-';
           }
@@ -1093,6 +1175,9 @@ results* get_dir(char *pwd)
           } else {
             strcpy(ob[count].slink, "");
           }
+
+          ob[count].color = typecolor;
+          ob[count].bold = typebold;
 
           sused = sused + buffer.st_size; // Adding the size values
 

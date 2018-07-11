@@ -53,6 +53,7 @@ int showbackup = 1;
 int colormode = 0;
 int danger = 0;
 int invalidstart = 0;
+int filecolors = 1;
 
 extern results* ob;
 extern int topfileref;
