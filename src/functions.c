@@ -519,7 +519,11 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
       if (ob[currentitem].bold){
         attron(A_BOLD);
       }
-      attron(COLOR_PAIR(ob[currentitem].color));
+      if ( check_dir(ob[currentitem].slink) ){
+        attron(COLOR_PAIR(7));
+      } else {
+        attron(COLOR_PAIR(ob[currentitem].color));
+      }
     }
   }
 
