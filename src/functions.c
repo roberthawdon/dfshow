@@ -838,10 +838,10 @@ int cmp_dflist_name(const void *lhs, const void *rhs)
 
   if (reverse){
     // Names in reverse order
-    return strcmp(dforderB->name, dforderA->name);
+    return strcoll(dforderB->name, dforderA->name);
   } else {
     // Names alphabetical
-    return strcmp(dforderA->name, dforderB->name);
+    return strcoll(dforderA->name, dforderB->name);
   }
 
 }
