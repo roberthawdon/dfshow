@@ -53,7 +53,7 @@ int showbackup = 1;
 int colormode = 0;
 int danger = 0;
 int invalidstart = 0;
-int filecolors = 1;
+int filecolors = 0;
 
 extern results* ob;
 extern int topfileref;
@@ -71,6 +71,22 @@ int checkStyle(char* styleinput)
     } else {
       return 1;
     }
+}
+
+int setColor(char* colorinput)
+{
+  if (!strcmp(colorinput, "always")){
+    filecolors = 1;
+    return 1;
+    // } else if (!strcmp(colorinput, "auto")){
+    //   filecolors = 0; // Need to make this autodetect
+    //   return 1;
+  } else if (!strcmp(colorinput, "never")){
+    filecolors = 0;
+    return 1;
+  } else {
+    return 0;
+  }
 }
 
 void refreshScreen()
@@ -136,6 +152,7 @@ Options shared with ls:\n\
   -a, --all                    do not ignore entries starting with .\n\
       --author                 prints the author of each file\n\
   -B, --ignore-backups         do not list implied entries ending with ~\n\
+      --color[=WHEN]           colorize the output, see the color section below\n\
   -f                           do not sort, enables -aU\n\
   -g                           only show group\n\
   -G, --no-group               do not show group\n\
@@ -150,6 +167,9 @@ Options shared with ls:\n\
       --version                displays version, then exits\n"), stdout);
   fputs (("\n\
 The TIME_STYLE arguement can be: full-iso; long-iso; iso; locale.\n"), stdout);
+  fputs (("\n\
+Using color to highlight file attributes is disabled by default and with\n\
+--color=never. With --color or --color=always this function is enabled.\n"), stdout);
   fputs (("\n\
 Options specific to show:\n\
       --monochrome             compatability mode for monochrome displays\n\
@@ -200,6 +220,7 @@ int main(int argc, char *argv[])
          {"version",        no_argument,       0, GETOPT_VERSION_CHAR},
          {"monochrome",     no_argument,       0, GETOPT_MONOCHROME_CHAR},
          {"no-danger",      no_argument,       0, GETOPT_NODANGER_CHAR},
+         {"color",          optional_argument, 0, GETOPT_COLOR_CHAR},
          {0, 0, 0, 0}
         };
       int option_index = 0;
@@ -221,6 +242,21 @@ int main(int argc, char *argv[])
       break;
     case 'B':
       showbackup = 0;
+      break;
+    case GETOPT_COLOR_CHAR:
+      if (optarg){
+        if (!setColor(optarg)){
+          printf("%s: invalid argument '%s' for 'color'\n", argv[0], optarg);
+          fputs (("\
+Valid arguments are:\n\
+  - always\n\
+  - never\n"), stdout);
+          printf("Try '%s --help' for more information.\n", argv[0]);
+          exit(2);
+        }
+      } else {
+        filecolors = 1;
+        }
       break;
     case 'f':
       strcpy(sortmode, "none"); // This can be set to anything non valid

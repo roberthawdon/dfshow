@@ -23,6 +23,9 @@ Prints the author of the file in the output.
 * `-B`, `--ignore-backups`:
 Hides files ending in `~`, often used as backup files.
 
+* `--color`[=<COLOR>]:
+Sets colorizing of files and directories. Can be set to `always` or `never`.
+
 * `-f`:
 Does not sort the output, this is equivilent to running `show` with `-aU`.
 
@@ -65,7 +68,7 @@ The following options are specific to `show`:
 Compatibility mode for monochrome displays.
 
 * `--no-danger`:
-Disables the danger colour scheme when running with elevated privileges.
+Disables the danger color scheme when running with elevated privileges.
 
 ## OVERVIEW
 The `show` application lets users view the names of files and directories on a disk with information about the files. Files can be copied, moved, viewed, and edited (in your system's default editor). The application is run using the show command. The output is similar to the `ls` command.
