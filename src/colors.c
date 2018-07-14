@@ -65,5 +65,18 @@ void setColorMode(int mode){
     init_pair(10, COLOR_WHITE, COLOR_BLACK);
     init_pair(11, COLOR_WHITE, COLOR_BLACK);
     break;
+  case 2:
+    init_pair(1, COLOR_CYAN, COLOR_BLUE);
+    init_pair(2, COLOR_YELLOW, COLOR_BLUE);
+    init_pair(3, COLOR_BLUE, COLOR_WHITE);
+    init_pair(4, COLOR_BLUE, COLOR_WHITE);
+    init_pair(5, COLOR_CYAN, COLOR_BLUE);
+    init_pair(6, COLOR_RED, COLOR_BLUE);
+    init_pair(7, COLOR_MAGENTA, COLOR_BLUE);
+    init_pair(8, COLOR_WHITE, COLOR_BLUE);
+    init_pair(9, COLOR_YELLOW, COLOR_BLUE);
+    init_pair(10, COLOR_WHITE, COLOR_RED);
+    init_pair(11, COLOR_BLACK, COLOR_GREEN);
+    break;
   }
 }

@@ -350,6 +350,7 @@ Valid arguments are:\n\
   start_color();
   cbreak(); //Added for new method
   setColorMode(colormode);
+  bkgd(COLOR_PAIR(5));
   cbreak();
   // nodelay(stdscr, TRUE);
   noecho();
