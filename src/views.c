@@ -24,6 +24,7 @@
 #include "views.h"
 #include "functions.h"
 #include "menus.h"
+#include "colors.h"
 
 results *ob;
 
@@ -39,7 +40,7 @@ int directory_view(char * currentpwd)
 {
   topfileref = 0;
   clear();
-  attron(COLOR_PAIR(1));
+  attron(COLOR_PAIR(COMMAND_PAIR));
 
   // directory_top_menu();
 

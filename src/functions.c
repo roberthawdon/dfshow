@@ -44,6 +44,7 @@
 #include "functions.h"
 #include "views.h"
 #include "menus.h"
+#include "colors.h"
 
 // It turns out most systems don't have an ST_AUTHOR, so for those systems, we set the author as the owner. Yup, `ls` does this too.
 #if ! HAVE_STRUCT_STAT_ST_AUTHOR
@@ -206,7 +207,7 @@ void readline(char *buffer, int buflen, char *oldbuf)
   int oldMode = viewMode;
 
   oldlen = strlen(oldbuf);
-  attron(COLOR_PAIR(3));
+  attron(COLOR_PAIR(INPUT_PAIR));
 
   pos = oldlen;
   len = oldlen;
@@ -223,7 +224,7 @@ void readline(char *buffer, int buflen, char *oldbuf)
     c = getch();
 
     if (c == KEY_ENTER || c == '\n' || c == '\r') {
-      attron(COLOR_PAIR(1));
+      attron(COLOR_PAIR(COMMAND_PAIR));
       break;
     } else if (isprint(c)) {
       if (pos < buflen-1) {
@@ -261,7 +262,7 @@ void readline(char *buffer, int buflen, char *oldbuf)
       pos = 0;
       len = 0;
       strcpy(buffer, ""); //abort by blanking
-      attron(COLOR_PAIR(1));
+      attron(COLOR_PAIR(COMMAND_PAIR));
       break;
     } else {
       beep();
@@ -475,10 +476,10 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   // Setting highlight
   if (selected) {
     attron(A_BOLD);
-    attron(COLOR_PAIR(4));
+    attron(COLOR_PAIR(SELECT_PAIR));
   } else {
     attroff(A_BOLD);
-    attron(COLOR_PAIR(5));
+    attron(COLOR_PAIR(DISPLAY_PAIR));
   }
 
   for ( i = 0; i < maxlen; i++ ){
@@ -509,7 +510,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   if ( strcmp(ob[currentitem].slink, "") ){
     if (!selected){
       attroff(A_BOLD);
-      attron(COLOR_PAIR(5));
+      attron(COLOR_PAIR(DISPLAY_PAIR));
     }
     mvprintw(4 + listref, (entryMetaLen + entryNameLen + 2 + start),"->");
   }
@@ -520,7 +521,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
         attron(A_BOLD);
       }
       if ( check_dir(ob[currentitem].slink) ){
-        attron(COLOR_PAIR(7));
+        attron(COLOR_PAIR(DIR_PAIR));
       } else {
         attron(COLOR_PAIR(ob[currentitem].color));
       }
@@ -536,7 +537,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
 
   if (filecolors && !selected){
     attroff(A_BOLD);
-    attron(COLOR_PAIR(5));
+    attron(COLOR_PAIR(DISPLAY_PAIR));
   }
 
   free(s1);
@@ -1360,16 +1361,16 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   sprintf(headings, "%s%s%s%s%s%s%s%s%s%s", headAttrs, genPadding(hlinklen + 1), headOG, genPadding(s1), genPadding(s2), headSize, genPadding(1), headDT, genPadding(s3), headName);
 
   if ( danger ) {
-    attron(COLOR_PAIR(6));
+    attron(COLOR_PAIR(DANGER_PAIR));
   } else {
-    attron(COLOR_PAIR(2));
+    attron(COLOR_PAIR(INFO_PAIR));
   }
   attroff(A_BOLD); // Required to ensure the last selected item doesn't bold the header
   printLine(1, 2, pwd);
   printLine(2, 2, sizeHeader);
 
   printLine (3, 4, headings);
-  attron(COLOR_PAIR(1));
+  attron(COLOR_PAIR(COMMAND_PAIR));
   free(susedString);
   free(savailableString);
 }
