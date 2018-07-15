@@ -37,6 +37,7 @@ void setColorMode(int mode){
     9    : Executable
     10   : SUID
     11   : SGID
+    12   : Highlight Pair
    */
   switch(mode){
   case 0:
@@ -51,6 +52,7 @@ void setColorMode(int mode){
     init_pair(9, COLOR_YELLOW, COLOR_BLACK);
     init_pair(10, COLOR_WHITE, COLOR_RED);
     init_pair(11, COLOR_BLACK, COLOR_GREEN);
+    init_pair(12, COLOR_WHITE, COLOR_BLACK);
     break;
   case 1:
     init_pair(1, COLOR_WHITE, COLOR_BLACK);
@@ -64,6 +66,7 @@ void setColorMode(int mode){
     init_pair(9, COLOR_WHITE, COLOR_BLACK);
     init_pair(10, COLOR_WHITE, COLOR_BLACK);
     init_pair(11, COLOR_WHITE, COLOR_BLACK);
+    init_pair(12, COLOR_WHITE, COLOR_BLACK);
     break;
   case 2:
     init_pair(1, COLOR_CYAN, COLOR_BLUE);
@@ -77,6 +80,7 @@ void setColorMode(int mode){
     init_pair(9, COLOR_YELLOW, COLOR_BLUE);
     init_pair(10, COLOR_WHITE, COLOR_RED);
     init_pair(11, COLOR_BLACK, COLOR_GREEN);
+    init_pair(12, COLOR_YELLOW, COLOR_BLUE);
     break;
   }
 }
