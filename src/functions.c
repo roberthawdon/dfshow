@@ -207,7 +207,8 @@ void readline(char *buffer, int buflen, char *oldbuf)
   int oldMode = viewMode;
 
   oldlen = strlen(oldbuf);
-  attron(COLOR_PAIR(INPUT_PAIR));
+  setColors(INPUT_PAIR);
+  // attron(COLOR_PAIR(INPUT_PAIR));
 
   pos = oldlen;
   len = oldlen;
@@ -224,7 +225,8 @@ void readline(char *buffer, int buflen, char *oldbuf)
     c = getch();
 
     if (c == KEY_ENTER || c == '\n' || c == '\r') {
-      attron(COLOR_PAIR(COMMAND_PAIR));
+      // attron(COLOR_PAIR(COMMAND_PAIR));
+      setColors(COMMAND_PAIR);
       break;
     } else if (isprint(c)) {
       if (pos < buflen-1) {
@@ -262,7 +264,8 @@ void readline(char *buffer, int buflen, char *oldbuf)
       pos = 0;
       len = 0;
       strcpy(buffer, ""); //abort by blanking
-      attron(COLOR_PAIR(COMMAND_PAIR));
+      // attron(COLOR_PAIR(COMMAND_PAIR));
+      setColors(COMMAND_PAIR);
       break;
     } else {
       beep();
@@ -475,11 +478,9 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
 
   // Setting highlight
   if (selected) {
-    attron(A_BOLD);
-    attron(COLOR_PAIR(SELECT_PAIR));
+    setColors(SELECT_PAIR);
   } else {
-    attroff(A_BOLD);
-    attron(COLOR_PAIR(DISPLAY_PAIR));
+    setColors(DISPLAY_PAIR);
   }
 
   for ( i = 0; i < maxlen; i++ ){
@@ -490,14 +491,19 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   }
 
   if (filecolors && !selected){
+    // if ( strcmp(ob[currentitem].slink, "" )) {
+    //     attron(A_BOLD);
+    //   } else {
+    //     if (ob[currentitem].bold){
+    //       attron(A_BOLD);
+    //     }
+    //     attron(COLOR_PAIR(ob[currentitem].color));
+    //   }
     if ( strcmp(ob[currentitem].slink, "" )) {
-        attron(A_BOLD);
-      } else {
-        if (ob[currentitem].bold){
-          attron(A_BOLD);
-        }
-        attron(COLOR_PAIR(ob[currentitem].color));
-      }
+      setColors(SLINK_PAIR);
+    } else {
+      setColors(ob[currentitem].color);
+    }
   }
 
   for ( i = 0; i < maxlen; i++ ){
@@ -509,21 +515,20 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
 
   if ( strcmp(ob[currentitem].slink, "") ){
     if (!selected){
-      attroff(A_BOLD);
-      attron(COLOR_PAIR(DISPLAY_PAIR));
+      setColors(DISPLAY_PAIR);
     }
     mvprintw(4 + listref, (entryMetaLen + entryNameLen + 2 + start),"->");
   }
 
   if (filecolors && !selected){
     if ( strcmp(ob[currentitem].slink, "" )) {
-      if (ob[currentitem].bold){
-        attron(A_BOLD);
-      }
+      // if (ob[currentitem].bold){
+      //   attron(A_BOLD);
+      // }
       if ( check_dir(ob[currentitem].slink) ){
-        attron(COLOR_PAIR(DIR_PAIR));
+        setColors(DIR_PAIR);
       } else {
-        attron(COLOR_PAIR(ob[currentitem].color));
+        setColors(ob[currentitem].color);
       }
     }
   }
@@ -536,8 +541,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   }
 
   if (filecolors && !selected){
-    attroff(A_BOLD);
-    attron(COLOR_PAIR(DISPLAY_PAIR));
+    setColors(DISPLAY_PAIR);
   }
 
   free(s1);
@@ -1361,16 +1365,16 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   sprintf(headings, "%s%s%s%s%s%s%s%s%s%s", headAttrs, genPadding(hlinklen + 1), headOG, genPadding(s1), genPadding(s2), headSize, genPadding(1), headDT, genPadding(s3), headName);
 
   if ( danger ) {
-    attron(COLOR_PAIR(DANGER_PAIR));
+    setColors(DANGER_PAIR);
   } else {
-    attron(COLOR_PAIR(INFO_PAIR));
+    setColors(INFO_PAIR);
   }
-  attroff(A_BOLD); // Required to ensure the last selected item doesn't bold the header
+  // attroff(A_BOLD); // Required to ensure the last selected item doesn't bold the header
   printLine(1, 2, pwd);
   printLine(2, 2, sizeHeader);
 
   printLine (3, 4, headings);
-  attron(COLOR_PAIR(COMMAND_PAIR));
+  setColors(COMMAND_PAIR);
   free(susedString);
   free(savailableString);
 }

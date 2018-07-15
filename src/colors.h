@@ -10,6 +10,8 @@
 #define SUID_PAIR     10
 #define SGID_PAIR     11
 #define HILITE_PAIR   12
+#define ERROR_PAIR    13
 
 
 void setColorMode(int mode);
+void setColors(int pair);

@@ -40,7 +40,7 @@ int directory_view(char * currentpwd)
 {
   topfileref = 0;
   clear();
-  attron(COLOR_PAIR(COMMAND_PAIR));
+  setColors(COMMAND_PAIR);
 
   // directory_top_menu();
 

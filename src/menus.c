@@ -77,6 +77,8 @@ extern struct sigaction sa;
 
 extern char sortmode[5];
 
+extern int commandL, infoL, inputL, selectL, displayL, dangerL, dirL, slinkL, exeL, suidL, sgidL, hiliteL;
+
 //char testMenu[256];
 
 void topLineMessage(const char *message);
@@ -88,27 +90,23 @@ void printMenu(int line, int col, char *menustring)
   move(line, col);
   clrtoeol();
   len = strlen(menustring);
-  attron(COLOR_PAIR(COMMAND_PAIR));
+  setColors(COMMAND_PAIR);
   for (i = 0; i < len; i++)
      {
       if ( menustring[i] == '!' ) {
           i++;
-          attron(COLOR_PAIR(HILITE_PAIR));
-          attron(A_BOLD);
+          setColors(HILITE_PAIR);
           mvprintw(line, col + charcount, "%c", menustring[i]);
-          attron(COLOR_PAIR(COMMAND_PAIR));
-          attroff(A_BOLD);
+          setColors(COMMAND_PAIR);
           charcount++;
       } else if ( menustring[i] == '<' ) {
           i++;
-          attron(COLOR_PAIR(HILITE_PAIR));
-          attron(A_BOLD);
+          setColors(HILITE_PAIR);
           mvprintw(line, col + charcount, "%c", menustring[i]);
           charcount++;
       } else if ( menustring[i] == '>' ) {
           i++;
-          attron(COLOR_PAIR(COMMAND_PAIR));
-          attroff(A_BOLD);
+          setColors(COMMAND_PAIR);
           mvprintw(line, col + charcount, "%c", menustring[i]);
           charcount++;
       } else if ( menustring[i] == '\\' ) {
@@ -1112,9 +1110,9 @@ void directory_change_menu_inputs()
 void topLineMessage(const char *message){
   move(0,0);
   clrtoeol();
-  attron(A_BOLD);
+  setColors(ERROR_PAIR);
   mvprintw(0,0, "%s", message);
-  attroff(A_BOLD);
+  setColors(COMMAND_PAIR);
   while(1)
     {
       *pc = getch();
