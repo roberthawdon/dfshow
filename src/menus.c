@@ -31,6 +31,7 @@
 #include "functions.h"
 #include "main.h"
 #include "views.h"
+#include "colors.h"
 
 int c;
 int * pc = &c;
@@ -87,21 +88,26 @@ void printMenu(int line, int col, char *menustring)
   move(line, col);
   clrtoeol();
   len = strlen(menustring);
+  attron(COLOR_PAIR(COMMAND_PAIR));
   for (i = 0; i < len; i++)
      {
       if ( menustring[i] == '!' ) {
           i++;
+          attron(COLOR_PAIR(HILITE_PAIR));
           attron(A_BOLD);
           mvprintw(line, col + charcount, "%c", menustring[i]);
+          attron(COLOR_PAIR(COMMAND_PAIR));
           attroff(A_BOLD);
           charcount++;
       } else if ( menustring[i] == '<' ) {
           i++;
+          attron(COLOR_PAIR(HILITE_PAIR));
           attron(A_BOLD);
           mvprintw(line, col + charcount, "%c", menustring[i]);
           charcount++;
       } else if ( menustring[i] == '>' ) {
           i++;
+          attron(COLOR_PAIR(COMMAND_PAIR));
           attroff(A_BOLD);
           mvprintw(line, col + charcount, "%c", menustring[i]);
           charcount++;
