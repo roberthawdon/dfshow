@@ -569,21 +569,56 @@ int check_file(char *file){
   }
 }
 
-char * dirFromPath (const char* myStr){
+char * dirFromPath(const char* myStr){
+  char *outStr;
+  int i = strlen(myStr);
+  int n = 0;
 
-  char *outStr = (char *) malloc(strlen(myStr) + 1);
-  char *del = &outStr[strlen(outStr)];
+  while(i <= strlen(myStr) && myStr[i] != '/'){
+    i--;
+  }
 
-  strcpy(outStr, myStr);
+  outStr = malloc(sizeof (char) * i);
 
-  while (del > outStr && *del != '/')
-    del--;
+  if (i < 2){
+    strcpy(outStr, "/");
+  } else{
+    while(n <= i){
+      outStr[n] = myStr[n];
+      n++;
+    }
 
-  if (*del== '/')
-    *del= '\0';
+    outStr[n - 1] = '\0';
+  }
 
+  // clear();
+  // endwin();
+  // printf("outStr: %s myStr: %s\n", outStr, myStr);
+  // exit(0);
   return outStr;
+
 }
+
+// char * dirFromPath (const char* myStr){
+// 
+//   char *outStr = (char *) malloc(strlen(myStr) + 1);
+//   char *del = &outStr[strlen(outStr)];
+// 
+//   strcpy(outStr, myStr);
+// 
+//   clear();
+//   endwin();
+//   printf("outStr: %s myStr: %s del: %s\n", outStr, myStr, del);
+//   exit(0);
+//   
+//   while (del > outStr && *del != '/')
+//     del--;
+// 
+//   if (*del== '/')
+//     *del= '\0';
+// 
+//   return outStr;
+// }
 
 void LaunchShell()
 {
@@ -998,7 +1033,9 @@ int RenameObject(char* source, char* dest)
   } else {
     // Destination directory not found
     //mvprintw(0,66, "FAIL: NO DIR"); // test
+    topLineMessage("Error: Invalid Destination");
     free(destPath);
+    return 1;
   }
   free(destPath);
   return 0;

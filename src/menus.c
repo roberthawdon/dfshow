@@ -775,6 +775,7 @@ void directory_view_menu_inputs1()
 void directory_view_menu_inputs0()
 {
   int e = 0;
+  char *updir;
   viewMode = 0;
   while(1)
     {
@@ -918,7 +919,10 @@ void directory_view_menu_inputs0()
             strcat(chpwd, "/");
           }
           strcat(chpwd, ob[selected].name);
-          if (check_dir(chpwd)){
+          if (!strcmp(ob[selected].name, "..")) {
+            updir = dirFromPath(currentpwd);
+            strcpy(chpwd, updir);
+            free(updir);
             set_history(chpwd, ob[selected].name, topfileref, selected);
             topfileref = 0;
             selected = 0;
@@ -928,11 +932,25 @@ void directory_view_menu_inputs0()
             clear_workspace();
             reorder_ob(ob, sortmode);
             display_dir(currentpwd, ob, topfileref, selected);
+          } else if (!strcmp(ob[selected].name, ".")) {
+            break;
           } else {
-            e = SendToPager(chpwd);
-            printMenu(0, 0, fileMenuText);
-            printMenu(LINES-1, 0, functionMenuText);
-            display_dir(currentpwd, ob, topfileref, selected);
+            if (check_dir(chpwd)){
+              set_history(chpwd, ob[selected].name, topfileref, selected);
+              topfileref = 0;
+              selected = 0;
+              strcpy(currentpwd, chpwd);
+              chdir(currentpwd);
+              ob = get_dir(currentpwd);
+              clear_workspace();
+              reorder_ob(ob, sortmode);
+              display_dir(currentpwd, ob, topfileref, selected);
+            } else {
+              e = SendToPager(chpwd);
+              printMenu(0, 0, fileMenuText);
+              printMenu(LINES-1, 0, functionMenuText);
+              display_dir(currentpwd, ob, topfileref, selected);
+            }
           }
           break;
         case 27:
