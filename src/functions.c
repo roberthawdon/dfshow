@@ -365,6 +365,9 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
 
   char *sizestring;
 
+  int linepadding;
+  int colpos;
+
   // Owner, Group, Author
   switch(ogavis){
   case 0:
@@ -460,7 +463,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
     strcpy(marked, " ");
   }
 
-  swprintf(entryMeta, 1024, L"%s %s%s%i %s%s%s %s%s", marked, ob[currentitem].perm, s1, *ob[currentitem].hlink, ogaval, s2, sizestring, ob[currentitem].datedisplay, s3);
+  swprintf(entryMeta, 1024, L"  %s %s%s%i %s%s%s %s%s ", marked, ob[currentitem].perm, s1, *ob[currentitem].hlink, ogaval, s2, sizestring, ob[currentitem].datedisplay, s3);
 
   swprintf(entryName, 1024, L"%s", ob[currentitem].name);
 
@@ -507,8 +510,9 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   }
 
   for ( i = 0; i < maxlen; i++ ){
-    mvprintw(4 + listref, (entryMetaLen + 1 + start) + i,"%lc", entryName[i]);
+    mvprintw(4 + listref, (entryMetaLen + start) + i,"%lc", entryName[i]);
     if ( i == entryNameLen ){
+      colpos = (entryMetaLen + start) + i;
       break;
     }
   }
@@ -517,32 +521,38 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
     if (!selected){
       setColors(DISPLAY_PAIR);
     }
-    mvprintw(4 + listref, (entryMetaLen + entryNameLen + 2 + start),"->");
-  }
+    mvprintw(4 + listref, (entryMetaLen + entryNameLen + start)," -> ");
 
-  if (filecolors && !selected){
-    if ( strcmp(ob[currentitem].slink, "" )) {
-      // if (ob[currentitem].bold){
-      //   attron(A_BOLD);
-      // }
-      if ( check_dir(ob[currentitem].slink) ){
-        setColors(DIR_PAIR);
-      } else {
-        setColors(ob[currentitem].color);
+    if (filecolors && !selected){
+      if ( strcmp(ob[currentitem].slink, "" )) {
+        // if (ob[currentitem].bold){
+        //   attron(A_BOLD);
+        // }
+        if ( check_dir(ob[currentitem].slink) ){
+          setColors(DIR_PAIR);
+        } else {
+          setColors(ob[currentitem].color);
+        }
       }
     }
-  }
 
-  for ( i = 0; i < maxlen; i++ ){
-    mvprintw(4 + listref, (entryMetaLen + entryNameLen + 5 + start) + i,"%lc", entrySLink[i]);
-    if ( i == entrySLinkLen ){
-      break;
+    for ( i = 0; i < maxlen; i++ ){
+      mvprintw(4 + listref, (entryMetaLen + entryNameLen + 4 + start) + i,"%lc", entrySLink[i]);
+      if ( i == entrySLinkLen ){
+        colpos = (entryMetaLen + entryNameLen + 4 + start) + i;
+        break;
+      }
     }
   }
 
   if (filecolors && !selected){
     setColors(DISPLAY_PAIR);
   }
+
+  linepadding = COLS - colpos;
+
+  mvprintw(4 + listref, colpos, "%s", genPadding(linepadding));
+
 
   free(s1);
   free(s2);
@@ -1330,7 +1340,7 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
     ownstart = hlinklen + 2;
     hlinkstart = ownstart - 1 - *ob[list_count + topfileref].hlinklens;
 
-    printEntry(2, hlinklen, ownerlen, grouplen, authorlen, sizelen, datelen, namelen, printSelect, list_count, topfileref, ob);
+    printEntry(0, hlinklen, ownerlen, grouplen, authorlen, sizelen, datelen, namelen, printSelect, list_count, topfileref, ob);
 
     list_count++;
     }
