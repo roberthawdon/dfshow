@@ -11,6 +11,7 @@
 #define SGID_PAIR     11
 #define HILITE_PAIR   12
 #define ERROR_PAIR    13
+#define HEADING_PAIR  14
 
 
 void setColorMode(int mode);

@@ -21,7 +21,7 @@
 #include <ncurses.h>
 #include "colors.h"
 
-int lightColorPair[14];
+int lightColorPair[15];
 
 // int commandL, infoL, inputL, selectL, displayL, dangerL, dirL, slinkL, exeL, suidL, sgidL, hiliteL = 0;
 
@@ -72,6 +72,8 @@ void setColorMode(int mode){
     lightColorPair[HILITE_PAIR] = 1;
     init_pair(ERROR_PAIR, COLOR_WHITE, COLOR_BLACK);
     lightColorPair[ERROR_PAIR] = 1;
+    init_pair(HEADING_PAIR, COLOR_GREEN, COLOR_BLACK);
+    lightColorPair[HEADING_PAIR] = 0;
     break;
   case 1:
     init_pair(COMMAND_PAIR, COLOR_WHITE, COLOR_BLACK);
@@ -100,18 +102,20 @@ void setColorMode(int mode){
     lightColorPair[HILITE_PAIR] = 1;
     init_pair(ERROR_PAIR, COLOR_WHITE, COLOR_BLACK);
     lightColorPair[ERROR_PAIR] = 1;
+    init_pair(HEADING_PAIR, COLOR_WHITE, COLOR_BLACK);
+    lightColorPair[HEADING_PAIR] = 0;
     break;
   case 2:
     init_pair(COMMAND_PAIR, COLOR_CYAN, COLOR_BLUE);
-    lightColorPair[COMMAND_PAIR] = 0;
-    init_pair(INFO_PAIR, COLOR_YELLOW, COLOR_BLUE);
+    lightColorPair[COMMAND_PAIR] = 1;
+    init_pair(INFO_PAIR, COLOR_WHITE, COLOR_BLUE);
     lightColorPair[INFO_PAIR] = 1;
     init_pair(INPUT_PAIR, COLOR_BLUE, COLOR_WHITE);
     lightColorPair[INPUT_PAIR] = 0;
     init_pair(SELECT_PAIR, COLOR_BLUE, COLOR_WHITE);
     lightColorPair[SELECT_PAIR] = 0;
     init_pair(DISPLAY_PAIR, COLOR_CYAN, COLOR_BLUE);
-    lightColorPair[DISPLAY_PAIR] = 0;
+    lightColorPair[DISPLAY_PAIR] = 1;
     init_pair(DANGER_PAIR, COLOR_RED, COLOR_BLUE);
     lightColorPair[DANGER_PAIR] = 0;
     init_pair(DIR_PAIR, COLOR_MAGENTA, COLOR_BLUE);
@@ -128,6 +132,8 @@ void setColorMode(int mode){
     lightColorPair[HILITE_PAIR] = 1;
     init_pair(ERROR_PAIR, COLOR_RED, COLOR_BLUE);
     lightColorPair[ERROR_PAIR] = 1;
+    init_pair(HEADING_PAIR, COLOR_YELLOW, COLOR_BLUE);
+    lightColorPair[HEADING_PAIR] = 1;
     break;
   }
 }

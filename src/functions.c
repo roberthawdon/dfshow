@@ -1373,6 +1373,11 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   printLine(1, 2, pwd);
   printLine(2, 2, sizeHeader);
 
+  if ( danger ) {
+    setColors(DANGER_PAIR);
+  } else {
+    setColors(HEADING_PAIR);
+  }
   printLine (3, 4, headings);
   setColors(COMMAND_PAIR);
   free(susedString);
