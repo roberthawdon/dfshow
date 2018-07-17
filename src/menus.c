@@ -920,18 +920,20 @@ void directory_view_menu_inputs0()
           }
           strcat(chpwd, ob[selected].name);
           if (!strcmp(ob[selected].name, "..")) {
-            updir = dirFromPath(currentpwd);
-            strcpy(chpwd, updir);
-            free(updir);
-            set_history(chpwd, ob[selected].name, topfileref, selected);
-            topfileref = 0;
-            selected = 0;
-            strcpy(currentpwd, chpwd);
-            chdir(currentpwd);
-            ob = get_dir(currentpwd);
-            clear_workspace();
-            reorder_ob(ob, sortmode);
-            display_dir(currentpwd, ob, topfileref, selected);
+            if (strcmp(currentpwd, "/")){
+              updir = dirFromPath(currentpwd);
+              strcpy(chpwd, updir);
+              free(updir);
+              set_history(chpwd, ob[selected].name, topfileref, selected);
+              topfileref = 0;
+              selected = 0;
+              strcpy(currentpwd, chpwd);
+              chdir(currentpwd);
+              ob = get_dir(currentpwd);
+              clear_workspace();
+              reorder_ob(ob, sortmode);
+              display_dir(currentpwd, ob, topfileref, selected);
+            }
           } else if (!strcmp(ob[selected].name, ".")) {
             break;
           } else {
