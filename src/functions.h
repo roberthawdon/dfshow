@@ -13,7 +13,6 @@ typedef struct {
   char name[512];
   char slink[1024];
   int color;
-  int bold;
 } results;
 
 typedef struct {

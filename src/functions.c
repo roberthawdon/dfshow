@@ -494,14 +494,6 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   }
 
   if (filecolors && !selected){
-    // if ( strcmp(ob[currentitem].slink, "" )) {
-    //     attron(A_BOLD);
-    //   } else {
-    //     if (ob[currentitem].bold){
-    //       attron(A_BOLD);
-    //     }
-    //     attron(COLOR_PAIR(ob[currentitem].color));
-    //   }
     if ( strcmp(ob[currentitem].slink, "" )) {
       setColors(SLINK_PAIR);
     } else {
@@ -525,9 +517,6 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
 
     if (filecolors && !selected){
       if ( strcmp(ob[currentitem].slink, "" )) {
-        // if (ob[currentitem].bold){
-        //   attron(A_BOLD);
-        // }
         if ( check_dir(ob[currentitem].slink) ){
           setColors(DIR_PAIR);
         } else {
@@ -1094,7 +1083,6 @@ results* get_dir(char *pwd)
   struct stat buffer;
   int         status;
   int typecolor;
-  int typebold;
   char perms[11] = {0};
   char *filedate;
   ssize_t slinklen;
@@ -1122,15 +1110,13 @@ results* get_dir(char *pwd)
           lstat(res->d_name, &sb);
           status = lstat(res->d_name, &buffer);
 
-          typecolor = 5;
-          typebold = 0;
+          typecolor = DISPLAY_PAIR;
 
           sexec = 0;
 
           if ( buffer.st_mode & S_IFDIR ) {
             perms[0] = 'd';
-            typebold = 1; // Hard to see selection
-            typecolor = 7;
+            typecolor = DIR_PAIR;
           } else if ( S_ISLNK(buffer.st_mode) ) {
             perms[0] = 'l';
           } else {
@@ -1148,21 +1134,20 @@ results* get_dir(char *pwd)
 
           if ( (buffer.st_mode & S_ISUID) && (buffer.st_mode & S_IXUSR) ){
             perms[3] = 's';
-            if (typecolor != 7){
+            if (typecolor != DIR_PAIR){
               sexec = 1;
-              typecolor = 10;
+              typecolor = SUID_PAIR;
             }
           } else if ( (buffer.st_mode & S_ISUID) ){
             perms[3] = 'S';
-            if (typecolor != 7){
+            if (typecolor != DIR_PAIR){
               sexec = 1;
-              typecolor = 10;
+              typecolor = SUID_PAIR;
             }
           } else if ( (buffer.st_mode & S_IXUSR) ){
             perms[3] = 'x';
-            if (typecolor != 7){
-              typebold = 1;
-              typecolor = 9;
+            if (typecolor != DIR_PAIR){
+              typecolor = EXE_PAIR;
             }
           } else {
             perms[3] = '-';
@@ -1170,21 +1155,20 @@ results* get_dir(char *pwd)
 
           if ( (buffer.st_mode & S_ISGID) && (buffer.st_mode & S_IXGRP) ){
             perms[6] = 's';
-            if (typecolor != 7 && !sexec){
+            if (typecolor != DIR_PAIR && !sexec){
               sexec = 1;
-              typecolor = 11;
+              typecolor = SGID_PAIR;
             }
           } else if ( (buffer.st_mode & S_ISGID) ){
             perms[6] = 'S';
-            if (typecolor != 7 && !sexec){
+            if (typecolor != DIR_PAIR && !sexec){
               sexec = 1;
-              typecolor = 11;
+              typecolor = SGID_PAIR;
             }
           } else if ( (buffer.st_mode & S_IXGRP) ){
             perms[6] = 'x';
-            if (typecolor != 7 && !sexec){
-              typebold = 1;
-              typecolor = 9;
+            if (typecolor != DIR_PAIR && !sexec){
+              typecolor = EXE_PAIR;
             }
           } else {
             perms[6] = '-';
@@ -1192,9 +1176,8 @@ results* get_dir(char *pwd)
 
           if (buffer.st_mode & S_IXOTH){
             perms[9] = 'x';
-            if (typecolor != 7 && !sexec){
-              typebold = 1;
-              typecolor = 9;
+            if (typecolor != DIR_PAIR && !sexec){
+              typecolor = EXE_PAIR;
             }
           } else {
             perms[9] = '-';
@@ -1253,7 +1236,6 @@ results* get_dir(char *pwd)
           }
 
           ob[count].color = typecolor;
-          ob[count].bold = typebold;
 
           sused = sused + buffer.st_size; // Adding the size values
 
