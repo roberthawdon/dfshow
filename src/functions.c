@@ -1098,6 +1098,7 @@ results* get_dir(char *pwd)
   char perms[11] = {0};
   char *filedate;
   ssize_t slinklen;
+  int sexec;
 
   results *ob = malloc(sizeof(results)); // Allocating a tiny amount of memory. We'll expand this on each file found.
 
@@ -1124,6 +1125,8 @@ results* get_dir(char *pwd)
           typecolor = 5;
           typebold = 0;
 
+          sexec = 0;
+
           if ( buffer.st_mode & S_IFDIR ) {
             perms[0] = 'd';
             typebold = 1; // Hard to see selection
@@ -1133,17 +1136,26 @@ results* get_dir(char *pwd)
           } else {
             perms[0] = '-';
           }
+
           perms[1] = buffer.st_mode & S_IRUSR? 'r': '-';
           perms[2] = buffer.st_mode & S_IWUSR? 'w': '-';
+
+          perms[4] = buffer.st_mode & S_IRGRP? 'r': '-';
+          perms[5] = buffer.st_mode & S_IWGRP? 'w': '-';
+
+          perms[7] = buffer.st_mode & S_IROTH? 'r': '-';
+          perms[8] = buffer.st_mode & S_IWOTH? 'w': '-';
 
           if ( (buffer.st_mode & S_ISUID) && (buffer.st_mode & S_IXUSR) ){
             perms[3] = 's';
             if (typecolor != 7){
+              sexec = 1;
               typecolor = 10;
             }
           } else if ( (buffer.st_mode & S_ISUID) ){
             perms[3] = 'S';
             if (typecolor != 7){
+              sexec = 1;
               typecolor = 10;
             }
           } else if ( (buffer.st_mode & S_IXUSR) ){
@@ -1156,22 +1168,21 @@ results* get_dir(char *pwd)
             perms[3] = '-';
           }
 
-          perms[4] = buffer.st_mode & S_IRGRP? 'r': '-';
-          perms[5] = buffer.st_mode & S_IWGRP? 'w': '-';
-
           if ( (buffer.st_mode & S_ISGID) && (buffer.st_mode & S_IXGRP) ){
             perms[6] = 's';
-            if (typecolor != 7){
+            if (typecolor != 7 && !sexec){
+              sexec = 1;
               typecolor = 11;
             }
           } else if ( (buffer.st_mode & S_ISGID) ){
             perms[6] = 'S';
-            if (typecolor != 7){
+            if (typecolor != 7 && !sexec){
+              sexec = 1;
               typecolor = 11;
             }
           } else if ( (buffer.st_mode & S_IXGRP) ){
             perms[6] = 'x';
-            if (typecolor != 7){
+            if (typecolor != 7 && !sexec){
               typebold = 1;
               typecolor = 9;
             }
@@ -1179,9 +1190,16 @@ results* get_dir(char *pwd)
             perms[6] = '-';
           }
 
-          perms[7] = buffer.st_mode & S_IROTH? 'r': '-';
-          perms[8] = buffer.st_mode & S_IWOTH? 'w': '-';
-          perms[9] = buffer.st_mode & S_IXOTH? 'x': '-';
+          if (buffer.st_mode & S_IXOTH){
+            perms[9] = 'x';
+            if (typecolor != 7 && !sexec){
+              typebold = 1;
+              typecolor = 9;
+            }
+          } else {
+            perms[9] = '-';
+          }
+
 
           sprintf(hlinkstr, "%d", buffer.st_nlink);
           sprintf(sizestr, "%lld", buffer.st_size);
