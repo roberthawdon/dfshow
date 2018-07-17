@@ -551,7 +551,9 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
 
   linepadding = COLS - colpos;
 
-  mvprintw(4 + listref, colpos, "%s", genPadding(linepadding));
+  if (linepadding > 0){
+    mvprintw(4 + listref, colpos, "%s", genPadding(linepadding));
+  }
 
 
   free(s1);
