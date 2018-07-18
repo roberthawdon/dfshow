@@ -8,6 +8,8 @@ typedef struct {
   char author[128];
   unsigned long int size[32];
   int sizelens[32];
+  int major;
+  int minor;
   time_t date;
   char datedisplay[33];
   char name[512];
@@ -55,7 +57,7 @@ int UpdateOwnerGroup(const char* object, const char* pwdstr, const char* grpstr)
 int RenameObject(char* source, char* dest);
 int CheckMarked(results* ob);
 void printLine(int line, int col, char *textString);
-void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorlen, int sizelen, int datelen, int namelen, int selected, int listref, int topref, results* ob);
+void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorlen, int sizelen, int majorlen, int minorlen, int datelen, int namelen, int selected, int listref, int topref, results* ob);
 void padstring(char *str, int len, char c);
 char *genPadding(int num_of_spaces);
 void resizeDisplayDir(results* ob);

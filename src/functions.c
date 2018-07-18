@@ -35,6 +35,7 @@
 #include <errno.h>
 #include <wchar.h>
 #include <math.h>
+#include <sys/sysmacros.h>
 
 #if HAVE_HURD_H
 # include <hurd.h>
@@ -51,14 +52,16 @@
 # define st_author st_uid
 #endif
 
-char hlinkstr[5], sizestr[32];
-char headAttrs[12], headOG[25], headSize[7], headDT[18], headName[13];
+char hlinkstr[5], sizestr[32], majorstr[5], minorstr[5];
+char headAttrs[12], headOG[25], headSize[14], headDT[18], headName[13];
 
 int hlinklen;
 int ownerlen;
 int grouplen;
 int authorlen;
 int sizelen;
+int majorlen;
+int minorlen;
 int datelen;
 int namelen;
 
@@ -84,6 +87,8 @@ int sessionhistory = 0;
 int showhidden = 0;
 
 int markall = 0;
+
+int mmMode = 0;
 
 unsigned long int savailable = 0;
 unsigned long int sused = 0;
@@ -331,7 +336,7 @@ void printLine(int line, int col, char *textString){
   }
 }
 
-void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorlen, int sizelen, int datelen, int namelen, int selected, int listref, int topref, results* ob){
+void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorlen, int sizelen, int majorlen, int minorlen, int datelen, int namelen, int selected, int listref, int topref, results* ob){
 
   int i;
 
@@ -356,12 +361,13 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
 
   int ogpad = 0;
   int sizepad = 0;
+  int mmpad = 0;
 
   int entryMetaLen, entryNameLen, entrySLinkLen = 0;
 
   int datepad = 0;
 
-  char *s1, *s2, *s3;
+  char *s1, *s2, *s3, *s4;
 
   char *sizestring;
 
@@ -432,12 +438,26 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
     }
   }
 
-  if (human){
-    sizestring = malloc (sizeof (char) * 10);
-    readableSize(*ob[currentitem].size, sizestring, si);
+  if (ob[currentitem].minor > 1){
+    mmpad = sizelen - (log10(ob[currentitem].minor + 1)) + 2;
   } else {
-    sizestring = malloc (sizeof (char) * sizelen + 1);
-    sprintf(sizestring, "%lu", *ob[currentitem].size);
+    mmpad = sizelen + 1;
+  }
+
+  s4 = genPadding(mmpad);
+
+  if ((ob[currentitem].major > 0) || (ob[currentitem].minor > 0)){
+    // If either of these are not 0, then we're dealing with a Character or Block device.
+    sizestring = malloc (sizeof (char) * sizelen + 5);
+    sprintf(sizestring, "%i,%s%i", ob[currentitem].major, s4, ob[currentitem].minor);
+  } else {
+    if (human){
+      sizestring = malloc (sizeof (char) * 10);
+      readableSize(*ob[currentitem].size, sizestring, si);
+    } else {
+      sizestring = malloc (sizeof (char) * sizelen + 1);
+      sprintf(sizestring, "%lu", *ob[currentitem].size);
+    }
   }
 
   // Redefining width of Size value if the all sizes are smaller than the header.
@@ -548,6 +568,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   free(s1);
   free(s2);
   free(s3);
+  free(s4);
   free(sizestring);
   free(ogaval);
 }
@@ -804,6 +825,14 @@ int seglength(const void *seg, char *segname, int LEN)
     }
     longest = strlen(sizestr);
   }
+  else if (!strcmp(segname, "major")) {
+    sprintf(majorstr, "%d", dfseg[0].major);
+    longest = strlen(majorstr);
+  }
+  else if (!strcmp(segname, "minor")) {
+    sprintf(minorstr, "%d", dfseg[0].minor);
+    longest = strlen(minorstr);
+  }
   else if (!strcmp(segname, "datedisplay")) {
     longest = strlen(dfseg[0].datedisplay);
   }
@@ -836,6 +865,14 @@ int seglength(const void *seg, char *segname, int LEN)
           sprintf(sizestr, "%lu", *dfseg[i].size);
         }
         len = strlen(sizestr);
+      }
+      else if (!strcmp(segname, "major")) {
+        sprintf(majorstr, "%d", dfseg[i].major);
+        len = strlen(majorstr);
+      }
+      else if (!strcmp(segname, "minor")) {
+        sprintf(minorstr, "%d", dfseg[i].minor);
+        len = strlen(minorstr);
       }
       else if (!strcmp(segname, "datedisplay")) {
         len = strlen(dfseg[i].datedisplay);
@@ -1090,6 +1127,7 @@ results* get_dir(char *pwd)
 
   results *ob = malloc(sizeof(results)); // Allocating a tiny amount of memory. We'll expand this on each file found.
 
+  mmMode = 0;
   time ( &currenttime );
   savailable = GetAvailableSpace(pwd);
   sused = 0; // Resetting used value
@@ -1118,12 +1156,14 @@ results* get_dir(char *pwd)
             perms[0] = 'd';
             typecolor = DIR_PAIR;
           } else if (S_ISCHR(buffer.st_mode)){
+            mmMode = 1;
             perms[0] = 'c';
           } else if (S_ISLNK(buffer.st_mode)){
             perms[0] = 'l';
           } else if (S_ISFIFO(buffer.st_mode)){
             perms[0] = 'p';
           } else if (S_ISBLK(buffer.st_mode)){
+            mmMode = 1;
             perms[0] = 'b';
           } else if (S_ISREG(buffer.st_mode)){
             perms[0] = '-';
@@ -1228,6 +1268,14 @@ results* get_dir(char *pwd)
 
           *ob[count].size = buffer.st_size;
           *ob[count].sizelens = strlen(sizestr);
+
+          if (S_ISCHR(buffer.st_mode) || S_ISBLK(buffer.st_mode)){
+            ob[count].major = major(buffer.st_rdev);
+            ob[count].minor = minor(buffer.st_rdev);
+          } else {
+            ob[count].major = ob[count].minor = 0; // Setting a default
+          }
+
           ob[count].date = buffer.st_mtime;
 
           filedate = dateString(ob[count].date, timestyle);
@@ -1259,6 +1307,8 @@ results* get_dir(char *pwd)
         grouplen = seglength(ob, "group", count);
         authorlen = seglength(ob, "author", count);
         sizelen = seglength(ob, "size", count);
+        majorlen = seglength(ob, "major", count);
+        minorlen = seglength(ob, "minor", count);
         datelen = seglength(ob, "datedisplay", count);
         namelen = seglength(ob, "name", count);
 
@@ -1327,7 +1377,12 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   }
 
   strcpy(headAttrs, "---Attrs---");
-  strcpy(headSize, "-Size-");
+
+  if ( mmMode ){
+    strcpy(headSize, "-Driver/Size-");
+  } else {
+    strcpy(headSize, "-Size-");
+  }
   strcpy(headDT, "---Date & Time---");
   strcpy(headName, "----Name----");
 
@@ -1387,7 +1442,7 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
     ownstart = hlinklen + 2;
     hlinkstart = ownstart - 1 - *ob[list_count + topfileref].hlinklens;
 
-    printEntry(0, hlinklen, ownerlen, grouplen, authorlen, sizelen, datelen, namelen, printSelect, list_count, topfileref, ob);
+    printEntry(0, hlinklen, ownerlen, grouplen, authorlen, sizelen, majorlen, minorlen, datelen, namelen, printSelect, list_count, topfileref, ob);
 
     list_count++;
     }
