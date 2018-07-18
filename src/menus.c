@@ -150,6 +150,8 @@ void show_directory_input()
     clear_workspace();
     reorder_ob(ob, sortmode);
     display_dir(currentpwd, ob, 0, selected);
+  } else {
+    strcpy(currentpwd, oldpwd); // Copying old value back if the input was aborted
   }
   printMenu(0, 0, fileMenuText);
   printMenu(LINES-1, 0, functionMenuText);
