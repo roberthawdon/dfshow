@@ -1222,7 +1222,11 @@ results* get_dir(char *pwd)
             perms[6] = '-';
           }
 
-          if (buffer.st_mode & S_IXOTH){
+          if ( (buffer.st_mode & S_IXOTH) && (buffer.st_mode & S_ISVTX) ){
+            perms[9] = 't';
+          } else if (buffer.st_mode & S_ISVTX) {
+            perms[9] = 'T';
+          } else if (buffer.st_mode & S_IXOTH){
             perms[9] = 'x';
             if (typecolor != DIR_PAIR && !sexec){
               typecolor = EXE_PAIR;
