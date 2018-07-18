@@ -1114,13 +1114,21 @@ results* get_dir(char *pwd)
 
           sexec = 0;
 
-          if ( buffer.st_mode & S_IFDIR ) {
+          if (S_ISDIR(buffer.st_mode)) {
             perms[0] = 'd';
             typecolor = DIR_PAIR;
-          } else if ( S_ISLNK(buffer.st_mode) ) {
+          } else if (S_ISCHR(buffer.st_mode)){
+            perms[0] = 'c';
+          } else if (S_ISLNK(buffer.st_mode)){
             perms[0] = 'l';
-          } else {
+          } else if (S_ISFIFO(buffer.st_mode)){
+            perms[0] = 'p';
+          } else if (S_ISBLK(buffer.st_mode)){
+            perms[0] = 'b';
+          } else if (S_ISREG(buffer.st_mode)){
             perms[0] = '-';
+          } else {
+            perms[0] = '?';
           }
 
           perms[1] = buffer.st_mode & S_IRUSR? 'r': '-';
