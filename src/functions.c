@@ -79,6 +79,7 @@ int totalfilecount;
 
 int selected;
 int topfileref = 0;
+int hpos = 0;
 int displaysize; // Calculate area to print
 int displaycount;
 int historyref = 0;
@@ -1354,7 +1355,7 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   int printSelect = 0;
   char sizeHeader[256], headings[256];
   int i, s1, s2, s3;
-
+  int headerpos, displaypos;
   char *susedString, *savailableString;
 
   displaysize = LINES - 5;
@@ -1446,7 +1447,9 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
     ownstart = hlinklen + 2;
     hlinkstart = ownstart - 1 - *ob[list_count + topfileref].hlinklens;
 
-    printEntry(0, hlinklen, ownerlen, grouplen, authorlen, sizelen, majorlen, minorlen, datelen, namelen, printSelect, list_count, topfileref, ob);
+    displaypos = 0 - hpos;
+
+    printEntry(displaypos, hlinklen, ownerlen, grouplen, authorlen, sizelen, majorlen, minorlen, datelen, namelen, printSelect, list_count, topfileref, ob);
 
     list_count++;
     }
@@ -1494,7 +1497,11 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   } else {
     setColors(HEADING_PAIR);
   }
-  printLine (3, 4, headings);
+
+  headerpos = 4 - hpos;
+
+
+  printLine (3, headerpos, headings);
   setColors(COMMAND_PAIR);
   free(susedString);
   free(savailableString);

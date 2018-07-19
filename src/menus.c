@@ -56,6 +56,7 @@ extern char currentpwd[1024];
 extern int historyref;
 extern int selected;
 extern int topfileref;
+extern int hpos;
 extern int totalfilecount;
 extern int displaysize;
 extern int displaycount;
@@ -983,8 +984,16 @@ void directory_view_menu_inputs0()
           }
           break;
         case 260: // Left Arrow
+          if (hpos > 0){
+            hpos--;
+            clear_workspace();
+            display_dir(currentpwd, ob, topfileref, selected);
+          }
           break;
         case 261: // Right Arrow
+          hpos++;
+          clear_workspace();
+          display_dir(currentpwd, ob, topfileref, selected);
           break;
         case 338: // PgDn - Drop through
         case 265: // F1
