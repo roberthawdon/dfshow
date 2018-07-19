@@ -64,6 +64,9 @@ int majorlen;
 int minorlen;
 int datelen;
 int namelen;
+int slinklen;
+
+int entryMetaLen, entryNameLen, entrySLinkLen = 0;
 
 int ogalen;
 
@@ -80,6 +83,7 @@ int totalfilecount;
 int selected;
 int topfileref = 0;
 int hpos = 0;
+int maxdisplaywidth;
 int displaysize; // Calculate area to print
 int displaycount;
 int historyref = 0;
@@ -363,8 +367,6 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   int ogpad = 0;
   int sizepad = 0;
   int mmpad = 0;
-
-  int entryMetaLen, entryNameLen, entrySLinkLen = 0;
 
   int datepad = 0;
 
@@ -840,6 +842,9 @@ int seglength(const void *seg, char *segname, int LEN)
   else if (!strcmp(segname, "name")) {
     longest = strlen(dfseg[0].name);
   }
+  else if (!strcmp(segname, "slink")) {
+    longest = strlen(dfseg[0].slink);
+  }
   else {
     longest = 0;
   }
@@ -880,6 +885,9 @@ int seglength(const void *seg, char *segname, int LEN)
       }
       else if (!strcmp(segname, "name")) {
         len = strlen(dfseg[i].name);
+      }
+      else if (!strcmp(segname, "slink")) {
+        len = strlen(dfseg[i].slink);
       }
       else {
         len = 0;
@@ -1123,7 +1131,7 @@ results* get_dir(char *pwd)
   int typecolor;
   char perms[11] = {0};
   char *filedate;
-  ssize_t slinklen;
+  ssize_t cslinklen;
   int sexec;
 
   results *ob = malloc(sizeof(results)); // Allocating a tiny amount of memory. We'll expand this on each file found.
@@ -1289,8 +1297,8 @@ results* get_dir(char *pwd)
           strcpy(ob[count].name, res->d_name);
 
           if (S_ISLNK(buffer.st_mode)) {
-            slinklen = readlink(res->d_name, ob[count].slink, 1023);
-            ob[count].slink[slinklen] = '\0';
+            cslinklen = readlink(res->d_name, ob[count].slink, 1023);
+            ob[count].slink[cslinklen] = '\0';
 
           } else {
             strcpy(ob[count].slink, "");
@@ -1316,6 +1324,7 @@ results* get_dir(char *pwd)
         minorlen = seglength(ob, "minor", count);
         datelen = seglength(ob, "datedisplay", count);
         namelen = seglength(ob, "name", count);
+        slinklen = seglength(ob, "slink", count);
 
         return ob;
       }else{
@@ -1454,6 +1463,12 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
     list_count++;
     }
 
+  if (slinklen == 0){
+    maxdisplaywidth = entryMetaLen + namelen;
+  } else {
+    maxdisplaywidth = entryMetaLen + namelen + slinklen + 4;
+  }
+
   //mvprintw(0, 66, "%d %d", historyref, sessionhistory);
 
   // the space between the largest owner and largest group should always end up being 1... in theory.
@@ -1499,7 +1514,6 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   }
 
   headerpos = 4 - hpos;
-
 
   printLine (3, headerpos, headings);
   setColors(COMMAND_PAIR);
