@@ -35,7 +35,10 @@
 #include <errno.h>
 #include <wchar.h>
 #include <math.h>
-#include <sys/sysmacros.h>
+
+#if HAVE_SYS_SYSMACROS_H
+# include <sys/sysmacros.h>
+#endif
 
 #if HAVE_HURD_H
 # include <hurd.h>
