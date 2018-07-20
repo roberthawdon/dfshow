@@ -215,10 +215,16 @@ Top of Display
 Bottom of Display
 
 * `Down`, `RETURN`:
-Down One Line
+Down one line
 
 * `Up`:
-Up One Line
+Up one line
+
+* `Right`:
+Right one column
+
+* `Left`:
+Left one column
 
 * `ESC`:
 Global Commands
@@ -275,6 +281,12 @@ The display functions with their associated key assignments are described here.
 
 * `Up One Line`:
 `Up Arrow`: Move the cursor up one line to the next file in the display. If the cursor is on the top row of the window, the window is scrolled up one line. If the present line is the first file in the list, the cursor is not repositioned.
+
+* `Right one column`:
+`Right Arrow`: Moves the display area one column. This occurs when an entry rolls off the edge of the display. Scrolling will stop at the end of the longest entry.
+
+* `Left one column`:
+`Left Arrow`: Moves the display area one column.
 
 * `Global Commands`:
 `ESC`: Invoke the [GLOBAL COMMANDS][] described in the next section. This allows another directory to be displayed without terminating the current display.

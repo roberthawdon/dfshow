@@ -220,8 +220,10 @@ The <code>.</code> and <code>..</code> objects are never hidden due to their nav
 <dt class="flush"><code>F9</code></dt><dd><p>Sort List</p></dd>
 <dt class="flush"><code>HOME</code></dt><dd><p>Top of Display</p></dd>
 <dt class="flush"><code>END</code></dt><dd><p>Bottom of Display</p></dd>
-<dt><code>Down</code>, <code>RETURN</code></dt><dd><p>Down One Line</p></dd>
-<dt class="flush"><code>Up</code></dt><dd><p>Up One Line</p></dd>
+<dt><code>Down</code>, <code>RETURN</code></dt><dd><p>Down one line</p></dd>
+<dt class="flush"><code>Up</code></dt><dd><p>Up one line</p></dd>
+<dt class="flush"><code>Right</code></dt><dd><p>Right one column</p></dd>
+<dt class="flush"><code>Left</code></dt><dd><p>Left one column</p></dd>
 <dt class="flush"><code>ESC</code></dt><dd><p>Global Commands</p></dd>
 </dl>
 
@@ -254,6 +256,8 @@ The <code>.</code> and <code>..</code> objects are never hidden due to their nav
 <dt><code>Bottom of Display</code></dt><dd><p><code>END</code>: Move the cursor to the last file on the current display.</p></dd>
 <dt><code>Down One Line</code></dt><dd><p><code>Down Arrow, Return</code>: Move the cursor down one line to the next file in the display. If the cursor is on the bottom row of the window, the window is scrolled down one line. If the present line is the last file in the list, the cursor is not repositioned.</p></dd>
 <dt><code>Up One Line</code></dt><dd><p><code>Up Arrow</code>: Move the cursor up one line to the next file in the display. If the cursor is on the top row of the window, the window is scrolled up one line. If the present line is the first file in the list, the cursor is not repositioned.</p></dd>
+<dt><code>Right one column</code></dt><dd><p><code>Right Arrow</code>: Moves the display area one column. This occurs when an entry rolls off the edge of the display. Scrolling will stop at the end of the longest entry.</p></dd>
+<dt><code>Left one column</code></dt><dd><p><code>Left Arrow</code>: Moves the display area one column.</p></dd>
 <dt><code>Global Commands</code></dt><dd><p><code>ESC</code>: Invoke the <a href="#GLOBAL-COMMANDS" title="GLOBAL COMMANDS" data-bare-link="true">GLOBAL COMMANDS</a> described in the next section. This allows another directory to be displayed without terminating the current display.</p></dd>
 </dl>
 

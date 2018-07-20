@@ -287,11 +287,19 @@ Bottom of Display
 .
 .TP
 \fBDown\fR, \fBRETURN\fR
-Down One Line
+Down one line
 .
 .TP
 \fBUp\fR
-Up One Line
+Up one line
+.
+.TP
+\fBRight\fR
+Right one column
+.
+.TP
+\fBLeft\fR
+Left one column
 .
 .TP
 \fBESC\fR
@@ -369,6 +377,14 @@ Using \fISHIFT\fR whilst selecting an option performs that action in reverse ord
 .TP
 \fBUp One Line\fR
 \fBUp Arrow\fR: Move the cursor up one line to the next file in the display\. If the cursor is on the top row of the window, the window is scrolled up one line\. If the present line is the first file in the list, the cursor is not repositioned\.
+.
+.TP
+\fBRight one column\fR
+\fBRight Arrow\fR: Moves the display area one column\. This occurs when an entry rolls off the edge of the display\. Scrolling will stop at the end of the longest entry\.
+.
+.TP
+\fBLeft one column\fR
+\fBLeft Arrow\fR: Moves the display area one column\.
 .
 .TP
 \fBGlobal Commands\fR
