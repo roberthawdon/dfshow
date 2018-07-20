@@ -35,6 +35,11 @@
 #include <errno.h>
 #include <wchar.h>
 #include <math.h>
+#include "config.h"
+#include "functions.h"
+#include "views.h"
+#include "menus.h"
+#include "colors.h"
 
 #if HAVE_SYS_SYSMACROS_H
 # include <sys/sysmacros.h>
@@ -43,12 +48,6 @@
 #if HAVE_HURD_H
 # include <hurd.h>
 #endif
-
-#include "config.h"
-#include "functions.h"
-#include "views.h"
-#include "menus.h"
-#include "colors.h"
 
 // It turns out most systems don't have an ST_AUTHOR, so for those systems, we set the author as the owner. Yup, `ls` does this too.
 #if ! HAVE_STRUCT_STAT_ST_AUTHOR
