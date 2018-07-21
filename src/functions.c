@@ -608,34 +608,9 @@ char * dirFromPath(const char* myStr){
     outStr[n - 1] = '\0';
   }
 
-  // clear();
-  // endwin();
-  // printf("outStr: %s myStr: %s\n", outStr, myStr);
-  // exit(0);
   return outStr;
 
 }
-
-// char * dirFromPath (const char* myStr){
-// 
-//   char *outStr = (char *) malloc(strlen(myStr) + 1);
-//   char *del = &outStr[strlen(outStr)];
-// 
-//   strcpy(outStr, myStr);
-// 
-//   clear();
-//   endwin();
-//   printf("outStr: %s myStr: %s del: %s\n", outStr, myStr, del);
-//   exit(0);
-//   
-//   while (del > outStr && *del != '/')
-//     del--;
-// 
-//   if (*del== '/')
-//     *del= '\0';
-// 
-//   return outStr;
-// }
 
 void LaunchShell()
 {
