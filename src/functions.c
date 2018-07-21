@@ -595,7 +595,7 @@ char * dirFromPath(const char* myStr){
     i--;
   }
 
-  outStr = malloc(sizeof (char) * i);
+  outStr = malloc(sizeof (char) * i + 1);
 
   if (i < 2){
     strcpy(outStr, "/");
