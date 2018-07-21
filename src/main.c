@@ -55,6 +55,8 @@ int danger = 0;
 int invalidstart = 0;
 int filecolors = 0;
 
+char *objectWild;
+
 extern results* ob;
 extern int topfileref;
 extern int selected;
@@ -378,7 +380,6 @@ Valid arguments are:\n\
     invalidstart = 1;
     quit_menu();
   }
-
   directory_view(currentpwd);
   return 0;
 }

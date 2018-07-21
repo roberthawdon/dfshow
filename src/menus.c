@@ -82,6 +82,8 @@ extern char sortmode[5];
 
 extern int commandL, infoL, inputL, selectL, displayL, dangerL, dirL, slinkL, exeL, suidL, sgidL, hiliteL;
 
+extern char *objectWild;
+
 //char testMenu[256];
 
 void topLineMessage(const char *message);
@@ -137,14 +139,21 @@ void show_directory_input()
   readline(currentpwd, 1024, oldpwd);
   curs_set(FALSE);
   if ((strcmp(currentpwd, oldpwd) && strcmp(currentpwd, "")) || !historyref){
+    objectWild = objectFromPath(currentpwd);
+    if ( strchr(objectWild, MULTICHAR) || strchr(objectWild, ONECHAR)){
+      strcpy(currentpwd, dirFromPath(currentpwd));
+    } else {
+      strcpy(objectWild, "");
+    }
+
     if (check_first_char(currentpwd, "~")){
       rewrite = str_replace(currentpwd, "~", getenv("HOME"));
       strcpy(currentpwd, rewrite);
       free(rewrite);
     }
-    if (!check_dir(currentpwd)){
-      quit_menu();
-    }
+    // if (!check_dir(currentpwd)){
+    //   quit_menu();
+    // }
     if ( invalidstart ){
       invalidstart = 0;
       set_history(currentpwd, "", 0, 0);
@@ -948,6 +957,13 @@ void directory_view_menu_inputs0()
           }
           break;
         case 's':
+          free(objectWild);
+          objectWild = objectFromPath(currentpwd);
+          if ( strchr(objectWild, MULTICHAR) || strchr(objectWild, ONECHAR)){
+            strcpy(currentpwd, dirFromPath(currentpwd));
+          } else {
+            strcpy(objectWild, "");
+          }
           strcpy(chpwd, currentpwd);
           if (!check_last_char(chpwd, "/")){
             strcat(chpwd, "/");

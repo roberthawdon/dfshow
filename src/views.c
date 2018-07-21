@@ -20,6 +20,7 @@
 #include <stdlib.h>
 #include <ncurses.h>
 #include <unistd.h>
+#include <string.h>
 #include "main.h"
 #include "views.h"
 #include "functions.h"
@@ -36,8 +37,17 @@ extern char functionMenuText[256];
 
 extern char sortmode[5];
 
+extern char *objectWild;
+
 int directory_view(char * currentpwd)
 {
+  objectWild = objectFromPath(currentpwd);
+  if ( strchr(objectWild, MULTICHAR) || strchr(objectWild, ONECHAR)){
+    strcpy(currentpwd, dirFromPath(currentpwd));
+  } else {
+    strcpy(objectWild, "");
+  }
+
   topfileref = 0;
   clear();
   setColors(COMMAND_PAIR);

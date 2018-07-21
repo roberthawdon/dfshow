@@ -24,11 +24,13 @@ typedef struct {
   int selected;
 } history;
 
+int wildcard(const char *value, char *wcard);
 char *str_replace(char *orig, char *rep, char *with);
 int findResultByName(results *ob, char *name);
 char *dateString(time_t date, char *style);
 void readline(char *buffer, int buflen, char *oldbuf);
-char * dirFromPath (const char* myStr);
+char * dirFromPath(const char* myStr);
+char * objectFromPath(const char* myStr);
 int check_dir(char *pwd);
 int check_file(char *file);
 void mk_dir(char *path);
@@ -62,3 +64,6 @@ void padstring(char *str, int len, char c);
 char *genPadding(int num_of_spaces);
 void resizeDisplayDir(results* ob);
 char *readableSize(double size, char *buf, int si);
+
+#define MULTICHAR '*'
+#define ONECHAR '?'

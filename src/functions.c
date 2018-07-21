@@ -115,6 +115,7 @@ extern int ogapad;
 extern int showbackup;
 extern int danger;
 extern int filecolors;
+extern char *objectWild;
 
 /* Formatting time in a similar fashion to `ls` */
 static char const *long_time_format[2] =
@@ -124,6 +125,95 @@ static char const *long_time_format[2] =
    // Without year, for recent files.
    "%b %e %H:%M"
   };
+
+int wildcard(const char *value, char *wcard) {
+
+    int vsize = (int)strlen(value);
+    int wsize = (int)strlen(wcard);
+    int match = 0;
+
+    if (vsize == 0 &&  wsize == 0) {
+        match = 1;
+    }
+
+    else {
+        int v = 0;
+        int w = 0;
+        int lookAhead = 0;
+        int searchMode = 0;
+        char search = '\0';
+
+
+        while (1) {
+            if (wcard[w] == MULTICHAR) {
+                //starts with * and the value matches the wcard
+                if (w == 0 && strcmp(wcard+1,value) == 0) {
+                    match = 1;
+                    break;
+                }
+                //the * is the last character in the pattern
+                if (!wcard[w+1]) {
+                    match = 1;
+                    break;
+                }
+                else {
+                    //search for the next char in the pattern that is not a ?
+                    while (wcard[++w] == ONECHAR) {
+                        lookAhead++;
+                    }
+
+                    //if the next char in the pattern is another * we go to the start (in case we have a pattern like **a, stupid I know, but it might happen)
+                    if (wcard[w] == MULTICHAR) {
+                        continue;
+                    }
+
+                    search = wcard[w];
+                    searchMode = 1;
+                }
+            }
+
+            else {
+                if (!value[v] && !wcard[w]) {
+                    if (searchMode) {
+                        match = 0;
+                    }
+                    break;
+                }
+                if (searchMode) {
+                    char currentValue = value[v+lookAhead];
+                    if (currentValue == search) {
+                        match = 1;
+
+                        searchMode = 0;
+                        search = '\0';
+                        lookAhead = 0;
+                        w++;
+                    }
+
+                    else if (currentValue == '\0') {
+                        match = 0;
+                        break;
+                    }
+
+                    v++;
+                    continue;
+                }
+                else if ((wcard[w] == ONECHAR && value[v] == '\0') || (wcard[w] != value[v] && wcard[w] != ONECHAR)) {
+                    match = 0;
+                    break;
+                }
+                else {
+                    match = 1;
+                }
+
+                w++;
+                v++;
+            }
+        }
+    }
+
+    return match;
+}
 
 // Credit for the following function must go to this guy:
 // https://stackoverflow.com/a/779960
@@ -608,6 +698,31 @@ char * dirFromPath(const char* myStr){
     outStr[n - 1] = '\0';
   }
 
+  return outStr;
+
+}
+
+char * objectFromPath(const char *myStr){
+  char *outStr;
+  int i = strlen(myStr);
+  int n = 0;
+  int c = 0;
+
+  while(i <= strlen(myStr) && myStr[i] != '/'){
+    i--;
+    n++;
+  }
+
+  outStr = malloc(sizeof (char) * n);
+
+  i++; // Removes the initial /
+
+  for(; i < strlen(myStr); c++){
+    outStr[c] = myStr[i];
+    i++;
+  }
+
+  outStr[n - 1] = '\0';
   return outStr;
 
 }
@@ -1130,6 +1245,11 @@ results* get_dir(char *pwd)
           if ( !showbackup && check_last_char(res->d_name, "~") ) {
             continue; // Skipping backup files
           }
+          if ( strcmp(objectWild, "")){
+            if (!wildcard(res->d_name, objectWild) && strcmp(res->d_name, ".") && strcmp(res->d_name, "..")){
+              continue;
+            }
+          }
           ob = realloc(ob, (count +1) * sizeof(results)); // Reallocating memory.
           lstat(res->d_name, &sb);
           status = lstat(res->d_name, &buffer);
@@ -1303,6 +1423,8 @@ results* get_dir(char *pwd)
         namelen = seglength(ob, "name", count);
         slinklen = seglength(ob, "slink", count);
 
+        // free(objectWild);
+
         return ob;
       }else{
         perror ( "Could not open the directory" );
@@ -1343,9 +1465,16 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   int i, s1, s2, s3;
   int headerpos, displaypos;
   char *susedString, *savailableString;
+  char pwdprint[1024];
 
   displaysize = LINES - 5;
   selected = selected - topfileref;
+
+  if (strcmp(objectWild, "")){
+    sprintf(pwdprint, "%s/%s", pwd, objectWild);
+  } else {
+    strcpy(pwdprint, pwd);
+  }
 
   if (human) {
     susedString = malloc (sizeof (char) * 10);
@@ -1481,7 +1610,7 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
     setColors(INFO_PAIR);
   }
   // attroff(A_BOLD); // Required to ensure the last selected item doesn't bold the header
-  printLine(1, 2, pwd);
+  printLine(1, 2, pwdprint);
   printLine(2, 2, sizeHeader);
 
   if ( danger ) {
