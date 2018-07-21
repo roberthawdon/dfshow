@@ -361,7 +361,13 @@ Valid arguments are:\n\
 
   // Remaining arguments passed as working directory
   if (optind < argc){
-    strcpy(currentpwd, argv[optind]);
+    if (!check_first_char(argv[optind], "/")){
+      // If the path given doesn't start with a / then assume we're dealing with a relative path.
+      getcwd(currentpwd, sizeof(currentpwd));
+      sprintf(currentpwd, "%s/%s", currentpwd, argv[optind]);
+    } else {
+      strcpy(currentpwd, argv[optind]);
+    }
     chdir(currentpwd);
   } else {
     getcwd(currentpwd, sizeof(currentpwd));
