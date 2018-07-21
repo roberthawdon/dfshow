@@ -48,6 +48,7 @@ char currentfilename[512];
 
 int s;
 char *buf;
+char *rewrite;
 
 extern results* ob;
 extern history* hs;
@@ -136,6 +137,11 @@ void show_directory_input()
   readline(currentpwd, 1024, oldpwd);
   curs_set(FALSE);
   if ((strcmp(currentpwd, oldpwd) && strcmp(currentpwd, "")) || !historyref){
+    if (check_first_char(currentpwd, "~")){
+      rewrite = str_replace(currentpwd, "~", getenv("HOME"));
+      strcpy(currentpwd, rewrite);
+      free(rewrite);
+    }
     if (!check_dir(currentpwd)){
       quit_menu();
     }
@@ -197,6 +203,11 @@ void copy_file_input(char *file)
   curs_set(FALSE);
   // If the two values don't match, we want to do the copy
   if ( strcmp(newfile, file) && strcmp(newfile, "")) {
+    if (check_first_char(newfile, "~")){
+      rewrite = str_replace(newfile, "~", getenv("HOME"));
+      strcpy(newfile, rewrite);
+      free(rewrite);
+    }
     if ( check_file(newfile) )
       {
         replace_file_confirm(newfile);
@@ -235,7 +246,11 @@ void copy_multi_file_input(results* ob, char *input)
   readline(dest, 1024, input);
   curs_set(FALSE);
   if ( strcmp(dest, input) && strcmp(dest, "")) {
-
+    if (check_first_char(dest, "~")){
+      rewrite = str_replace(dest, "~", getenv("HOME"));
+      strcpy(dest, rewrite);
+      free(rewrite);
+    }
     if ( check_dir(dest) ){
       for (i = 0; i < totalfilecount; i++)
         {
@@ -285,6 +300,11 @@ void rename_multi_file_input(results* ob, char *input)
   readline(dest, 1024, input);
   curs_set(FALSE);
   if (strcmp(dest, input) && strcmp(dest, "")){
+    if (check_first_char(dest, "~")){
+      rewrite = str_replace(dest, "~", getenv("HOME"));
+      strcpy(dest, rewrite);
+      free(rewrite);
+    }
     if ( check_dir(dest) ){
       for (i = 0; i < totalfilecount; i++)
         {
@@ -350,6 +370,11 @@ void rename_file_input(char *file)
   readline(dest, 1024, file);
   curs_set(FALSE);
   if (strcmp(dest, file) && strcmp(dest, "")){
+    if (check_first_char(dest, "~")){
+      rewrite = str_replace(dest, "~", getenv("HOME"));
+      strcpy(dest, rewrite);
+      free(rewrite);
+    }
     if ( check_file(dest) )
       {
         replace_file_confirm(dest);
@@ -387,6 +412,11 @@ void make_directory_input()
   }
   readline(newdir, 1024, currentpwd);
   if (strcmp(newdir, currentpwd) && strcmp(newdir, "")){
+    if (check_first_char(newdir, "~")){
+      rewrite = str_replace(newdir, "~", getenv("HOME"));
+      strcpy(newdir, rewrite);
+      free(rewrite);
+    }
     mk_dir(newdir);
     curs_set(FALSE);
     ob = get_dir(currentpwd);
