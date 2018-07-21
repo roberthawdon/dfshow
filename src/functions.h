@@ -6,7 +6,7 @@ typedef struct {
   char owner[128];
   char group[128];
   char author[128];
-  unsigned long int size[32];
+  size_t size;
   int sizelens[32];
   int major;
   int minor;

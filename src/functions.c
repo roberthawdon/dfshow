@@ -458,10 +458,10 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   } else {
     if (human){
       sizestring = malloc (sizeof (char) * 10);
-      readableSize(*ob[currentitem].size, sizestring, si);
+      readableSize(ob[currentitem].size, sizestring, si);
     } else {
       sizestring = malloc (sizeof (char) * sizelen + 1);
-      sprintf(sizestring, "%lu", *ob[currentitem].size);
+      sprintf(sizestring, "%lu", ob[currentitem].size);
     }
   }
 
@@ -799,9 +799,9 @@ int seglength(const void *seg, char *segname, int LEN)
   }
   else if (!strcmp(segname, "size")) {
     if (human){
-      readableSize(*dfseg[0].size, sizestr, si);
+      readableSize(dfseg[0].size, sizestr, si);
     } else {
-      sprintf(sizestr, "%lu", *dfseg[0].size);
+      sprintf(sizestr, "%lu", dfseg[0].size);
     }
     longest = strlen(sizestr);
   }
@@ -843,9 +843,9 @@ int seglength(const void *seg, char *segname, int LEN)
       }
       else if (!strcmp(segname, "size")) {
         if (human){
-          readableSize(*dfseg[i].size, sizestr, si);
+          readableSize(dfseg[i].size, sizestr, si);
         } else {
-          sprintf(sizestr, "%lu", *dfseg[i].size);
+          sprintf(sizestr, "%lu", dfseg[i].size);
         }
         len = strlen(sizestr);
       }
@@ -932,10 +932,10 @@ int cmp_dflist_size(const void *lhs, const void *rhs)
 
   if (reverse) {
     // Smallest to largest
-    return (*dforderA->size - *dforderB->size);
+    return (dforderA->size - dforderB->size);
   } else {
     // Largest to smallest
-    return (*dforderB->size - *dforderA->size);
+    return (dforderB->size - dforderA->size);
   }
 
 }
@@ -1256,7 +1256,7 @@ results* get_dir(char *pwd)
             strcpy(ob[count].author, au->pw_name);
           }
 
-          *ob[count].size = buffer.st_size;
+          ob[count].size = buffer.st_size;
           *ob[count].sizelens = strlen(sizestr);
 
           if (S_ISCHR(buffer.st_mode) || S_ISBLK(buffer.st_mode)){
