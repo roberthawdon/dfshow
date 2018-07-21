@@ -913,6 +913,13 @@ void directory_view_menu_inputs0()
             strcpy(chpwd, hs[historyref - 2].path);
             historyref--;
             if (check_dir(chpwd)){
+              free(objectWild);
+              objectWild = objectFromPath(currentpwd);
+              if ( strchr(objectWild, MULTICHAR) || strchr(objectWild, ONECHAR)){
+                strcpy(currentpwd, dirFromPath(currentpwd));
+              } else {
+                strcpy(objectWild, "");
+              }
               strcpy(currentpwd, chpwd);
               chdir(currentpwd);
               ob = get_dir(currentpwd);
