@@ -1405,6 +1405,8 @@ results* get_dir(char *pwd)
 
   results *ob = malloc(sizeof(results)); // Allocating a tiny amount of memory. We'll expand this on each file found.
 
+  fetch:
+
   mmMode = 0;
   time ( &currenttime );
   savailable = GetAvailableSpace(pwd);
@@ -1456,7 +1458,14 @@ results* get_dir(char *pwd)
       }
     }
 
-  }else{
+  } else if (check_object(path) == 2){
+
+    objectWild = objectFromPath(path);
+    strcpy(currentpwd, dirFromPath(path));
+
+    goto fetch;
+
+  } else {
     sprintf(direrror, "The %s it cannot be opened or is not a directory\n", path);
     topLineMessage(direrror);
     // return ob;
