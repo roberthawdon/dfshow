@@ -451,7 +451,7 @@ char *dateString(time_t date, char *style)
   char *outputString = malloc (sizeof (char) * 33);
   bool recent = 0;
 
-  if ( date > (currenttime - 31556952) ) {
+  if ( date > (currenttime - 31556952 / 2) ) {
     recent = 1;
   }
 
