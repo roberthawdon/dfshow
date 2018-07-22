@@ -287,6 +287,8 @@ const char * writePermsEntry(char * perms, mode_t mode){
   } else if (S_ISBLK(mode)){
     mmMode = 1;
     perms[0] = 'b';
+  } else if (S_ISSOCK(mode)){
+    perms[0] = 's';
   } else if (S_ISREG(mode)){
     perms[0] = '-';
   } else {
