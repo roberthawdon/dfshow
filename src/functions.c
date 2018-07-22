@@ -1225,6 +1225,7 @@ results* get_dir(char *pwd)
   char *filedate;
   ssize_t cslinklen;
   int sexec;
+  char direrror[1024];
 
   results *ob = malloc(sizeof(results)); // Allocating a tiny amount of memory. We'll expand this on each file found.
 
@@ -1425,16 +1426,18 @@ results* get_dir(char *pwd)
 
         // free(objectWild);
 
-        return ob;
+        // return ob;
       }else{
-        perror ( "Could not open the directory" );
-        return ob;
+        sprintf(direrror, "Could not open the directory" );
+        topLineMessage(direrror);
+        // return ob;
       }
     }
 
   }else{
-    printf("The %s it cannot be opened or is not a directory\n", path);
-    return ob;
+    sprintf(direrror, "The %s it cannot be opened or is not a directory\n", path);
+    topLineMessage(direrror);
+    // return ob;
   }
   return ob;
 }
