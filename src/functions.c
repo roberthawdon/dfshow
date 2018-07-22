@@ -1446,17 +1446,6 @@ results* get_dir(char *pwd)
         totalfilecount = count;
         closedir ( folder );
 
-        hlinklen = seglength(ob, "hlink", count);
-        ownerlen = seglength(ob, "owner", count);
-        grouplen = seglength(ob, "group", count);
-        authorlen = seglength(ob, "author", count);
-        sizelen = seglength(ob, "size", count);
-        majorlen = seglength(ob, "major", count);
-        minorlen = seglength(ob, "minor", count);
-        datelen = seglength(ob, "datedisplay", count);
-        namelen = seglength(ob, "name", count);
-        slinklen = seglength(ob, "slink", count);
-
         // free(objectWild);
 
         // return ob;
@@ -1472,6 +1461,17 @@ results* get_dir(char *pwd)
     topLineMessage(direrror);
     // return ob;
   }
+  hlinklen = seglength(ob, "hlink", count);
+  ownerlen = seglength(ob, "owner", count);
+  grouplen = seglength(ob, "group", count);
+  authorlen = seglength(ob, "author", count);
+  sizelen = seglength(ob, "size", count);
+  majorlen = seglength(ob, "major", count);
+  minorlen = seglength(ob, "minor", count);
+  datelen = seglength(ob, "datedisplay", count);
+  namelen = seglength(ob, "name", count);
+  slinklen = seglength(ob, "slink", count);
+
   return ob;
 }
 
