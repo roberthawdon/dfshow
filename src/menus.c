@@ -156,9 +156,9 @@ void show_directory_input()
     // }
     if ( invalidstart ){
       invalidstart = 0;
-      set_history(currentpwd, "", 0, 0);
+      set_history(currentpwd, "", "", 0, 0);
     } else {
-      set_history(currentpwd, ob[selected].name, topfileref, selected);
+      set_history(currentpwd, objectWild, ob[selected].name, topfileref, selected);
     }
     topfileref = 0;
     selected = 0;
@@ -981,7 +981,7 @@ void directory_view_menu_inputs0()
               updir = dirFromPath(currentpwd);
               strcpy(chpwd, updir);
               free(updir);
-              set_history(chpwd, ob[selected].name, topfileref, selected);
+              set_history(chpwd, objectWild, ob[selected].name, topfileref, selected);
               topfileref = 0;
               selected = 0;
               strcpy(currentpwd, chpwd);
@@ -995,7 +995,7 @@ void directory_view_menu_inputs0()
             break;
           } else {
             if (check_dir(chpwd)){
-              set_history(chpwd, ob[selected].name, topfileref, selected);
+              set_history(chpwd, objectWild, ob[selected].name, topfileref, selected);
               topfileref = 0;
               selected = 0;
               strcpy(currentpwd, chpwd);

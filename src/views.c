@@ -56,7 +56,7 @@ int directory_view(char * currentpwd)
 
   printMenu(0, 0, fileMenuText);
 
-  set_history(currentpwd, "", 0, 0);
+  set_history(currentpwd, "", "", 0, 0);
   ob = get_dir(currentpwd);
   reorder_ob(ob, sortmode);
   display_dir(currentpwd, ob, topfileref, 0);

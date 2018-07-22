@@ -22,6 +22,7 @@ typedef struct {
 typedef struct {
   char path[1024];
   char name[512];
+  char objectWild[256];
   int topfileref;
   int selected;
 } history;
@@ -50,7 +51,7 @@ int cmp_dflist_size(const void *lhs, const void *rhs);
 results* get_dir(char *pwd);
 results* reorder_ob(results* ob, char *order);
 void display_dir(char *pwd, results* ob, int topfileref, int selected);
-void set_history(char *pwd, char *name, int topfileref, int selected);
+void set_history(char *pwd, char *objectWild, char *name, int topfileref, int selected);
 size_t GetAvailableSpace(const char* path);
 long GetUsedSpace(const char* path);
 int SendToPager(char* object);

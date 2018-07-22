@@ -1368,7 +1368,7 @@ int CheckMarked(results* ob)
   return(result);
 }
 
-void set_history(char *pwd, char *name, int topfileref, int selected)
+void set_history(char *pwd, char *objectWild, char *name, int topfileref, int selected)
 {
   if (sessionhistory == 0){
     history *hs = malloc(sizeof(history));
@@ -1380,6 +1380,7 @@ void set_history(char *pwd, char *name, int topfileref, int selected)
   }
 
   strcpy(hs[historyref].path, pwd);
+  strcpy(hs[historyref].objectWild, objectWild);
   strcpy(hs[historyref].name, name);
   hs[historyref].topfileref = topfileref;
   hs[historyref].selected = selected;
