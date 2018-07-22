@@ -270,6 +270,8 @@ char *str_replace(char *orig, char *rep, char *with) {
 
 const char * writePermsEntry(char * perms, mode_t mode){
 
+  typecolor = DISPLAY_PAIR;
+
   sexec = 0;
 
   if (S_ISDIR(mode)) {
@@ -1430,8 +1432,6 @@ results* get_dir(char *pwd)
           ob = realloc(ob, (count +1) * sizeof(results)); // Reallocating memory.
           lstat(res->d_name, &sb);
           status = lstat(res->d_name, &buffer);
-
-          typecolor = DISPLAY_PAIR;
 
           sprintf(hlinkstr, "%d", buffer.st_nlink);
           sprintf(sizestr, "%lld", buffer.st_size);
