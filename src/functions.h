@@ -1,3 +1,5 @@
+#include <sys/stat.h>
+
 typedef struct {
   int marked[1];
   char perm[11];
@@ -33,6 +35,7 @@ char * dirFromPath(const char* myStr);
 char * objectFromPath(const char* myStr);
 int check_dir(char *pwd);
 int check_file(char *file);
+int check_object(const char *object);
 void mk_dir(char *path);
 void copy_file(char *source_input, char *target_input);
 void delete_file(char *source_input);
@@ -64,6 +67,8 @@ void padstring(char *str, int len, char c);
 char *genPadding(int num_of_spaces);
 void resizeDisplayDir(results* ob);
 char *readableSize(double size, char *buf, int si);
+const char * writePermsEntry(char * perms, mode_t mode);
+void writeResultStruct(results* ob, const char * filename, struct stat buffer, int count);
 
 #define MULTICHAR '*'
 #define ONECHAR '?'

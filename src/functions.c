@@ -80,6 +80,9 @@ int sizeobjectstart;
 int datestart;
 int namestart;
 
+int sexec;
+int typecolor;
+
 int totalfilecount;
 
 int selected;
@@ -103,6 +106,8 @@ unsigned long int sused = 0;
 history *hs;
 
 time_t currenttime;
+
+DIR *folder;
 
 extern char currentpwd[1024];
 extern char timestyle[9];
@@ -261,6 +266,169 @@ char *str_replace(char *orig, char *rep, char *with) {
     }
     strcpy(tmp, orig);
     return result;
+}
+
+const char * writePermsEntry(char * perms, mode_t mode){
+
+  sexec = 0;
+
+  if (S_ISDIR(mode)) {
+    perms[0] = 'd';
+    typecolor = DIR_PAIR;
+  } else if (S_ISCHR(mode)){
+    mmMode = 1;
+    perms[0] = 'c';
+  } else if (S_ISLNK(mode)){
+    perms[0] = 'l';
+  } else if (S_ISFIFO(mode)){
+    perms[0] = 'p';
+  } else if (S_ISBLK(mode)){
+    mmMode = 1;
+    perms[0] = 'b';
+  } else if (S_ISREG(mode)){
+    perms[0] = '-';
+  } else {
+    perms[0] = '?';
+  }
+
+  perms[1] = mode & S_IRUSR? 'r': '-';
+  perms[2] = mode & S_IWUSR? 'w': '-';
+
+  perms[4] = mode & S_IRGRP? 'r': '-';
+  perms[5] = mode & S_IWGRP? 'w': '-';
+
+  perms[7] = mode & S_IROTH? 'r': '-';
+  perms[8] = mode & S_IWOTH? 'w': '-';
+
+  if ( (mode & S_ISUID) && (mode & S_IXUSR) ){
+    perms[3] = 's';
+    if (typecolor != DIR_PAIR){
+      sexec = 1;
+      typecolor = SUID_PAIR;
+    }
+  } else if ( (mode & S_ISUID) ){
+    perms[3] = 'S';
+    if (typecolor != DIR_PAIR){
+      sexec = 1;
+      typecolor = SUID_PAIR;
+    }
+  } else if ( (mode & S_IXUSR) ){
+    perms[3] = 'x';
+    if (typecolor != DIR_PAIR){
+      typecolor = EXE_PAIR;
+    }
+  } else {
+    perms[3] = '-';
+  }
+
+  if ( (mode & S_ISGID) && (mode & S_IXGRP) ){
+    perms[6] = 's';
+    if (typecolor != DIR_PAIR && !sexec){
+      sexec = 1;
+      typecolor = SGID_PAIR;
+    }
+  } else if ( (mode & S_ISGID) ){
+    perms[6] = 'S';
+    if (typecolor != DIR_PAIR && !sexec){
+      sexec = 1;
+      typecolor = SGID_PAIR;
+    }
+  } else if ( (mode & S_IXGRP) ){
+    perms[6] = 'x';
+    if (typecolor != DIR_PAIR && !sexec){
+      typecolor = EXE_PAIR;
+    }
+  } else {
+    perms[6] = '-';
+  }
+
+  if ( (mode & S_IXOTH) && (mode & S_ISVTX) ){
+    perms[9] = 't';
+  } else if (mode & S_ISVTX) {
+    perms[9] = 'T';
+  } else if (mode & S_IXOTH){
+    perms[9] = 'x';
+    if (typecolor != DIR_PAIR && !sexec){
+      typecolor = EXE_PAIR;
+    }
+  } else {
+    perms[9] = '-';
+  }
+
+  return perms;
+
+}
+
+void writeResultStruct(results* ob, const char * filename, struct stat buffer, int count){
+  char perms[11] = {0};
+  struct group *gr;
+  struct passwd *pw;
+  struct passwd *au;
+  char *filedate;
+  ssize_t cslinklen;
+
+  writePermsEntry(perms, buffer.st_mode);
+
+  // Writing our structure
+  if ( markall && !(buffer.st_mode & S_IFDIR) ) {
+    *ob[count].marked = 1;
+  } else {
+    *ob[count].marked = 0;
+  }
+  strcpy(ob[count].perm, perms);
+  *ob[count].hlink = buffer.st_nlink;
+  *ob[count].hlinklens = strlen(hlinkstr);
+
+  if (!getpwuid(buffer.st_uid)){
+    sprintf(ob[count].owner, "%i", buffer.st_uid);
+  } else {
+    pw = getpwuid(buffer.st_uid);
+    strcpy(ob[count].owner, pw->pw_name);
+  }
+
+  if (!getgrgid(buffer.st_gid)){
+    sprintf(ob[count].group, "%i", buffer.st_gid);
+  } else {
+    gr = getgrgid(buffer.st_gid);
+    strcpy(ob[count].group, gr->gr_name);
+  }
+
+  if (!getpwuid(buffer.st_author)){
+    sprintf(ob[count].author, "%i", buffer.st_author);
+  } else {
+    au = getpwuid(buffer.st_author);
+    strcpy(ob[count].author, au->pw_name);
+  }
+
+  ob[count].size = buffer.st_size;
+  *ob[count].sizelens = strlen(sizestr);
+
+  if (S_ISCHR(buffer.st_mode) || S_ISBLK(buffer.st_mode)){
+    ob[count].major = major(buffer.st_rdev);
+    ob[count].minor = minor(buffer.st_rdev);
+  } else {
+    ob[count].major = ob[count].minor = 0; // Setting a default
+  }
+
+  ob[count].date = buffer.st_mtime;
+
+  filedate = dateString(ob[count].date, timestyle);
+  strcpy(ob[count].datedisplay, filedate);
+
+  strcpy(ob[count].name, filename);
+
+  if (S_ISLNK(buffer.st_mode)) {
+    cslinklen = readlink(filename, ob[count].slink, 1023);
+    ob[count].slink[cslinklen] = '\0';
+
+  } else {
+    strcpy(ob[count].slink, "");
+  }
+
+  ob[count].color = typecolor;
+
+  free(filedate);
+
 }
 
 int findResultByName(results *ob, char *name)
@@ -668,14 +836,6 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   free(ogaval);
 }
 
-int check_file(char *file){
-  if( access( file, F_OK ) != -1 ) {
-    return 1;
-  } else {
-    return 0;
-  }
-}
-
 char * dirFromPath(const char* myStr){
   char *outStr;
   int i = strlen(myStr);
@@ -1060,7 +1220,7 @@ int check_dir(char *pwd)
   const char *path = pwd;
   struct stat sb;
   if (stat(path, &sb) == 0 && S_ISDIR(sb.st_mode)){
-    DIR *folder = opendir ( path );
+    folder = opendir ( path );
     if (access ( path, F_OK ) != -1 ){
       if ( folder ){
         closedir ( folder );
@@ -1073,6 +1233,27 @@ int check_dir(char *pwd)
     }
   }
   return 0;
+}
+
+int check_file(char *file){
+  if( access( file, F_OK ) != -1 ) {
+    return 1;
+  } else {
+    return 0;
+  }
+}
+
+int check_object(const char *object){
+  struct stat sb;
+  if (stat(object, &sb) == 0 ){
+    if (S_ISDIR(sb.st_mode)){
+      return 1;
+    } else if (S_ISREG(sb.st_mode) || S_ISBLK(sb.st_mode) || S_ISFIFO(sb.st_mode) || S_ISLNK(sb.st_mode) || S_ISCHR(sb.st_mode)){
+      return 2;
+    } else {
+      return 0;
+    }
+  }
 }
 
 int check_last_char(const char *str, const char *chk)
@@ -1214,18 +1395,11 @@ results* get_dir(char *pwd)
   size_t file_count = 0;
   struct dirent *res;
   struct stat sb;
-  struct group *gr;
-  struct passwd *pw;
-  struct passwd *au;
   const char *path = pwd;
   struct stat buffer;
   int         status;
-  int typecolor;
-  char perms[11] = {0};
-  char *filedate;
-  ssize_t cslinklen;
-  int sexec;
   char direrror[1024];
+  // char filename[256];
 
   results *ob = malloc(sizeof(results)); // Allocating a tiny amount of memory. We'll expand this on each file found.
 
@@ -1234,8 +1408,9 @@ results* get_dir(char *pwd)
   savailable = GetAvailableSpace(pwd);
   sused = 0; // Resetting used value
 
-  if (stat(path, &sb) == 0 && S_ISDIR(sb.st_mode)){
-    DIR *folder = opendir ( path );
+  //if (stat(path, &sb) == 0 && S_ISDIR(sb.st_mode)){
+  if (check_object(path) == 1){
+    folder = opendir ( path );
 
     if (access ( path, F_OK ) != -1 ){
       if ( folder ){
@@ -1251,162 +1426,20 @@ results* get_dir(char *pwd)
               continue;
             }
           }
+          // filename = res->d_name;
           ob = realloc(ob, (count +1) * sizeof(results)); // Reallocating memory.
           lstat(res->d_name, &sb);
           status = lstat(res->d_name, &buffer);
 
           typecolor = DISPLAY_PAIR;
 
-          sexec = 0;
-
-          if (S_ISDIR(buffer.st_mode)) {
-            perms[0] = 'd';
-            typecolor = DIR_PAIR;
-          } else if (S_ISCHR(buffer.st_mode)){
-            mmMode = 1;
-            perms[0] = 'c';
-          } else if (S_ISLNK(buffer.st_mode)){
-            perms[0] = 'l';
-          } else if (S_ISFIFO(buffer.st_mode)){
-            perms[0] = 'p';
-          } else if (S_ISBLK(buffer.st_mode)){
-            mmMode = 1;
-            perms[0] = 'b';
-          } else if (S_ISREG(buffer.st_mode)){
-            perms[0] = '-';
-          } else {
-            perms[0] = '?';
-          }
-
-          perms[1] = buffer.st_mode & S_IRUSR? 'r': '-';
-          perms[2] = buffer.st_mode & S_IWUSR? 'w': '-';
-
-          perms[4] = buffer.st_mode & S_IRGRP? 'r': '-';
-          perms[5] = buffer.st_mode & S_IWGRP? 'w': '-';
-
-          perms[7] = buffer.st_mode & S_IROTH? 'r': '-';
-          perms[8] = buffer.st_mode & S_IWOTH? 'w': '-';
-
-          if ( (buffer.st_mode & S_ISUID) && (buffer.st_mode & S_IXUSR) ){
-            perms[3] = 's';
-            if (typecolor != DIR_PAIR){
-              sexec = 1;
-              typecolor = SUID_PAIR;
-            }
-          } else if ( (buffer.st_mode & S_ISUID) ){
-            perms[3] = 'S';
-            if (typecolor != DIR_PAIR){
-              sexec = 1;
-              typecolor = SUID_PAIR;
-            }
-          } else if ( (buffer.st_mode & S_IXUSR) ){
-            perms[3] = 'x';
-            if (typecolor != DIR_PAIR){
-              typecolor = EXE_PAIR;
-            }
-          } else {
-            perms[3] = '-';
-          }
-
-          if ( (buffer.st_mode & S_ISGID) && (buffer.st_mode & S_IXGRP) ){
-            perms[6] = 's';
-            if (typecolor != DIR_PAIR && !sexec){
-              sexec = 1;
-              typecolor = SGID_PAIR;
-            }
-          } else if ( (buffer.st_mode & S_ISGID) ){
-            perms[6] = 'S';
-            if (typecolor != DIR_PAIR && !sexec){
-              sexec = 1;
-              typecolor = SGID_PAIR;
-            }
-          } else if ( (buffer.st_mode & S_IXGRP) ){
-            perms[6] = 'x';
-            if (typecolor != DIR_PAIR && !sexec){
-              typecolor = EXE_PAIR;
-            }
-          } else {
-            perms[6] = '-';
-          }
-
-          if ( (buffer.st_mode & S_IXOTH) && (buffer.st_mode & S_ISVTX) ){
-            perms[9] = 't';
-          } else if (buffer.st_mode & S_ISVTX) {
-            perms[9] = 'T';
-          } else if (buffer.st_mode & S_IXOTH){
-            perms[9] = 'x';
-            if (typecolor != DIR_PAIR && !sexec){
-              typecolor = EXE_PAIR;
-            }
-          } else {
-            perms[9] = '-';
-          }
-
-
           sprintf(hlinkstr, "%d", buffer.st_nlink);
           sprintf(sizestr, "%lld", buffer.st_size);
 
-          // Writing our structure
-          if ( markall && !(buffer.st_mode & S_IFDIR) ) {
-            *ob[count].marked = 1;
-          } else {
-            *ob[count].marked = 0;
-          }
-          strcpy(ob[count].perm, perms);
-          *ob[count].hlink = buffer.st_nlink;
-          *ob[count].hlinklens = strlen(hlinkstr);
-
-          if (!getpwuid(sb.st_uid)){
-            sprintf(ob[count].owner, "%i", sb.st_uid);
-          } else {
-            pw = getpwuid(sb.st_uid);
-            strcpy(ob[count].owner, pw->pw_name);
-          }
-
-          if (!getgrgid(sb.st_gid)){
-            sprintf(ob[count].group, "%i", sb.st_gid);
-          } else {
-            gr = getgrgid(sb.st_gid);
-            strcpy(ob[count].group, gr->gr_name);
-          }
-
-          if (!getpwuid(sb.st_author)){
-            sprintf(ob[count].author, "%i", sb.st_author);
-          } else {
-            au = getpwuid(sb.st_author);
-            strcpy(ob[count].author, au->pw_name);
-          }
-
-          ob[count].size = buffer.st_size;
-          *ob[count].sizelens = strlen(sizestr);
-
-          if (S_ISCHR(buffer.st_mode) || S_ISBLK(buffer.st_mode)){
-            ob[count].major = major(buffer.st_rdev);
-            ob[count].minor = minor(buffer.st_rdev);
-          } else {
-            ob[count].major = ob[count].minor = 0; // Setting a default
-          }
-
-          ob[count].date = buffer.st_mtime;
-
-          filedate = dateString(ob[count].date, timestyle);
-          strcpy(ob[count].datedisplay, filedate);
-
-          strcpy(ob[count].name, res->d_name);
-
-          if (S_ISLNK(buffer.st_mode)) {
-            cslinklen = readlink(res->d_name, ob[count].slink, 1023);
-            ob[count].slink[cslinklen] = '\0';
-
-          } else {
-            strcpy(ob[count].slink, "");
-          }
-
-          ob[count].color = typecolor;
+          writeResultStruct(ob, res->d_name, buffer, count);
 
           sused = sused + buffer.st_size; // Adding the size values
 
-          free(filedate);
           count++;
         }
 
