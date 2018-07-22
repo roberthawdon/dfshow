@@ -911,15 +911,16 @@ void directory_view_menu_inputs0()
         case 'q':
           if (historyref > 1){
             strcpy(chpwd, hs[historyref - 2].path);
+            objectWild = hs[historyref - 2].objectWild;
             historyref--;
             if (check_dir(chpwd)){
-              free(objectWild);
-              objectWild = objectFromPath(currentpwd);
-              if ( strchr(objectWild, MULTICHAR) || strchr(objectWild, ONECHAR)){
-                strcpy(currentpwd, dirFromPath(currentpwd));
-              } else {
-                strcpy(objectWild, "");
-              }
+              //free(objectWild);
+              //objectWild = objectFromPath(currentpwd);
+              // if ( strchr(objectWild, MULTICHAR) || strchr(objectWild, ONECHAR)){
+              //   strcpy(currentpwd, dirFromPath(currentpwd));
+              // } else {
+              //   strcpy(objectWild, "");
+              // }
               strcpy(currentpwd, chpwd);
               chdir(currentpwd);
               ob = get_dir(currentpwd);
@@ -964,13 +965,6 @@ void directory_view_menu_inputs0()
           }
           break;
         case 's':
-          free(objectWild);
-          objectWild = objectFromPath(currentpwd);
-          if ( strchr(objectWild, MULTICHAR) || strchr(objectWild, ONECHAR)){
-            strcpy(currentpwd, dirFromPath(currentpwd));
-          } else {
-            strcpy(objectWild, "");
-          }
           strcpy(chpwd, currentpwd);
           if (!check_last_char(chpwd, "/")){
             strcat(chpwd, "/");
@@ -981,6 +975,7 @@ void directory_view_menu_inputs0()
               updir = dirFromPath(currentpwd);
               strcpy(chpwd, updir);
               free(updir);
+              objectWild = "";
               set_history(chpwd, objectWild, ob[selected].name, topfileref, selected);
               topfileref = 0;
               selected = 0;
@@ -995,6 +990,7 @@ void directory_view_menu_inputs0()
             break;
           } else {
             if (check_dir(chpwd)){
+              objectWild = "";
               set_history(chpwd, objectWild, ob[selected].name, topfileref, selected);
               topfileref = 0;
               selected = 0;
@@ -1135,7 +1131,19 @@ void directory_view_menu_inputs0()
           sort_view_inputs();
           break;
         case 274: // F10
-          refreshScreen();
+          // clear();
+          // endwin();
+
+          // printf("0: %s - %s\n", hs[0].path, hs[0].objectWild);
+          // printf("1: %s - %s\n", hs[1].path, hs[1].objectWild);
+          // printf("2: %s - %s\n", hs[2].path, hs[2].objectWild);
+          // printf("3: %s - %s\n", hs[3].path, hs[3].objectWild);
+          // printf("4: %s - %s\n", hs[4].path, hs[4].objectWild);
+          // printf("5: %s - %s\n", hs[5].path, hs[5].objectWild);
+          // printf("6: %s - %s\n", hs[6].path, hs[6].objectWild);
+
+          // exit(0);
+          //refreshScreen();
           break;
         case 262: // Home
           selected = topfileref;
