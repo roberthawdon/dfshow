@@ -91,6 +91,19 @@ int setColor(char* colorinput)
   }
 }
 
+int themeSelect(char* themeinput){
+  if (!strcmp(themeinput, "default")){
+    colormode = 0;
+  } else if (!strcmp(themeinput, "monochrome")){
+    colormode = 1;
+  } else if (!strcmp(themeinput, "nt")){
+    colormode = 2;
+  } else {
+    colormode = -1;
+  }
+  return colormode;
+}
+
 void refreshScreen()
 {
   switch(viewMode)
@@ -168,15 +181,24 @@ Options shared with ls:\n\
       --help                   displays help message, then exits\n\
       --version                displays version, then exits\n"), stdout);
   fputs (("\n\
-The TIME_STYLE arguement can be: full-iso; long-iso; iso; locale.\n"), stdout);
+The TIME_STYLE argument can be: full-iso; long-iso; iso; locale.\n"), stdout);
   fputs (("\n\
 Using color to highlight file attributes is disabled by default and with\n\
 --color=never. With --color or --color=always this function is enabled.\n"), stdout);
   fputs (("\n\
 Options specific to show:\n\
+      --theme=[THEME]          color themes, see the THEME section below for\n\
+                               valid themes.\n\
       --monochrome             compatability mode for monochrome displays\n\
+                               (deprecated)\n\
       --no-danger              turns off danger colors when running with\n\
                                elevated privileges\n"), stdout);
+  fputs (("\n\
+The THEME argument can be:\n\
+               default:    original theme\n\
+               monochrome: comaptability mode for monochrome displays\n\
+               nt:         a theme that closer resembles win32 versions of\n\
+                           DF-EDIT\n"), stdout);
   fputs (("\n\
 Exit status:\n\
  0  if OK,\n\
@@ -223,6 +245,7 @@ int main(int argc, char *argv[])
          {"monochrome",     no_argument,       0, GETOPT_MONOCHROME_CHAR},
          {"no-danger",      no_argument,       0, GETOPT_NODANGER_CHAR},
          {"color",          optional_argument, 0, GETOPT_COLOR_CHAR},
+         {"theme",          optional_argument, 0, GETOPT_THEME_CHAR},
          {0, 0, 0, 0}
         };
       int option_index = 0;
@@ -259,6 +282,22 @@ Valid arguments are:\n\
       } else {
         filecolors = 1;
         }
+      break;
+    case GETOPT_THEME_CHAR:
+      if (optarg){
+        if (themeSelect(optarg) == -1 ){
+          printf("%s: invalid argument '%s' for 'theme'\n", argv[0], optarg);
+          fputs (("\
+Valid arguments are:\n\
+  - default\n\
+  - monochrome\n\
+  - nt\n"), stdout);
+          printf("Try '%s --help' for more information.\n", argv[0]);
+          exit(2);
+        }
+      } else {
+        colormode = 0;
+      }
       break;
     case 'f':
       strcpy(sortmode, "none"); // This can be set to anything non valid

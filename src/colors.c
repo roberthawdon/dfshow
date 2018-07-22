@@ -117,7 +117,7 @@ void setColorMode(int mode){
     init_pair(DISPLAY_PAIR, COLOR_CYAN, COLOR_BLUE);
     lightColorPair[DISPLAY_PAIR] = 1;
     init_pair(DANGER_PAIR, COLOR_RED, COLOR_BLUE);
-    lightColorPair[DANGER_PAIR] = 0;
+    lightColorPair[DANGER_PAIR] = 1;
     init_pair(DIR_PAIR, COLOR_MAGENTA, COLOR_BLUE);
     lightColorPair[DIR_PAIR] = 1;
     init_pair(SLINK_PAIR, COLOR_WHITE, COLOR_BLUE);

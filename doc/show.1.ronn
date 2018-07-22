@@ -64,8 +64,11 @@ Displays program version, then exits.
 
 The following options are specific to `show`:
 
+* `--theme`=[<THEME>]:
+Color themes. Can be set to `default`, `monochrome`, or `nt`.
+
 * `--monochrome`:
-Compatibility mode for monochrome displays.
+Compatibility mode for monochrome displays. (This command is deprecated, use --theme instead)
 
 * `--no-danger`:
 Disables the danger color scheme when running with elevated privileges.
