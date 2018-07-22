@@ -132,7 +132,7 @@ Delete the selected file, or marked files. As this is a destructive process, con
 * `Edit`:
 This invokes the default text editor. Please consult the `man` pages of your preferred editor for more information. The edit command utilizes the `VISUAL` or `EDITOR` environment variable. If this has not been set, the following message is displayed.
 
-  `Error: No editor set`
+  `Please export a VISUAL environment variable to define the utility program name.`
   
   To resolve this, set a variable to your preferred editor in your shell's user preference file.
   
@@ -172,7 +172,7 @@ Rename the selected file, or marked files to a new file name. The new file name 
 * `Show`:
 Will either display the contents of a directory, or open the contents of a file. The show file command utilizes the `PAGER` environment variable. If this has not been set, the following message is displayed.
 
-  `Error: No pager set`
+  `Please export a PAGER environment variable to define the utility program name.`
   
   To resolve this, set a variable to your preferred pager in your shell's user preference file.
   

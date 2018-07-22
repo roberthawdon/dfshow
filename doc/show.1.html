@@ -166,7 +166,7 @@ The <code>.</code> and <code>..</code> objects are never hidden due to their nav
 <p>For single files, a "Y" will delete files and anything else will abort the delete file operation. For multiple files, confirmation for all files is requested. A "Y" will delete the prompted file, an "N" will not delete the file, an "A" will delete all the marked files without further confirmation, and an "S" will stop the multiple delete command.</p></dd>
 <dt class="flush"><code>Edit</code></dt><dd><p>This invokes the default text editor. Please consult the <code>man</code> pages of your preferred editor for more information. The edit command utilizes the <code>VISUAL</code> or <code>EDITOR</code> environment variable. If this has not been set, the following message is displayed.</p>
 
-<p><code>Error: No editor set</code></p>
+<p><code>Please export a VISUAL environment variable to define the utility program name.</code></p>
 
 <p>To resolve this, set a variable to your preferred editor in your shell's user preference file.</p>
 
@@ -196,7 +196,7 @@ The <code>.</code> and <code>..</code> objects are never hidden due to their nav
 <code>Rename multiple files to:</code></p></dd>
 <dt class="flush"><code>Show</code></dt><dd><p>Will either display the contents of a directory, or open the contents of a file. The show file command utilizes the <code>PAGER</code> environment variable. If this has not been set, the following message is displayed.</p>
 
-<p><code>Error: No pager set</code></p>
+<p><code>Please export a PAGER environment variable to define the utility program name.</code></p>
 
 <p>To resolve this, set a variable to your preferred pager in your shell's user preference file.</p>
 

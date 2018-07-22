@@ -977,7 +977,7 @@ int SendToPager(char* object)
       topLineMessage("Error: Permission denied");
     }
   } else {
-    topLineMessage("Error: No pager set");
+    topLineMessage("Please export a PAGER environment variable to define the utility program name.");
   }
   return 0;
 }
@@ -1014,7 +1014,7 @@ int SendToEditor(char* object)
       topLineMessage("Error: Permission denied");
     }
   } else {
-    topLineMessage("Error: No editor set.");
+    topLineMessage("Please export a VISUAL environment variable to define the utility program name.");
   }
   return 0;
 }
