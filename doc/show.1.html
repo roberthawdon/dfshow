@@ -115,7 +115,7 @@ The <code>.</code> and <code>..</code> objects are never hidden due to their nav
 
 <dl>
 <dt><code>--theme</code>=[<var>THEME</var>]</dt><dd><p>Color themes. Can be set to <code>default</code>, <code>monochrome</code>, or <code>nt</code>.</p></dd>
-<dt><code>--monochrome</code></dt><dd><p>Compatibility mode for monochrome displays. (This command is deprecated, use --theme instead)</p></dd>
+<dt><code>--monochrome</code></dt><dd><p>Compatibility mode for monochrome displays. (This command is deprecated, use <code>--theme</code> instead)</p></dd>
 <dt><code>--no-danger</code></dt><dd><p>Disables the danger color scheme when running with elevated privileges.</p></dd>
 </dl>
 
@@ -219,6 +219,7 @@ The <code>.</code> and <code>..</code> objects are never hidden due to their nav
 <dt class="flush"><code>F7</code></dt><dd><p>Mark All Files</p></dd>
 <dt class="flush"><code>F8</code></dt><dd><p>Unmark All Files</p></dd>
 <dt class="flush"><code>F9</code></dt><dd><p>Sort List</p></dd>
+<dt class="flush"><code>F10</code></dt><dd><p>Block Mark</p></dd>
 <dt class="flush"><code>HOME</code></dt><dd><p>Top of Display</p></dd>
 <dt class="flush"><code>END</code></dt><dd><p>Bottom of Display</p></dd>
 <dt><code>Down</code>, <code>RETURN</code></dt><dd><p>Down one line</p></dd>
@@ -253,6 +254,7 @@ The <code>.</code> and <code>..</code> objects are never hidden due to their nav
 <p><code>Size</code>: Sort the list on file size so the largest are at the top of the list.</p>
 
 <p>Using <em>SHIFT</em> whilst selecting an option performs that action in reverse order.</p></dd>
+<dt><code>Block Mark</code></dt><dd><p><code>F10</code>: Marks all files between two points. Files marked will be indicated with an <code>*</code> in front of them.</p></dd>
 <dt><code>Top of Display</code></dt><dd><p><code>HOME</code>: Move the cursor to the first file on the current display.</p></dd>
 <dt><code>Bottom of Display</code></dt><dd><p><code>END</code>: Move the cursor to the last file on the current display.</p></dd>
 <dt><code>Down One Line</code></dt><dd><p><code>Down Arrow, Return</code>: Move the cursor down one line to the next file in the display. If the cursor is on the bottom row of the window, the window is scrolled down one line. If the present line is the last file in the list, the cursor is not repositioned.</p></dd>

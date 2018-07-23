@@ -68,7 +68,7 @@ The following options are specific to `show`:
 Color themes. Can be set to `default`, `monochrome`, or `nt`.
 
 * `--monochrome`:
-Compatibility mode for monochrome displays. (This command is deprecated, use --theme instead)
+Compatibility mode for monochrome displays. (This command is deprecated, use `--theme` instead)
 
 * `--no-danger`:
 Disables the danger color scheme when running with elevated privileges.
@@ -211,6 +211,9 @@ Unmark All Files
 * `F9`:
 Sort List
 
+* `F10`:
+Block Mark
+
 * `HOME`:
 Top of Display
 
@@ -273,6 +276,9 @@ The display functions with their associated key assignments are described here.
   
   Using _SHIFT_ whilst selecting an option performs that action in reverse order.
   
+* `Block Mark`:
+`F10`: Marks all files between two points. Files marked will be indicated with an `*` in front of them.
+
 * `Top of Display`:
 `HOME`: Move the cursor to the first file on the current display.
 
