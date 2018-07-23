@@ -50,6 +50,9 @@ int s;
 char *buf;
 char *rewrite;
 
+int blockstart = -1;
+int blockend = -1;
+
 extern results* ob;
 extern history* hs;
 extern char currentpwd[1024];
@@ -1131,6 +1134,48 @@ void directory_view_menu_inputs0()
           sort_view_inputs();
           break;
         case 274: // F10
+          strcpy(selfile, currentpwd);
+          if (!check_last_char(selfile, "/")){
+            strcat(selfile, "/");
+          }
+          strcat(selfile, ob[selected].name);
+          if ( *ob[selected].marked == 0 ){
+            if ( blockstart == -1 ){
+              blockstart = selected;
+              if (!check_dir(selfile)){
+                *ob[selected].marked = 1;
+              }
+              if (selected < (totalfilecount - 1)) {
+                selected++;
+                if (selected > ((topfileref + displaysize) - 1)){
+                  topfileref++;
+                  clear_workspace();
+                }
+                display_dir(currentpwd, ob, topfileref, selected);
+              }
+            } else {
+              blockend = selected;
+              if (blockstart > blockend){
+                // While we're still on the second item, let's flip them around if the second selected file is higher up the list.
+                blockend = blockstart;
+                blockstart = selected;
+              }
+              for(; blockstart < blockend + 1; blockstart++){
+                strcpy(selfile, currentpwd);
+                if (!check_last_char(selfile, "/")){
+                  strcat(selfile, "/");
+                }
+                strcat(selfile, ob[blockstart].name);
+                if (!check_dir(selfile)){
+                  *ob[blockstart].marked = 1;
+                }
+              }
+              blockstart = blockend = -1;
+              display_dir(currentpwd, ob, topfileref, selected);
+              }
+            }
+          break;
+        case 276: // F12
           // clear();
           // endwin();
 
