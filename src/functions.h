@@ -1,3 +1,5 @@
+#include <sys/stat.h>
+
 typedef struct {
   int marked[1];
   char perm[11];
@@ -6,28 +8,35 @@ typedef struct {
   char owner[128];
   char group[128];
   char author[128];
-  unsigned long int size[32];
+  size_t size;
   int sizelens[32];
+  int major;
+  int minor;
   time_t date;
   char datedisplay[33];
   char name[512];
   char slink[1024];
+  int color;
 } results;
 
 typedef struct {
   char path[1024];
   char name[512];
+  char objectWild[256];
   int topfileref;
   int selected;
 } history;
 
+int wildcard(const char *value, char *wcard);
 char *str_replace(char *orig, char *rep, char *with);
 int findResultByName(results *ob, char *name);
 char *dateString(time_t date, char *style);
 void readline(char *buffer, int buflen, char *oldbuf);
-char * dirFromPath (const char* myStr);
+char * dirFromPath(const char* myStr);
+char * objectFromPath(const char* myStr);
 int check_dir(char *pwd);
 int check_file(char *file);
+int check_object(const char *object);
 void mk_dir(char *path);
 void copy_file(char *source_input, char *target_input);
 void delete_file(char *source_input);
@@ -42,7 +51,7 @@ int cmp_dflist_size(const void *lhs, const void *rhs);
 results* get_dir(char *pwd);
 results* reorder_ob(results* ob, char *order);
 void display_dir(char *pwd, results* ob, int topfileref, int selected);
-void set_history(char *pwd, char *name, int topfileref, int selected);
+void set_history(char *pwd, char *objectWild, char *name, int topfileref, int selected);
 size_t GetAvailableSpace(const char* path);
 long GetUsedSpace(const char* path);
 int SendToPager(char* object);
@@ -54,8 +63,13 @@ int UpdateOwnerGroup(const char* object, const char* pwdstr, const char* grpstr)
 int RenameObject(char* source, char* dest);
 int CheckMarked(results* ob);
 void printLine(int line, int col, char *textString);
-void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorlen, int sizelen, int datelen, int namelen, int selected, int listref, int topref, results* ob);
+void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorlen, int sizelen, int majorlen, int minorlen, int datelen, int namelen, int selected, int listref, int topref, results* ob);
 void padstring(char *str, int len, char c);
 char *genPadding(int num_of_spaces);
 void resizeDisplayDir(results* ob);
 char *readableSize(double size, char *buf, int si);
+const char * writePermsEntry(char * perms, mode_t mode);
+void writeResultStruct(results* ob, const char * filename, struct stat buffer, int count);
+
+#define MULTICHAR '*'
+#define ONECHAR '?'

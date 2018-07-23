@@ -95,6 +95,7 @@
 The <code>.</code> and <code>..</code> objects are never hidden due to their navigational functions in <code>show</code>.</p></dd>
 <dt><code>--author</code></dt><dd><p>Prints the author of the file in the output.</p></dd>
 <dt><code>-B</code>, <code>--ignore-backups</code></dt><dd><p>Hides files ending in <code>~</code>, often used as backup files.</p></dd>
+<dt><code>--color</code>[=<var>COLOR</var>]</dt><dd><p>Sets colorizing of files and directories. Can be set to <code>always</code> or <code>never</code>.</p></dd>
 <dt class="flush"><code>-f</code></dt><dd><p>Does not sort the output, this is equivilent to running <code>show</code> with <code>-aU</code>.</p></dd>
 <dt class="flush"><code>-g</code></dt><dd><p>Only displays the group of each object. Can be paird with <code>--author</code>.</p></dd>
 <dt><code>-G</code>, <code>--no-group</code></dt><dd><p>Omits the group of each object in the output.</p></dd>
@@ -113,8 +114,9 @@ The <code>.</code> and <code>..</code> objects are never hidden due to their nav
 <p>The following options are specific to <code>show</code>:</p>
 
 <dl>
-<dt><code>--monochrome</code></dt><dd><p>Compatibility mode for monochrome displays.</p></dd>
-<dt><code>--no-danger</code></dt><dd><p>Disables the danger colour scheme when running with elevated privileges.</p></dd>
+<dt><code>--theme</code>=[<var>THEME</var>]</dt><dd><p>Color themes. Can be set to <code>default</code>, <code>monochrome</code>, or <code>nt</code>.</p></dd>
+<dt><code>--monochrome</code></dt><dd><p>Compatibility mode for monochrome displays. (This command is deprecated, use --theme instead)</p></dd>
+<dt><code>--no-danger</code></dt><dd><p>Disables the danger color scheme when running with elevated privileges.</p></dd>
 </dl>
 
 
@@ -165,7 +167,7 @@ The <code>.</code> and <code>..</code> objects are never hidden due to their nav
 <p>For single files, a "Y" will delete files and anything else will abort the delete file operation. For multiple files, confirmation for all files is requested. A "Y" will delete the prompted file, an "N" will not delete the file, an "A" will delete all the marked files without further confirmation, and an "S" will stop the multiple delete command.</p></dd>
 <dt class="flush"><code>Edit</code></dt><dd><p>This invokes the default text editor. Please consult the <code>man</code> pages of your preferred editor for more information. The edit command utilizes the <code>VISUAL</code> or <code>EDITOR</code> environment variable. If this has not been set, the following message is displayed.</p>
 
-<p><code>Error: No editor set</code></p>
+<p><code>Please export a VISUAL environment variable to define the utility program name.</code></p>
 
 <p>To resolve this, set a variable to your preferred editor in your shell's user preference file.</p>
 
@@ -195,7 +197,7 @@ The <code>.</code> and <code>..</code> objects are never hidden due to their nav
 <code>Rename multiple files to:</code></p></dd>
 <dt class="flush"><code>Show</code></dt><dd><p>Will either display the contents of a directory, or open the contents of a file. The show file command utilizes the <code>PAGER</code> environment variable. If this has not been set, the following message is displayed.</p>
 
-<p><code>Error: No pager set</code></p>
+<p><code>Please export a PAGER environment variable to define the utility program name.</code></p>
 
 <p>To resolve this, set a variable to your preferred pager in your shell's user preference file.</p>
 
@@ -219,8 +221,10 @@ The <code>.</code> and <code>..</code> objects are never hidden due to their nav
 <dt class="flush"><code>F9</code></dt><dd><p>Sort List</p></dd>
 <dt class="flush"><code>HOME</code></dt><dd><p>Top of Display</p></dd>
 <dt class="flush"><code>END</code></dt><dd><p>Bottom of Display</p></dd>
-<dt><code>Down</code>, <code>RETURN</code></dt><dd><p>Down One Line</p></dd>
-<dt class="flush"><code>Up</code></dt><dd><p>Up One Line</p></dd>
+<dt><code>Down</code>, <code>RETURN</code></dt><dd><p>Down one line</p></dd>
+<dt class="flush"><code>Up</code></dt><dd><p>Up one line</p></dd>
+<dt class="flush"><code>Right</code></dt><dd><p>Right one column</p></dd>
+<dt class="flush"><code>Left</code></dt><dd><p>Left one column</p></dd>
 <dt class="flush"><code>ESC</code></dt><dd><p>Global Commands</p></dd>
 </dl>
 
@@ -253,6 +257,8 @@ The <code>.</code> and <code>..</code> objects are never hidden due to their nav
 <dt><code>Bottom of Display</code></dt><dd><p><code>END</code>: Move the cursor to the last file on the current display.</p></dd>
 <dt><code>Down One Line</code></dt><dd><p><code>Down Arrow, Return</code>: Move the cursor down one line to the next file in the display. If the cursor is on the bottom row of the window, the window is scrolled down one line. If the present line is the last file in the list, the cursor is not repositioned.</p></dd>
 <dt><code>Up One Line</code></dt><dd><p><code>Up Arrow</code>: Move the cursor up one line to the next file in the display. If the cursor is on the top row of the window, the window is scrolled up one line. If the present line is the first file in the list, the cursor is not repositioned.</p></dd>
+<dt><code>Right one column</code></dt><dd><p><code>Right Arrow</code>: Moves the display area one column. This occurs when an entry rolls off the edge of the display. Scrolling will stop at the end of the longest entry.</p></dd>
+<dt><code>Left one column</code></dt><dd><p><code>Left Arrow</code>: Moves the display area one column.</p></dd>
 <dt><code>Global Commands</code></dt><dd><p><code>ESC</code>: Invoke the <a href="#GLOBAL-COMMANDS" title="GLOBAL COMMANDS" data-bare-link="true">GLOBAL COMMANDS</a> described in the next section. This allows another directory to be displayed without terminating the current display.</p></dd>
 </dl>
 

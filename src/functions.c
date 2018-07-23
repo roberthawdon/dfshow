@@ -35,31 +35,40 @@
 #include <errno.h>
 #include <wchar.h>
 #include <math.h>
-
-#if HAVE_HURD_H
-# include <hurd.h>
-#endif
-
 #include "config.h"
 #include "functions.h"
 #include "views.h"
 #include "menus.h"
+#include "colors.h"
+
+#if HAVE_SYS_SYSMACROS_H
+# include <sys/sysmacros.h>
+#endif
+
+#if HAVE_HURD_H
+# include <hurd.h>
+#endif
 
 // It turns out most systems don't have an ST_AUTHOR, so for those systems, we set the author as the owner. Yup, `ls` does this too.
 #if ! HAVE_STRUCT_STAT_ST_AUTHOR
 # define st_author st_uid
 #endif
 
-char hlinkstr[5], sizestr[32];
-char headAttrs[12], headOG[25], headSize[7], headDT[18], headName[13];
+char hlinkstr[5], sizestr[32], majorstr[5], minorstr[5];
+char headAttrs[12], headOG[25], headSize[14], headDT[18], headName[13];
 
 int hlinklen;
 int ownerlen;
 int grouplen;
 int authorlen;
 int sizelen;
+int majorlen;
+int minorlen;
 int datelen;
 int namelen;
+int slinklen;
+
+int entryMetaLen, entryNameLen, entrySLinkLen = 0;
 
 int ogalen;
 
@@ -71,10 +80,15 @@ int sizeobjectstart;
 int datestart;
 int namestart;
 
+int sexec;
+int typecolor;
+
 int totalfilecount;
 
 int selected;
 int topfileref = 0;
+int hpos = 0;
+int maxdisplaywidth;
 int displaysize; // Calculate area to print
 int displaycount;
 int historyref = 0;
@@ -84,12 +98,16 @@ int showhidden = 0;
 
 int markall = 0;
 
+int mmMode = 0;
+
 unsigned long int savailable = 0;
 unsigned long int sused = 0;
 
 history *hs;
 
 time_t currenttime;
+
+DIR *folder;
 
 extern char currentpwd[1024];
 extern char timestyle[9];
@@ -101,6 +119,8 @@ extern int ogavis;
 extern int ogapad;
 extern int showbackup;
 extern int danger;
+extern int filecolors;
+extern char *objectWild;
 
 /* Formatting time in a similar fashion to `ls` */
 static char const *long_time_format[2] =
@@ -110,6 +130,95 @@ static char const *long_time_format[2] =
    // Without year, for recent files.
    "%b %e %H:%M"
   };
+
+int wildcard(const char *value, char *wcard) {
+
+    int vsize = (int)strlen(value);
+    int wsize = (int)strlen(wcard);
+    int match = 0;
+
+    if (vsize == 0 &&  wsize == 0) {
+        match = 1;
+    }
+
+    else {
+        int v = 0;
+        int w = 0;
+        int lookAhead = 0;
+        int searchMode = 0;
+        char search = '\0';
+
+
+        while (1) {
+            if (wcard[w] == MULTICHAR) {
+                //starts with * and the value matches the wcard
+                if (w == 0 && strcmp(wcard+1,value) == 0) {
+                    match = 1;
+                    break;
+                }
+                //the * is the last character in the pattern
+                if (!wcard[w+1]) {
+                    match = 1;
+                    break;
+                }
+                else {
+                    //search for the next char in the pattern that is not a ?
+                    while (wcard[++w] == ONECHAR) {
+                        lookAhead++;
+                    }
+
+                    //if the next char in the pattern is another * we go to the start (in case we have a pattern like **a, stupid I know, but it might happen)
+                    if (wcard[w] == MULTICHAR) {
+                        continue;
+                    }
+
+                    search = wcard[w];
+                    searchMode = 1;
+                }
+            }
+
+            else {
+                if (!value[v] && !wcard[w]) {
+                    if (searchMode) {
+                        match = 0;
+                    }
+                    break;
+                }
+                if (searchMode) {
+                    char currentValue = value[v+lookAhead];
+                    if (currentValue == search) {
+                        match = 1;
+
+                        searchMode = 0;
+                        search = '\0';
+                        lookAhead = 0;
+                        w++;
+                    }
+
+                    else if (currentValue == '\0') {
+                        match = 0;
+                        break;
+                    }
+
+                    v++;
+                    continue;
+                }
+                else if ((wcard[w] == ONECHAR && value[v] == '\0') || (wcard[w] != value[v] && wcard[w] != ONECHAR)) {
+                    match = 0;
+                    break;
+                }
+                else {
+                    match = 1;
+                }
+
+                w++;
+                v++;
+            }
+        }
+    }
+
+    return match;
+}
 
 // Credit for the following function must go to this guy:
 // https://stackoverflow.com/a/779960
@@ -159,6 +268,173 @@ char *str_replace(char *orig, char *rep, char *with) {
     return result;
 }
 
+const char * writePermsEntry(char * perms, mode_t mode){
+
+  typecolor = DISPLAY_PAIR;
+
+  sexec = 0;
+
+  if (S_ISDIR(mode)) {
+    perms[0] = 'd';
+    typecolor = DIR_PAIR;
+  } else if (S_ISCHR(mode)){
+    mmMode = 1;
+    perms[0] = 'c';
+  } else if (S_ISLNK(mode)){
+    perms[0] = 'l';
+  } else if (S_ISFIFO(mode)){
+    perms[0] = 'p';
+  } else if (S_ISBLK(mode)){
+    mmMode = 1;
+    perms[0] = 'b';
+  } else if (S_ISSOCK(mode)){
+    perms[0] = 's';
+  } else if (S_ISREG(mode)){
+    perms[0] = '-';
+  } else {
+    perms[0] = '?';
+  }
+
+  perms[1] = mode & S_IRUSR? 'r': '-';
+  perms[2] = mode & S_IWUSR? 'w': '-';
+
+  perms[4] = mode & S_IRGRP? 'r': '-';
+  perms[5] = mode & S_IWGRP? 'w': '-';
+
+  perms[7] = mode & S_IROTH? 'r': '-';
+  perms[8] = mode & S_IWOTH? 'w': '-';
+
+  if ( (mode & S_ISUID) && (mode & S_IXUSR) ){
+    perms[3] = 's';
+    if (typecolor != DIR_PAIR){
+      sexec = 1;
+      typecolor = SUID_PAIR;
+    }
+  } else if ( (mode & S_ISUID) ){
+    perms[3] = 'S';
+    if (typecolor != DIR_PAIR){
+      sexec = 1;
+      typecolor = SUID_PAIR;
+    }
+  } else if ( (mode & S_IXUSR) ){
+    perms[3] = 'x';
+    if (typecolor != DIR_PAIR){
+      typecolor = EXE_PAIR;
+    }
+  } else {
+    perms[3] = '-';
+  }
+
+  if ( (mode & S_ISGID) && (mode & S_IXGRP) ){
+    perms[6] = 's';
+    if (typecolor != DIR_PAIR && !sexec){
+      sexec = 1;
+      typecolor = SGID_PAIR;
+    }
+  } else if ( (mode & S_ISGID) ){
+    perms[6] = 'S';
+    if (typecolor != DIR_PAIR && !sexec){
+      sexec = 1;
+      typecolor = SGID_PAIR;
+    }
+  } else if ( (mode & S_IXGRP) ){
+    perms[6] = 'x';
+    if (typecolor != DIR_PAIR && !sexec){
+      typecolor = EXE_PAIR;
+    }
+  } else {
+    perms[6] = '-';
+  }
+
+  if ( (mode & S_IXOTH) && (mode & S_ISVTX) ){
+    perms[9] = 't';
+  } else if (mode & S_ISVTX) {
+    perms[9] = 'T';
+  } else if (mode & S_IXOTH){
+    perms[9] = 'x';
+    if (typecolor != DIR_PAIR && !sexec){
+      typecolor = EXE_PAIR;
+    }
+  } else {
+    perms[9] = '-';
+  }
+
+  return perms;
+
+}
+
+void writeResultStruct(results* ob, const char * filename, struct stat buffer, int count){
+  char perms[11] = {0};
+  struct group *gr;
+  struct passwd *pw;
+  struct passwd *au;
+  char *filedate;
+  ssize_t cslinklen;
+
+  writePermsEntry(perms, buffer.st_mode);
+
+  // Writing our structure
+  if ( markall && !(buffer.st_mode & S_IFDIR) ) {
+    *ob[count].marked = 1;
+  } else {
+    *ob[count].marked = 0;
+  }
+  strcpy(ob[count].perm, perms);
+  *ob[count].hlink = buffer.st_nlink;
+  *ob[count].hlinklens = strlen(hlinkstr);
+
+  if (!getpwuid(buffer.st_uid)){
+    sprintf(ob[count].owner, "%i", buffer.st_uid);
+  } else {
+    pw = getpwuid(buffer.st_uid);
+    strcpy(ob[count].owner, pw->pw_name);
+  }
+
+  if (!getgrgid(buffer.st_gid)){
+    sprintf(ob[count].group, "%i", buffer.st_gid);
+  } else {
+    gr = getgrgid(buffer.st_gid);
+    strcpy(ob[count].group, gr->gr_name);
+  }
+
+  if (!getpwuid(buffer.st_author)){
+    sprintf(ob[count].author, "%i", buffer.st_author);
+  } else {
+    au = getpwuid(buffer.st_author);
+    strcpy(ob[count].author, au->pw_name);
+  }
+
+  ob[count].size = buffer.st_size;
+  *ob[count].sizelens = strlen(sizestr);
+
+  if (S_ISCHR(buffer.st_mode) || S_ISBLK(buffer.st_mode)){
+    ob[count].major = major(buffer.st_rdev);
+    ob[count].minor = minor(buffer.st_rdev);
+  } else {
+    ob[count].major = ob[count].minor = 0; // Setting a default
+  }
+
+  ob[count].date = buffer.st_mtime;
+
+  filedate = dateString(ob[count].date, timestyle);
+  strcpy(ob[count].datedisplay, filedate);
+
+  strcpy(ob[count].name, filename);
+
+  if (S_ISLNK(buffer.st_mode)) {
+    cslinklen = readlink(filename, ob[count].slink, 1023);
+    ob[count].slink[cslinklen] = '\0';
+
+  } else {
+    strcpy(ob[count].slink, "");
+  }
+
+  ob[count].color = typecolor;
+
+  free(filedate);
+
+}
+
 int findResultByName(results *ob, char *name)
 {
   int i;
@@ -177,7 +453,7 @@ char *dateString(time_t date, char *style)
   char *outputString = malloc (sizeof (char) * 33);
   bool recent = 0;
 
-  if ( date > (currenttime - 31556952) ) {
+  if ( date > (currenttime - 31556952 / 2) ) {
     recent = 1;
   }
 
@@ -205,7 +481,8 @@ void readline(char *buffer, int buflen, char *oldbuf)
   int oldMode = viewMode;
 
   oldlen = strlen(oldbuf);
-  attron(COLOR_PAIR(3));
+  setColors(INPUT_PAIR);
+  // attron(COLOR_PAIR(INPUT_PAIR));
 
   pos = oldlen;
   len = oldlen;
@@ -222,7 +499,8 @@ void readline(char *buffer, int buflen, char *oldbuf)
     c = getch();
 
     if (c == KEY_ENTER || c == '\n' || c == '\r') {
-      attron(COLOR_PAIR(1));
+      // attron(COLOR_PAIR(COMMAND_PAIR));
+      setColors(COMMAND_PAIR);
       break;
     } else if (isprint(c)) {
       if (pos < buflen-1) {
@@ -260,7 +538,8 @@ void readline(char *buffer, int buflen, char *oldbuf)
       pos = 0;
       len = 0;
       strcpy(buffer, ""); //abort by blanking
-      attron(COLOR_PAIR(1));
+      // attron(COLOR_PAIR(COMMAND_PAIR));
+      setColors(COMMAND_PAIR);
       break;
     } else {
       beep();
@@ -326,12 +605,14 @@ void printLine(int line, int col, char *textString){
   }
 }
 
-void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorlen, int sizelen, int datelen, int namelen, int selected, int listref, int topref, results* ob){
+void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorlen, int sizelen, int majorlen, int minorlen, int datelen, int namelen, int selected, int listref, int topref, results* ob){
 
   int i;
 
   char marked[2];
-  wchar_t entry[1024];
+  wchar_t entryMeta[1024];
+  wchar_t entryName[1024];
+  wchar_t entrySLink[1024];
   int maxlen = COLS - start;
 
   int currentitem = listref + topref;
@@ -349,14 +630,16 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
 
   int ogpad = 0;
   int sizepad = 0;
-
-  int entrylen = 0;
+  int mmpad = 0;
 
   int datepad = 0;
 
-  char *s1, *s2, *s3;
+  char *s1, *s2, *s3, *s4;
 
   char *sizestring;
+
+  int linepadding;
+  int colpos;
 
   // Owner, Group, Author
   switch(ogavis){
@@ -422,12 +705,26 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
     }
   }
 
-  if (human){
-    sizestring = malloc (sizeof (char) * 10);
-    readableSize(*ob[currentitem].size, sizestring, si);
+  if (ob[currentitem].minor > 1){
+    mmpad = sizelen - (log10(ob[currentitem].minor + 1)) + 2;
   } else {
-    sizestring = malloc (sizeof (char) * sizelen + 1);
-    sprintf(sizestring, "%lu", *ob[currentitem].size);
+    mmpad = sizelen + 1;
+  }
+
+  s4 = genPadding(mmpad);
+
+  if ((ob[currentitem].major > 0) || (ob[currentitem].minor > 0)){
+    // If either of these are not 0, then we're dealing with a Character or Block device.
+    sizestring = malloc (sizeof (char) * sizelen + 5);
+    sprintf(sizestring, "%i,%s%i", ob[currentitem].major, s4, ob[currentitem].minor);
+  } else {
+    if (human){
+      sizestring = malloc (sizeof (char) * 10);
+      readableSize(ob[currentitem].size, sizestring, si);
+    } else {
+      sizestring = malloc (sizeof (char) * sizelen + 1);
+      sprintf(sizestring, "%lu", ob[currentitem].size);
+    }
   }
 
   // Redefining width of Size value if the all sizes are smaller than the header.
@@ -453,61 +750,145 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
     strcpy(marked, " ");
   }
 
+  swprintf(entryMeta, 1024, L"  %s %s%s%i %s%s%s %s%s ", marked, ob[currentitem].perm, s1, *ob[currentitem].hlink, ogaval, s2, sizestring, ob[currentitem].datedisplay, s3);
+
+  swprintf(entryName, 1024, L"%s", ob[currentitem].name);
+
   if ( !strcmp(ob[currentitem].slink, "") ){
-    swprintf(entry, 1024, L"%s %s%s%i %s%s%s %s%s %s", marked, ob[currentitem].perm, s1, *ob[currentitem].hlink, ogaval, s2, sizestring, ob[currentitem].datedisplay, s3, ob[currentitem].name);
+    swprintf(entrySLink, 1024, L"");
   } else {
-    swprintf(entry, 1024, L"%s %s%s%i %s%s%s %s%s %s -> %s", marked, ob[currentitem].perm, s1, *ob[currentitem].hlink, ogaval, s2, sizestring, ob[currentitem].datedisplay, s3, ob[currentitem].name, ob[currentitem].slink);
+    swprintf(entrySLink, 1024, L"%s", ob[currentitem].slink);
   }
 
 
-  entrylen = wcslen(entry);
+  entryMetaLen = wcslen(entryMeta);
+  entryNameLen = wcslen(entryName);
+  entrySLinkLen = wcslen(entrySLink);
   // mvprintw(4 + listref, start, "%s", entry);
 
   // Setting highlight
   if (selected) {
-    attron(A_BOLD);
-    attron(COLOR_PAIR(4));
+    setColors(SELECT_PAIR);
   } else {
-    attroff(A_BOLD);
-    attron(COLOR_PAIR(5));
+    setColors(DISPLAY_PAIR);
   }
 
   for ( i = 0; i < maxlen; i++ ){
-    mvprintw(4 + listref, start + i,"%lc", entry[i]);
-    if ( i == entrylen ){
+    mvprintw(4 + listref, start + i,"%lc", entryMeta[i]);
+    if ( i == entryMetaLen ){
       break;
     }
   }
 
+  if (filecolors && !selected){
+    if ( strcmp(ob[currentitem].slink, "" )) {
+      setColors(SLINK_PAIR);
+    } else {
+      setColors(ob[currentitem].color);
+    }
+  }
+
+  for ( i = 0; i < maxlen; i++ ){
+    mvprintw(4 + listref, (entryMetaLen + start) + i,"%lc", entryName[i]);
+    if ( i == entryNameLen ){
+      colpos = (entryMetaLen + start) + i;
+      break;
+    }
+  }
+
+  if ( strcmp(ob[currentitem].slink, "") ){
+    if (!selected){
+      setColors(DISPLAY_PAIR);
+    }
+    mvprintw(4 + listref, (entryMetaLen + entryNameLen + start)," -> ");
+
+    if (filecolors && !selected){
+      if ( strcmp(ob[currentitem].slink, "" )) {
+        if ( check_dir(ob[currentitem].slink) ){
+          setColors(DIR_PAIR);
+        } else {
+          setColors(ob[currentitem].color);
+        }
+      }
+    }
+
+    for ( i = 0; i < maxlen; i++ ){
+      mvprintw(4 + listref, (entryMetaLen + entryNameLen + 4 + start) + i,"%lc", entrySLink[i]);
+      if ( i == entrySLinkLen ){
+        colpos = (entryMetaLen + entryNameLen + 4 + start) + i;
+        break;
+      }
+    }
+  }
+
+  if (filecolors && !selected){
+    setColors(DISPLAY_PAIR);
+  }
+
+  linepadding = COLS - colpos;
+
+  if (linepadding > 0){
+    mvprintw(4 + listref, colpos, "%s", genPadding(linepadding));
+  }
+
+
   free(s1);
   free(s2);
   free(s3);
+  free(s4);
   free(sizestring);
   free(ogaval);
 }
 
-int check_file(char *file){
-  if( access( file, F_OK ) != -1 ) {
-    return 1;
-  } else {
-    return 0;
+char * dirFromPath(const char* myStr){
+  char *outStr;
+  int i = strlen(myStr);
+  int n = 0;
+
+  while(i <= strlen(myStr) && myStr[i] != '/'){
+    i--;
   }
-}
 
-char * dirFromPath (const char* myStr){
+  outStr = malloc(sizeof (char) * i + 1);
 
-  char *outStr = (char *) malloc(strlen(myStr) + 1);
-  char *del = &outStr[strlen(outStr)];
+  if (i < 2){
+    strcpy(outStr, "/");
+  } else{
+    while(n <= i){
+      outStr[n] = myStr[n];
+      n++;
+    }
 
-  strcpy(outStr, myStr);
-
-  while (del > outStr && *del != '/')
-    del--;
-
-  if (*del== '/')
-    *del= '\0';
+    outStr[n - 1] = '\0';
+  }
 
   return outStr;
+
+}
+
+char * objectFromPath(const char *myStr){
+  char *outStr;
+  int i = strlen(myStr);
+  int n = 0;
+  int c = 0;
+
+  while(i <= strlen(myStr) && myStr[i] != '/'){
+    i--;
+    n++;
+  }
+
+  outStr = malloc(sizeof (char) * n);
+
+  i++; // Removes the initial /
+
+  for(; i < strlen(myStr); c++){
+    outStr[c] = myStr[i];
+    i++;
+  }
+
+  outStr[n - 1] = '\0';
+  return outStr;
+
 }
 
 void LaunchShell()
@@ -598,7 +979,7 @@ int SendToPager(char* object)
       topLineMessage("Error: Permission denied");
     }
   } else {
-    topLineMessage("Error: No pager set");
+    topLineMessage("Please export a PAGER environment variable to define the utility program name.");
   }
   return 0;
 }
@@ -635,7 +1016,7 @@ int SendToEditor(char* object)
       topLineMessage("Error: Permission denied");
     }
   } else {
-    topLineMessage("Error: No editor set.");
+    topLineMessage("Please export a VISUAL environment variable to define the utility program name.");
   }
   return 0;
 }
@@ -697,17 +1078,28 @@ int seglength(const void *seg, char *segname, int LEN)
   }
   else if (!strcmp(segname, "size")) {
     if (human){
-      readableSize(*dfseg[0].size, sizestr, si);
+      readableSize(dfseg[0].size, sizestr, si);
     } else {
-      sprintf(sizestr, "%lu", *dfseg[0].size);
+      sprintf(sizestr, "%lu", dfseg[0].size);
     }
     longest = strlen(sizestr);
+  }
+  else if (!strcmp(segname, "major")) {
+    sprintf(majorstr, "%d", dfseg[0].major);
+    longest = strlen(majorstr);
+  }
+  else if (!strcmp(segname, "minor")) {
+    sprintf(minorstr, "%d", dfseg[0].minor);
+    longest = strlen(minorstr);
   }
   else if (!strcmp(segname, "datedisplay")) {
     longest = strlen(dfseg[0].datedisplay);
   }
   else if (!strcmp(segname, "name")) {
     longest = strlen(dfseg[0].name);
+  }
+  else if (!strcmp(segname, "slink")) {
+    longest = strlen(dfseg[0].slink);
   }
   else {
     longest = 0;
@@ -730,17 +1122,28 @@ int seglength(const void *seg, char *segname, int LEN)
       }
       else if (!strcmp(segname, "size")) {
         if (human){
-          readableSize(*dfseg[i].size, sizestr, si);
+          readableSize(dfseg[i].size, sizestr, si);
         } else {
-          sprintf(sizestr, "%lu", *dfseg[i].size);
+          sprintf(sizestr, "%lu", dfseg[i].size);
         }
         len = strlen(sizestr);
+      }
+      else if (!strcmp(segname, "major")) {
+        sprintf(majorstr, "%d", dfseg[i].major);
+        len = strlen(majorstr);
+      }
+      else if (!strcmp(segname, "minor")) {
+        sprintf(minorstr, "%d", dfseg[i].minor);
+        len = strlen(minorstr);
       }
       else if (!strcmp(segname, "datedisplay")) {
         len = strlen(dfseg[i].datedisplay);
       }
       else if (!strcmp(segname, "name")) {
         len = strlen(dfseg[i].name);
+      }
+      else if (!strcmp(segname, "slink")) {
+        len = strlen(dfseg[i].slink);
       }
       else {
         len = 0;
@@ -778,10 +1181,10 @@ int cmp_dflist_name(const void *lhs, const void *rhs)
 
   if (reverse){
     // Names in reverse order
-    return strcmp(dforderB->name, dforderA->name);
+    return strcoll(dforderB->name, dforderA->name);
   } else {
     // Names alphabetical
-    return strcmp(dforderA->name, dforderB->name);
+    return strcoll(dforderA->name, dforderB->name);
   }
 
 }
@@ -808,10 +1211,10 @@ int cmp_dflist_size(const void *lhs, const void *rhs)
 
   if (reverse) {
     // Smallest to largest
-    return (*dforderA->size - *dforderB->size);
+    return (dforderA->size - dforderB->size);
   } else {
     // Largest to smallest
-    return (*dforderB->size - *dforderA->size);
+    return (dforderB->size - dforderA->size);
   }
 
 }
@@ -821,7 +1224,7 @@ int check_dir(char *pwd)
   const char *path = pwd;
   struct stat sb;
   if (stat(path, &sb) == 0 && S_ISDIR(sb.st_mode)){
-    DIR *folder = opendir ( path );
+    folder = opendir ( path );
     if (access ( path, F_OK ) != -1 ){
       if ( folder ){
         closedir ( folder );
@@ -834,6 +1237,27 @@ int check_dir(char *pwd)
     }
   }
   return 0;
+}
+
+int check_file(char *file){
+  if( access( file, F_OK ) != -1 ) {
+    return 1;
+  } else {
+    return 0;
+  }
+}
+
+int check_object(const char *object){
+  struct stat sb;
+  if (stat(object, &sb) == 0 ){
+    if (S_ISDIR(sb.st_mode)){
+      return 1;
+    } else if (S_ISREG(sb.st_mode) || S_ISBLK(sb.st_mode) || S_ISFIFO(sb.st_mode) || S_ISLNK(sb.st_mode) || S_ISCHR(sb.st_mode)){
+      return 2;
+    } else {
+      return 0;
+    }
+  }
 }
 
 int check_last_char(const char *str, const char *chk)
@@ -923,7 +1347,9 @@ int RenameObject(char* source, char* dest)
   } else {
     // Destination directory not found
     //mvprintw(0,66, "FAIL: NO DIR"); // test
+    topLineMessage("Error: Invalid Destination");
     free(destPath);
+    return 1;
   }
   free(destPath);
   return 0;
@@ -944,7 +1370,7 @@ int CheckMarked(results* ob)
   return(result);
 }
 
-void set_history(char *pwd, char *name, int topfileref, int selected)
+void set_history(char *pwd, char *objectWild, char *name, int topfileref, int selected)
 {
   if (sessionhistory == 0){
     history *hs = malloc(sizeof(history));
@@ -956,6 +1382,7 @@ void set_history(char *pwd, char *name, int topfileref, int selected)
   }
 
   strcpy(hs[historyref].path, pwd);
+  strcpy(hs[historyref].objectWild, objectWild);
   strcpy(hs[historyref].name, name);
   hs[historyref].topfileref = topfileref;
   hs[historyref].selected = selected;
@@ -973,24 +1400,24 @@ results* get_dir(char *pwd)
   size_t file_count = 0;
   struct dirent *res;
   struct stat sb;
-  struct group *gr;
-  struct passwd *pw;
-  struct passwd *au;
   const char *path = pwd;
   struct stat buffer;
   int         status;
-  char perms[11] = {0};
-  char *filedate;
-  ssize_t slinklen;
+  char direrror[1024];
+  // char filename[256];
 
   results *ob = malloc(sizeof(results)); // Allocating a tiny amount of memory. We'll expand this on each file found.
 
+  fetch:
+
+  mmMode = 0;
   time ( &currenttime );
   savailable = GetAvailableSpace(pwd);
   sused = 0; // Resetting used value
 
-  if (stat(path, &sb) == 0 && S_ISDIR(sb.st_mode)){
-    DIR *folder = opendir ( path );
+  //if (stat(path, &sb) == 0 && S_ISDIR(sb.st_mode)){
+  if (check_object(path) == 1){
+    folder = opendir ( path );
 
     if (access ( path, F_OK ) != -1 ){
       if ( folder ){
@@ -1001,127 +1428,62 @@ results* get_dir(char *pwd)
           if ( !showbackup && check_last_char(res->d_name, "~") ) {
             continue; // Skipping backup files
           }
+          if ( strcmp(objectWild, "")){
+            if (!wildcard(res->d_name, objectWild) && strcmp(res->d_name, ".") && strcmp(res->d_name, "..")){
+              continue;
+            }
+          }
+          // filename = res->d_name;
           ob = realloc(ob, (count +1) * sizeof(results)); // Reallocating memory.
           lstat(res->d_name, &sb);
           status = lstat(res->d_name, &buffer);
 
-
-          if ( buffer.st_mode & S_IFDIR ) {
-            perms[0] = 'd';
-          } else if ( S_ISLNK(buffer.st_mode) ) {
-            perms[0] = 'l';
-          } else {
-            perms[0] = '-';
-          }
-          perms[1] = buffer.st_mode & S_IRUSR? 'r': '-';
-          perms[2] = buffer.st_mode & S_IWUSR? 'w': '-';
-
-          if ( (buffer.st_mode & S_ISUID) && (buffer.st_mode & S_IXUSR) ){
-            perms[3] = 's';
-          } else if ( (buffer.st_mode & S_ISUID) ){
-            perms[3] = 'S';
-          } else if ( (buffer.st_mode & S_IXUSR) ){
-            perms[3] = 'x';
-          } else {
-            perms[3] = '-';
-          }
-
-          perms[4] = buffer.st_mode & S_IRGRP? 'r': '-';
-          perms[5] = buffer.st_mode & S_IWGRP? 'w': '-';
-
-          if ( (buffer.st_mode & S_ISGID) && (buffer.st_mode & S_IXGRP) ){
-            perms[6] = 's';
-          } else if ( (buffer.st_mode & S_ISGID) ){
-            perms[6] = 'S';
-          } else if ( (buffer.st_mode & S_IXGRP) ){
-            perms[6] = 'x';
-          } else {
-            perms[6] = '-';
-          }
-
-          perms[7] = buffer.st_mode & S_IROTH? 'r': '-';
-          perms[8] = buffer.st_mode & S_IWOTH? 'w': '-';
-          perms[9] = buffer.st_mode & S_IXOTH? 'x': '-';
-
           sprintf(hlinkstr, "%d", buffer.st_nlink);
           sprintf(sizestr, "%lld", buffer.st_size);
 
-          // Writing our structure
-          if ( markall && !(buffer.st_mode & S_IFDIR) ) {
-            *ob[count].marked = 1;
-          } else {
-            *ob[count].marked = 0;
-          }
-          strcpy(ob[count].perm, perms);
-          *ob[count].hlink = buffer.st_nlink;
-          *ob[count].hlinklens = strlen(hlinkstr);
-
-          if (!getpwuid(sb.st_uid)){
-            sprintf(ob[count].owner, "%i", sb.st_uid);
-          } else {
-            pw = getpwuid(sb.st_uid);
-            strcpy(ob[count].owner, pw->pw_name);
-          }
-
-          if (!getgrgid(sb.st_gid)){
-            sprintf(ob[count].group, "%i", sb.st_gid);
-          } else {
-            gr = getgrgid(sb.st_gid);
-            strcpy(ob[count].group, gr->gr_name);
-          }
-
-          if (!getpwuid(sb.st_author)){
-            sprintf(ob[count].author, "%i", sb.st_author);
-          } else {
-            au = getpwuid(sb.st_author);
-            strcpy(ob[count].author, au->pw_name);
-          }
-
-          *ob[count].size = buffer.st_size;
-          *ob[count].sizelens = strlen(sizestr);
-          ob[count].date = buffer.st_mtime;
-
-          filedate = dateString(ob[count].date, timestyle);
-          strcpy(ob[count].datedisplay, filedate);
-
-          strcpy(ob[count].name, res->d_name);
-
-          if (S_ISLNK(buffer.st_mode)) {
-            slinklen = readlink(res->d_name, ob[count].slink, 1023);
-            ob[count].slink[slinklen] = '\0';
-
-          } else {
-            strcpy(ob[count].slink, "");
-          }
+          writeResultStruct(ob, res->d_name, buffer, count);
 
           sused = sused + buffer.st_size; // Adding the size values
 
-          free(filedate);
           count++;
         }
 
         totalfilecount = count;
         closedir ( folder );
 
-        hlinklen = seglength(ob, "hlink", count);
-        ownerlen = seglength(ob, "owner", count);
-        grouplen = seglength(ob, "group", count);
-        authorlen = seglength(ob, "author", count);
-        sizelen = seglength(ob, "size", count);
-        datelen = seglength(ob, "datedisplay", count);
-        namelen = seglength(ob, "name", count);
+        // free(objectWild);
 
-        return ob;
+        // return ob;
       }else{
-        perror ( "Could not open the directory" );
-        return ob;
+        sprintf(direrror, "Could not open the directory" );
+        topLineMessage(direrror);
+        // return ob;
       }
     }
 
-  }else{
-    printf("The %s it cannot be opened or is not a directory\n", path);
-    return ob;
+  } else if (check_object(path) == 2){
+
+    objectWild = objectFromPath(path);
+    strcpy(currentpwd, dirFromPath(path));
+
+    goto fetch;
+
+  } else {
+    sprintf(direrror, "The %s it cannot be opened or is not a directory\n", path);
+    topLineMessage(direrror);
+    // return ob;
   }
+  hlinklen = seglength(ob, "hlink", count);
+  ownerlen = seglength(ob, "owner", count);
+  grouplen = seglength(ob, "group", count);
+  authorlen = seglength(ob, "author", count);
+  sizelen = seglength(ob, "size", count);
+  majorlen = seglength(ob, "major", count);
+  minorlen = seglength(ob, "minor", count);
+  datelen = seglength(ob, "datedisplay", count);
+  namelen = seglength(ob, "name", count);
+  slinklen = seglength(ob, "slink", count);
+
   return ob;
 }
 
@@ -1149,11 +1511,18 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   int printSelect = 0;
   char sizeHeader[256], headings[256];
   int i, s1, s2, s3;
-
+  int headerpos, displaypos;
   char *susedString, *savailableString;
+  char pwdprint[1024];
 
   displaysize = LINES - 5;
   selected = selected - topfileref;
+
+  if (strcmp(objectWild, "")){
+    sprintf(pwdprint, "%s/%s", pwd, objectWild);
+  } else {
+    strcpy(pwdprint, pwd);
+  }
 
   if (human) {
     susedString = malloc (sizeof (char) * 10);
@@ -1176,7 +1545,12 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   }
 
   strcpy(headAttrs, "---Attrs---");
-  strcpy(headSize, "-Size-");
+
+  if ( mmMode ){
+    strcpy(headSize, "-Driver/Size-");
+  } else {
+    strcpy(headSize, "-Size-");
+  }
   strcpy(headDT, "---Date & Time---");
   strcpy(headName, "----Name----");
 
@@ -1236,10 +1610,18 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
     ownstart = hlinklen + 2;
     hlinkstart = ownstart - 1 - *ob[list_count + topfileref].hlinklens;
 
-    printEntry(2, hlinklen, ownerlen, grouplen, authorlen, sizelen, datelen, namelen, printSelect, list_count, topfileref, ob);
+    displaypos = 0 - hpos;
+
+    printEntry(displaypos, hlinklen, ownerlen, grouplen, authorlen, sizelen, majorlen, minorlen, datelen, namelen, printSelect, list_count, topfileref, ob);
 
     list_count++;
     }
+
+  if (slinklen == 0){
+    maxdisplaywidth = entryMetaLen + namelen;
+  } else {
+    maxdisplaywidth = entryMetaLen + namelen + slinklen + 4;
+  }
 
   //mvprintw(0, 66, "%d %d", historyref, sessionhistory);
 
@@ -1271,16 +1653,24 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   sprintf(headings, "%s%s%s%s%s%s%s%s%s%s", headAttrs, genPadding(hlinklen + 1), headOG, genPadding(s1), genPadding(s2), headSize, genPadding(1), headDT, genPadding(s3), headName);
 
   if ( danger ) {
-    attron(COLOR_PAIR(6));
+    setColors(DANGER_PAIR);
   } else {
-    attron(COLOR_PAIR(2));
+    setColors(INFO_PAIR);
   }
-  attroff(A_BOLD); // Required to ensure the last selected item doesn't bold the header
-  printLine(1, 2, pwd);
+  // attroff(A_BOLD); // Required to ensure the last selected item doesn't bold the header
+  printLine(1, 2, pwdprint);
   printLine(2, 2, sizeHeader);
 
-  printLine (3, 4, headings);
-  attron(COLOR_PAIR(1));
+  if ( danger ) {
+    setColors(DANGER_PAIR);
+  } else {
+    setColors(HEADING_PAIR);
+  }
+
+  headerpos = 4 - hpos;
+
+  printLine (3, headerpos, headings);
+  setColors(COMMAND_PAIR);
   free(susedString);
   free(savailableString);
 }

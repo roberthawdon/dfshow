@@ -20,10 +20,12 @@
 #include <stdlib.h>
 #include <ncurses.h>
 #include <unistd.h>
+#include <string.h>
 #include "main.h"
 #include "views.h"
 #include "functions.h"
 #include "menus.h"
+#include "colors.h"
 
 results *ob;
 
@@ -35,17 +37,26 @@ extern char functionMenuText[256];
 
 extern char sortmode[5];
 
+extern char *objectWild;
+
 int directory_view(char * currentpwd)
 {
+  objectWild = objectFromPath(currentpwd);
+  if ( strchr(objectWild, MULTICHAR) || strchr(objectWild, ONECHAR)){
+    strcpy(currentpwd, dirFromPath(currentpwd));
+  } else {
+    strcpy(objectWild, "");
+  }
+
   topfileref = 0;
   clear();
-  attron(COLOR_PAIR(1));
+  setColors(COMMAND_PAIR);
 
   // directory_top_menu();
 
   printMenu(0, 0, fileMenuText);
 
-  set_history(currentpwd, "", 0, 0);
+  set_history(currentpwd, "", "", 0, 0);
   ob = get_dir(currentpwd);
   reorder_ob(ob, sortmode);
   display_dir(currentpwd, ob, topfileref, 0);

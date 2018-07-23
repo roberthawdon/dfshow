@@ -23,6 +23,9 @@ Prints the author of the file in the output.
 * `-B`, `--ignore-backups`:
 Hides files ending in `~`, often used as backup files.
 
+* `--color`[=<COLOR>]:
+Sets colorizing of files and directories. Can be set to `always` or `never`.
+
 * `-f`:
 Does not sort the output, this is equivilent to running `show` with `-aU`.
 
@@ -61,11 +64,14 @@ Displays program version, then exits.
 
 The following options are specific to `show`:
 
+* `--theme`=[<THEME>]:
+Color themes. Can be set to `default`, `monochrome`, or `nt`.
+
 * `--monochrome`:
-Compatibility mode for monochrome displays.
+Compatibility mode for monochrome displays. (This command is deprecated, use --theme instead)
 
 * `--no-danger`:
-Disables the danger colour scheme when running with elevated privileges.
+Disables the danger color scheme when running with elevated privileges.
 
 ## OVERVIEW
 The `show` application lets users view the names of files and directories on a disk with information about the files. Files can be copied, moved, viewed, and edited (in your system's default editor). The application is run using the show command. The output is similar to the `ls` command.
@@ -129,7 +135,7 @@ Delete the selected file, or marked files. As this is a destructive process, con
 * `Edit`:
 This invokes the default text editor. Please consult the `man` pages of your preferred editor for more information. The edit command utilizes the `VISUAL` or `EDITOR` environment variable. If this has not been set, the following message is displayed.
 
-  `Error: No editor set`
+  `Please export a VISUAL environment variable to define the utility program name.`
   
   To resolve this, set a variable to your preferred editor in your shell's user preference file.
   
@@ -169,7 +175,7 @@ Rename the selected file, or marked files to a new file name. The new file name 
 * `Show`:
 Will either display the contents of a directory, or open the contents of a file. The show file command utilizes the `PAGER` environment variable. If this has not been set, the following message is displayed.
 
-  `Error: No pager set`
+  `Please export a PAGER environment variable to define the utility program name.`
   
   To resolve this, set a variable to your preferred pager in your shell's user preference file.
   
@@ -212,10 +218,16 @@ Top of Display
 Bottom of Display
 
 * `Down`, `RETURN`:
-Down One Line
+Down one line
 
 * `Up`:
-Up One Line
+Up one line
+
+* `Right`:
+Right one column
+
+* `Left`:
+Left one column
 
 * `ESC`:
 Global Commands
@@ -272,6 +284,12 @@ The display functions with their associated key assignments are described here.
 
 * `Up One Line`:
 `Up Arrow`: Move the cursor up one line to the next file in the display. If the cursor is on the top row of the window, the window is scrolled up one line. If the present line is the first file in the list, the cursor is not repositioned.
+
+* `Right one column`:
+`Right Arrow`: Moves the display area one column. This occurs when an entry rolls off the edge of the display. Scrolling will stop at the end of the longest entry.
+
+* `Left one column`:
+`Left Arrow`: Moves the display area one column.
 
 * `Global Commands`:
 `ESC`: Invoke the [GLOBAL COMMANDS][] described in the next section. This allows another directory to be displayed without terminating the current display.

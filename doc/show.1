@@ -28,6 +28,10 @@ Prints the author of the file in the output\.
 Hides files ending in \fB~\fR, often used as backup files\.
 .
 .TP
+\fB\-\-color\fR[=\fICOLOR\fR]
+Sets colorizing of files and directories\. Can be set to \fBalways\fR or \fBnever\fR\.
+.
+.TP
 \fB\-f\fR
 Does not sort the output, this is equivilent to running \fBshow\fR with \fB\-aU\fR\.
 .
@@ -79,12 +83,16 @@ Displays program version, then exits\.
 The following options are specific to \fBshow\fR:
 .
 .TP
+\fB\-\-theme\fR=[\fITHEME\fR]
+Color themes\. Can be set to \fBdefault\fR, \fBmonochrome\fR, or \fBnt\fR\.
+.
+.TP
 \fB\-\-monochrome\fR
-Compatibility mode for monochrome displays\.
+Compatibility mode for monochrome displays\. (This command is deprecated, use \-\-theme instead)
 .
 .TP
 \fB\-\-no\-danger\fR
-Disables the danger colour scheme when running with elevated privileges\.
+Disables the danger color scheme when running with elevated privileges\.
 .
 .SH "OVERVIEW"
 The \fBshow\fR application lets users view the names of files and directories on a disk with information about the files\. Files can be copied, moved, viewed, and edited (in your system\'s default editor)\. The application is run using the show command\. The output is similar to the \fBls\fR command\.
@@ -170,7 +178,7 @@ For single files, a "Y" will delete files and anything else will abort the delet
 This invokes the default text editor\. Please consult the \fBman\fR pages of your preferred editor for more information\. The edit command utilizes the \fBVISUAL\fR or \fBEDITOR\fR environment variable\. If this has not been set, the following message is displayed\.
 .
 .IP
-\fBError: No editor set\fR
+\fBPlease export a VISUAL environment variable to define the utility program name\.\fR
 .
 .IP
 To resolve this, set a variable to your preferred editor in your shell\'s user preference file\.
@@ -226,7 +234,7 @@ Rename the selected file, or marked files to a new file name\. The new file name
 Will either display the contents of a directory, or open the contents of a file\. The show file command utilizes the \fBPAGER\fR environment variable\. If this has not been set, the following message is displayed\.
 .
 .IP
-\fBError: No pager set\fR
+\fBPlease export a PAGER environment variable to define the utility program name\.\fR
 .
 .IP
 To resolve this, set a variable to your preferred pager in your shell\'s user preference file\.
@@ -283,11 +291,19 @@ Bottom of Display
 .
 .TP
 \fBDown\fR, \fBRETURN\fR
-Down One Line
+Down one line
 .
 .TP
 \fBUp\fR
-Up One Line
+Up one line
+.
+.TP
+\fBRight\fR
+Right one column
+.
+.TP
+\fBLeft\fR
+Left one column
 .
 .TP
 \fBESC\fR
@@ -365,6 +381,14 @@ Using \fISHIFT\fR whilst selecting an option performs that action in reverse ord
 .TP
 \fBUp One Line\fR
 \fBUp Arrow\fR: Move the cursor up one line to the next file in the display\. If the cursor is on the top row of the window, the window is scrolled up one line\. If the present line is the first file in the list, the cursor is not repositioned\.
+.
+.TP
+\fBRight one column\fR
+\fBRight Arrow\fR: Moves the display area one column\. This occurs when an entry rolls off the edge of the display\. Scrolling will stop at the end of the longest entry\.
+.
+.TP
+\fBLeft one column\fR
+\fBLeft Arrow\fR: Moves the display area one column\.
 .
 .TP
 \fBGlobal Commands\fR

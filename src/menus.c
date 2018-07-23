@@ -31,6 +31,7 @@
 #include "functions.h"
 #include "main.h"
 #include "views.h"
+#include "colors.h"
 
 int c;
 int * pc = &c;
@@ -47,6 +48,7 @@ char currentfilename[512];
 
 int s;
 char *buf;
+char *rewrite;
 
 extern results* ob;
 extern history* hs;
@@ -55,6 +57,8 @@ extern char currentpwd[1024];
 extern int historyref;
 extern int selected;
 extern int topfileref;
+extern int hpos;
+extern int maxdisplaywidth;
 extern int totalfilecount;
 extern int displaysize;
 extern int displaycount;
@@ -76,6 +80,10 @@ extern struct sigaction sa;
 
 extern char sortmode[5];
 
+extern int commandL, infoL, inputL, selectL, displayL, dangerL, dirL, slinkL, exeL, suidL, sgidL, hiliteL;
+
+extern char *objectWild;
+
 //char testMenu[256];
 
 void topLineMessage(const char *message);
@@ -87,22 +95,23 @@ void printMenu(int line, int col, char *menustring)
   move(line, col);
   clrtoeol();
   len = strlen(menustring);
+  setColors(COMMAND_PAIR);
   for (i = 0; i < len; i++)
      {
       if ( menustring[i] == '!' ) {
           i++;
-          attron(A_BOLD);
+          setColors(HILITE_PAIR);
           mvprintw(line, col + charcount, "%c", menustring[i]);
-          attroff(A_BOLD);
+          setColors(COMMAND_PAIR);
           charcount++;
       } else if ( menustring[i] == '<' ) {
           i++;
-          attron(A_BOLD);
+          setColors(HILITE_PAIR);
           mvprintw(line, col + charcount, "%c", menustring[i]);
           charcount++;
       } else if ( menustring[i] == '>' ) {
           i++;
-          attroff(A_BOLD);
+          setColors(COMMAND_PAIR);
           mvprintw(line, col + charcount, "%c", menustring[i]);
           charcount++;
       } else if ( menustring[i] == '\\' ) {
@@ -130,14 +139,26 @@ void show_directory_input()
   readline(currentpwd, 1024, oldpwd);
   curs_set(FALSE);
   if ((strcmp(currentpwd, oldpwd) && strcmp(currentpwd, "")) || !historyref){
-    if (!check_dir(currentpwd)){
-      quit_menu();
+    objectWild = objectFromPath(currentpwd);
+    if ( strchr(objectWild, MULTICHAR) || strchr(objectWild, ONECHAR)){
+      strcpy(currentpwd, dirFromPath(currentpwd));
+    } else {
+      strcpy(objectWild, "");
     }
+
+    if (check_first_char(currentpwd, "~")){
+      rewrite = str_replace(currentpwd, "~", getenv("HOME"));
+      strcpy(currentpwd, rewrite);
+      free(rewrite);
+    }
+    // if (!check_dir(currentpwd)){
+    //   quit_menu();
+    // }
     if ( invalidstart ){
       invalidstart = 0;
-      set_history(currentpwd, "", 0, 0);
+      set_history(currentpwd, "", "", 0, 0);
     } else {
-      set_history(currentpwd, ob[selected].name, topfileref, selected);
+      set_history(currentpwd, objectWild, ob[selected].name, topfileref, selected);
     }
     topfileref = 0;
     selected = 0;
@@ -146,6 +167,8 @@ void show_directory_input()
     clear_workspace();
     reorder_ob(ob, sortmode);
     display_dir(currentpwd, ob, 0, selected);
+  } else {
+    strcpy(currentpwd, oldpwd); // Copying old value back if the input was aborted
   }
   printMenu(0, 0, fileMenuText);
   printMenu(LINES-1, 0, functionMenuText);
@@ -189,6 +212,11 @@ void copy_file_input(char *file)
   curs_set(FALSE);
   // If the two values don't match, we want to do the copy
   if ( strcmp(newfile, file) && strcmp(newfile, "")) {
+    if (check_first_char(newfile, "~")){
+      rewrite = str_replace(newfile, "~", getenv("HOME"));
+      strcpy(newfile, rewrite);
+      free(rewrite);
+    }
     if ( check_file(newfile) )
       {
         replace_file_confirm(newfile);
@@ -227,7 +255,11 @@ void copy_multi_file_input(results* ob, char *input)
   readline(dest, 1024, input);
   curs_set(FALSE);
   if ( strcmp(dest, input) && strcmp(dest, "")) {
-
+    if (check_first_char(dest, "~")){
+      rewrite = str_replace(dest, "~", getenv("HOME"));
+      strcpy(dest, rewrite);
+      free(rewrite);
+    }
     if ( check_dir(dest) ){
       for (i = 0; i < totalfilecount; i++)
         {
@@ -277,6 +309,11 @@ void rename_multi_file_input(results* ob, char *input)
   readline(dest, 1024, input);
   curs_set(FALSE);
   if (strcmp(dest, input) && strcmp(dest, "")){
+    if (check_first_char(dest, "~")){
+      rewrite = str_replace(dest, "~", getenv("HOME"));
+      strcpy(dest, rewrite);
+      free(rewrite);
+    }
     if ( check_dir(dest) ){
       for (i = 0; i < totalfilecount; i++)
         {
@@ -342,6 +379,11 @@ void rename_file_input(char *file)
   readline(dest, 1024, file);
   curs_set(FALSE);
   if (strcmp(dest, file) && strcmp(dest, "")){
+    if (check_first_char(dest, "~")){
+      rewrite = str_replace(dest, "~", getenv("HOME"));
+      strcpy(dest, rewrite);
+      free(rewrite);
+    }
     if ( check_file(dest) )
       {
         replace_file_confirm(dest);
@@ -379,6 +421,11 @@ void make_directory_input()
   }
   readline(newdir, 1024, currentpwd);
   if (strcmp(newdir, currentpwd) && strcmp(newdir, "")){
+    if (check_first_char(newdir, "~")){
+      rewrite = str_replace(newdir, "~", getenv("HOME"));
+      strcpy(newdir, rewrite);
+      free(rewrite);
+    }
     mk_dir(newdir);
     curs_set(FALSE);
     ob = get_dir(currentpwd);
@@ -771,6 +818,7 @@ void directory_view_menu_inputs1()
 void directory_view_menu_inputs0()
 {
   int e = 0;
+  char *updir;
   viewMode = 0;
   while(1)
     {
@@ -863,8 +911,16 @@ void directory_view_menu_inputs0()
         case 'q':
           if (historyref > 1){
             strcpy(chpwd, hs[historyref - 2].path);
+            objectWild = hs[historyref - 2].objectWild;
             historyref--;
             if (check_dir(chpwd)){
+              //free(objectWild);
+              //objectWild = objectFromPath(currentpwd);
+              // if ( strchr(objectWild, MULTICHAR) || strchr(objectWild, ONECHAR)){
+              //   strcpy(currentpwd, dirFromPath(currentpwd));
+              // } else {
+              //   strcpy(objectWild, "");
+              // }
               strcpy(currentpwd, chpwd);
               chdir(currentpwd);
               ob = get_dir(currentpwd);
@@ -914,21 +970,42 @@ void directory_view_menu_inputs0()
             strcat(chpwd, "/");
           }
           strcat(chpwd, ob[selected].name);
-          if (check_dir(chpwd)){
-            set_history(chpwd, ob[selected].name, topfileref, selected);
-            topfileref = 0;
-            selected = 0;
-            strcpy(currentpwd, chpwd);
-            chdir(currentpwd);
-            ob = get_dir(currentpwd);
-            clear_workspace();
-            reorder_ob(ob, sortmode);
-            display_dir(currentpwd, ob, topfileref, selected);
+          if (!strcmp(ob[selected].name, "..")) {
+            if (strcmp(currentpwd, "/")){
+              updir = dirFromPath(currentpwd);
+              strcpy(chpwd, updir);
+              free(updir);
+              objectWild = "";
+              set_history(chpwd, objectWild, ob[selected].name, topfileref, selected);
+              topfileref = 0;
+              selected = 0;
+              strcpy(currentpwd, chpwd);
+              chdir(currentpwd);
+              ob = get_dir(currentpwd);
+              clear_workspace();
+              reorder_ob(ob, sortmode);
+              display_dir(currentpwd, ob, topfileref, selected);
+            }
+          } else if (!strcmp(ob[selected].name, ".")) {
+            break;
           } else {
-            e = SendToPager(chpwd);
-            printMenu(0, 0, fileMenuText);
-            printMenu(LINES-1, 0, functionMenuText);
-            display_dir(currentpwd, ob, topfileref, selected);
+            if (check_dir(chpwd)){
+              objectWild = "";
+              set_history(chpwd, objectWild, ob[selected].name, topfileref, selected);
+              topfileref = 0;
+              selected = 0;
+              strcpy(currentpwd, chpwd);
+              chdir(currentpwd);
+              ob = get_dir(currentpwd);
+              clear_workspace();
+              reorder_ob(ob, sortmode);
+              display_dir(currentpwd, ob, topfileref, selected);
+            } else {
+              e = SendToPager(chpwd);
+              printMenu(0, 0, fileMenuText);
+              printMenu(LINES-1, 0, functionMenuText);
+              display_dir(currentpwd, ob, topfileref, selected);
+            }
           }
           break;
         case 27:
@@ -957,8 +1034,18 @@ void directory_view_menu_inputs0()
           }
           break;
         case 260: // Left Arrow
+          if (hpos > 0){
+            hpos--;
+            clear_workspace();
+            display_dir(currentpwd, ob, topfileref, selected);
+          }
           break;
         case 261: // Right Arrow
+          if (hpos < (maxdisplaywidth - COLS)){
+            hpos++;
+            clear_workspace();
+            display_dir(currentpwd, ob, topfileref, selected);
+          }
           break;
         case 338: // PgDn - Drop through
         case 265: // F1
@@ -1044,7 +1131,19 @@ void directory_view_menu_inputs0()
           sort_view_inputs();
           break;
         case 274: // F10
-          refreshScreen();
+          // clear();
+          // endwin();
+
+          // printf("0: %s - %s\n", hs[0].path, hs[0].objectWild);
+          // printf("1: %s - %s\n", hs[1].path, hs[1].objectWild);
+          // printf("2: %s - %s\n", hs[2].path, hs[2].objectWild);
+          // printf("3: %s - %s\n", hs[3].path, hs[3].objectWild);
+          // printf("4: %s - %s\n", hs[4].path, hs[4].objectWild);
+          // printf("5: %s - %s\n", hs[5].path, hs[5].objectWild);
+          // printf("6: %s - %s\n", hs[6].path, hs[6].objectWild);
+
+          // exit(0);
+          //refreshScreen();
           break;
         case 262: // Home
           selected = topfileref;
@@ -1106,9 +1205,9 @@ void directory_change_menu_inputs()
 void topLineMessage(const char *message){
   move(0,0);
   clrtoeol();
-  attron(A_BOLD);
+  setColors(ERROR_PAIR);
   mvprintw(0,0, "%s", message);
-  attroff(A_BOLD);
+  setColors(COMMAND_PAIR);
   while(1)
     {
       *pc = getch();

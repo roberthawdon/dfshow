@@ -53,6 +53,9 @@ int showbackup = 1;
 int colormode = 0;
 int danger = 0;
 int invalidstart = 0;
+int filecolors = 0;
+
+char *objectWild;
 
 extern results* ob;
 extern int topfileref;
@@ -70,6 +73,35 @@ int checkStyle(char* styleinput)
     } else {
       return 1;
     }
+}
+
+int setColor(char* colorinput)
+{
+  if (!strcmp(colorinput, "always")){
+    filecolors = 1;
+    return 1;
+    // } else if (!strcmp(colorinput, "auto")){
+    //   filecolors = 0; // Need to make this autodetect
+    //   return 1;
+  } else if (!strcmp(colorinput, "never")){
+    filecolors = 0;
+    return 1;
+  } else {
+    return 0;
+  }
+}
+
+int themeSelect(char* themeinput){
+  if (!strcmp(themeinput, "default")){
+    colormode = 0;
+  } else if (!strcmp(themeinput, "monochrome")){
+    colormode = 1;
+  } else if (!strcmp(themeinput, "nt")){
+    colormode = 2;
+  } else {
+    colormode = -1;
+  }
+  return colormode;
 }
 
 void refreshScreen()
@@ -135,6 +167,7 @@ Options shared with ls:\n\
   -a, --all                    do not ignore entries starting with .\n\
       --author                 prints the author of each file\n\
   -B, --ignore-backups         do not list implied entries ending with ~\n\
+      --color[=WHEN]           colorize the output, see the color section below\n\
   -f                           do not sort, enables -aU\n\
   -g                           only show group\n\
   -G, --no-group               do not show group\n\
@@ -148,12 +181,24 @@ Options shared with ls:\n\
       --help                   displays help message, then exits\n\
       --version                displays version, then exits\n"), stdout);
   fputs (("\n\
-The TIME_STYLE arguement can be: full-iso; long-iso; iso; locale.\n"), stdout);
+The TIME_STYLE argument can be: full-iso; long-iso; iso; locale.\n"), stdout);
+  fputs (("\n\
+Using color to highlight file attributes is disabled by default and with\n\
+--color=never. With --color or --color=always this function is enabled.\n"), stdout);
   fputs (("\n\
 Options specific to show:\n\
+      --theme=[THEME]          color themes, see the THEME section below for\n\
+                               valid themes.\n\
       --monochrome             compatability mode for monochrome displays\n\
+                               (deprecated)\n\
       --no-danger              turns off danger colors when running with\n\
                                elevated privileges\n"), stdout);
+  fputs (("\n\
+The THEME argument can be:\n\
+               default:    original theme\n\
+               monochrome: comaptability mode for monochrome displays\n\
+               nt:         a theme that closer resembles win32 versions of\n\
+                           DF-EDIT\n"), stdout);
   fputs (("\n\
 Exit status:\n\
  0  if OK,\n\
@@ -199,6 +244,8 @@ int main(int argc, char *argv[])
          {"version",        no_argument,       0, GETOPT_VERSION_CHAR},
          {"monochrome",     no_argument,       0, GETOPT_MONOCHROME_CHAR},
          {"no-danger",      no_argument,       0, GETOPT_NODANGER_CHAR},
+         {"color",          optional_argument, 0, GETOPT_COLOR_CHAR},
+         {"theme",          optional_argument, 0, GETOPT_THEME_CHAR},
          {0, 0, 0, 0}
         };
       int option_index = 0;
@@ -220,6 +267,37 @@ int main(int argc, char *argv[])
       break;
     case 'B':
       showbackup = 0;
+      break;
+    case GETOPT_COLOR_CHAR:
+      if (optarg){
+        if (!setColor(optarg)){
+          printf("%s: invalid argument '%s' for 'color'\n", argv[0], optarg);
+          fputs (("\
+Valid arguments are:\n\
+  - always\n\
+  - never\n"), stdout);
+          printf("Try '%s --help' for more information.\n", argv[0]);
+          exit(2);
+        }
+      } else {
+        filecolors = 1;
+        }
+      break;
+    case GETOPT_THEME_CHAR:
+      if (optarg){
+        if (themeSelect(optarg) == -1 ){
+          printf("%s: invalid argument '%s' for 'theme'\n", argv[0], optarg);
+          fputs (("\
+Valid arguments are:\n\
+  - default\n\
+  - monochrome\n\
+  - nt\n"), stdout);
+          printf("Try '%s --help' for more information.\n", argv[0]);
+          exit(2);
+        }
+      } else {
+        colormode = 0;
+      }
       break;
     case 'f':
       strcpy(sortmode, "none"); // This can be set to anything non valid
@@ -313,6 +391,7 @@ Valid arguments are:\n\
   start_color();
   cbreak(); //Added for new method
   setColorMode(colormode);
+  bkgd(COLOR_PAIR(DISPLAY_PAIR));
   cbreak();
   // nodelay(stdscr, TRUE);
   noecho();
@@ -323,7 +402,13 @@ Valid arguments are:\n\
 
   // Remaining arguments passed as working directory
   if (optind < argc){
-    strcpy(currentpwd, argv[optind]);
+    if (!check_first_char(argv[optind], "/")){
+      // If the path given doesn't start with a / then assume we're dealing with a relative path.
+      getcwd(currentpwd, sizeof(currentpwd));
+      sprintf(currentpwd, "%s/%s", currentpwd, argv[optind]);
+    } else {
+      strcpy(currentpwd, argv[optind]);
+    }
     chdir(currentpwd);
   } else {
     getcwd(currentpwd, sizeof(currentpwd));
@@ -334,7 +419,6 @@ Valid arguments are:\n\
     invalidstart = 1;
     quit_menu();
   }
-
   directory_view(currentpwd);
   return 0;
 }
