@@ -744,7 +744,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   s2 = genPadding(sizepad);
   s3 = genPadding(datepad);
 
-  if ( *ob[listref].marked ){
+  if ( *ob[currentitem].marked ){
     strcpy(marked, "*");
   } else {
     strcpy(marked, " ");
