@@ -37,6 +37,7 @@ char currentpwd[1024];
 char fileMenuText[256];
 char globalMenuText[256];
 char functionMenuText[256];
+char functionMenuTextShort[256];
 char functionMenuTextLong[256];
 char modifyMenuText[256];
 char sortMenuText[256];
@@ -107,6 +108,11 @@ int themeSelect(char* themeinput){
 
 void refreshScreen()
 {
+  if (COLS < 89){
+    strcpy(functionMenuText, functionMenuTextShort);
+  } else {
+    strcpy(functionMenuText, functionMenuTextLong);
+  }
   switch(viewMode)
     {
     case 0:
@@ -373,7 +379,7 @@ Valid arguments are:\n\
   // Writing Menus
   strcpy(fileMenuText, "!Copy, !Delete, !Edit, !Hidden, !Modify, !Quit, !Rename, !Show");
   strcpy(globalMenuText, "!Run command, !Edit file, !Help, !Make dir, !Quit, !Show dir");
-  strcpy(functionMenuText, "<F1>-Down <F2>-Up <F3>-Top <F4>-Bottom <F5>-Refresh <F6>-Mark/Unmark <F7>-All <F8>-None <F9>-Sort");
+  strcpy(functionMenuTextShort, "<F1>-Down <F2>-Up <F3>-Top <F4>-Bottom <F5>-Refresh <F6>-Mark/Unmark <F7>-All <F8>-None <F9>-Sort");
   strcpy(functionMenuTextLong, "<F1>-Down <F2>-Up <F3>-Top <F4>-Bottom <F5>-Refresh <F6>-Mark/Unmark <F7>-All <F8>-None <F9>-Sort <F10>-Block");
   strcpy(modifyMenuText, "Modify: !Owner/Group, !Permissions");
   strcpy(sortMenuText, "Sort list by - !Date & time, !Name, !Size");
@@ -385,6 +391,12 @@ Valid arguments are:\n\
 
   initscr();
 
+  // Decide which function menu needs initially printing
+  if (COLS < 89){
+    strcpy(functionMenuText, functionMenuTextShort);
+  } else {
+    strcpy(functionMenuText, functionMenuTextLong);
+  }
 
   memset(&sa, 0, sizeof(struct sigaction));
   sa.sa_handler = sigwinchHandle;

@@ -53,6 +53,7 @@ char *rewrite;
 int blockstart = -1;
 int blockend = -1;
 
+
 extern results* ob;
 extern history* hs;
 extern char currentpwd[1024];
@@ -76,6 +77,8 @@ extern int invalidstart;
 extern char fileMenuText[256];
 extern char globalMenuText[256];
 extern char functionMenuText[256];
+extern char functionMenuTextShort[256];
+extern char functionMenuTextLong[256];
 extern char modifyMenuText[256];
 extern char sortMenuText[256];
 
