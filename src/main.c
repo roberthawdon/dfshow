@@ -56,6 +56,7 @@ int colormode = 0;
 int danger = 0;
 int invalidstart = 0;
 int filecolors = 0;
+int markedinfo = 0;
 
 char *objectWild;
 

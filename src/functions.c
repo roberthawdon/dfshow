@@ -93,6 +93,7 @@ int displaysize; // Calculate area to print
 int displaycount;
 int historyref = 0;
 int sessionhistory = 0;
+int displaystart;
 
 int showhidden = 0;
 
@@ -121,6 +122,7 @@ extern int showbackup;
 extern int danger;
 extern int filecolors;
 extern char *objectWild;
+extern int markedinfo;
 
 /* Formatting time in a similar fashion to `ls` */
 static char const *long_time_format[2] =
@@ -774,7 +776,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   }
 
   for ( i = 0; i < maxlen; i++ ){
-    mvprintw(4 + listref, start + i,"%lc", entryMeta[i]);
+    mvprintw(displaystart + listref, start + i,"%lc", entryMeta[i]);
     if ( i == entryMetaLen ){
       break;
     }
@@ -789,7 +791,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   }
 
   for ( i = 0; i < maxlen; i++ ){
-    mvprintw(4 + listref, (entryMetaLen + start) + i,"%lc", entryName[i]);
+    mvprintw(displaystart + listref, (entryMetaLen + start) + i,"%lc", entryName[i]);
     if ( i == entryNameLen ){
       colpos = (entryMetaLen + start) + i;
       break;
@@ -800,7 +802,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
     if (!selected){
       setColors(DISPLAY_PAIR);
     }
-    mvprintw(4 + listref, (entryMetaLen + entryNameLen + start)," -> ");
+    mvprintw(displaystart + listref, (entryMetaLen + entryNameLen + start)," -> ");
 
     if (filecolors && !selected){
       if ( strcmp(ob[currentitem].slink, "" )) {
@@ -813,7 +815,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
     }
 
     for ( i = 0; i < maxlen; i++ ){
-      mvprintw(4 + listref, (entryMetaLen + entryNameLen + 4 + start) + i,"%lc", entrySLink[i]);
+      mvprintw(displaystart + listref, (entryMetaLen + entryNameLen + 4 + start) + i,"%lc", entrySLink[i]);
       if ( i == entrySLinkLen ){
         colpos = (entryMetaLen + entryNameLen + 4 + start) + i;
         break;
@@ -828,7 +830,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   linepadding = COLS - colpos;
 
   if (linepadding > 0){
-    mvprintw(4 + listref, colpos, "%s", genPadding(linepadding));
+    mvprintw(displaystart + listref, colpos, "%s", genPadding(linepadding));
   }
 
 
@@ -1515,7 +1517,13 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   char *susedString, *savailableString;
   char pwdprint[1024];
 
-  displaysize = LINES - 5;
+  if (markedinfo){
+    displaysize = LINES - 6;
+    displaystart = 5;
+  } else{
+    displaysize = LINES - 5;
+    displaystart = 4;
+  }
   selected = selected - topfileref;
 
   if (strcmp(objectWild, "")){
@@ -1669,7 +1677,11 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
 
   headerpos = 4 - hpos;
 
-  printLine (3, headerpos, headings);
+  if ( markedinfo ){
+    printLine (4, headerpos, headings);
+  } else {
+    printLine (3, headerpos, headings);
+  }
   setColors(COMMAND_PAIR);
   free(susedString);
   free(savailableString);
