@@ -1581,7 +1581,7 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   } else{
     displaysize = LINES - 5;
     displaystart = 4;
-    if (topfileref + (displaysize ) > totalfilecount){
+    if ((totalfilecount > displaysize) && (topfileref + (displaysize ) > totalfilecount)){
       topfileref--;
     }
   }
