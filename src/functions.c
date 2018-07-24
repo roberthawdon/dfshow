@@ -925,13 +925,16 @@ void mk_dir(char *path)
 
 void copy_file(char *source_input, char *target_input)
 {
-  char ch;
   char targetmod[1024];
-  FILE *source, *target;
+  FILE *source = NULL;
+  FILE *target = NULL;
+  char ch = '\0';
+  size_t n, m;
+  unsigned char buff[8192];
 
   strcpy(targetmod, target_input);
 
-  source = fopen(source_input, "r");
+  source = fopen(source_input, "rb");
 
 
   if ( check_dir(targetmod) ){
@@ -940,10 +943,26 @@ void copy_file(char *source_input, char *target_input)
     }
     strcat(targetmod, basename(source_input));
   }
-  target = fopen(targetmod, "w");
+  target = fopen(targetmod, "wb");
 
-  while( ( ch = fgetc(source) ) != EOF )
-    fputc(ch, target);
+  do{
+    n = fread(buff, 1, sizeof(buff), source);
+    if (n){
+      m = fwrite(buff, 1, n, target);
+    } else {
+      m = 0;
+    }
+  } while ((n > 0) && (n == m));
+
+  // while(1){
+  //   ch = fgetc(source);
+
+  //   if(ch == EOF){
+  //     break;
+  //   }
+
+  //   fputc(ch, target);
+  // }
 
   fclose(source);
   fclose(target);
