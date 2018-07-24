@@ -1114,6 +1114,13 @@ void directory_view_menu_inputs0()
             } else {
               *ob[selected].marked = 1;
             }
+            if (selected < (totalfilecount - 1)) {
+              selected++;
+              if (selected > ((topfileref + displaysize) - 1)){
+                topfileref++;
+                clear_workspace();
+              }
+            }
             display_dir(currentpwd, ob, topfileref, selected);
           }
           break;

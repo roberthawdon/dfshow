@@ -123,6 +123,7 @@ extern int danger;
 extern int filecolors;
 extern char *objectWild;
 extern int markedinfo;
+extern int markedauto;
 
 /* Formatting time in a similar fashion to `ls` */
 static char const *long_time_format[2] =
@@ -599,6 +600,7 @@ char *genPadding(int num_of_spaces) {
 
 void printLine(int line, int col, char *textString){
   int i;
+  clrtoeol();
   for ( i = 0; i < strlen(textString) ; i++){
     mvprintw(line, col + i, "%c", textString[i]);
     if ( (col + i) == COLS ){
@@ -1395,6 +1397,53 @@ void set_history(char *pwd, char *objectWild, char *name, int topfileref, int se
 
 }
 
+char *markedDisplay(results* ob)
+{
+
+  unsigned long int markedNum = 0;
+  char markedNumString[12];
+  char filesWord[6];
+  int i;
+  size_t markedSize = 0;
+  char *markedSizeString;
+  char *outChar = malloc(sizeof(char) * 8);
+
+  for (i = 0; i < totalfilecount ; i++){
+    if (*ob[i].marked == 1){
+      markedNum++;
+      markedSize = markedSize + ob[i].size;
+    }
+  }
+
+  if (human){
+    markedSizeString = malloc (sizeof (char) * 8);
+    readableSize(markedSize, markedSizeString, si);
+  } else {
+    if (markedSize == 0){
+      markedSizeString = malloc (sizeof (char) * 1);
+    } else {
+      markedSizeString = malloc (sizeof (char) * log10(markedSize) + 1);
+    }
+    sprintf(markedSizeString, "%lu", markedSize);
+  }
+
+  if (markedNum == 1){
+    strcpy(filesWord, "file");
+  } else {
+    strcpy(filesWord, "files");
+  }
+
+  sprintf(markedNumString, "%lu", markedNum);
+
+  outChar = realloc(outChar, sizeof(char) * ( strlen(markedNumString) + strlen(markedSizeString) + strlen(filesWord) + 16));
+
+  sprintf(outChar, "MARKED: %s in %s %s", markedSizeString, markedNumString, filesWord);
+
+  free(markedSizeString);
+
+  return outChar;
+}
+
 results* get_dir(char *pwd)
 {
   //sused = GetUsedSpace(pwd); // Original DF-EDIT added the sizes to show what was used in that directory, rather than the whole disk.
@@ -1516,6 +1565,15 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   int headerpos, displaypos;
   char *susedString, *savailableString;
   char pwdprint[1024];
+  char *markedInfoLine;
+
+  if (markedauto) {
+    if (CheckMarked(ob) ){
+      markedinfo = 1;
+    } else {
+      markedinfo = 0;
+    }
+  }
 
   if (markedinfo){
     displaysize = LINES - 6;
@@ -1668,6 +1726,12 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   // attroff(A_BOLD); // Required to ensure the last selected item doesn't bold the header
   printLine(1, 2, pwdprint);
   printLine(2, 2, sizeHeader);
+
+  if (markedinfo){
+    markedInfoLine = markedDisplay(ob);
+    printLine (3, 4, markedInfoLine);
+    free(markedInfoLine);
+  }
 
   if ( danger ) {
     setColors(DANGER_PAIR);

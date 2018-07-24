@@ -57,6 +57,7 @@ int danger = 0;
 int invalidstart = 0;
 int filecolors = 0;
 int markedinfo = 0;
+int markedauto = 0;
 
 char *objectWild;
 
@@ -68,6 +69,23 @@ extern char sortmode[5];
 extern int showhidden;
 
 struct sigaction sa;
+
+int setMarked(char* markedinput)
+{
+  int status = -1;
+  if (!strcmp(markedinput, "always")){
+    markedinfo = 1;
+    status = 0;
+  } else if (!strcmp(markedinput, "never")){
+    markedinfo = 0;
+    status = 0;
+  } else if (!strcmp(markedinput, "auto")){
+    markedinfo = 0;
+    markedauto = 1;
+    status = 0;
+  }
+  return(status);
+}
 
 int checkStyle(char* styleinput)
 {
@@ -200,13 +218,17 @@ Options specific to show:\n\
       --monochrome             compatability mode for monochrome displays\n\
                                (deprecated)\n\
       --no-danger              turns off danger colors when running with\n\
-                               elevated privileges\n"), stdout);
+                               elevated privileges\n\
+      --marked=[MARKED]        shows information about marked objects. See\n\
+                               MARKED section below for valid options.\n"), stdout);
   fputs (("\n\
 The THEME argument can be:\n\
                default:    original theme\n\
                monochrome: comaptability mode for monochrome displays\n\
                nt:         a theme that closer resembles win32 versions of\n\
                            DF-EDIT\n"), stdout);
+  fputs (("\n\
+The MARKED argument can be: always; never; auto.\n"), stdout);
   fputs (("\n\
 Exit status:\n\
  0  if OK,\n\
@@ -254,6 +276,7 @@ int main(int argc, char *argv[])
          {"no-danger",      no_argument,       0, GETOPT_NODANGER_CHAR},
          {"color",          optional_argument, 0, GETOPT_COLOR_CHAR},
          {"theme",          optional_argument, 0, GETOPT_THEME_CHAR},
+         {"marked",         optional_argument, 0, GETOPT_MARKED_CHAR},
          {0, 0, 0, 0}
         };
       int option_index = 0;
@@ -355,6 +378,20 @@ Valid arguments are:\n\
       break;
     case GETOPT_NODANGER_CHAR:
       danger = 0;
+      break;
+    case GETOPT_MARKED_CHAR:
+      if (optarg){
+        if ( setMarked(optarg) == -1 ){
+          printf("%s: invalid argument '%s' for 'marked'\n", argv[0], optarg);
+          fputs (("\
+Valid arguments are:\n\
+  - always\n\
+  - never\n\
+  - auto\n"), stdout);
+          printf("Try '%s --help' for more information.\n", argv[0]);
+          exit(2);
+        }
+      }
       break;
     case GETOPT_HELP_CHAR:
       printHelp(argv[0]);
