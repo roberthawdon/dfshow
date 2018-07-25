@@ -73,7 +73,7 @@ int directory_view(char * currentpwd)
   return 0;
 }
 
-int quit_menu()
+int global_menu()
 {
   clear();
 

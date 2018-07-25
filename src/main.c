@@ -471,7 +471,7 @@ Valid arguments are:\n\
   if (!check_dir(currentpwd)){
     //strcpy(currentpwd, "/"); // If dir doesn't exist, default to root
     invalidstart = 1;
-    quit_menu();
+    global_menu();
   }
   directory_view(currentpwd);
   return 0;

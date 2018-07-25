@@ -158,7 +158,7 @@ void show_directory_input()
       free(rewrite);
     }
     // if (!check_dir(currentpwd)){
-    //   quit_menu();
+    //   global_menu();
     // }
     if ( invalidstart ){
       invalidstart = 0;
@@ -804,7 +804,7 @@ void directory_view_menu_inputs1()
           directory_view_menu_inputs0();
           break;
         case 'q':
-          quit_menu();
+          global_menu();
           break;
         case 's':
           show_directory_input();
@@ -955,7 +955,7 @@ void directory_view_menu_inputs0()
             break;
           } else {
             historyref = 0; // Reset historyref here. A hacky workaround due to the value occasionally dipping to minus numbers.
-            quit_menu();
+            global_menu();
           }
           break;
         case'r':
