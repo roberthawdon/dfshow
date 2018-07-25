@@ -6,6 +6,7 @@ void show_directory_input();
 void directory_view_menu_inputs0();
 void directory_view_menu_inputs1();
 void directory_change_menu_inputs();
+char * execute_argument_input(const char *exec);
 void show_directory_inputs();
 void copy_file_input(char *file);
 void replace_file_confirm(char *filename);

@@ -53,6 +53,7 @@ char *rewrite;
 int blockstart = -1;
 int blockend = -1;
 
+int abortinput = 0;
 
 extern results* ob;
 extern history* hs;
@@ -444,6 +445,23 @@ void make_directory_input()
   directory_view_menu_inputs0();
 }
 
+char * execute_argument_input(const char *exec)
+{
+  char *strout;
+  int execlen = strlen(exec);
+  strout = malloc(sizeof(char) * 1024);
+  move(0,0);
+  clrtoeol();
+  mvprintw(0, 0, "Args to pass to %s:", exec);
+  curs_set(TRUE);
+  move(0, 18 + execlen);
+  if (readline(strout, 1024, "") == -1){
+    abortinput = 1;
+  }
+  curs_set(FALSE);
+  return strout;
+}
+
 void delete_multi_file_confirm(const char *filename)
 {
   char message[1024];
@@ -825,6 +843,7 @@ void directory_view_menu_inputs0()
 {
   int e = 0;
   char *updir;
+  char *execArgs;
   viewMode = 0;
   while(1)
     {
@@ -1012,6 +1031,26 @@ void directory_view_menu_inputs0()
               printMenu(LINES-1, 0, functionMenuText);
               display_dir(currentpwd, ob, topfileref, selected);
             }
+          }
+          break;
+        case 'x':
+          strcpy(chpwd, currentpwd);
+          if (!check_last_char(chpwd, "/")){
+            strcat(chpwd, "/");
+          }
+          strcat(chpwd, ob[selected].name);
+          if (check_exec(chpwd)){
+            execArgs = execute_argument_input(ob[selected].name);
+            if (!abortinput){
+              LaunchExecutable(chpwd, execArgs);
+              free(execArgs);
+            }
+            abortinput = 0;
+            printMenu(0, 0, fileMenuText);
+            printMenu(LINES-1, 0, functionMenuText);
+            display_dir(currentpwd, ob, topfileref, selected);
+          } else {
+            topLineMessage("Error: Permission denied");
           }
           break;
         case 27:

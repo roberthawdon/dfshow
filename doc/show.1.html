@@ -144,6 +144,7 @@ The <code>.</code> and <code>..</code> objects are never hidden due to their nav
 <dt class="flush"><code>Quit</code></dt><dd><p>Quit current directory.</p></dd>
 <dt class="flush"><code>Rename</code></dt><dd><p>Rename/move file or marked files.</p></dd>
 <dt class="flush"><code>Show</code></dt><dd><p>Show file or directory.</p></dd>
+<dt class="flush"><code>eXec</code></dt><dd><p>Runs files marked as executable.</p></dd>
 </dl>
 
 
@@ -203,6 +204,13 @@ The <code>.</code> and <code>..</code> objects are never hidden due to their nav
 <p>To resolve this, set a variable to your preferred pager in your shell's user preference file.</p>
 
 <p><code>export PAGER=/usr/bin/less</code></p></dd>
+<dt class="flush"><code>eXec</code></dt><dd><p>Will execute the selected file if it has the execute flag set and the current user running the <code>show</code> process has permission to. Arguments are requested by the following prompt. Unlike other commands, an empty response will execute the file without arguments. To abort at this prompt, the <em>ESC</em> key must be used.</p>
+
+<p><code>Args to pass to &lt;file>:</code></p>
+
+<p>The following error is displayed if the file does not have an executable flag, or the user does not have sufficient privileges to run.</p>
+
+<p><code>Error: Permission denied</code></p></dd>
 </dl>
 
 

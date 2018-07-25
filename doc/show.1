@@ -145,6 +145,10 @@ Rename/move file or marked files\.
 \fBShow\fR
 Show file or directory\.
 .
+.TP
+\fBeXec\fR
+Runs files marked as executable\.
+.
 .P
 Each of the commands are described in the following paragraphs\. If the command has any additional propts, they are also described here\.
 .
@@ -245,6 +249,19 @@ To resolve this, set a variable to your preferred pager in your shell\'s user pr
 .
 .IP
 \fBexport PAGER=/usr/bin/less\fR
+.
+.TP
+\fBeXec\fR
+Will execute the selected file if it has the execute flag set and the current user running the \fBshow\fR process has permission to\. Arguments are requested by the following prompt\. Unlike other commands, an empty response will execute the file without arguments\. To abort at this prompt, the \fIESC\fR key must be used\.
+.
+.IP
+\fBArgs to pass to <file>:\fR
+.
+.IP
+The following error is displayed if the file does not have an executable flag, or the user does not have sufficient privileges to run\.
+.
+.IP
+\fBError: Permission denied\fR
 .
 .SH "FUNCTIONS"
 In order to select objects to be used by the commands described in the previous section, the cursor must be moved to the line of the desired object\. The functions to move the cursor and the list of files in the display window are described here\. A list of the valid functions and their associated function keys is given list\.

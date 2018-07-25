@@ -472,7 +472,7 @@ char *dateString(time_t date, char *style)
   return (outputString);
 }
 
-void readline(char *buffer, int buflen, char *oldbuf)
+int readline(char *buffer, int buflen, char *oldbuf)
 /* Read up to buflen-1 characters into `buffer`.
  * A terminating '\0' character is added after the input.  */
 {
@@ -482,6 +482,7 @@ void readline(char *buffer, int buflen, char *oldbuf)
   int oldlen;
   int x, y, c;
   int oldMode = viewMode;
+  int status = 0;
 
   oldlen = strlen(oldbuf);
   setColors(INPUT_PAIR);
@@ -538,6 +539,7 @@ void readline(char *buffer, int buflen, char *oldbuf)
       //pos = oldlen;
       //len = oldlen;
       //strcpy(buffer, oldbuf); //abort
+      status = -1;
       pos = 0;
       len = 0;
       strcpy(buffer, ""); //abort by blanking
@@ -550,6 +552,7 @@ void readline(char *buffer, int buflen, char *oldbuf)
   }
   buffer[len] = '\0';
   if (old_curs != ERR) curs_set(old_curs);
+  return(status);
 }
 
 char *readableSize(double size, char *buf, int si){
@@ -902,6 +905,18 @@ void LaunchShell()
   // system("clear"); // Not exactly sure if I want this yet.
   printf("\nUse 'exit' to return to Show.\n\n");
   system(getenv("SHELL"));
+  initscr();
+}
+
+void LaunchExecutable(const char* object, const char* args)
+{
+  char command[1024];
+  sprintf(command, "%s %s", object, args);
+  clear();
+  endwin();
+  // printf("%s\n", command);
+  // exit(0);
+  system(command);
   initscr();
 }
 
@@ -1280,6 +1295,16 @@ int check_object(const char *object){
     } else {
       return 0;
     }
+    return 0;
+  }
+}
+
+int check_exec(const char *object)
+{
+  if (access(object, X_OK) == 0) {
+    return 1;
+  } else {
+    return 0;
   }
 }
 
