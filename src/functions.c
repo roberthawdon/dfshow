@@ -1365,7 +1365,9 @@ int RenameObject(char* source, char* dest)
     } else {
       // Destination is NOT in the same filesystem, the file will need copying then deleting.
       //mvprintw(0,66,"FAIL: %s:%s", sourceDevId, destDevId); // test fail
+      topLineMessage("Error: Unable to move file between mount points");
       free(destPath);
+      return 1;
     }
   } else {
     // Destination directory not found
