@@ -75,9 +75,11 @@ int setMarked(char* markedinput)
   int status = -1;
   if (!strcmp(markedinput, "always")){
     markedinfo = 1;
+    markedauto = 0;
     status = 0;
   } else if (!strcmp(markedinput, "never")){
     markedinfo = 0;
+    markedauto = 0;
     status = 0;
   } else if (!strcmp(markedinput, "auto")){
     markedinfo = 0;
