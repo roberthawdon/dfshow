@@ -62,6 +62,7 @@ int markedauto = 0;
 char *objectWild;
 
 extern results* ob;
+extern history *hs;
 extern int topfileref;
 extern int selected;
 extern int totalfilecount;
@@ -174,7 +175,6 @@ void sigwinchHandle(int sig){
 
 int exittoshell()
 {
-  history *hs;
   clear();
   endwin();
   free(hs);
