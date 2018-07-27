@@ -35,6 +35,7 @@
 #include <errno.h>
 #include <wchar.h>
 #include <math.h>
+#include <regex.h>
 #include "config.h"
 #include "functions.h"
 #include "views.h"
@@ -133,6 +134,43 @@ static char const *long_time_format[2] =
    // Without year, for recent files.
    "%b %e %H:%M"
   };
+
+char * read_line(FILE *fin) {
+  char *buffer;
+  char *tmp;
+  int read_chars = 0;
+  int bufsize = INITIAL_ALLOC;
+  char *line = malloc(bufsize);
+
+  if ( !line ) {
+    return NULL;
+  }
+
+  buffer = line;
+
+  while ( fgets(buffer, bufsize - read_chars, fin) ) {
+    read_chars = strlen(line);
+
+    if ( line[read_chars - 1] == '\n' ) {
+      line[read_chars - 1] = '\0';
+      return line;
+    }
+
+    else {
+      bufsize = 2 * bufsize;
+      tmp = realloc(line, bufsize);
+      if ( tmp ) {
+        line = tmp;
+        buffer = line + read_chars;
+      }
+      else {
+        free(line);
+        return NULL;
+      }
+    }
+  }
+  return NULL;
+}
 
 int wildcard(const char *value, char *wcard) {
 
@@ -1441,6 +1479,26 @@ void set_history(char *pwd, char *objectWild, char *name, int topfileref, int se
 
   //mvprintw(0, 66, "%s", hs[historyref -1].path);
 
+}
+
+int huntFile(const char * file, const char * search, int case)
+{
+  FILE *fin;
+  char *line;
+
+  fin = fopen(file, "r");
+
+  if ( fin ) {
+    while ( line = read_line(fin) ) {
+      // if ( strstr(line, argv[2]) ){
+      //   fprintf(stdout, "%s\n", line);
+      // }
+      free(line);
+    }
+  }
+
+  fclose(fin);
+  return 0;
 }
 
 char *markedDisplay(results* ob)

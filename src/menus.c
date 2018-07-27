@@ -462,6 +462,39 @@ char * execute_argument_input(const char *exec)
   return strout;
 }
 
+void huntCaseSelect()
+{
+  char message[1024];
+  sprintf(message,"Case Sensitive, !Yes/!No/<ESC> (enter = no)");
+  printMenu(0,0, message);
+}
+
+int huntCaseSelectInput()
+{
+  int result = 0;
+  while(1)
+    {
+    huntCaseLoop:
+      *pc = getch();
+      switch(*pc)
+        {
+        case 'y':
+          result = 1;
+          break;
+        case 'n':
+          result = 0;
+          break;
+        case 27:
+          result = -1;
+          break;
+        default:
+          goto huntCaseLoop;
+        }
+      break;
+    }
+  return(result);
+}
+
 void delete_multi_file_confirm(const char *filename)
 {
   char message[1024];
@@ -1032,6 +1065,20 @@ void directory_view_menu_inputs0()
               display_dir(currentpwd, ob, topfileref, selected);
             }
           }
+          break;
+        case 'u':
+          huntCaseSelect();
+          e = huntCaseSelectInput();
+          if (e == 1){
+            topLineMessage("Case Senstive");
+          } else if (e == 0) {
+            topLineMessage("Case Insenstive");
+          } else {
+            topLineMessage("Aborted");
+          }
+          printMenu(0, 0, fileMenuText);
+          printMenu(LINES-1, 0, functionMenuText);
+          display_dir(currentpwd, ob, topfileref, selected);
           break;
         case 'x':
           strcpy(chpwd, currentpwd);

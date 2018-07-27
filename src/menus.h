@@ -22,3 +22,5 @@ void copy_multi_file(results* ob, char *dest);
 void rename_multi_file_input(results* ob, char *input);
 void topLineMessage(const char *message);
 void printMenu(int line, int col, char *menustring);
+void huntCaseSelect();
+int huntCaseSelectInput();
