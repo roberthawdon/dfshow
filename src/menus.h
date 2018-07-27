@@ -24,3 +24,4 @@ void topLineMessage(const char *message);
 void printMenu(int line, int col, char *menustring);
 void huntCaseSelect();
 int huntCaseSelectInput();
+void huntInput(int selected, int charcase);

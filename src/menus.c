@@ -28,6 +28,7 @@
 #include <errno.h>
 #include <libgen.h>
 #include <signal.h>
+#include <regex.h>
 #include "functions.h"
 #include "main.h"
 #include "views.h"
@@ -493,6 +494,27 @@ int huntCaseSelectInput()
       break;
     }
   return(result);
+}
+
+void huntInput(int selected, int charcase)
+{
+  int regexcase;
+  char regexinput[1024];
+  char inputmessage[32];
+  if (charcase){
+    strcpy(inputmessage, "Match Case - Enter string:");
+  } else {
+    regexcase = REG_ICASE;
+    strcpy(inputmessage, "Ignore Case - Enter string:");
+  }
+  move(0,0);
+  clrtoeol();
+  mvprintw(0, 0, inputmessage);
+  curs_set(TRUE);
+  move(0, strlen(inputmessage) + 1);
+  readline(regexinput, 1024, "");
+  curs_set(FALSE);
+  //SendToEditor(filepath);
 }
 
 void delete_multi_file_confirm(const char *filename)

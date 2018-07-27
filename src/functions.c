@@ -1485,20 +1485,52 @@ int huntFile(const char * file, const char * search, int charcase)
 {
   FILE *fin;
   char *line;
+  regex_t regex;
+  int reti;
+  char msgbuf[8192];
+
+  reti = regcomp(&regex, search, charcase);
+
+  if (reti) {
+    return(-1);
+  }
 
   fin = fopen(file, "r");
 
   if ( fin ) {
     while ( line = read_line(fin) ) {
-      // if ( strstr(line, argv[2]) ){
-      //   fprintf(stdout, "%s\n", line);
+
+      reti = regexec(&regex, line, 0, NULL, 0);
+      if (!reti) {
+        fclose(fin);
+        free(line);
+        regfree(&regex);
+        return(1);
+      }
+      // else if (reti == REG_NOMATCH) {
+      //   return(0);
       // }
-      free(line);
+      // else {
+      //   regerror(reti, &regex, msgbuf, sizeof(msgbuf));
+      //   fprintf(stderr, "Regex match failed: %s\n", msgbuf);
+      //   exit(1);
+      // }
+
+      // /* Free memory allocated to the pattern buffer by regcomp() */
+      // regfree(&regex);
+
+
+      // // if ( strstr(line, argv[2]) ){
+      // //   fprintf(stdout, "%s\n", line);
+      // // }
+      // free(line);
     }
   }
 
+  free(line);
+  regfree(&regex);
   fclose(fin);
-  return 0;
+  return (0);
 }
 
 char *markedDisplay(results* ob)
