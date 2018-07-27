@@ -139,7 +139,7 @@ char * read_line(FILE *fin) {
   char *buffer;
   char *tmp;
   int read_chars = 0;
-  int bufsize = INITIAL_ALLOC;
+  int bufsize = 8192;
   char *line = malloc(bufsize);
 
   if ( !line ) {
@@ -1481,7 +1481,7 @@ void set_history(char *pwd, char *objectWild, char *name, int topfileref, int se
 
 }
 
-int huntFile(const char * file, const char * search, int case)
+int huntFile(const char * file, const char * search, int charcase)
 {
   FILE *fin;
   char *line;
