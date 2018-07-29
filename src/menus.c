@@ -1090,11 +1090,15 @@ void directory_view_menu_inputs0()
           break;
         case 'u':
           huntCaseSelect();
+          strcpy(chpwd, currentpwd);
+          if (!check_last_char(chpwd, "/")){
+            strcat(chpwd, "/");
+          }
+          strcat(chpwd, ob[selected].name);
           e = huntCaseSelectInput();
-          if (e == 1){
-            topLineMessage("Case Senstive");
-          } else if (e == 0) {
-            topLineMessage("Case Insenstive");
+          if (e != -1){
+            // topLineMessage("Case Senstive");
+            huntInput(selected, e);
           } else {
             topLineMessage("Aborted");
           }
