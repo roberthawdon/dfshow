@@ -499,6 +499,7 @@ int huntCaseSelectInput()
 void huntInput(int selected, int charcase)
 {
   int regexcase;
+  int i;
   char regexinput[1024];
   char inputmessage[32];
   if (charcase){
@@ -514,18 +515,36 @@ void huntInput(int selected, int charcase)
   curs_set(TRUE);
   move(0, strlen(inputmessage) + 1);
   if (readline(regexinput, 1024, "") == -1) {
+    curs_set(FALSE);
     abortinput = 1;
   } else {
     curs_set(FALSE);
-    strcpy(chpwd, currentpwd);
-    if (!check_last_char(chpwd, "/")){
-      strcat(chpwd, "/");
+    if (!CheckMarked(ob)){
+      strcpy(chpwd, currentpwd);
+      if (!check_last_char(chpwd, "/")){
+        strcat(chpwd, "/");
+      }
+      strcat(chpwd, ob[selected].name);
+      if (huntFile(chpwd, regexinput, regexcase)){
+        *ob[selected].marked = 1;
+      }
+    } else {
+      for (i = 0; i < totalfilecount; i++){
+        if ( *ob[i].marked ){
+          strcpy(chpwd, currentpwd);
+          if (!check_last_char(chpwd, "/")){
+            strcat(chpwd, "/");
+          }
+          strcat(chpwd, ob[i].name);
+          if (huntFile(chpwd, regexinput, regexcase)){
+            *ob[i].marked = 1;
+          } else {
+            *ob[i].marked = 0;
+          }
+          clear_workspace();
+        }
+      }
     }
-    strcat(chpwd, ob[selected].name);
-    if (huntFile(chpwd, regexinput, regexcase)){
-      topLineMessage("Matches");
-    }
-    //SendToEditor(filepath);
   }
 }
 
@@ -711,7 +730,6 @@ void modify_group_input()
     sprintf(gids, "%d", gresult->gr_gid);
 
     if ( CheckMarked(ob) ){
-      //topLineMessage("Multi file owner coming soon");
       for (i = 0; i < totalfilecount; i++)
         {
           if ( *ob[i].marked )
