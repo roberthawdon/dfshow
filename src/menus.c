@@ -1122,13 +1122,7 @@ void directory_view_menu_inputs0()
           huntCaseSelect();
           e = huntCaseSelectInput();
           if (e != -1){
-            // topLineMessage("Case Senstive");
             huntInput(selected, e);
-          } else {
-            topLineMessage("Aborted");
-          }
-          if (abortinput){
-            topLineMessage("Aborted");
           }
           abortinput = 0;
           printMenu(0, 0, fileMenuText);
