@@ -179,6 +179,7 @@ Closes the current directory currently displayed. The application will return yo
 Rename the selected file, or marked files to a new file name. The new file name is requested by one of the following prompts. After a file is renamed, the new file information line is into the list (providing the file has been renamed to the same directory) and the old information line is removed. Files can only be moved to locations on the same mounted partition. An empty response to the prompt or the _ESC_ key will abort the command. If there are no marked files, a single file rename is requested; otherwise a multiple file rename is requested.
 
   `Rename file to:`
+  
   `Rename multiple files to:`
   
 * `Show`:
@@ -207,6 +208,7 @@ Hunts the selected file, or marked files containing a regex string. When used wi
   Following this selection, one of the following prompts will be displayed.
 
   `Match Case - Enter string:`
+
   `Ignore Case - Enter string:`
 
 ## FUNCTIONS
