@@ -73,6 +73,8 @@ char *readableSize(double size, char *buf, int si);
 const char * writePermsEntry(char * perms, mode_t mode);
 void writeResultStruct(results* ob, const char * filename, struct stat buffer, int count);
 char *markedDisplay(results* ob);
+int huntFile(const char * file, const char * search, int charcase);
+char * read_line(FILE *fin);
 
 #define MULTICHAR '*'
 #define ONECHAR '?'

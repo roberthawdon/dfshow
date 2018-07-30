@@ -149,6 +149,10 @@ Show file or directory\.
 \fBeXec\fR
 Runs files marked as executable\.
 .
+.TP
+\fBhUnt\fR
+Searches and marks files matching a string\.
+.
 .P
 Each of the commands are described in the following paragraphs\. If the command has any additional propts, they are also described here\.
 .
@@ -262,6 +266,19 @@ The following error is displayed if the file does not have an executable flag, o
 .
 .IP
 \fBError: Permission denied\fR
+.
+.TP
+\fBhUnt\fR
+Hunts the selected file, or marked files containing a regex string\. When used with a single file, the selected file will be marked if the string matches\. When using multiple files, any files not matching the string will be unselected\. Case sensitivity is requested by the following prompt, afterwards the user is asked to input the string to search\. To abort at this prompt, the \fIESC\fR key must be used\.
+.
+.IP
+\fBCase Sensitive, Yes/No/ESC (enter = no)\fR
+.
+.IP
+Following this selection, one of the following prompts will be displayed\.
+.
+.IP
+\fBMatch Case \- Enter string:\fR \fBIgnore Case \- Enter string:\fR
 .
 .SH "FUNCTIONS"
 In order to select objects to be used by the commands described in the previous section, the cursor must be moved to the line of the desired object\. The functions to move the cursor and the list of files in the display window are described here\. A list of the valid functions and their associated function keys is given list\.

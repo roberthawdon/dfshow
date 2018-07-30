@@ -28,6 +28,7 @@
 #include <errno.h>
 #include <libgen.h>
 #include <signal.h>
+#include <regex.h>
 #include "functions.h"
 #include "main.h"
 #include "views.h"
@@ -462,6 +463,91 @@ char * execute_argument_input(const char *exec)
   return strout;
 }
 
+void huntCaseSelect()
+{
+  char message[1024];
+  sprintf(message,"Case Sensitive, !Yes/!No/<ESC> (enter = no)");
+  printMenu(0,0, message);
+}
+
+int huntCaseSelectInput()
+{
+  int result = 0;
+  while(1)
+    {
+    huntCaseLoop:
+      *pc = getch();
+      switch(*pc)
+        {
+        case 'y':
+          result = 1;
+          break;
+        case 'n':
+          result = 0;
+          break;
+        case 27:
+          result = -1;
+          break;
+        default:
+          goto huntCaseLoop;
+        }
+      break;
+    }
+  return(result);
+}
+
+void huntInput(int selected, int charcase)
+{
+  int regexcase;
+  int i;
+  char regexinput[1024];
+  char inputmessage[32];
+  if (charcase){
+    regexcase = 0;
+    strcpy(inputmessage, "Match Case - Enter string:");
+  } else {
+    regexcase = REG_ICASE;
+    strcpy(inputmessage, "Ignore Case - Enter string:");
+  }
+  move(0,0);
+  clrtoeol();
+  mvprintw(0, 0, inputmessage);
+  curs_set(TRUE);
+  move(0, strlen(inputmessage) + 1);
+  if (readline(regexinput, 1024, "") == -1) {
+    curs_set(FALSE);
+    abortinput = 1;
+  } else {
+    curs_set(FALSE);
+    if (!CheckMarked(ob)){
+      strcpy(chpwd, currentpwd);
+      if (!check_last_char(chpwd, "/")){
+        strcat(chpwd, "/");
+      }
+      strcat(chpwd, ob[selected].name);
+      if (huntFile(chpwd, regexinput, regexcase)){
+        *ob[selected].marked = 1;
+      }
+    } else {
+      for (i = 0; i < totalfilecount; i++){
+        if ( *ob[i].marked ){
+          strcpy(chpwd, currentpwd);
+          if (!check_last_char(chpwd, "/")){
+            strcat(chpwd, "/");
+          }
+          strcat(chpwd, ob[i].name);
+          if (huntFile(chpwd, regexinput, regexcase)){
+            *ob[i].marked = 1;
+          } else {
+            *ob[i].marked = 0;
+          }
+          clear_workspace();
+        }
+      }
+    }
+  }
+}
+
 void delete_multi_file_confirm(const char *filename)
 {
   char message[1024];
@@ -644,7 +730,6 @@ void modify_group_input()
     sprintf(gids, "%d", gresult->gr_gid);
 
     if ( CheckMarked(ob) ){
-      //topLineMessage("Multi file owner coming soon");
       for (i = 0; i < totalfilecount; i++)
         {
           if ( *ob[i].marked )
@@ -1032,6 +1117,17 @@ void directory_view_menu_inputs0()
               display_dir(currentpwd, ob, topfileref, selected);
             }
           }
+          break;
+        case 'u':
+          huntCaseSelect();
+          e = huntCaseSelectInput();
+          if (e != -1){
+            huntInput(selected, e);
+          }
+          abortinput = 0;
+          printMenu(0, 0, fileMenuText);
+          printMenu(LINES-1, 0, functionMenuText);
+          display_dir(currentpwd, ob, topfileref, selected);
           break;
         case 'x':
           strcpy(chpwd, currentpwd);
