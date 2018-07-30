@@ -145,6 +145,7 @@ The <code>.</code> and <code>..</code> objects are never hidden due to their nav
 <dt class="flush"><code>Rename</code></dt><dd><p>Rename/move file or marked files.</p></dd>
 <dt class="flush"><code>Show</code></dt><dd><p>Show file or directory.</p></dd>
 <dt class="flush"><code>eXec</code></dt><dd><p>Runs files marked as executable.</p></dd>
+<dt class="flush"><code>hUnt</code></dt><dd><p>Searches and marks files matching a string.</p></dd>
 </dl>
 
 
@@ -211,6 +212,14 @@ The <code>.</code> and <code>..</code> objects are never hidden due to their nav
 <p>The following error is displayed if the file does not have an executable flag, or the user does not have sufficient privileges to run.</p>
 
 <p><code>Error: Permission denied</code></p></dd>
+<dt class="flush"><code>hUnt</code></dt><dd><p>Hunts the selected file, or marked files containing a regex string. When used with a single file, the selected file will be marked if the string matches. When using multiple files, any files not matching the string will be unselected. Case sensitivity is requested by the following prompt, afterwards the user is asked to input the string to search. To abort at this prompt, the <em>ESC</em> key must be used.</p>
+
+<p><code>Case Sensitive, Yes/No/ESC (enter = no)</code></p>
+
+<p>Following this selection, one of the following prompts will be displayed.</p>
+
+<p><code>Match Case - Enter string:</code>
+<code>Ignore Case - Enter string:</code></p></dd>
 </dl>
 
 
