@@ -502,6 +502,7 @@ void huntInput(int selected, int charcase)
   char regexinput[1024];
   char inputmessage[32];
   if (charcase){
+    regexcase = 0;
     strcpy(inputmessage, "Match Case - Enter string:");
   } else {
     regexcase = REG_ICASE;
@@ -512,9 +513,20 @@ void huntInput(int selected, int charcase)
   mvprintw(0, 0, inputmessage);
   curs_set(TRUE);
   move(0, strlen(inputmessage) + 1);
-  readline(regexinput, 1024, "");
-  curs_set(FALSE);
-  //SendToEditor(filepath);
+  if (readline(regexinput, 1024, "") == -1) {
+    abortinput = 1;
+  } else {
+    curs_set(FALSE);
+    strcpy(chpwd, currentpwd);
+    if (!check_last_char(chpwd, "/")){
+      strcat(chpwd, "/");
+    }
+    strcat(chpwd, ob[selected].name);
+    if (huntFile(chpwd, regexinput, regexcase)){
+      topLineMessage("Matches");
+    }
+    //SendToEditor(filepath);
+  }
 }
 
 void delete_multi_file_confirm(const char *filename)
@@ -1090,11 +1102,6 @@ void directory_view_menu_inputs0()
           break;
         case 'u':
           huntCaseSelect();
-          strcpy(chpwd, currentpwd);
-          if (!check_last_char(chpwd, "/")){
-            strcat(chpwd, "/");
-          }
-          strcat(chpwd, ob[selected].name);
           e = huntCaseSelectInput();
           if (e != -1){
             // topLineMessage("Case Senstive");
@@ -1102,6 +1109,10 @@ void directory_view_menu_inputs0()
           } else {
             topLineMessage("Aborted");
           }
+          if (abortinput){
+            topLineMessage("Aborted");
+          }
+          abortinput = 0;
           printMenu(0, 0, fileMenuText);
           printMenu(LINES-1, 0, functionMenuText);
           display_dir(currentpwd, ob, topfileref, selected);
