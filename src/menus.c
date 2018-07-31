@@ -482,6 +482,7 @@ int huntCaseSelectInput()
         case 'y':
           result = 1;
           break;
+	case 10:
         case 'n':
           result = 0;
           break;
