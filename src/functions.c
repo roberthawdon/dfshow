@@ -1476,9 +1476,6 @@ void set_history(char *pwd, char *objectWild, char *name, int topfileref, int se
   hs[historyref].selected = selected;
   historyref++;
 
-
-  //mvprintw(0, 66, "%s", hs[historyref -1].path);
-
 }
 
 int huntFile(const char * file, const char * search, int charcase)
@@ -1507,23 +1504,6 @@ int huntFile(const char * file, const char * search, int charcase)
         regfree(&regex);
         return(1);
       }
-      // else if (reti == REG_NOMATCH) {
-      //   return(0);
-      // }
-      // else {
-      //   regerror(reti, &regex, msgbuf, sizeof(msgbuf));
-      //   fprintf(stderr, "Regex match failed: %s\n", msgbuf);
-      //   exit(1);
-      // }
-
-      // /* Free memory allocated to the pattern buffer by regcomp() */
-      // regfree(&regex);
-
-
-      // // if ( strstr(line, argv[2]) ){
-      // //   fprintf(stdout, "%s\n", line);
-      // // }
-      // free(line);
     }
   }
 
