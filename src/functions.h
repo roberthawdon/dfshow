@@ -31,12 +31,13 @@ int wildcard(const char *value, char *wcard);
 char *str_replace(char *orig, char *rep, char *with);
 int findResultByName(results *ob, char *name);
 char *dateString(time_t date, char *style);
-void readline(char *buffer, int buflen, char *oldbuf);
+int readline(char *buffer, int buflen, char *oldbuf);
 char * dirFromPath(const char* myStr);
 char * objectFromPath(const char* myStr);
 int check_dir(char *pwd);
 int check_file(char *file);
 int check_object(const char *object);
+int check_exec(const char *object);
 void mk_dir(char *path);
 void copy_file(char *source_input, char *target_input);
 void delete_file(char *source_input);
@@ -58,6 +59,7 @@ int SendToPager(char* object);
 int SendToEditor(char* object);
 void CheckEnv(const char* key);
 void LaunchShell();
+void LaunchExecutable(const char* object, const char* args);
 void showManPage();
 int UpdateOwnerGroup(const char* object, const char* pwdstr, const char* grpstr);
 int RenameObject(char* source, char* dest);
@@ -70,6 +72,9 @@ void resizeDisplayDir(results* ob);
 char *readableSize(double size, char *buf, int si);
 const char * writePermsEntry(char * perms, mode_t mode);
 void writeResultStruct(results* ob, const char * filename, struct stat buffer, int count);
+char *markedDisplay(results* ob);
+int huntFile(const char * file, const char * search, int charcase);
+char * read_line(FILE *fin);
 
 #define MULTICHAR '*'
 #define ONECHAR '?'

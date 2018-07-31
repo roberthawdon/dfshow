@@ -11,7 +11,8 @@ enum
    GETOPT_MONOCHROME_CHAR = (CHAR_MIN - 7),
    GETOPT_NODANGER_CHAR = (CHAR_MIN - 8),
    GETOPT_COLOR_CHAR = (CHAR_MIN - 9),
-   GETOPT_THEME_CHAR = (CHAR_MIN - 10)
+   GETOPT_THEME_CHAR = (CHAR_MIN - 10),
+   GETOPT_MARKED_CHAR = (CHAR_MIN - 11)
   };
 
 void refreshScreen();
@@ -21,3 +22,4 @@ void printVersion(char* programName);
 int checkStyle(char* styleinput);
 int setColor(char* colorinput);
 int themeSelect(char* themeinput);
+int setMarked(char* markedinput);

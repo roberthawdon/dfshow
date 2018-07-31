@@ -35,6 +35,7 @@
 #include <errno.h>
 #include <wchar.h>
 #include <math.h>
+#include <regex.h>
 #include "config.h"
 #include "functions.h"
 #include "views.h"
@@ -93,6 +94,7 @@ int displaysize; // Calculate area to print
 int displaycount;
 int historyref = 0;
 int sessionhistory = 0;
+int displaystart;
 
 int showhidden = 0;
 
@@ -121,6 +123,8 @@ extern int showbackup;
 extern int danger;
 extern int filecolors;
 extern char *objectWild;
+extern int markedinfo;
+extern int markedauto;
 
 /* Formatting time in a similar fashion to `ls` */
 static char const *long_time_format[2] =
@@ -130,6 +134,43 @@ static char const *long_time_format[2] =
    // Without year, for recent files.
    "%b %e %H:%M"
   };
+
+char * read_line(FILE *fin) {
+  char *buffer;
+  char *tmp;
+  int read_chars = 0;
+  int bufsize = 8192;
+  char *line = malloc(bufsize);
+
+  if ( !line ) {
+    return NULL;
+  }
+
+  buffer = line;
+
+  while ( fgets(buffer, bufsize - read_chars, fin) ) {
+    read_chars = strlen(line);
+
+    if ( line[read_chars - 1] == '\n' ) {
+      line[read_chars - 1] = '\0';
+      return line;
+    }
+
+    else {
+      bufsize = 2 * bufsize;
+      tmp = realloc(line, bufsize);
+      if ( tmp ) {
+        line = tmp;
+        buffer = line + read_chars;
+      }
+      else {
+        free(line);
+        return NULL;
+      }
+    }
+  }
+  return NULL;
+}
 
 int wildcard(const char *value, char *wcard) {
 
@@ -469,7 +510,7 @@ char *dateString(time_t date, char *style)
   return (outputString);
 }
 
-void readline(char *buffer, int buflen, char *oldbuf)
+int readline(char *buffer, int buflen, char *oldbuf)
 /* Read up to buflen-1 characters into `buffer`.
  * A terminating '\0' character is added after the input.  */
 {
@@ -479,6 +520,7 @@ void readline(char *buffer, int buflen, char *oldbuf)
   int oldlen;
   int x, y, c;
   int oldMode = viewMode;
+  int status = 0;
 
   oldlen = strlen(oldbuf);
   setColors(INPUT_PAIR);
@@ -535,6 +577,7 @@ void readline(char *buffer, int buflen, char *oldbuf)
       //pos = oldlen;
       //len = oldlen;
       //strcpy(buffer, oldbuf); //abort
+      status = -1;
       pos = 0;
       len = 0;
       strcpy(buffer, ""); //abort by blanking
@@ -547,6 +590,7 @@ void readline(char *buffer, int buflen, char *oldbuf)
   }
   buffer[len] = '\0';
   if (old_curs != ERR) curs_set(old_curs);
+  return(status);
 }
 
 char *readableSize(double size, char *buf, int si){
@@ -597,6 +641,7 @@ char *genPadding(int num_of_spaces) {
 
 void printLine(int line, int col, char *textString){
   int i;
+  clrtoeol();
   for ( i = 0; i < strlen(textString) ; i++){
     mvprintw(line, col + i, "%c", textString[i]);
     if ( (col + i) == COLS ){
@@ -774,7 +819,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   }
 
   for ( i = 0; i < maxlen; i++ ){
-    mvprintw(4 + listref, start + i,"%lc", entryMeta[i]);
+    mvprintw(displaystart + listref, start + i,"%lc", entryMeta[i]);
     if ( i == entryMetaLen ){
       break;
     }
@@ -789,7 +834,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   }
 
   for ( i = 0; i < maxlen; i++ ){
-    mvprintw(4 + listref, (entryMetaLen + start) + i,"%lc", entryName[i]);
+    mvprintw(displaystart + listref, (entryMetaLen + start) + i,"%lc", entryName[i]);
     if ( i == entryNameLen ){
       colpos = (entryMetaLen + start) + i;
       break;
@@ -800,7 +845,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
     if (!selected){
       setColors(DISPLAY_PAIR);
     }
-    mvprintw(4 + listref, (entryMetaLen + entryNameLen + start)," -> ");
+    mvprintw(displaystart + listref, (entryMetaLen + entryNameLen + start)," -> ");
 
     if (filecolors && !selected){
       if ( strcmp(ob[currentitem].slink, "" )) {
@@ -813,7 +858,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
     }
 
     for ( i = 0; i < maxlen; i++ ){
-      mvprintw(4 + listref, (entryMetaLen + entryNameLen + 4 + start) + i,"%lc", entrySLink[i]);
+      mvprintw(displaystart + listref, (entryMetaLen + entryNameLen + 4 + start) + i,"%lc", entrySLink[i]);
       if ( i == entrySLinkLen ){
         colpos = (entryMetaLen + entryNameLen + 4 + start) + i;
         break;
@@ -828,7 +873,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   linepadding = COLS - colpos;
 
   if (linepadding > 0){
-    mvprintw(4 + listref, colpos, "%s", genPadding(linepadding));
+    mvprintw(displaystart + listref, colpos, "%s", genPadding(linepadding));
   }
 
 
@@ -901,6 +946,18 @@ void LaunchShell()
   initscr();
 }
 
+void LaunchExecutable(const char* object, const char* args)
+{
+  char command[1024];
+  sprintf(command, "%s %s", object, args);
+  clear();
+  endwin();
+  // printf("%s\n", command);
+  // exit(0);
+  system(command);
+  initscr();
+}
+
 void showManPage()
 {
   clear();
@@ -921,13 +978,16 @@ void mk_dir(char *path)
 
 void copy_file(char *source_input, char *target_input)
 {
-  char ch;
   char targetmod[1024];
-  FILE *source, *target;
+  FILE *source = NULL;
+  FILE *target = NULL;
+  char ch = '\0';
+  size_t n, m;
+  unsigned char buff[8192];
 
   strcpy(targetmod, target_input);
 
-  source = fopen(source_input, "r");
+  source = fopen(source_input, "rb");
 
 
   if ( check_dir(targetmod) ){
@@ -936,10 +996,26 @@ void copy_file(char *source_input, char *target_input)
     }
     strcat(targetmod, basename(source_input));
   }
-  target = fopen(targetmod, "w");
+  target = fopen(targetmod, "wb");
 
-  while( ( ch = fgetc(source) ) != EOF )
-    fputc(ch, target);
+  do{
+    n = fread(buff, 1, sizeof(buff), source);
+    if (n){
+      m = fwrite(buff, 1, n, target);
+    } else {
+      m = 0;
+    }
+  } while ((n > 0) && (n == m));
+
+  // while(1){
+  //   ch = fgetc(source);
+
+  //   if(ch == EOF){
+  //     break;
+  //   }
+
+  //   fputc(ch, target);
+  // }
 
   fclose(source);
   fclose(target);
@@ -1257,6 +1333,16 @@ int check_object(const char *object){
     } else {
       return 0;
     }
+    return 0;
+  }
+}
+
+int check_exec(const char *object)
+{
+  if (access(object, X_OK) == 0) {
+    return 1;
+  } else {
+    return 0;
   }
 }
 
@@ -1342,7 +1428,9 @@ int RenameObject(char* source, char* dest)
     } else {
       // Destination is NOT in the same filesystem, the file will need copying then deleting.
       //mvprintw(0,66,"FAIL: %s:%s", sourceDevId, destDevId); // test fail
+      topLineMessage("Error: Unable to move file between mount points");
       free(destPath);
+      return 1;
     }
   } else {
     // Destination directory not found
@@ -1388,9 +1476,88 @@ void set_history(char *pwd, char *objectWild, char *name, int topfileref, int se
   hs[historyref].selected = selected;
   historyref++;
 
+}
 
-  //mvprintw(0, 66, "%s", hs[historyref -1].path);
+int huntFile(const char * file, const char * search, int charcase)
+{
+  FILE *fin;
+  char *line;
+  regex_t regex;
+  int reti;
+  char msgbuf[8192];
 
+  reti = regcomp(&regex, search, charcase);
+
+  if (reti) {
+    return(-1);
+  }
+
+  fin = fopen(file, "r");
+
+  if ( fin ) {
+    while ( line = read_line(fin) ) {
+
+      reti = regexec(&regex, line, 0, NULL, 0);
+      if (!reti) {
+        fclose(fin);
+        free(line);
+        regfree(&regex);
+        return(1);
+      }
+    }
+  }
+
+  free(line);
+  regfree(&regex);
+  fclose(fin);
+  return (0);
+}
+
+char *markedDisplay(results* ob)
+{
+
+  unsigned long int markedNum = 0;
+  char markedNumString[12];
+  char filesWord[6];
+  int i;
+  size_t markedSize = 0;
+  char *markedSizeString;
+  char *outChar = malloc(sizeof(char) * 8);
+
+  for (i = 0; i < totalfilecount ; i++){
+    if (*ob[i].marked == 1){
+      markedNum++;
+      markedSize = markedSize + ob[i].size;
+    }
+  }
+
+  if (human){
+    markedSizeString = malloc (sizeof (char) * 8);
+    readableSize(markedSize, markedSizeString, si);
+  } else {
+    if (markedSize == 0){
+      markedSizeString = malloc (sizeof (char) * 1);
+    } else {
+      markedSizeString = malloc (sizeof (char) * log10(markedSize) + 1);
+    }
+    sprintf(markedSizeString, "%lu", markedSize);
+  }
+
+  if (markedNum == 1){
+    strcpy(filesWord, "file");
+  } else {
+    strcpy(filesWord, "files");
+  }
+
+  sprintf(markedNumString, "%lu", markedNum);
+
+  outChar = realloc(outChar, sizeof(char) * ( strlen(markedNumString) + strlen(markedSizeString) + strlen(filesWord) + 16));
+
+  sprintf(outChar, "MARKED: %s in %s %s", markedSizeString, markedNumString, filesWord);
+
+  free(markedSizeString);
+
+  return outChar;
 }
 
 results* get_dir(char *pwd)
@@ -1514,8 +1681,26 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   int headerpos, displaypos;
   char *susedString, *savailableString;
   char pwdprint[1024];
+  char *markedInfoLine;
 
-  displaysize = LINES - 5;
+  if (markedauto) {
+    if (CheckMarked(ob) ){
+      markedinfo = 1;
+    } else {
+      markedinfo = 0;
+    }
+  }
+
+  if (markedinfo){
+    displaysize = LINES - 6;
+    displaystart = 5;
+  } else{
+    displaysize = LINES - 5;
+    displaystart = 4;
+    if ((totalfilecount > displaysize) && (topfileref + (displaysize ) > totalfilecount)){
+      topfileref--;
+    }
+  }
   selected = selected - topfileref;
 
   if (strcmp(objectWild, "")){
@@ -1661,6 +1846,12 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   printLine(1, 2, pwdprint);
   printLine(2, 2, sizeHeader);
 
+  if (markedinfo){
+    markedInfoLine = markedDisplay(ob);
+    printLine (3, 4, markedInfoLine);
+    free(markedInfoLine);
+  }
+
   if ( danger ) {
     setColors(DANGER_PAIR);
   } else {
@@ -1669,7 +1860,11 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
 
   headerpos = 4 - hpos;
 
-  printLine (3, headerpos, headings);
+  if ( markedinfo ){
+    printLine (4, headerpos, headings);
+  } else {
+    printLine (3, headerpos, headings);
+  }
   setColors(COMMAND_PAIR);
   free(susedString);
   free(savailableString);

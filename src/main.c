@@ -37,6 +37,8 @@ char currentpwd[1024];
 char fileMenuText[256];
 char globalMenuText[256];
 char functionMenuText[256];
+char functionMenuTextShort[256];
+char functionMenuTextLong[256];
 char modifyMenuText[256];
 char sortMenuText[256];
 
@@ -54,10 +56,13 @@ int colormode = 0;
 int danger = 0;
 int invalidstart = 0;
 int filecolors = 0;
+int markedinfo = 0;
+int markedauto = 0;
 
 char *objectWild;
 
 extern results* ob;
+extern history *hs;
 extern int topfileref;
 extern int selected;
 extern int totalfilecount;
@@ -65,6 +70,25 @@ extern char sortmode[5];
 extern int showhidden;
 
 struct sigaction sa;
+
+int setMarked(char* markedinput)
+{
+  int status = -1;
+  if (!strcmp(markedinput, "always")){
+    markedinfo = 1;
+    markedauto = 0;
+    status = 0;
+  } else if (!strcmp(markedinput, "never")){
+    markedinfo = 0;
+    markedauto = 0;
+    status = 0;
+  } else if (!strcmp(markedinput, "auto")){
+    markedinfo = 0;
+    markedauto = 1;
+    status = 0;
+  }
+  return(status);
+}
 
 int checkStyle(char* styleinput)
 {
@@ -106,6 +130,11 @@ int themeSelect(char* themeinput){
 
 void refreshScreen()
 {
+  if (COLS < 89){
+    strcpy(functionMenuText, functionMenuTextShort);
+  } else {
+    strcpy(functionMenuText, functionMenuTextLong);
+  }
   switch(viewMode)
     {
     case 0:
@@ -146,7 +175,6 @@ void sigwinchHandle(int sig){
 
 int exittoshell()
 {
-  history *hs;
   clear();
   endwin();
   free(hs);
@@ -192,13 +220,17 @@ Options specific to show:\n\
       --monochrome             compatability mode for monochrome displays\n\
                                (deprecated)\n\
       --no-danger              turns off danger colors when running with\n\
-                               elevated privileges\n"), stdout);
+                               elevated privileges\n\
+      --marked=[MARKED]        shows information about marked objects. See\n\
+                               MARKED section below for valid options.\n"), stdout);
   fputs (("\n\
 The THEME argument can be:\n\
                default:    original theme\n\
                monochrome: comaptability mode for monochrome displays\n\
                nt:         a theme that closer resembles win32 versions of\n\
                            DF-EDIT\n"), stdout);
+  fputs (("\n\
+The MARKED argument can be: always; never; auto.\n"), stdout);
   fputs (("\n\
 Exit status:\n\
  0  if OK,\n\
@@ -246,6 +278,7 @@ int main(int argc, char *argv[])
          {"no-danger",      no_argument,       0, GETOPT_NODANGER_CHAR},
          {"color",          optional_argument, 0, GETOPT_COLOR_CHAR},
          {"theme",          optional_argument, 0, GETOPT_THEME_CHAR},
+         {"marked",         optional_argument, 0, GETOPT_MARKED_CHAR},
          {0, 0, 0, 0}
         };
       int option_index = 0;
@@ -348,6 +381,20 @@ Valid arguments are:\n\
     case GETOPT_NODANGER_CHAR:
       danger = 0;
       break;
+    case GETOPT_MARKED_CHAR:
+      if (optarg){
+        if ( setMarked(optarg) == -1 ){
+          printf("%s: invalid argument '%s' for 'marked'\n", argv[0], optarg);
+          fputs (("\
+Valid arguments are:\n\
+  - always\n\
+  - never\n\
+  - auto\n"), stdout);
+          printf("Try '%s --help' for more information.\n", argv[0]);
+          exit(2);
+        }
+      }
+      break;
     case GETOPT_HELP_CHAR:
       printHelp(argv[0]);
       exit(0);
@@ -370,9 +417,10 @@ Valid arguments are:\n\
 
 
   // Writing Menus
-  strcpy(fileMenuText, "!Copy, !Delete, !Edit, !Hidden, !Modify, !Quit, !Rename, !Show");
+  strcpy(fileMenuText, "!Copy, !Delete, !Edit, !Hidden, !Modify, !Quit, !Rename, !Show, h!Unt, e!Xec");
   strcpy(globalMenuText, "!Run command, !Edit file, !Help, !Make dir, !Quit, !Show dir");
-  strcpy(functionMenuText, "<F1>-Down <F2>-Up <F3>-Top <F4>-Bottom <F5>-Refresh <F6>-Mark/Unmark <F7>-All <F8>-None <F9>-Sort");
+  strcpy(functionMenuTextShort, "<F1>-Down <F2>-Up <F3>-Top <F4>-Bottom <F5>-Refresh <F6>-Mark/Unmark <F7>-All <F8>-None <F9>-Sort");
+  strcpy(functionMenuTextLong, "<F1>-Down <F2>-Up <F3>-Top <F4>-Bottom <F5>-Refresh <F6>-Mark/Unmark <F7>-All <F8>-None <F9>-Sort <F10>-Block");
   strcpy(modifyMenuText, "Modify: !Owner/Group, !Permissions");
   strcpy(sortMenuText, "Sort list by - !Date & time, !Name, !Size");
 
@@ -383,6 +431,12 @@ Valid arguments are:\n\
 
   initscr();
 
+  // Decide which function menu needs initially printing
+  if (COLS < 89){
+    strcpy(functionMenuText, functionMenuTextShort);
+  } else {
+    strcpy(functionMenuText, functionMenuTextLong);
+  }
 
   memset(&sa, 0, sizeof(struct sigaction));
   sa.sa_handler = sigwinchHandle;
@@ -417,7 +471,7 @@ Valid arguments are:\n\
   if (!check_dir(currentpwd)){
     //strcpy(currentpwd, "/"); // If dir doesn't exist, default to root
     invalidstart = 1;
-    quit_menu();
+    global_menu();
   }
   directory_view(currentpwd);
   return 0;

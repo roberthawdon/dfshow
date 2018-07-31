@@ -115,8 +115,9 @@ The <code>.</code> and <code>..</code> objects are never hidden due to their nav
 
 <dl>
 <dt><code>--theme</code>=[<var>THEME</var>]</dt><dd><p>Color themes. Can be set to <code>default</code>, <code>monochrome</code>, or <code>nt</code>.</p></dd>
-<dt><code>--monochrome</code></dt><dd><p>Compatibility mode for monochrome displays. (This command is deprecated, use --theme instead)</p></dd>
+<dt><code>--monochrome</code></dt><dd><p>Compatibility mode for monochrome displays. (This command is deprecated, use <code>--theme</code> instead)</p></dd>
 <dt><code>--no-danger</code></dt><dd><p>Disables the danger color scheme when running with elevated privileges.</p></dd>
+<dt><code>--marked</code>=[<var>MARKED</var>]</dt><dd><p>Displays information about marked files. Can be set to <code>always</code>, <code>never</code>, or <code>auto</code>.</p></dd>
 </dl>
 
 
@@ -143,6 +144,8 @@ The <code>.</code> and <code>..</code> objects are never hidden due to their nav
 <dt class="flush"><code>Quit</code></dt><dd><p>Quit current directory.</p></dd>
 <dt class="flush"><code>Rename</code></dt><dd><p>Rename/move file or marked files.</p></dd>
 <dt class="flush"><code>Show</code></dt><dd><p>Show file or directory.</p></dd>
+<dt class="flush"><code>eXec</code></dt><dd><p>Runs files marked as executable.</p></dd>
+<dt class="flush"><code>hUnt</code></dt><dd><p>Searches and marks files matching a string.</p></dd>
 </dl>
 
 
@@ -193,8 +196,9 @@ The <code>.</code> and <code>..</code> objects are never hidden due to their nav
 <dt class="flush"><code>Quit</code></dt><dd><p>Closes the current directory currently displayed. The application will return you to the previous directory you were viewing. If there are no previous directory, a blank screen showing the global commands is displayed.</p></dd>
 <dt class="flush"><code>Rename</code></dt><dd><p>Rename the selected file, or marked files to a new file name. The new file name is requested by one of the following prompts. After a file is renamed, the new file information line is into the list (providing the file has been renamed to the same directory) and the old information line is removed. Files can only be moved to locations on the same mounted partition. An empty response to the prompt or the <em>ESC</em> key will abort the command. If there are no marked files, a single file rename is requested; otherwise a multiple file rename is requested.</p>
 
-<p><code>Rename file to:</code>
-<code>Rename multiple files to:</code></p></dd>
+<p><code>Rename file to:</code></p>
+
+<p><code>Rename multiple files to:</code></p></dd>
 <dt class="flush"><code>Show</code></dt><dd><p>Will either display the contents of a directory, or open the contents of a file. The show file command utilizes the <code>PAGER</code> environment variable. If this has not been set, the following message is displayed.</p>
 
 <p><code>Please export a PAGER environment variable to define the utility program name.</code></p>
@@ -202,6 +206,22 @@ The <code>.</code> and <code>..</code> objects are never hidden due to their nav
 <p>To resolve this, set a variable to your preferred pager in your shell's user preference file.</p>
 
 <p><code>export PAGER=/usr/bin/less</code></p></dd>
+<dt class="flush"><code>eXec</code></dt><dd><p>Will execute the selected file if it has the execute flag set and the current user running the <code>show</code> process has permission to. Arguments are requested by the following prompt. Unlike other commands, an empty response will execute the file without arguments. To abort at this prompt, the <em>ESC</em> key must be used.</p>
+
+<p><code>Args to pass to &lt;file>:</code></p>
+
+<p>The following error is displayed if the file does not have an executable flag, or the user does not have sufficient privileges to run.</p>
+
+<p><code>Error: Permission denied</code></p></dd>
+<dt class="flush"><code>hUnt</code></dt><dd><p>Hunts the selected file, or marked files containing a regex string. When used with a single file, the selected file will be marked if the string matches. When using multiple files, any files not matching the string will be unselected. Case sensitivity is requested by the following prompt, afterwards the user is asked to input the string to search. To abort at this prompt, the <em>ESC</em> key must be used.</p>
+
+<p><code>Case Sensitive, Yes/No/ESC (enter = no)</code></p>
+
+<p>Following this selection, one of the following prompts will be displayed.</p>
+
+<p><code>Match Case - Enter string:</code></p>
+
+<p><code>Ignore Case - Enter string:</code></p></dd>
 </dl>
 
 
@@ -219,6 +239,7 @@ The <code>.</code> and <code>..</code> objects are never hidden due to their nav
 <dt class="flush"><code>F7</code></dt><dd><p>Mark All Files</p></dd>
 <dt class="flush"><code>F8</code></dt><dd><p>Unmark All Files</p></dd>
 <dt class="flush"><code>F9</code></dt><dd><p>Sort List</p></dd>
+<dt class="flush"><code>F10</code></dt><dd><p>Block Mark</p></dd>
 <dt class="flush"><code>HOME</code></dt><dd><p>Top of Display</p></dd>
 <dt class="flush"><code>END</code></dt><dd><p>Bottom of Display</p></dd>
 <dt><code>Down</code>, <code>RETURN</code></dt><dd><p>Down one line</p></dd>
@@ -253,6 +274,7 @@ The <code>.</code> and <code>..</code> objects are never hidden due to their nav
 <p><code>Size</code>: Sort the list on file size so the largest are at the top of the list.</p>
 
 <p>Using <em>SHIFT</em> whilst selecting an option performs that action in reverse order.</p></dd>
+<dt><code>Block Mark</code></dt><dd><p><code>F10</code>: Marks all files between two points. Files marked will be indicated with an <code>*</code> in front of them.</p></dd>
 <dt><code>Top of Display</code></dt><dd><p><code>HOME</code>: Move the cursor to the first file on the current display.</p></dd>
 <dt><code>Bottom of Display</code></dt><dd><p><code>END</code>: Move the cursor to the last file on the current display.</p></dd>
 <dt><code>Down One Line</code></dt><dd><p><code>Down Arrow, Return</code>: Move the cursor down one line to the next file in the display. If the cursor is on the bottom row of the window, the window is scrolled down one line. If the present line is the last file in the list, the cursor is not repositioned.</p></dd>

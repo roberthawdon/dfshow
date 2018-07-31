@@ -28,6 +28,7 @@
 #include <errno.h>
 #include <libgen.h>
 #include <signal.h>
+#include <regex.h>
 #include "functions.h"
 #include "main.h"
 #include "views.h"
@@ -49,6 +50,11 @@ char currentfilename[512];
 int s;
 char *buf;
 char *rewrite;
+
+int blockstart = -1;
+int blockend = -1;
+
+int abortinput = 0;
 
 extern results* ob;
 extern history* hs;
@@ -73,6 +79,8 @@ extern int invalidstart;
 extern char fileMenuText[256];
 extern char globalMenuText[256];
 extern char functionMenuText[256];
+extern char functionMenuTextShort[256];
+extern char functionMenuTextLong[256];
 extern char modifyMenuText[256];
 extern char sortMenuText[256];
 
@@ -152,7 +160,7 @@ void show_directory_input()
       free(rewrite);
     }
     // if (!check_dir(currentpwd)){
-    //   quit_menu();
+    //   global_menu();
     // }
     if ( invalidstart ){
       invalidstart = 0;
@@ -438,6 +446,109 @@ void make_directory_input()
   directory_view_menu_inputs0();
 }
 
+char * execute_argument_input(const char *exec)
+{
+  char *strout;
+  int execlen = strlen(exec);
+  strout = malloc(sizeof(char) * 1024);
+  move(0,0);
+  clrtoeol();
+  mvprintw(0, 0, "Args to pass to %s:", exec);
+  curs_set(TRUE);
+  move(0, 18 + execlen);
+  if (readline(strout, 1024, "") == -1){
+    abortinput = 1;
+  }
+  curs_set(FALSE);
+  return strout;
+}
+
+void huntCaseSelect()
+{
+  char message[1024];
+  sprintf(message,"Case Sensitive, !Yes/!No/<ESC> (enter = no)");
+  printMenu(0,0, message);
+}
+
+int huntCaseSelectInput()
+{
+  int result = 0;
+  while(1)
+    {
+    huntCaseLoop:
+      *pc = getch();
+      switch(*pc)
+        {
+        case 'y':
+          result = 1;
+          break;
+	case 10:
+        case 'n':
+          result = 0;
+          break;
+        case 27:
+          result = -1;
+          break;
+        default:
+          goto huntCaseLoop;
+        }
+      break;
+    }
+  return(result);
+}
+
+void huntInput(int selected, int charcase)
+{
+  int regexcase;
+  int i;
+  char regexinput[1024];
+  char inputmessage[32];
+  if (charcase){
+    regexcase = 0;
+    strcpy(inputmessage, "Match Case - Enter string:");
+  } else {
+    regexcase = REG_ICASE;
+    strcpy(inputmessage, "Ignore Case - Enter string:");
+  }
+  move(0,0);
+  clrtoeol();
+  mvprintw(0, 0, inputmessage);
+  curs_set(TRUE);
+  move(0, strlen(inputmessage) + 1);
+  if (readline(regexinput, 1024, "") == -1) {
+    curs_set(FALSE);
+    abortinput = 1;
+  } else {
+    curs_set(FALSE);
+    if (!CheckMarked(ob)){
+      strcpy(chpwd, currentpwd);
+      if (!check_last_char(chpwd, "/")){
+        strcat(chpwd, "/");
+      }
+      strcat(chpwd, ob[selected].name);
+      if (huntFile(chpwd, regexinput, regexcase)){
+        *ob[selected].marked = 1;
+      }
+    } else {
+      for (i = 0; i < totalfilecount; i++){
+        if ( *ob[i].marked ){
+          strcpy(chpwd, currentpwd);
+          if (!check_last_char(chpwd, "/")){
+            strcat(chpwd, "/");
+          }
+          strcat(chpwd, ob[i].name);
+          if (huntFile(chpwd, regexinput, regexcase)){
+            *ob[i].marked = 1;
+          } else {
+            *ob[i].marked = 0;
+          }
+          clear_workspace();
+        }
+      }
+    }
+  }
+}
+
 void delete_multi_file_confirm(const char *filename)
 {
   char message[1024];
@@ -620,7 +731,6 @@ void modify_group_input()
     sprintf(gids, "%d", gresult->gr_gid);
 
     if ( CheckMarked(ob) ){
-      //topLineMessage("Multi file owner coming soon");
       for (i = 0; i < totalfilecount; i++)
         {
           if ( *ob[i].marked )
@@ -798,7 +908,7 @@ void directory_view_menu_inputs1()
           directory_view_menu_inputs0();
           break;
         case 'q':
-          quit_menu();
+          global_menu();
           break;
         case 's':
           show_directory_input();
@@ -819,6 +929,7 @@ void directory_view_menu_inputs0()
 {
   int e = 0;
   char *updir;
+  char *execArgs;
   viewMode = 0;
   while(1)
     {
@@ -949,7 +1060,7 @@ void directory_view_menu_inputs0()
             break;
           } else {
             historyref = 0; // Reset historyref here. A hacky workaround due to the value occasionally dipping to minus numbers.
-            quit_menu();
+            global_menu();
           }
           break;
         case'r':
@@ -1006,6 +1117,37 @@ void directory_view_menu_inputs0()
               printMenu(LINES-1, 0, functionMenuText);
               display_dir(currentpwd, ob, topfileref, selected);
             }
+          }
+          break;
+        case 'u':
+          huntCaseSelect();
+          e = huntCaseSelectInput();
+          if (e != -1){
+            huntInput(selected, e);
+          }
+          abortinput = 0;
+          printMenu(0, 0, fileMenuText);
+          printMenu(LINES-1, 0, functionMenuText);
+          display_dir(currentpwd, ob, topfileref, selected);
+          break;
+        case 'x':
+          strcpy(chpwd, currentpwd);
+          if (!check_last_char(chpwd, "/")){
+            strcat(chpwd, "/");
+          }
+          strcat(chpwd, ob[selected].name);
+          if (check_exec(chpwd)){
+            execArgs = execute_argument_input(ob[selected].name);
+            if (!abortinput){
+              LaunchExecutable(chpwd, execArgs);
+              free(execArgs);
+            }
+            abortinput = 0;
+            printMenu(0, 0, fileMenuText);
+            printMenu(LINES-1, 0, functionMenuText);
+            display_dir(currentpwd, ob, topfileref, selected);
+          } else {
+            topLineMessage("Error: Permission denied");
           }
           break;
         case 27:
@@ -1108,6 +1250,13 @@ void directory_view_menu_inputs0()
             } else {
               *ob[selected].marked = 1;
             }
+            if (selected < (totalfilecount - 1)) {
+              selected++;
+              if (selected > ((topfileref + displaysize) - 1)){
+                topfileref++;
+                clear_workspace();
+              }
+            }
             display_dir(currentpwd, ob, topfileref, selected);
           }
           break;
@@ -1131,6 +1280,48 @@ void directory_view_menu_inputs0()
           sort_view_inputs();
           break;
         case 274: // F10
+          strcpy(selfile, currentpwd);
+          if (!check_last_char(selfile, "/")){
+            strcat(selfile, "/");
+          }
+          strcat(selfile, ob[selected].name);
+          if ( *ob[selected].marked == 0 ){
+            if ( blockstart == -1 ){
+              blockstart = selected;
+              if (!check_dir(selfile)){
+                *ob[selected].marked = 1;
+              }
+              if (selected < (totalfilecount - 1)) {
+                selected++;
+                if (selected > ((topfileref + displaysize) - 1)){
+                  topfileref++;
+                  clear_workspace();
+                }
+                display_dir(currentpwd, ob, topfileref, selected);
+              }
+            } else {
+              blockend = selected;
+              if (blockstart > blockend){
+                // While we're still on the second item, let's flip them around if the second selected file is higher up the list.
+                blockend = blockstart;
+                blockstart = selected;
+              }
+              for(; blockstart < blockend + 1; blockstart++){
+                strcpy(selfile, currentpwd);
+                if (!check_last_char(selfile, "/")){
+                  strcat(selfile, "/");
+                }
+                strcat(selfile, ob[blockstart].name);
+                if (!check_dir(selfile)){
+                  *ob[blockstart].marked = 1;
+                }
+              }
+              blockstart = blockend = -1;
+              display_dir(currentpwd, ob, topfileref, selected);
+              }
+            }
+          break;
+        case 276: // F12
           // clear();
           // endwin();
 
