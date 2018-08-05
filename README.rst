@@ -46,7 +46,15 @@ Installing DF-SHOW
 
 **Arch**
 
-Development builds of DF-SHOW are available in the AUR
+Builds of DF-SHOW are available in the AUR
+
+.. code-block:: bash
+
+    curl -L https://aur.archlinux.org/cgit/aur.git/snapshot/dfshow.tar.gz | tar xz
+    cd dfshow
+    makepkg -srci
+
+Builds from the ``master`` branch are also available in the AUR
 
 .. code-block:: bash
 
