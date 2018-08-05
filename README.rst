@@ -14,9 +14,9 @@ DF-SHOW
 
 :Author: Robert Ian Hawdon (git@robertianhawdon.me.uk)
 :Source: https://github.com/roberthawdon/dfshow
-:Version: pre-alpha
+:Version: alpha
 
-**DF-SHOW (Directory File Show) is a POSIX rewrite of the SHOW application from Larry Kroeker's DF-EDIT (Directory File Editor) for MS-DOS and PC-DOS systems, based on the Version 2.3d release from 1986.**
+**DF-SHOW (Directory File Show) is a Unix-like rewrite of the SHOW application from Larry Kroeker's DF-EDIT (Directory File Editor) for MS-DOS and PC-DOS systems, based on the Version 2.3d release from 1986.**
 
 * `Bug Tracker`_
 
@@ -38,13 +38,52 @@ Features
 * **Delete files.** DF-SHOW also removes files at the user's request.
 * **Create directories.** Users' are also able to create new directories from within the DF-SHOW interface.
 * **Update permissions.** Owners, groups, and permissions can be set within the application.
+* **Hunt within files.** Find files in a directory containing a string.
+* **Execute applications.** Files with execution permissions can be launched from withing DF-SHOW.
+
+Installing DF-SHOW
+------------------
+
+**Arch**
+
+Development builds of DF-SHOW are available in the AUR
+
+.. code-block:: bash
+
+    curl -L https://aur.archlinux.org/cgit/aur.git/snapshot/dfshow-git.tar.gz | tar xz
+    cd dfshow-git
+    makepkg -srci
+
+Building from Git
+-----------------
+
+Download the project and prepare sources with
+
+.. code-block:: bash
+
+    git clone https://github.com/roberthawdon/dfshow
+    cd dfshow
+    ./bootstrap
+
+Build DF-SHOW with
+
+.. code-block:: bash
+
+    ./configure
+    make
+
+Install DF-SHOW
+
+.. code-block:: bash
+
+    sudo make install
 
 Running Show
 ------------
 
 The show directory utility is invoked with the following command:
 
-    show <directory_name>
+    show <directory_names>
 
 The <directory_name> parameter can by any directory the current user has access to on the system, similar to the ``ls`` command. Using ``/`` will take the user to the root directory of the system.
 
@@ -55,8 +94,13 @@ Screenshots
 
 **Directory View - Linux**
 
-.. image:: https://user-images.githubusercontent.com/4301139/42421530-ed1d3660-82ce-11e8-9b93-e36a65ae2fc0.png
+.. image:: https://user-images.githubusercontent.com/4301139/43677749-24e2ced0-97ff-11e8-8fa7-5c4b428af2a3.png
    :alt: Directory Viewer Under Linux
+
+DF-SHOW running under Linux showing:
+
+* Colored entries
+* Human readable file sizes
 
 **Directory View - MacOS**
 
@@ -64,7 +108,8 @@ Screenshots
    :alt: Show running under MacOS
 
 **Directory View - Debian HURD**
-*HURD supports the author flag on files, ``show`` is able to show this.*
 
 .. image:: https://user-images.githubusercontent.com/4301139/42421533-f39b6fe8-82ce-11e8-8975-068d82dc741f.png
    :alt: Show running under Debian HURD
+
+DF-SHOW running under Debian HURD showing the Author item for each file.

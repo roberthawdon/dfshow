@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+
+autoreconf --install
+automake --add-missing
