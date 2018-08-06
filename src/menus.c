@@ -133,7 +133,8 @@ void printMenu(int line, int col, char *menustring)
     }
 }
 
-void directory_view_menu_inputs0(); // Needed to allow menu inputs to switch between each other
+void directory_view_menu_inputs(); // Needed to allow menu inputs to switch between each other
+void global_menu_inputs();
 
 void show_directory_input()
 {
@@ -180,7 +181,7 @@ void show_directory_input()
   }
   printMenu(0, 0, fileMenuText);
   printMenu(LINES-1, 0, functionMenuText);
-  directory_view_menu_inputs0();
+  directory_view_menu_inputs();
 }
 
 int replace_file_confirm_input()
@@ -246,7 +247,7 @@ void copy_file_input(char *file)
   }
   printMenu(0, 0, fileMenuText);
   printMenu(LINES-1, 0, functionMenuText);
-  directory_view_menu_inputs0();
+  directory_view_menu_inputs();
 }
 
 void copy_multi_file_input(results* ob, char *input)
@@ -300,7 +301,7 @@ void copy_multi_file_input(results* ob, char *input)
     }
   }
   printMenu(0, 0, fileMenuText);
-  directory_view_menu_inputs0();
+  directory_view_menu_inputs();
 }
 
 void rename_multi_file_input(results* ob, char *input)
@@ -359,7 +360,7 @@ void rename_multi_file_input(results* ob, char *input)
   }
 
   printMenu(0, 0, fileMenuText);
-  directory_view_menu_inputs0();
+  directory_view_menu_inputs();
 }
 
 void edit_file_input()
@@ -413,7 +414,7 @@ void rename_file_input(char *file)
   }
   printMenu(0, 0, fileMenuText);
   printMenu(LINES-1, 0, functionMenuText);
-  directory_view_menu_inputs0();
+  directory_view_menu_inputs();
 }
 
 void make_directory_input()
@@ -443,7 +444,7 @@ void make_directory_input()
   }
   printMenu(0, 0, fileMenuText);
   printMenu(LINES-1, 0, functionMenuText);
-  directory_view_menu_inputs0();
+  directory_view_menu_inputs();
 }
 
 char * execute_argument_input(const char *exec)
@@ -572,7 +573,7 @@ void delete_file_confirm_input(char *file)
           // Not breaking here, intentionally dropping through to the default
         default:
           printMenu(0, 0, fileMenuText);
-          directory_view_menu_inputs0();
+          directory_view_menu_inputs();
           break;
         }
     }
@@ -637,7 +638,7 @@ void sort_view_inputs()
         {
         case 27: // ESC Key
           printMenu(0, 0, fileMenuText);
-          directory_view_menu_inputs0();
+          directory_view_menu_inputs();
           break;
         case 'n':
           strcpy(sortmode, "name");
@@ -668,7 +669,7 @@ void sort_view_inputs()
       reorder_ob(ob, sortmode);
       display_dir(currentpwd, ob, topfileref, selected);
       printMenu(0, 0, fileMenuText);
-      directory_view_menu_inputs0();
+      directory_view_menu_inputs();
     }
 }
 
@@ -684,7 +685,7 @@ void show_directory_inputs()
           //   break;
         case 27: // ESC Key
           printMenu(0, 0, fileMenuText);
-          directory_view_menu_inputs0();
+          directory_view_menu_inputs();
           break;
         }
     }
@@ -761,7 +762,7 @@ void modify_group_input()
     display_dir(currentpwd, ob, topfileref, selected);
 
     printMenu(0, 0, fileMenuText);
-    directory_view_menu_inputs0();
+    directory_view_menu_inputs();
   }
 }
 
@@ -848,7 +849,7 @@ void modify_permissions_input()
   display_dir(currentpwd, ob, topfileref, selected);
 
   printMenu(0, 0, fileMenuText);
-  directory_view_menu_inputs0();
+  directory_view_menu_inputs();
 
 }
 
@@ -868,64 +869,13 @@ void modify_key_menu_inputs()
           break;
         case 27: // ESC Key
           printMenu(0, 0, fileMenuText);
-          directory_view_menu_inputs0();
+          directory_view_menu_inputs();
           break;
         }
     }
 }
 
-void directory_view_menu_inputs1()
-{
-  viewMode = 1;
-  while(1)
-    {
-      *pc = getch();
-      switch(*pc)
-        {
-        case 'm':
-          make_directory_input();
-          break;
-        case 'r':
-          LaunchShell();
-          printMenu(0, 0, fileMenuText);
-          printMenu(LINES-1, 0, functionMenuText);
-          display_dir(currentpwd, ob, topfileref, selected);
-          directory_view_menu_inputs0();
-          break;
-        case 'e':
-          edit_file_input();
-          printMenu(0, 0, fileMenuText);
-          printMenu(LINES-1, 0, functionMenuText);
-          display_dir(currentpwd, ob, topfileref, selected);
-          directory_view_menu_inputs0();
-          break;
-        case 'h':
-          // topLineMessage("Documentation coming soon");
-          showManPage();
-          printMenu(0, 0, fileMenuText);
-          printMenu(LINES-1, 0, functionMenuText);
-          display_dir(currentpwd, ob, topfileref, selected);
-          directory_view_menu_inputs0();
-          break;
-        case 'q':
-          global_menu();
-          break;
-        case 's':
-          show_directory_input();
-          show_directory_inputs();
-          break;
-        case 27:
-          printMenu(0, 0, fileMenuText);
-          directory_view_menu_inputs0();
-          break;
-          /* default:
-             mvprintw(LINES-2, 1, "Character pressed is = %3d Hopefully it can be printed as '%c'", c, c);
-             refresh(); */
-        }
-    }
-}
-
-void directory_view_menu_inputs0()
+void directory_view_menu_inputs()
 {
   int e = 0;
   char *updir;
@@ -960,7 +910,7 @@ void directory_view_menu_inputs0()
             reorder_ob(ob, sortmode);
             display_dir(currentpwd, ob, topfileref, selected);
             printMenu(0, 0, fileMenuText);
-            directory_view_menu_inputs0();
+            directory_view_menu_inputs();
           } else {
             strcpy(selfile, currentpwd);
             if (!check_last_char(selfile, "/")){
@@ -1152,7 +1102,7 @@ void directory_view_menu_inputs0()
           break;
         case 27:
           printMenu(0, 0, globalMenuText);
-          directory_view_menu_inputs1();
+          global_menu_inputs();
           break;
         case 10: // Enter - Falls through
         case 258: // Down Arrow
@@ -1350,9 +1300,13 @@ void directory_view_menu_inputs0()
         }
     }
 }
-void directory_change_menu_inputs()
+void global_menu_inputs()
 {
-  viewMode = 4;
+  if (historyref == 0){
+    viewMode = 4;
+  } else {
+    viewMode = 1;
+  }
   while(1)
     {
       *pc = getch();
@@ -1363,32 +1317,56 @@ void directory_change_menu_inputs()
           break;
         case 'r':
           LaunchShell();
-          printMenu(0, 0, globalMenuText);
-          //printMenu(0, 0, fileMenuText);
-          //printMenu(LINES-1, 0, functionMenuText);
-          //display_dir(currentpwd, ob, topfileref, selected);
+          if (historyref == 0){
+            printMenu(0, 0, globalMenuText);
+          } else {
+            printMenu(0, 0, fileMenuText);
+            printMenu(LINES-1, 0, functionMenuText);
+            display_dir(currentpwd, ob, topfileref, selected);
+            directory_view_menu_inputs();
+          }
           break;
         case 'e':
           edit_file_input();
-          printMenu(0, 0, globalMenuText);
+          if (historyref == 0){
+            printMenu(0, 0, globalMenuText);
+          } else {
+            printMenu(0, 0, fileMenuText);
+            printMenu(LINES-1, 0, functionMenuText);
+            display_dir(currentpwd, ob, topfileref, selected);
+            directory_view_menu_inputs();
+          }
           break;
         case 'h':
-          // topLineMessage("Documentation coming soon");
           showManPage();
-          printMenu(0, 0, globalMenuText);
+          if (historyref == 0){
+            printMenu(0, 0, globalMenuText);
+          } else {
+            printMenu(0, 0, fileMenuText);
+            printMenu(LINES-1, 0, functionMenuText);
+            display_dir(currentpwd, ob, topfileref, selected);
+            directory_view_menu_inputs();
+          }
           break;
         case 'q':
-          exittoshell();
-          refresh();
+          if (historyref == 0){
+            exittoshell();
+            refresh();
+          } else {
+            historyref = 0;
+            global_menu();
+          }
           break;
         case 's':
-          // directory_view(); // TODO: Ask which directory to show, this is a temporary placeholder
           show_directory_input();
           show_directory_inputs();
           break;
-          /* case 27: // Pressing escape here didn't actually do anything in DF-EDIT 2.3d
-             directory_view();
-             break; */
+        case 27:
+          if (historyref != 0){
+            printMenu(0, 0, fileMenuText);
+            directory_view_menu_inputs();
+          }
+          break;
         }
     }
 }
@@ -1406,7 +1384,7 @@ void topLineMessage(const char *message){
         {
         default: // Where's the "any" key?
           printMenu(0, 0, fileMenuText);
-          directory_view_menu_inputs0();
+          directory_view_menu_inputs();
           break;
         }
     }
