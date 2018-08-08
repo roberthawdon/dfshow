@@ -179,13 +179,14 @@ void show_directory_input()
   } else {
     strcpy(currentpwd, oldpwd); // Copying old value back if the input was aborted
   }
-  printMenu(0, 0, fileMenuText);
-  printMenu(LINES-1, 0, functionMenuText);
   directory_view_menu_inputs();
 }
 
-int replace_file_confirm_input()
+int replace_file_confirm_input(char *filename)
 {
+  char message[1024];
+  sprintf(message, "Replace file [<%s>]? (!Yes/!No)", filename);
+  printMenu(0,0, message);
   while(1)
     {
       *pc = getch();
@@ -199,13 +200,6 @@ int replace_file_confirm_input()
           break;
         }
     }
-}
-
-void replace_file_confirm(char *filename)
-{
-  char message[1024];
-  sprintf(message, "Replace file [<%s>]? (!Yes/!No)", filename);
-  printMenu(0,0, message);
 }
 
 void copy_file_input(char *file)
@@ -228,8 +222,7 @@ void copy_file_input(char *file)
     }
     if ( check_file(newfile) )
       {
-        replace_file_confirm(newfile);
-        if ( replace_file_confirm_input() )
+        if ( replace_file_confirm_input(newfile) )
           {
             copy_file(file, newfile);
             ob = get_dir(currentpwd);
@@ -245,8 +238,6 @@ void copy_file_input(char *file)
       display_dir(currentpwd, ob, 0, selected);
     }
   }
-  printMenu(0, 0, fileMenuText);
-  printMenu(LINES-1, 0, functionMenuText);
   directory_view_menu_inputs();
 }
 
@@ -286,8 +277,7 @@ void copy_multi_file_input(results* ob, char *input)
               strcat(destfile, ob[i].name);
               if ( check_file(destfile) )
                 {
-                  replace_file_confirm(destfile);
-                  if ( replace_file_confirm_input() )
+                  if ( replace_file_confirm_input(destfile) )
                     {
                       copy_file(selfile, dest);
                     }
@@ -300,7 +290,6 @@ void copy_multi_file_input(results* ob, char *input)
       topLineMessage("Error: Directory Not Found.");
     }
   }
-  printMenu(0, 0, fileMenuText);
   directory_view_menu_inputs();
 }
 
@@ -340,8 +329,7 @@ void rename_multi_file_input(results* ob, char *input)
               strcat(destfile, ob[i].name);
               if ( check_file(destfile) )
                 {
-                  replace_file_confirm(destfile);
-                  if ( replace_file_confirm_input() )
+                  if ( replace_file_confirm_input(destfile) )
                     {
                       RenameObject(selfile, destfile);
                     }
@@ -359,7 +347,6 @@ void rename_multi_file_input(results* ob, char *input)
     display_dir(currentpwd, ob, 0, selected);
   }
 
-  printMenu(0, 0, fileMenuText);
   directory_view_menu_inputs();
 }
 
@@ -395,8 +382,7 @@ void rename_file_input(char *file)
     }
     if ( check_file(dest) )
       {
-        replace_file_confirm(dest);
-        if ( replace_file_confirm_input() )
+        if ( replace_file_confirm_input(dest) )
           {
             RenameObject(file, dest);
             ob = get_dir(currentpwd);
@@ -412,8 +398,6 @@ void rename_file_input(char *file)
       display_dir(currentpwd, ob, 0, selected);
     }
   }
-  printMenu(0, 0, fileMenuText);
-  printMenu(LINES-1, 0, functionMenuText);
   directory_view_menu_inputs();
 }
 
@@ -442,8 +426,6 @@ void make_directory_input()
     reorder_ob(ob, sortmode);
     display_dir(currentpwd, ob, 0, selected);
   }
-  printMenu(0, 0, fileMenuText);
-  printMenu(LINES-1, 0, functionMenuText);
   directory_view_menu_inputs();
 }
 
@@ -464,16 +446,12 @@ char * execute_argument_input(const char *exec)
   return strout;
 }
 
-void huntCaseSelect()
-{
-  char message[1024];
-  sprintf(message,"Case Sensitive, !Yes/!No/<ESC> (enter = no)");
-  printMenu(0,0, message);
-}
-
 int huntCaseSelectInput()
 {
   int result = 0;
+  char message[1024];
+  sprintf(message,"Case Sensitive, !Yes/!No/<ESC> (enter = no)");
+  printMenu(0,0, message);
   while(1)
     {
     huntCaseLoop:
@@ -550,15 +528,9 @@ void huntInput(int selected, int charcase)
   }
 }
 
-void delete_multi_file_confirm(const char *filename)
-{
-  char message[1024];
-  sprintf(message,"Delete file [<%s>]? (!Yes/!No/!All/!Stop)", filename);
-  printMenu(0,0, message);
-}
-
 void delete_file_confirm_input(char *file)
 {
+  printMenu(0,0, "Delete file? (!Yes/!No)");
   while(1)
     {
       *pc = getch();
@@ -572,7 +544,6 @@ void delete_file_confirm_input(char *file)
           display_dir(currentpwd, ob, topfileref, selected);
           // Not breaking here, intentionally dropping through to the default
         default:
-          printMenu(0, 0, fileMenuText);
           directory_view_menu_inputs();
           break;
         }
@@ -584,6 +555,7 @@ void delete_multi_file_confirm_input(results* ob)
   int i, k;
   int allflag = 0;
   int abortflag = 0;
+  char message[1024];
 
   for (i = 0; i < totalfilecount; i++)
     {
@@ -598,7 +570,8 @@ void delete_multi_file_confirm_input(results* ob)
             {
               delete_file(selfile);
             } else {
-            delete_multi_file_confirm(selfile);
+            sprintf(message,"Delete file [<%s>]? (!Yes/!No/!All/!Stop)", selfile);
+            printMenu(0,0, message);
             k = 1;
             while(k)
               {
@@ -630,6 +603,7 @@ void delete_multi_file_confirm_input(results* ob)
 
 void sort_view_inputs()
 {
+  printMenu(0, 0, sortMenuText);
   viewMode = 3;
   while(1)
     {
@@ -637,7 +611,6 @@ void sort_view_inputs()
       switch(*pc)
         {
         case 27: // ESC Key
-          printMenu(0, 0, fileMenuText);
           directory_view_menu_inputs();
           break;
         case 'n':
@@ -668,26 +641,7 @@ void sort_view_inputs()
       clear_workspace();
       reorder_ob(ob, sortmode);
       display_dir(currentpwd, ob, topfileref, selected);
-      printMenu(0, 0, fileMenuText);
       directory_view_menu_inputs();
-    }
-}
-
-void show_directory_inputs()
-{
-  while(1)
-    {
-      *pc = getch();
-      switch(*pc)
-        {
-          // case 10: // Enter key
-            //   directory_view(currentpwd);
-          //   break;
-        case 27: // ESC Key
-          printMenu(0, 0, fileMenuText);
-          directory_view_menu_inputs();
-          break;
-        }
     }
 }
 
@@ -761,7 +715,6 @@ void modify_group_input()
     reorder_ob(ob, sortmode);
     display_dir(currentpwd, ob, topfileref, selected);
 
-    printMenu(0, 0, fileMenuText);
     directory_view_menu_inputs();
   }
 }
@@ -848,7 +801,6 @@ void modify_permissions_input()
   reorder_ob(ob, sortmode);
   display_dir(currentpwd, ob, topfileref, selected);
 
-  printMenu(0, 0, fileMenuText);
   directory_view_menu_inputs();
 
 }
@@ -868,7 +820,6 @@ void modify_key_menu_inputs()
           modify_permissions_input();
           break;
         case 27: // ESC Key
-          printMenu(0, 0, fileMenuText);
           directory_view_menu_inputs();
           break;
         }
@@ -881,6 +832,8 @@ void directory_view_menu_inputs()
   char *updir;
   char *execArgs;
   viewMode = 0;
+  printMenu(0, 0, fileMenuText);
+  printMenu(LINES-1, 0, functionMenuText);
   while(1)
     {
       //signal(SIGWINCH, refreshScreen );
@@ -909,7 +862,6 @@ void directory_view_menu_inputs()
             clear_workspace();
             reorder_ob(ob, sortmode);
             display_dir(currentpwd, ob, topfileref, selected);
-            printMenu(0, 0, fileMenuText);
             directory_view_menu_inputs();
           } else {
             strcpy(selfile, currentpwd);
@@ -918,7 +870,6 @@ void directory_view_menu_inputs()
             }
             strcat(selfile, ob[selected].name);
             if (!check_dir(selfile)){
-              printMenu(0,0, "Delete file? (!Yes/!No)");
               delete_file_confirm_input(selfile);
             }
           }
@@ -931,8 +882,6 @@ void directory_view_menu_inputs()
           strcat(chpwd, ob[selected].name);
           if (!check_dir(chpwd)){
             SendToEditor(chpwd);
-            printMenu(0, 0, fileMenuText);
-            printMenu(LINES-1, 0, functionMenuText);
             display_dir(currentpwd, ob, topfileref, selected);
           }
           break;
@@ -1063,21 +1012,16 @@ void directory_view_menu_inputs()
               display_dir(currentpwd, ob, topfileref, selected);
             } else {
               e = SendToPager(chpwd);
-              printMenu(0, 0, fileMenuText);
-              printMenu(LINES-1, 0, functionMenuText);
               display_dir(currentpwd, ob, topfileref, selected);
             }
           }
           break;
         case 'u':
-          huntCaseSelect();
           e = huntCaseSelectInput();
           if (e != -1){
             huntInput(selected, e);
           }
           abortinput = 0;
-          printMenu(0, 0, fileMenuText);
-          printMenu(LINES-1, 0, functionMenuText);
           display_dir(currentpwd, ob, topfileref, selected);
           break;
         case 'x':
@@ -1093,15 +1037,12 @@ void directory_view_menu_inputs()
               free(execArgs);
             }
             abortinput = 0;
-            printMenu(0, 0, fileMenuText);
-            printMenu(LINES-1, 0, functionMenuText);
             display_dir(currentpwd, ob, topfileref, selected);
           } else {
             topLineMessage("Error: Permission denied");
           }
           break;
         case 27:
-          printMenu(0, 0, globalMenuText);
           global_menu_inputs();
           break;
         case 10: // Enter - Falls through
@@ -1226,7 +1167,6 @@ void directory_view_menu_inputs()
           display_dir(currentpwd, ob, topfileref, selected);
           break;
         case 273: // F9
-          printMenu(0, 0, sortMenuText);
           sort_view_inputs();
           break;
         case 274: // F10
@@ -1302,6 +1242,7 @@ void directory_view_menu_inputs()
 }
 void global_menu_inputs()
 {
+  printMenu(0, 0, globalMenuText);
   if (historyref == 0){
     viewMode = 4;
   } else {
@@ -1320,8 +1261,6 @@ void global_menu_inputs()
           if (historyref == 0){
             printMenu(0, 0, globalMenuText);
           } else {
-            printMenu(0, 0, fileMenuText);
-            printMenu(LINES-1, 0, functionMenuText);
             display_dir(currentpwd, ob, topfileref, selected);
             directory_view_menu_inputs();
           }
@@ -1331,8 +1270,6 @@ void global_menu_inputs()
           if (historyref == 0){
             printMenu(0, 0, globalMenuText);
           } else {
-            printMenu(0, 0, fileMenuText);
-            printMenu(LINES-1, 0, functionMenuText);
             display_dir(currentpwd, ob, topfileref, selected);
             directory_view_menu_inputs();
           }
@@ -1342,8 +1279,6 @@ void global_menu_inputs()
           if (historyref == 0){
             printMenu(0, 0, globalMenuText);
           } else {
-            printMenu(0, 0, fileMenuText);
-            printMenu(LINES-1, 0, functionMenuText);
             display_dir(currentpwd, ob, topfileref, selected);
             directory_view_menu_inputs();
           }
@@ -1359,11 +1294,9 @@ void global_menu_inputs()
           break;
         case 's':
           show_directory_input();
-          show_directory_inputs();
           break;
         case 27:
           if (historyref != 0){
-            printMenu(0, 0, fileMenuText);
             directory_view_menu_inputs();
           }
           break;
@@ -1383,7 +1316,6 @@ void topLineMessage(const char *message){
       switch(*pc)
         {
         default: // Where's the "any" key?
-          printMenu(0, 0, fileMenuText);
           directory_view_menu_inputs();
           break;
         }
