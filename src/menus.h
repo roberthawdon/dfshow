@@ -20,3 +20,4 @@ void topLineMessage(const char *message);
 void printMenu(int line, int col, char *menustring);
 int huntCaseSelectInput();
 void huntInput(int selected, int charcase);
+void refreshDirectory(char *sortmode, int topfileref, int selected);

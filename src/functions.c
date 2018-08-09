@@ -1889,3 +1889,4 @@ void resizeDisplayDir(results* ob){
   }
   display_dir(currentpwd, ob, topfileref, selected);
 }
+
