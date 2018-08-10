@@ -67,7 +67,7 @@ int directory_view(char * currentpwd)
 
   refresh();
 
-  directory_view_menu_inputs0();
+  directory_view_menu_inputs();
 
   free(ob); //freeing memory
   return 0;
@@ -81,7 +81,7 @@ int global_menu()
 
   refresh();
 
-  directory_change_menu_inputs();
+  global_menu_inputs();
 
   return 0;
 }

@@ -46,13 +46,40 @@ Installing DF-SHOW
 
 **Arch**
 
-Development builds of DF-SHOW are available in the AUR
+Releases of DF-SHOW are available in the AUR
+
+.. code-block:: bash
+
+    curl -L https://aur.archlinux.org/cgit/aur.git/snapshot/dfshow.tar.gz | tar xz
+    cd dfshow
+    makepkg -srci
+
+The latest cutting edge versions from the ``master`` branch are also available in the AUR
 
 .. code-block:: bash
 
     curl -L https://aur.archlinux.org/cgit/aur.git/snapshot/dfshow-git.tar.gz | tar xz
     cd dfshow-git
     makepkg -srci
+
+**Ubuntu**
+
+Run the following to install DF-SHOW from the offical PPA
+
+.. code-block:: bash
+
+    sudo add-apt-repository ppa:ian-hawdon/dfshow
+    sudo apt-get update
+    sudo apt-get install dfshow
+
+**RPM Based Distributions**
+
+Pre-built packages of DF-SHOW are maintained on the `Fedora Copr`_ system. For more information, please see the `roberthawdon/DF-SHOW`_ repository.
+
+.. _`Fedora Copr`: https://copr.fedoraproject.org/coprs/
+
+.. _`roberthawdon/DF-SHOW`: https://copr.fedorainfracloud.org/coprs/roberthawdon/DF-SHOW/
+
 
 Building from Git
 -----------------

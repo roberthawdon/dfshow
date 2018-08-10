@@ -41,6 +41,7 @@
 #include "views.h"
 #include "menus.h"
 #include "colors.h"
+#include "main.h"
 
 #if HAVE_SYS_SYSMACROS_H
 # include <sys/sysmacros.h>
@@ -944,6 +945,7 @@ void LaunchShell()
   printf("\nUse 'exit' to return to Show.\n\n");
   system(getenv("SHELL"));
   initscr();
+  refreshScreen();
 }
 
 void LaunchExecutable(const char* object, const char* args)
@@ -956,6 +958,7 @@ void LaunchExecutable(const char* object, const char* args)
   // exit(0);
   system(command);
   initscr();
+  refreshScreen();
 }
 
 void showManPage()
@@ -965,6 +968,7 @@ void showManPage()
   // system("clear"); // Not exactly sure if I want this yet.
   system("man show");
   initscr();
+  refreshScreen();
 }
 
 void mk_dir(char *path)
@@ -1050,6 +1054,7 @@ int SendToPager(char* object)
       endwin();
       e = system(page);
       initscr();
+      refreshScreen();
       return e;
     } else {
       topLineMessage("Error: Permission denied");
@@ -1087,6 +1092,7 @@ int SendToEditor(char* object)
       endwin();
       e = system(editor);
       initscr();
+      refreshScreen();
       return e;
     } else {
       topLineMessage("Error: Permission denied");
@@ -1883,3 +1889,4 @@ void resizeDisplayDir(results* ob){
   }
   display_dir(currentpwd, ob, topfileref, selected);
 }
+
