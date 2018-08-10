@@ -72,6 +72,14 @@ Run the following to install DF-SHOW from the offical PPA
     sudo apt-get update
     sudo apt-get install dfshow
 
+**RPM Based Distributions**
+
+Pre-built packages of DF-SHOW are maintained on the `Fedora Copr`_ system. For more information, please see the `roberthawdon/DF-SHOW`_ repository.
+
+.. _`Fedora Copr`: https://copr.fedoraproject.org/coprs/
+
+.. _`roberthawdon/DF-SHOW`: https://copr.fedorainfracloud.org/coprs/roberthawdon/DF-SHOW/
+
 
 Building from Git
 -----------------
