@@ -964,6 +964,11 @@ void directory_view_menu_inputs()
               strcpy(chpwd, updir);
               free(updir);
               objectWild = "";
+              testSlash:
+              if (check_last_char(chpwd, "/") && strcmp(chpwd, "/")){
+                chpwd[strlen(chpwd) - 1] = '\0';
+                goto testSlash;
+              }
               set_history(chpwd, objectWild, ob[selected].name, topfileref, selected);
               topfileref = 0;
               selected = 0;
