@@ -473,6 +473,11 @@ Valid arguments are:\n\
     invalidstart = 1;
     global_menu();
   }
+  testSlash:
+  if (check_last_char(currentpwd, "/") && strcmp(currentpwd, "/")){
+    currentpwd[strlen(currentpwd) - 1] = '\0';
+    goto testSlash;
+  }
   directory_view(currentpwd);
   return 0;
 }

@@ -155,6 +155,11 @@ void show_directory_input()
   move(0,33);
   readline(currentpwd, 1024, oldpwd);
   curs_set(FALSE);
+  testSlash:
+  if (check_last_char(currentpwd, "/") && strcmp(currentpwd, "/")){
+    currentpwd[strlen(currentpwd) - 1] = '\0';
+    goto testSlash;
+  }
   if ((strcmp(currentpwd, oldpwd) && strcmp(currentpwd, "")) || !historyref){
     objectWild = objectFromPath(currentpwd);
     if ( strchr(objectWild, MULTICHAR) || strchr(objectWild, ONECHAR)){
