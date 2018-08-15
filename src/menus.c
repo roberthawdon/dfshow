@@ -96,6 +96,30 @@ extern char *objectWild;
 
 void topLineMessage(const char *message);
 
+int sanitizeTopFileRef(int topfileref)
+{
+  if ( (topfileref > totalfilecount) ){
+    // If the top file ref exceeds the number of files, we'll want to do something about that
+    topfileref = totalfilecount - (displaysize);
+  } else if ( (selected - topfileref) > (displaysize) ) {
+    // We don't want the selected item off the bottom of the screen
+    topfileref = selected - displaysize + 1;
+  } else if ( (selected - topfileref) < 0 ) {
+    // We certainly don't want the top file ref in the negatives
+    topfileref = 0;
+  }
+  if ( selected == 0 ) {
+    // Just in case we're thrust to the top of the list - like when in a hidden directory and hidden files are switched off
+    topfileref = 0;
+  }
+  if (topfileref < 0){
+    // Likewise, we don't want the topfileref < 0 here either
+    topfileref = 0;
+  }
+
+  return topfileref;
+}
+
 void refreshDirectory(char *sortmode, int topfileref, int selected)
 {
   ob = get_dir(currentpwd);
@@ -915,21 +939,7 @@ void directory_view_menu_inputs()
               reorder_ob(ob, sortmode);
               //selected = hs[historyref].selected;
               selected = findResultByName(ob, hs[historyref].name);
-              topfileref = hs[historyref].topfileref;
-              if ( (topfileref > totalfilecount) ){
-                // If the top file ref exceeds the number of files, we'll want to do something about that
-                topfileref = totalfilecount - (displaysize);
-              } else if ( (selected - topfileref) > (displaysize) ) {
-                // We don't want the selected item off the bottom of the screen
-                topfileref = selected - displaysize + 1;
-              } else if ( (selected - topfileref) < 0 ) {
-                // We certainly don't want the top file ref in the negatives
-                topfileref = 0;
-              }
-              if (topfileref < 0){
-                // Likewise, we don't want the topfileref < 0 here either
-                topfileref = 0;
-              }
+              topfileref = sanitizeTopFileRef(hs[historyref].topfileref);
               clear_workspace();
               // mvprintw(2,0,"totalfilecount: %i\ntopfileref: %i\nselected: %i\ndisplaysize: %i\nLINES: %i", totalfilecount, topfileref, selected, displaysize, LINES);
               display_dir(currentpwd, ob, topfileref, selected);
