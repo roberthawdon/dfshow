@@ -98,15 +98,18 @@ void topLineMessage(const char *message);
 
 int sanitizeTopFileRef(int topfileref)
 {
-  if ( (topfileref > totalfilecount) ){
-    // If the top file ref exceeds the number of files, we'll want to do something about that
-    topfileref = totalfilecount - (displaysize);
-  } else if ( (selected - topfileref) > (displaysize) ) {
+  if ( (selected - topfileref ) > displaysize ){
     // We don't want the selected item off the bottom of the screen
     topfileref = selected - displaysize + 1;
+  } else if ( (topfileref > totalfilecount) ){
+    // If the top file ref exceeds the number of files, we'll want to do something about that
+    topfileref = totalfilecount - (displaysize);
   } else if ( (selected - topfileref) < 0 ) {
     // We certainly don't want the top file ref in the negatives
     topfileref = 0;
+  } else if ((topfileref + displaysize) > totalfilecount){
+    // If we end up with the top file ref in a position where the list of files ends before the end of the screen, we need to sort that too.
+    topfileref = totalfilecount - (displaysize);
   }
   if ( selected == 0 ) {
     // Just in case we're thrust to the top of the list - like when in a hidden directory and hidden files are switched off
@@ -116,15 +119,26 @@ int sanitizeTopFileRef(int topfileref)
     // Likewise, we don't want the topfileref < 0 here either
     topfileref = 0;
   }
+  if ( totalfilecount < displaysize ){
+    // Finally, to override all of the above, if we have less files than display, reset top file ref to 0.
+    topfileref = 0;
+  }
 
   return topfileref;
 }
 
-void refreshDirectory(char *sortmode, int topfileref, int selected)
+void refreshDirectory(char *sortmode, int origtopfileref, int origselected)
 {
+  char currentselectname[512];
+  strcpy(currentselectname, ob[origselected].name);
   ob = get_dir(currentpwd);
   clear_workspace();
   reorder_ob(ob, sortmode);
+  selected = findResultByName(ob, currentselectname);
+  // topfileref = sanitizeTopFileRef(origtopfileref);
+  if (((selected - topfileref) < 0 ) || (selected - topfileref) > displaysize ){
+    topfileref = sanitizeTopFileRef(selected);
+  }
   display_dir(currentpwd, ob, topfileref, selected);
 }
 
@@ -901,19 +915,7 @@ void directory_view_menu_inputs()
           // selected = 0;
           // topfileref = 0;
           selected = findResultByName(ob, currentfilename);
-          if ( (topfileref > totalfilecount) ){
-            // If the top file ref exceeds the number of files, we'll want to do something about that
-            topfileref = totalfilecount - (displaysize);
-          } else if ( (selected - topfileref) > (displaysize) ) {
-            // We don't want the selected item off the bottom of the screen
-            topfileref = selected - displaysize + 1;
-          } else if ( (selected - topfileref) < 0 ) {
-            // We certainly don't want the top file ref in the negatives
-            topfileref = 0;
-          }
-          if ( totalfilecount < displaysize ){
-            topfileref = 0;
-          }
+          topfileref = sanitizeTopFileRef(topfileref);
           display_dir(currentpwd, ob, topfileref, selected);
           break;
         case 'm':
