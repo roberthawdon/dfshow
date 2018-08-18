@@ -36,6 +36,7 @@
 #include <wchar.h>
 #include <math.h>
 #include <regex.h>
+#include "common.h"
 #include "config.h"
 #include "functions.h"
 #include "views.h"
@@ -112,6 +113,7 @@ time_t currenttime;
 
 DIR *folder;
 
+extern int messageBreak;
 extern char currentpwd[1024];
 extern char timestyle[9];
 extern int viewMode;

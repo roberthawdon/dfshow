@@ -20,11 +20,21 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <ncurses.h>
+#include <locale.h>
 #include <getopt.h>
+#include <string.h>
 #include "config.h"
 #include "colors.h"
 #include "common.h"
 #include "sf.h"
+
+char fileMenuText[256];
+
+int c;
+int * pc = &c;
+
+int colormode = 0;
+int messageBreak = 0;
 
 int main(int argc, char *argv[])
 {
@@ -61,5 +71,22 @@ int main(int argc, char *argv[])
     }
   }
 
+  // Writing Menus
+  strcpy(fileMenuText, "<F1>-Down, <F2>-Up, <F3>-Top, <F4>-Bottom, !Find, !Help, !Position, !Quit");
+
+  setlocale(LC_ALL, "");
+
+  initscr();
+
+  start_color();
+  cbreak();
+  setColorMode(colormode);
+  bkgd(COLOR_PAIR(DISPLAY_PAIR));
+  cbreak();
+  noecho();
+  curs_set(FALSE);
+  keypad(stdscr, TRUE);
+
+  exittoshell();
   return 0;
 }

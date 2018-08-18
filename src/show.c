@@ -60,6 +60,8 @@ int filecolors = 0;
 int markedinfo = 0;
 int markedauto = 0;
 
+int messageBreak = 0;
+
 char *objectWild;
 
 extern results* ob;
@@ -173,15 +175,6 @@ void sigwinchHandle(int sig){
   refreshScreen();
 }
 
-
-int exittoshell()
-{
-  clear();
-  endwin();
-  free(hs);
-  exit(0);
-  return 0;
-}
 
 void printHelp(char* programName){
   printf (("Usage: %s [OPTION]... [FILE]...\n"), programName);

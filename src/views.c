@@ -22,6 +22,7 @@
 #include <unistd.h>
 #include <string.h>
 #include "show.h"
+#include "common.h"
 #include "views.h"
 #include "functions.h"
 #include "menus.h"
