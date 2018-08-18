@@ -1,8 +1,10 @@
 AUTOMAKE_OPTIONS = foreign
 LDADD = -lncurses -lm
-bin_PROGRAMS = show
-show_SOURCES = src/main.c src/views.c src/functions.c src/menus.c src/colors.c
+bin_PROGRAMS = show sf
+show_SOURCES = src/show.c src/views.c src/functions.c src/menus.c src/colors.c src/common.c
 show_LDADD = $(LDADD)
+sf_SOURCES = src/sf.c src/colors.c src/common.c
+sf_LDADD = $(LDADD)
 man_MANS = doc/show.1
-pkginclude_HEADERS = src/main.h src/views.h src/functions.h src/menus.h src/colors.h
+pkginclude_HEADERS = src/show.h src/sf.h src/views.h src/functions.h src/menus.h src/colors.h src/common.h
 EXTRA_DIST = doc

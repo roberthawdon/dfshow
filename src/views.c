@@ -21,7 +21,7 @@
 #include <ncurses.h>
 #include <unistd.h>
 #include <string.h>
-#include "main.h"
+#include "show.h"
 #include "views.h"
 #include "functions.h"
 #include "menus.h"

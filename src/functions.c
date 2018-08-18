@@ -41,7 +41,7 @@
 #include "views.h"
 #include "menus.h"
 #include "colors.h"
-#include "main.h"
+#include "show.h"
 
 #if HAVE_SYS_SYSMACROS_H
 # include <sys/sysmacros.h>

@@ -30,7 +30,7 @@
 #include <signal.h>
 #include <regex.h>
 #include "functions.h"
-#include "main.h"
+#include "show.h"
 #include "views.h"
 #include "colors.h"
 

@@ -18,7 +18,6 @@ enum
 void refreshScreen();
 int exittoshell();
 void printHelp(char* programName);
-void printVersion(char* programName);
 int checkStyle(char* styleinput);
 int setColor(char* colorinput);
 int themeSelect(char* themeinput);

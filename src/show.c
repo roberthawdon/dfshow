@@ -30,7 +30,8 @@
 #include "views.h"
 #include "menus.h"
 #include "colors.h"
-#include "main.h"
+#include "common.h"
+#include "show.h"
 
 char currentpwd[1024];
 
@@ -237,15 +238,6 @@ Exit status:\n\
  1  if minor problems (e.g., cannot access subdirectory),\n\
  2  if major problems (e.g., cannot access command-line arguement).\n"), stdout);
   printf ("\nPlease report any bugs to: <%s>\n", PACKAGE_BUGREPORT);
-}
-
-void printVersion(char* programName){
-  printf (("%s %s\n"), programName, VERSION);
-  fputs (("\
-Copyright (C) 2018 Robert Ian Hawdon\n\
-License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.\n\
-This program comes with ABSOLUTELY NO WARRANTY. This is free software, and you\n\
-are welcome to redistribute it under certain conditions.\n"), stdout);
 }
 
 int main(int argc, char *argv[])
