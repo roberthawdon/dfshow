@@ -574,6 +574,13 @@ int readline(char *buffer, int buflen, char *oldbuf)
       } else {
         beep();
       }
+    } else if (c == 270) {
+      // F6 deletes to the end of line. Recently discovered in DF-EDIT 2.3d hidden in program documentation (2018-08-18)
+      if ( pos < len ) {
+        memmove(buffer+pos, buffer+pos+(len-pos), 0);
+        len = pos;
+        clrtoeol();
+      }
     } else if (c == 27) {
       //pos = oldlen;
       //len = oldlen;
