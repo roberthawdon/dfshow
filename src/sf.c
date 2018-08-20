@@ -19,6 +19,7 @@
 #define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <ncurses.h>
 #include <locale.h>
 #include <getopt.h>
@@ -35,6 +36,20 @@ int * pc = &c;
 
 int colormode = 0;
 int messageBreak = 0;
+
+void file_view(char * currentfile)
+{
+  clear();
+  setColors(COMMAND_PAIR);
+
+  printMenu(0, 0, fileMenuText);
+
+  refresh();
+
+  sleep(10); // No function, so we'll pause for 10 seconds to display our menu
+
+  return;
+}
 
 int main(int argc, char *argv[])
 {
@@ -86,6 +101,8 @@ int main(int argc, char *argv[])
   noecho();
   curs_set(FALSE);
   keypad(stdscr, TRUE);
+
+  file_view("test");
 
   exittoshell();
   return 0;
