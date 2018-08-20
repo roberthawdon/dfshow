@@ -27,12 +27,10 @@
 #include "config.h"
 #include "colors.h"
 #include "common.h"
+#include "sfmenus.h"
 #include "sf.h"
 
 char fileMenuText[256];
-
-int c;
-int * pc = &c;
 
 int colormode = 0;
 int messageBreak = 0;
@@ -46,7 +44,8 @@ void file_view(char * currentfile)
 
   refresh();
 
-  sleep(10); // No function, so we'll pause for 10 seconds to display our menu
+  show_file_inputs();
+  // sleep(10); // No function, so we'll pause for 10 seconds to display our menu
 
   return;
 }
