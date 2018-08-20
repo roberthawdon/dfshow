@@ -15,6 +15,9 @@ enum
    GETOPT_MARKED_CHAR = (CHAR_MIN - 11)
   };
 
+int directory_view(char * currentpwd);
+char *getcwd(char *buf, size_t size);
+int global_menu();
 void refreshScreen();
 int exittoshell();
 void printHelp(char* programName);

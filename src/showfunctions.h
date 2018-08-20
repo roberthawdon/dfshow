@@ -31,7 +31,6 @@ int wildcard(const char *value, char *wcard);
 char *str_replace(char *orig, char *rep, char *with);
 int findResultByName(results *ob, char *name);
 char *dateString(time_t date, char *style);
-int readline(char *buffer, int buflen, char *oldbuf);
 char * dirFromPath(const char* myStr);
 char * objectFromPath(const char* myStr);
 int check_dir(char *pwd);

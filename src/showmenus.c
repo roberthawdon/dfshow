@@ -32,7 +32,6 @@
 #include "common.h"
 #include "showfunctions.h"
 #include "show.h"
-#include "showviews.h"
 #include "colors.h"
 
 int c;

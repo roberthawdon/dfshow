@@ -39,7 +39,6 @@
 #include "common.h"
 #include "config.h"
 #include "showfunctions.h"
-#include "showviews.h"
 #include "showmenus.h"
 #include "colors.h"
 #include "show.h"
@@ -511,96 +510,6 @@ char *dateString(time_t date, char *style)
   }
   strftime(outputString, 32, long_time_format[recent], localtime(&(date)));
   return (outputString);
-}
-
-int readline(char *buffer, int buflen, char *oldbuf)
-/* Read up to buflen-1 characters into `buffer`.
- * A terminating '\0' character is added after the input.  */
-{
-  int old_curs = curs_set(1);
-  int pos;
-  int len;
-  int oldlen;
-  int x, y, c;
-  int oldMode = viewMode;
-  int status = 0;
-
-  oldlen = strlen(oldbuf);
-  setColors(INPUT_PAIR);
-  // attron(COLOR_PAIR(INPUT_PAIR));
-
-  pos = oldlen;
-  len = oldlen;
-
-  getyx(stdscr, y, x);
-
-  strcpy(buffer, oldbuf);
-
-  for (;;) {
-
-    buffer[len] = ' ';
-    mvaddnstr(y, x, buffer, len+1); // Prints buffer on screen
-    move(y, x+pos); //
-    c = getch();
-
-    if (c == KEY_ENTER || c == '\n' || c == '\r') {
-      // attron(COLOR_PAIR(COMMAND_PAIR));
-      setColors(COMMAND_PAIR);
-      break;
-    } else if (isprint(c)) {
-      if (pos < buflen-1) {
-        memmove(buffer+pos+1, buffer+pos, len-pos);
-        buffer[pos++] = c;
-        len += 1;
-      } else {
-        beep();
-      }
-    } else if (c == KEY_LEFT) {
-      if (pos > 0) pos -= 1; else beep();
-    } else if (c == KEY_RIGHT) {
-      if (pos < len) pos += 1; else beep();
-    } else if ((c == KEY_BACKSPACE) || (c == 127)) {
-      if (pos > 0) {
-        memmove(buffer+pos-1, buffer+pos, len-pos);
-        pos -= 1;
-        len -= 1;
-        clrtoeol();
-      } else {
-        beep();
-      }
-    } else if (c == KEY_DC) {
-      if (pos < len) {
-        memmove(buffer+pos, buffer+pos+1, len-pos-1);
-        len -= 1;
-        clrtoeol();
-      } else {
-        beep();
-      }
-    } else if (c == 270) {
-      // F6 deletes to the end of line. Recently discovered in DF-EDIT 2.3d hidden in program documentation (2018-08-18)
-      if ( pos < len ) {
-        memmove(buffer+pos, buffer+pos+(len-pos), 0);
-        len = pos;
-        clrtoeol();
-      }
-    } else if (c == 27) {
-      //pos = oldlen;
-      //len = oldlen;
-      //strcpy(buffer, oldbuf); //abort
-      status = -1;
-      pos = 0;
-      len = 0;
-      strcpy(buffer, ""); //abort by blanking
-      // attron(COLOR_PAIR(COMMAND_PAIR));
-      setColors(COMMAND_PAIR);
-      break;
-    } else {
-      beep();
-    }
-  }
-  buffer[len] = '\0';
-  if (old_curs != ERR) curs_set(old_curs);
-  return(status);
 }
 
 char *readableSize(double size, char *buf, int si){

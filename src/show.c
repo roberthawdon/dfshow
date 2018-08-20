@@ -27,7 +27,6 @@
 #include <getopt.h>
 #include "config.h"
 #include "showfunctions.h"
-#include "showviews.h"
 #include "showmenus.h"
 #include "colors.h"
 #include "common.h"
@@ -64,7 +63,8 @@ int messageBreak = 0;
 
 char *objectWild;
 
-extern results* ob;
+results *ob;
+
 extern history *hs;
 extern int topfileref;
 extern int selected;
@@ -73,6 +73,53 @@ extern char sortmode[5];
 extern int showhidden;
 
 struct sigaction sa;
+
+int directory_view(char * currentpwd)
+{
+  objectWild = objectFromPath(currentpwd);
+  if ( strchr(objectWild, MULTICHAR) || strchr(objectWild, ONECHAR)){
+    strcpy(currentpwd, dirFromPath(currentpwd));
+  } else {
+    strcpy(objectWild, "");
+  }
+
+  topfileref = 0;
+  clear();
+  setColors(COMMAND_PAIR);
+
+  // directory_top_menu();
+
+  printMenu(0, 0, fileMenuText);
+
+  set_history(currentpwd, "", "", 0, 0);
+  ob = get_dir(currentpwd);
+  reorder_ob(ob, sortmode);
+  display_dir(currentpwd, ob, topfileref, 0);
+
+  // function_key_menu();
+
+  printMenu(LINES-1, 0, functionMenuText);
+
+  refresh();
+
+  directory_view_menu_inputs();
+
+  free(ob); //freeing memory
+  return 0;
+}
+
+int global_menu()
+{
+  clear();
+
+  printMenu(0, 0, globalMenuText);
+
+  refresh();
+
+  global_menu_inputs();
+
+  return 0;
+}
 
 int setMarked(char* markedinput)
 {
