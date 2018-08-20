@@ -26,9 +26,9 @@
 #include <signal.h>
 #include <getopt.h>
 #include "config.h"
-#include "functions.h"
-#include "views.h"
-#include "menus.h"
+#include "showfunctions.h"
+#include "showviews.h"
+#include "showmenus.h"
 #include "colors.h"
 #include "common.h"
 #include "show.h"

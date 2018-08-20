@@ -30,9 +30,9 @@
 #include <signal.h>
 #include <regex.h>
 #include "common.h"
-#include "functions.h"
+#include "showfunctions.h"
 #include "show.h"
-#include "views.h"
+#include "showviews.h"
 #include "colors.h"
 
 int c;

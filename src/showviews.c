@@ -23,9 +23,9 @@
 #include <string.h>
 #include "show.h"
 #include "common.h"
-#include "views.h"
-#include "functions.h"
-#include "menus.h"
+#include "showviews.h"
+#include "showfunctions.h"
+#include "showmenus.h"
 #include "colors.h"
 
 results *ob;
