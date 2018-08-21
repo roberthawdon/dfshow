@@ -110,7 +110,7 @@ history *hs;
 
 time_t currenttime;
 
-DIR *folder;
+extern DIR *folder;
 
 extern int messageBreak;
 extern char currentpwd[1024];
@@ -1217,34 +1217,6 @@ int cmp_dflist_size(const void *lhs, const void *rhs)
     return (dforderB->size - dforderA->size);
   }
 
-}
-
-int check_dir(char *pwd)
-{
-  const char *path = pwd;
-  struct stat sb;
-  if (stat(path, &sb) == 0 && S_ISDIR(sb.st_mode)){
-    folder = opendir ( path );
-    if (access ( path, F_OK ) != -1 ){
-      if ( folder ){
-        closedir ( folder );
-        return 1;
-      } else {
-        return 0;
-      }
-    } else {
-    return 0;
-    }
-  }
-  return 0;
-}
-
-int check_file(char *file){
-  if( access( file, F_OK ) != -1 ) {
-    return 1;
-  } else {
-    return 0;
-  }
 }
 
 int check_object(const char *object){

@@ -19,11 +19,16 @@
 #define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <ncurses.h>
 #include <string.h>
 #include <ctype.h>
+#include <dirent.h>
+#include <sys/stat.h>
 #include "colors.h"
 #include "config.h"
+
+DIR *folder;
 
 extern int * pc;
 
@@ -190,6 +195,34 @@ int readline(char *buffer, int buflen, char *oldbuf)
   buffer[len] = '\0';
   if (old_curs != ERR) curs_set(old_curs);
   return(status);
+}
+
+int check_dir(char *pwd)
+{
+  const char *path = pwd;
+  struct stat sb;
+  if (stat(path, &sb) == 0 && S_ISDIR(sb.st_mode)){
+    folder = opendir ( path );
+    if (access ( path, F_OK ) != -1 ){
+      if ( folder ){
+        closedir ( folder );
+        return 1;
+      } else {
+        return 0;
+      }
+    } else {
+      return 0;
+    }
+  }
+  return 0;
+}
+
+int check_file(char *file){
+  if( access( file, F_OK ) != -1 ) {
+    return 1;
+  } else {
+    return 0;
+  }
 }
 
 void clear_workspace()

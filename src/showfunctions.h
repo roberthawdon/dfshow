@@ -33,8 +33,6 @@ int findResultByName(results *ob, char *name);
 char *dateString(time_t date, char *style);
 char * dirFromPath(const char* myStr);
 char * objectFromPath(const char* myStr);
-int check_dir(char *pwd);
-int check_file(char *file);
 int check_object(const char *object);
 int check_exec(const char *object);
 void mk_dir(char *path);
