@@ -7,3 +7,5 @@ enum
   };
 
 void file_view(char * currentfile);
+void readFile(const char * currentfile);
+void fileShowStatus(const char * currentfile, int top);

@@ -29,6 +29,7 @@
 #include "config.h"
 
 DIR *folder;
+FILE *file;
 
 extern int * pc;
 

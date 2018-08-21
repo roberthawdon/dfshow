@@ -35,8 +35,23 @@ char fileMenuText[256];
 int colormode = 0;
 int messageBreak = 0;
 
+extern FILE *file;
+
+void fileShowStatus(const char * currentfile, int top)
+{
+  char statusText[512];
+  sprintf(statusText, "File = <%s>  Top = <%i>", currentfile, top);
+  printMenu(LINES - 1, 0, statusText);
+}
+
+void readFile(const char * currentfile)
+{
+  file=fopen(currentfile,"r+");
+}
+
 void file_view(char * currentfile)
 {
+  char notFoundMessage[512];
   clear();
   setColors(COMMAND_PAIR);
 
@@ -44,7 +59,14 @@ void file_view(char * currentfile)
 
   refresh();
 
-  show_file_inputs();
+  if ( check_file(currentfile) ){
+    readFile(currentfile);
+    fileShowStatus(currentfile, 1);
+    show_file_inputs();
+  } else {
+    sprintf(notFoundMessage, "File [%s] does not exist", currentfile);
+    topLineMessage(notFoundMessage);
+  }
   // sleep(10); // No function, so we'll pause for 10 seconds to display our menu
 
   return;
@@ -101,7 +123,9 @@ int main(int argc, char *argv[])
   curs_set(FALSE);
   keypad(stdscr, TRUE);
 
-  file_view("test");
+  if (optind < argc){
+    file_view(argv[optind]);
+  }
 
   exittoshell();
   return 0;
