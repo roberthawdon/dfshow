@@ -34,6 +34,10 @@ char fileMenuText[256];
 
 int colormode = 0;
 int messageBreak = 0;
+int displaysize;
+int topline = 1;
+
+char fileName[512];
 
 extern FILE *file;
 
@@ -44,9 +48,34 @@ void fileShowStatus(const char * currentfile, int top)
   printMenu(LINES - 1, 0, statusText);
 }
 
-void readFile(const char * currentfile)
+void displayFile(const char * currentfile, int top)
 {
+  char line[2014];
+  int count = 0;
+  int displaycount = 0;
+  //mvprintw(0, 66, "%i", top);
+  top--;
   file=fopen(currentfile,"r+");
+  clear_workspace();
+  setColors(DISPLAY_PAIR);
+  if (file != NULL )
+    {
+      while (fgets(line, sizeof line, file) != NULL) /* read a line */
+        {
+          if ((count == top + displaycount) && (displaycount < displaysize))
+            {
+              //use line or in a function return it
+              //in case of a return first close the file with "fclose(file);"
+              mvprintw(displaycount + 1, 0, "%s" , line);
+              displaycount++;
+              count++;
+            } else {
+            count++;
+          }
+        }
+    }
+  fileShowStatus(currentfile, topline);
+  fclose(file);
 }
 
 void file_view(char * currentfile)
@@ -57,11 +86,12 @@ void file_view(char * currentfile)
 
   printMenu(0, 0, fileMenuText);
 
+  displaysize = LINES - 2;
+
   refresh();
 
   if ( check_file(currentfile) ){
-    readFile(currentfile);
-    fileShowStatus(currentfile, 1);
+    displayFile(currentfile, topline);
     show_file_inputs();
   } else {
     sprintf(notFoundMessage, "File [%s] does not exist", currentfile);
@@ -124,7 +154,8 @@ int main(int argc, char *argv[])
   keypad(stdscr, TRUE);
 
   if (optind < argc){
-    file_view(argv[optind]);
+    strcpy(fileName, argv[optind]);
+    file_view(fileName);
   }
 
   exittoshell();

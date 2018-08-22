@@ -27,6 +27,9 @@ int c;
 int * pc = &c;
 
 extern char fileMenuText[256];
+extern FILE *file;
+extern int topline;
+extern char fileName[512];
 
 void show_file_inputs()
 {
@@ -44,6 +47,14 @@ void show_file_inputs()
           break;
         case 'q':
           exittoshell();
+          break;
+        case 258: // Down Arrow
+          topline++;
+          displayFile(fileName, topline);
+          break;
+        case 259: // Up Arrow
+          topline--;
+          displayFile(fileName, topline);
           break;
         case 338: // PgDn
         case 265: // F1
