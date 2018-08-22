@@ -30,6 +30,7 @@ extern char fileMenuText[256];
 extern FILE *file;
 extern int topline;
 extern char fileName[512];
+extern int displaysize;
 
 void show_file_inputs()
 {
@@ -53,14 +54,23 @@ void show_file_inputs()
           displayFile(fileName, topline);
           break;
         case 259: // Up Arrow
-          topline--;
-          displayFile(fileName, topline);
+          if (topline > 1){
+            topline--;
+            displayFile(fileName, topline);
+          }
           break;
         case 338: // PgDn
         case 265: // F1
+          topline = topline + displaysize;
+          displayFile(fileName, topline);
           break;
         case 339: // PgUp
         case 266: // F2
+          topline = topline - displaysize;
+          if (topline < 1){
+            topline = 1;
+          }
+          displayFile(fileName, topline);
           break;
         case 267: // F3
           break;
