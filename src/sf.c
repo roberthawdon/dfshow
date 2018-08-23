@@ -50,18 +50,24 @@ void fileShowStatus(const char * currentfile, int top)
 
 void displayFile(const char * currentfile, int top)
 {
-  char line[2014];
+  unsigned char line[8192];
   int count = 0;
   int displaycount = 0;
   //mvprintw(0, 66, "%i", top);
   top--;
-  file=fopen(currentfile,"r+");
+  file=fopen(currentfile,"rb");
   clear_workspace();
   setColors(DISPLAY_PAIR);
   if (file != NULL )
     {
       while (fgets(line, sizeof line, file) != NULL) /* read a line */
         {
+          // This logic converts Windows/Dos line endings to Unix
+          if (line && (2 <= strlen(line)))
+            {
+              size_t size = strcspn(line, "\r\n");
+              line[size] = 0;
+            }
           if ((count == top + displaycount) && (displaycount < displaysize))
             {
               //use line or in a function return it
