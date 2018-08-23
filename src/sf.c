@@ -36,6 +36,7 @@ int colormode = 0;
 int messageBreak = 0;
 int displaysize;
 int topline = 1;
+int totallines = 0;
 
 char fileName[512];
 
@@ -54,6 +55,7 @@ void displayFile(const char * currentfile, int top)
   int count = 0;
   int displaycount = 0;
   //mvprintw(0, 66, "%i", top);
+  totallines = 0;
   top--;
   file=fopen(currentfile,"rb");
   clear_workspace();
@@ -62,6 +64,7 @@ void displayFile(const char * currentfile, int top)
     {
       while (fgets(line, sizeof line, file) != NULL) /* read a line */
         {
+          totallines++;
           // This logic converts Windows/Dos line endings to Unix
           if (line && (2 <= strlen(line)))
             {
@@ -80,6 +83,7 @@ void displayFile(const char * currentfile, int top)
           }
         }
     }
+  //mvprintw(0,66,"%i",totallines);
   fileShowStatus(currentfile, topline);
   fclose(file);
 }

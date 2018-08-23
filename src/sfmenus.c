@@ -31,6 +31,7 @@ extern FILE *file;
 extern int topline;
 extern char fileName[512];
 extern int displaysize;
+extern int totallines;
 
 void show_file_inputs()
 {
@@ -50,8 +51,10 @@ void show_file_inputs()
           exittoshell();
           break;
         case 258: // Down Arrow
-          topline++;
-          displayFile(fileName, topline);
+          if (topline < totallines){
+            topline++;
+            displayFile(fileName, topline);
+          }
           break;
         case 259: // Up Arrow
           if (topline > 1){
@@ -62,6 +65,9 @@ void show_file_inputs()
         case 338: // PgDn
         case 265: // F1
           topline = topline + displaysize;
+          if (topline > totallines){
+            topline = totallines;
+          }
           displayFile(fileName, topline);
           break;
         case 339: // PgUp
@@ -73,8 +79,12 @@ void show_file_inputs()
           displayFile(fileName, topline);
           break;
         case 267: // F3
+          topline = 1;
+          displayFile(fileName, topline);
           break;
         case 268: // F4
+          topline = totallines;
+          displayFile(fileName, topline);
           break;
         }
     }
