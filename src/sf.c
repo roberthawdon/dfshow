@@ -56,6 +56,14 @@ void sigwinchHandle(int sig)
   displayFile(fileName, topline);
 }
 
+void printHelp(char* programName)
+{
+  printf (("Usage: %s [OPTION]... [FILE]...\n"), programName);
+  fputs (("\n\
+DF-SHOW: An interactive directory/file browser written for Unix-like systems.\n\
+Based on the SHOW application from the PC-DOS DF-EDIT suite by Larry Kroeker.\n"), stdout);
+}
+
 void fileShowStatus(const char * currentfile, int top)
 {
   char statusText[512];
@@ -148,7 +156,7 @@ int main(int argc, char *argv[])
 
     switch(c){
     case GETOPT_HELP_CHAR:
-      // printHelp(argv[0]);
+      printHelp(argv[0]);
       exit(0);
       break;
     case GETOPT_VERSION_CHAR:
@@ -184,6 +192,8 @@ int main(int argc, char *argv[])
   if (optind < argc){
     strcpy(fileName, argv[optind]);
     file_view(fileName);
+  } else {
+    show_file_file_input();
   }
 
   exittoshell();

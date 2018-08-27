@@ -5,4 +5,8 @@ int readline(char *buffer, int buflen, char *oldbuf);
 int check_dir(char *pwd);
 int check_file(char *file);
 void clear_workspace();
+int check_exec(const char *object);
+int check_last_char(const char *str, const char *chk);
+int check_first_char(const char *str, const char *chk);
+char *str_replace(char *orig, char *rep, char *with);
 int exittoshell();

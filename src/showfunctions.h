@@ -28,18 +28,14 @@ typedef struct {
 } history;
 
 int wildcard(const char *value, char *wcard);
-char *str_replace(char *orig, char *rep, char *with);
 int findResultByName(results *ob, char *name);
 char *dateString(time_t date, char *style);
 char * dirFromPath(const char* myStr);
 char * objectFromPath(const char* myStr);
 int check_object(const char *object);
-int check_exec(const char *object);
 void mk_dir(char *path);
 void copy_file(char *source_input, char *target_input);
 void delete_file(char *source_input);
-int check_last_char(const char *str, const char *chk);
-int check_first_char(const char *str, const char *chk);
 int seglength(const void *seg, char *segname, int LEN);
 int cmp_str(const void *lhs, const void *rhs);
 int cmp_int(const void *lhs, const void *rhs);

@@ -19,6 +19,7 @@
 #define _GNU_SOURCE
 #include <ncurses.h>
 #include <stdlib.h>
+#include <string.h>
 #include "common.h"
 #include "sf.h"
 #include "colors.h"
@@ -88,4 +89,22 @@ void show_file_inputs()
           break;
         }
     }
+}
+
+void show_file_file_input()
+{
+  char *rewrite;
+  move(0,0);
+  clrtoeol(); // Probably not needed as this is only ever displayed when launching without a file
+  mvprintw(0,0,"Show File - Enter pathname:");
+  curs_set(TRUE);
+  move(0,28);
+  readline(fileName, 512, "");
+  curs_set(FALSE);
+  if (check_first_char(fileName, "~")){
+    rewrite = str_replace(fileName, "~", getenv("HOME"));
+    strcpy(fileName, rewrite);
+    free(rewrite);
+  }
+  file_view(fileName);
 }
