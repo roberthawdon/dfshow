@@ -24,6 +24,7 @@
 #include <locale.h>
 #include <getopt.h>
 #include <string.h>
+#include <signal.h>
 #include "config.h"
 #include "colors.h"
 #include "common.h"
@@ -41,6 +42,18 @@ int totallines = 0;
 char fileName[512];
 
 extern FILE *file;
+
+struct sigaction sa;
+
+void sigwinchHandle(int sig)
+{
+  endwin();
+  clear();
+  refresh();
+  initscr();
+  printMenu(0, 0, fileMenuText);
+  displayFile(fileName, topline);
+}
 
 void fileShowStatus(const char * currentfile, int top)
 {
@@ -153,6 +166,10 @@ int main(int argc, char *argv[])
   setlocale(LC_ALL, "");
 
   initscr();
+
+  memset(&sa, 0, sizeof(struct sigaction));
+  sa.sa_handler = sigwinchHandle;
+  sigaction(SIGWINCH, &sa, NULL);
 
   start_color();
   cbreak();
