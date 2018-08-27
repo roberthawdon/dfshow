@@ -253,6 +253,15 @@ int check_first_char(const char *str, const char *chk)
   }
 }
 
+int check_numbers_only(const char *s)
+{
+  while (*s) {
+    if (isdigit(*s++) == 0) return 0;
+  }
+
+  return 1;
+}
+
 // Credit for the following function must go to this guy:
 // https://stackoverflow.com/a/779960
 char *str_replace(char *orig, char *rep, char *with) {

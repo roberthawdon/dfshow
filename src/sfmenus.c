@@ -20,6 +20,7 @@
 #include <ncurses.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include "common.h"
 #include "sf.h"
 #include "colors.h"
@@ -34,6 +35,30 @@ extern char fileName[512];
 extern int displaysize;
 extern int totallines;
 
+void show_file_position_input(int currentpos)
+{
+  char newpos[11];
+  move(0,0);
+  clrtoeol();
+  printMenu(0,0,"Position relative (<+num> || <-num>) or absolute (<num>):"); // Fun fact, DF-EDIT 2.3d typoed "absolute" as "absolue"
+  curs_set(TRUE);
+  move(0,52);
+  readline(newpos, 11, "");
+  curs_set(FALSE);
+  if (check_first_char(newpos, "+")){
+    // Something
+  } else if (check_first_char(newpos, "-")) {
+    // Something
+  } else {
+    if (check_numbers_only(newpos)){
+      topline = atoi(newpos);
+    } else {
+      // Something
+    }
+  }
+  printMenu(0, 0, fileMenuText);
+}
+
 void show_file_inputs()
 {
   printMenu(0, 0, fileMenuText);
@@ -47,6 +72,13 @@ void show_file_inputs()
         case 'h':
           break;
         case 'p':
+          show_file_position_input(topline);
+          if (topline > totallines){
+            topline = totallines;
+          } else if (topline < 1){
+            topline = 1;
+          }
+          displayFile(fileName, topline);
           break;
         case 'q':
           exittoshell();
