@@ -46,14 +46,18 @@ void show_file_position_input(int currentpos)
   readline(newpos, 11, "");
   curs_set(FALSE);
   if (check_first_char(newpos, "+")){
-    // Something
+    memmove(newpos, newpos+1, strlen(newpos));
+    if (check_numbers_only(newpos)){
+      topline = topline + atoi(newpos);
+    }
   } else if (check_first_char(newpos, "-")) {
-    // Something
+    memmove(newpos, newpos+1, strlen(newpos));
+    if (check_numbers_only(newpos)){
+      topline = topline - atoi(newpos);
+    }
   } else {
     if (check_numbers_only(newpos)){
       topline = atoi(newpos);
-    } else {
-      // Something
     }
   }
   printMenu(0, 0, fileMenuText);
