@@ -51,6 +51,7 @@ void sigwinchHandle(int sig)
   clear();
   refresh();
   initscr();
+  displaysize = LINES - 2;
   printMenu(0, 0, fileMenuText);
   displayFile(fileName, topline);
 }
