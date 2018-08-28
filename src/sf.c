@@ -38,6 +38,7 @@ int messageBreak = 0;
 int displaysize;
 int topline = 1;
 int totallines = 0;
+int viewmode = 0;
 
 char fileName[512];
 
@@ -52,8 +53,14 @@ void sigwinchHandle(int sig)
   refresh();
   initscr();
   displaysize = LINES - 2;
-  printMenu(0, 0, fileMenuText);
-  displayFile(fileName, topline);
+  if (viewmode == 0){
+    mvprintw(0,0,"Show File - Enter pathname:");
+  } else if (viewmode == 1){
+    printMenu(0, 0, fileMenuText);
+    displayFile(fileName, topline);
+  } else if (viewmode == 2){
+    printMenu(0,0,"Position relative (<+num> || <-num>) or absolute (<num>):"); // Fun fact, DF-EDIT 2.3d typoed "absolute" as "absolue"
+  }
 }
 
 void printHelp(char* programName)
@@ -77,6 +84,7 @@ void displayFile(const char * currentfile, int top)
   int count = 0;
   int displaycount = 0;
   //mvprintw(0, 66, "%i", top);
+  viewmode = 1;
   totallines = 0;
   top--;
   file=fopen(currentfile,"rb");

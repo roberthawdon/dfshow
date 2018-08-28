@@ -34,10 +34,45 @@ extern int topline;
 extern char fileName[512];
 extern int displaysize;
 extern int totallines;
+extern int viewmode;
+
+int show_file_find_case_input()
+{
+  int result;
+  move(0,0);
+  clrtoeol();
+  printMenu(0,0,"!Ignore-case !Case-sensitive !Regular-expression (enter = I)");
+  while(1)
+    {
+    findCaseLoop:
+      *pc = getch();
+      switch(*pc)
+        {
+        case 10:
+        case 'i':
+          result = 0;
+          break;
+        case 'c':
+          result = 1;
+          break;
+        case 'r':
+          result = 2;
+          break;
+        case 27:
+          result = -1;
+          break;
+        default:
+          goto findCaseLoop;
+        }
+      break;
+    }
+  return(result);
+}
 
 void show_file_position_input(int currentpos)
 {
   char newpos[11];
+  viewmode = 2;
   move(0,0);
   clrtoeol();
   printMenu(0,0,"Position relative (<+num> || <-num>) or absolute (<num>):"); // Fun fact, DF-EDIT 2.3d typoed "absolute" as "absolue"
@@ -65,6 +100,7 @@ void show_file_position_input(int currentpos)
 
 void show_file_inputs()
 {
+  int e = 0;
   printMenu(0, 0, fileMenuText);
   while(1)
     {
@@ -72,6 +108,11 @@ void show_file_inputs()
       switch(*pc)
         {
         case 'f':
+          e = show_file_find_case_input();
+          if (e != -1){
+            // Logic Here
+          }
+          printMenu(0, 0, fileMenuText);
           break;
         case 'h':
           break;
