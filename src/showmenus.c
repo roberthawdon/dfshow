@@ -485,11 +485,10 @@ void huntInput(int selected, int charcase)
   mvprintw(0, 0, inputmessage);
   curs_set(TRUE);
   move(0, strlen(inputmessage) + 1);
+  curs_set(FALSE);
   if (readline(regexinput, 1024, "") == -1) {
-    curs_set(FALSE);
     abortinput = 1;
   } else {
-    curs_set(FALSE);
     if (!CheckMarked(ob)){
       strcpy(chpwd, currentpwd);
       if (!check_last_char(chpwd, "/")){

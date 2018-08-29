@@ -31,7 +31,8 @@
 #include "sfmenus.h"
 #include "sf.h"
 
-char fileMenuText[256];
+char fileMenuText[74];
+char filePosText[58];
 
 int colormode = 0;
 int messageBreak = 0;
@@ -59,7 +60,7 @@ void sigwinchHandle(int sig)
     printMenu(0, 0, fileMenuText);
     displayFile(fileName, topline);
   } else if (viewmode == 2){
-    printMenu(0,0,"Position relative (<+num> || <-num>) or absolute (<num>):"); // Fun fact, DF-EDIT 2.3d typoed "absolute" as "absolue"
+    printMenu(0,0,filePosText);
   }
 }
 
@@ -179,6 +180,11 @@ int main(int argc, char *argv[])
 
   // Writing Menus
   strcpy(fileMenuText, "<F1>-Down, <F2>-Up, <F3>-Top, <F4>-Bottom, !Find, !Help, !Position, !Quit");
+  // Fun fact, in DF-EDIT 2.3d, the following text input typoed "absolute" as "absolue", this typo also exists in the Windows version from 1997 (2.3d-76), the 1986 documentation correctly writes it as absolute.
+  strcpy(filePosText, "Position relative (<+num> || <-num>) or absolute (<num>):");
+
+  set_escdelay(10);
+  //ESCDELAY = 10;
 
   setlocale(LC_ALL, "");
 

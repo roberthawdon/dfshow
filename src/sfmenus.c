@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <regex.h>
 #include "common.h"
 #include "sf.h"
 #include "colors.h"
@@ -28,7 +29,10 @@
 int c;
 int * pc = &c;
 
-extern char fileMenuText[256];
+int abortinput = 0;
+
+extern char fileMenuText[74];
+extern char filePosText[58];
 extern FILE *file;
 extern int topline;
 extern char fileName[512];
@@ -36,12 +40,36 @@ extern int displaysize;
 extern int totallines;
 extern int viewmode;
 
+void show_file_find(int charcase)
+{
+  int regexcase;
+  char regexinput[1024];
+  char inputmessage[32];
+  if (charcase){
+    regexcase = 0;
+    strcpy(inputmessage, "Match Case - Enter string:");
+  } else {
+    regexcase = REG_ICASE;
+    strcpy(inputmessage, "Ignore Case - Enter string:");
+  }
+  move(0,0);
+  clrtoeol();
+  mvprintw(0, 0, inputmessage);
+  curs_set(TRUE);
+  move(0, strlen(inputmessage) + 1);
+  curs_set(FALSE);
+  if (readline(regexinput, 1024, "") == -1 ){
+    abortinput = 1;
+  }
+}
+
 int show_file_find_case_input()
 {
   int result;
   move(0,0);
   clrtoeol();
-  printMenu(0,0,"!Ignore-case !Case-sensitive !Regular-expression (enter = I)");
+  // printMenu(0,0,"!Ignore-case !Case-sensitive !Regular-expression (enter = I)");
+  printMenu(0,0,"!Ignore-case !Case-sensitive (enter = I)");
   while(1)
     {
     findCaseLoop:
@@ -55,9 +83,9 @@ int show_file_find_case_input()
         case 'c':
           result = 1;
           break;
-        case 'r':
-          result = 2;
-          break;
+        // case 'r':
+        //   result = 2;
+        //   break;
         case 27:
           result = -1;
           break;
@@ -75,7 +103,7 @@ void show_file_position_input(int currentpos)
   viewmode = 2;
   move(0,0);
   clrtoeol();
-  printMenu(0,0,"Position relative (<+num> || <-num>) or absolute (<num>):"); // Fun fact, DF-EDIT 2.3d typoed "absolute" as "absolue"
+  printMenu(0,0,filePosText);
   curs_set(TRUE);
   move(0,52);
   readline(newpos, 11, "");
@@ -110,7 +138,9 @@ void show_file_inputs()
         case 'f':
           e = show_file_find_case_input();
           if (e != -1){
-            // Logic Here
+            show_file_find(e);
+          } else {
+            abortinput = 0;
           }
           printMenu(0, 0, fileMenuText);
           break;
