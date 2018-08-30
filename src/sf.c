@@ -85,7 +85,7 @@ int findInFile(const char * currentfile, const char * search, int charcase)
     while (line = read_line(file) ){
       count++;
       reti = regexec(&regex, line, 0, NULL, 0);
-      if (!reti) {
+      if (!reti && count > topline) {
         fclose(file);
         free(line);
         regfree(&regex);
