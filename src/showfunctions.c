@@ -137,43 +137,6 @@ static char const *long_time_format[2] =
    "%b %e %H:%M"
   };
 
-char * read_line(FILE *fin) {
-  char *buffer;
-  char *tmp;
-  int read_chars = 0;
-  int bufsize = 8192;
-  char *line = malloc(bufsize);
-
-  if ( !line ) {
-    return NULL;
-  }
-
-  buffer = line;
-
-  while ( fgets(buffer, bufsize - read_chars, fin) ) {
-    read_chars = strlen(line);
-
-    if ( line[read_chars - 1] == '\n' ) {
-      line[read_chars - 1] = '\0';
-      return line;
-    }
-
-    else {
-      bufsize = 2 * bufsize;
-      tmp = realloc(line, bufsize);
-      if ( tmp ) {
-        line = tmp;
-        buffer = line + read_chars;
-      }
-      else {
-        free(line);
-        return NULL;
-      }
-    }
-  }
-  return NULL;
-}
-
 int wildcard(const char *value, char *wcard) {
 
     int vsize = (int)strlen(value);

@@ -25,6 +25,7 @@
 #include <getopt.h>
 #include <string.h>
 #include <signal.h>
+#include <regex.h>
 #include "config.h"
 #include "colors.h"
 #include "common.h"
@@ -62,6 +63,42 @@ void sigwinchHandle(int sig)
   } else if (viewmode == 2){
     printMenu(0,0,filePosText);
   }
+}
+
+int findInFile(const char * currentfile, const char * search, int charcase)
+{
+  char *line;
+  int count = 0;
+  regex_t regex;
+  int reti;
+  char msgbuf[8192];
+
+  reti = regcomp(&regex, search, charcase);
+
+  if (reti) {
+    return(-1);
+  }
+
+  file=fopen(currentfile, "rb");
+
+  if ( file ) {
+    while (line = read_line(file) ){
+      count++;
+      reti = regexec(&regex, line, 0, NULL, 0);
+      if (!reti) {
+        fclose(file);
+        free(line);
+        regfree(&regex);
+        return(count);
+      }
+    }
+  }
+
+  free(line);
+  regfree(&regex);
+  fclose(file);
+  return (-2);
+
 }
 
 void printHelp(char* programName)
@@ -180,7 +217,7 @@ int main(int argc, char *argv[])
 
   // Writing Menus
   strcpy(fileMenuText, "<F1>-Down, <F2>-Up, <F3>-Top, <F4>-Bottom, !Find, !Help, !Position, !Quit");
-  // Fun fact, in DF-EDIT 2.3d, the following text input typoed "absolute" as "absolue", this typo also exists in the Windows version from 1997 (2.3d-76), the 1986 documentation correctly writes it as absolute.
+  // Fun fact, in DF-EDIT 2.3d, the following text input typoed "absolute" as "absolue", this typo also exists in the Windows version from 1997 (2.3d-76), however, the 1986 documentation correctly writes it as "absolute".
   strcpy(filePosText, "Position relative (<+num> || <-num>) or absolute (<num>):");
 
   set_escdelay(10);

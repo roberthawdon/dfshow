@@ -10,4 +10,5 @@ int check_last_char(const char *str, const char *chk);
 int check_first_char(const char *str, const char *chk);
 int check_numbers_only(const char *s);
 char *str_replace(char *orig, char *rep, char *with);
+char * read_line(FILE *fin);
 int exittoshell();

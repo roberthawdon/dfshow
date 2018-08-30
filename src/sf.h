@@ -10,3 +10,4 @@ void file_view(char * currentfile);
 void fileShowStatus(const char * currentfile, int top);
 void displayFile(const char * currentfile, int top);
 void sigwinchHandle(int sig);
+int findInFile(const char * currentfile, const char * search, int charcase);

@@ -60,6 +60,9 @@ void show_file_find(int charcase)
   curs_set(FALSE);
   if (readline(regexinput, 1024, "") == -1 ){
     abortinput = 1;
+  } else {
+    topline = findInFile(fileName, regexinput, regexcase);
+    displayFile(fileName, topline);
   }
 }
 
