@@ -48,13 +48,8 @@ extern FILE *file;
 
 struct sigaction sa;
 
-void sigwinchHandle(int sig)
+void refreshScreen()
 {
-  endwin();
-  clear();
-  refresh();
-  initscr();
-  displaysize = LINES - 2;
   if (viewmode == 0){
     mvprintw(0,0,"Show File - Enter pathname:");
   } else if (viewmode == 1){
@@ -63,6 +58,16 @@ void sigwinchHandle(int sig)
   } else if (viewmode == 2){
     printMenu(0,0,filePosText);
   }
+}
+
+void sigwinchHandle(int sig)
+{
+  endwin();
+  clear();
+  refresh();
+  initscr();
+  displaysize = LINES - 2;
+  refreshScreen();
 }
 
 int findInFile(const char * currentfile, const char * search, int charcase)

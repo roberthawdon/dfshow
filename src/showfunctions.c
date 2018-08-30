@@ -794,16 +794,6 @@ void LaunchExecutable(const char* object, const char* args)
   refreshScreen();
 }
 
-void showManPage()
-{
-  clear();
-  endwin();
-  // system("clear"); // Not exactly sure if I want this yet.
-  system("man show");
-  initscr();
-  refreshScreen();
-}
-
 void mk_dir(char *path)
 {
   struct stat st = {0};

@@ -347,6 +347,17 @@ char * read_line(FILE *fin) {
   return NULL;
 }
 
+void showManPage(const char * prog)
+{
+  char mancmd[10];
+  sprintf(mancmd, "man %s", prog);
+  clear();
+  endwin();
+  // system("clear"); // Not exactly sure if I want this yet.
+  system(mancmd);
+  initscr();
+}
+
 void clear_workspace()
 {
   size_t line_count = 1;

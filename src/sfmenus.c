@@ -148,6 +148,8 @@ void show_file_inputs()
           printMenu(0, 0, fileMenuText);
           break;
         case 'h':
+          showManPage("sf");
+          refreshScreen();
           break;
         case 'p':
           show_file_position_input(topline);

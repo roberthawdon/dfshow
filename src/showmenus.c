@@ -1221,7 +1221,8 @@ void global_menu_inputs()
           }
           break;
         case 'h':
-          showManPage();
+          showManPage("show");
+          refreshScreen();
           if (historyref == 0){
             printMenu(0, 0, globalMenuText);
           } else {
