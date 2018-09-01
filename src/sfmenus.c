@@ -33,6 +33,7 @@ int abortinput = 0;
 
 extern char fileMenuText[74];
 extern char filePosText[58];
+extern char regexinput[1024];
 extern FILE *file;
 extern int topline;
 extern char fileName[512];
@@ -43,8 +44,9 @@ extern int viewmode;
 void show_file_find(int charcase)
 {
   int regexcase;
-  char regexinput[1024];
+  int result;
   char inputmessage[32];
+  char errormessage[1024];
   if (charcase){
     regexcase = 0;
     strcpy(inputmessage, "Match Case - Enter string:");
@@ -58,11 +60,18 @@ void show_file_find(int charcase)
   curs_set(TRUE);
   move(0, strlen(inputmessage) + 1);
   curs_set(FALSE);
-  if (readline(regexinput, 1024, "") == -1 ){
+  if (readline(regexinput, 1024, regexinput) == -1 ){
     abortinput = 1;
   } else {
-    topline = findInFile(fileName, regexinput, regexcase);
-    displayFile(fileName, topline);
+    result = findInFile(fileName, regexinput, regexcase);
+    if ( result > 0 ){
+      topline = result;
+      displayFile(fileName, topline);
+    } else if ( result == -2 ){
+      // Not a feature in DF-EDIT 2.3d, but a nice to have
+      sprintf(errormessage, "No further references to '%s' found.", regexinput);
+      topLineMessage(errormessage);
+    }
   }
 }
 

@@ -35,6 +35,8 @@
 char fileMenuText[74];
 char filePosText[58];
 
+char regexinput[1024];
+
 int colormode = 0;
 int messageBreak = 0;
 int displaysize;
@@ -47,6 +49,19 @@ char fileName[512];
 extern FILE *file;
 
 struct sigaction sa;
+
+int themeSelect(char* themeinput){
+  if (!strcmp(themeinput, "default")){
+    colormode = 0;
+  } else if (!strcmp(themeinput, "monochrome")){
+    colormode = 1;
+  } else if (!strcmp(themeinput, "nt")){
+    colormode = 2;
+  } else {
+    colormode = -1;
+  }
+  return colormode;
+}
 
 void refreshScreen()
 {
@@ -112,6 +127,18 @@ void printHelp(char* programName)
   fputs (("\n\
 DF-SHOW: An interactive directory/file browser written for Unix-like systems.\n\
 Based on the SHOW application from the PC-DOS DF-EDIT suite by Larry Kroeker.\n"), stdout);
+  fputs (("\n\
+Options:\n\
+      --theme=[THEME]          color themes, see the THEME section below for\n\
+                               valid themes.\n\
+      --help                   displays help message, then exits\n\
+      --version                displays version, then exits\n"), stdout);
+  fputs (("\n\
+The THEME argument can be:\n\
+               default:    original theme\n\
+               monochrome: comaptability mode for monochrome displays\n\
+               nt:         a theme that closer resembles win32 versions of\n\
+                           DF-EDIT\n"), stdout);
 }
 
 void fileShowStatus(const char * currentfile, int top)
@@ -195,6 +222,7 @@ int main(int argc, char *argv[])
         {
          {"help",           no_argument,       0, GETOPT_HELP_CHAR},
          {"version",        no_argument,       0, GETOPT_VERSION_CHAR},
+         {"theme",          optional_argument, 0, GETOPT_THEME_CHAR},
          {0, 0, 0, 0}
         };
       int option_index = 0;
@@ -214,6 +242,22 @@ int main(int argc, char *argv[])
       printVersion(argv[0]);
       exit(0);
       break;
+    case GETOPT_THEME_CHAR:
+      if (optarg){
+        if (themeSelect(optarg) == -1 ){
+          printf("%s: invalid argument '%s' for 'theme'\n", argv[0], optarg);
+          fputs (("\
+Valid arguments are:\n\
+  - default\n\
+  - monochrome\n\
+  - nt\n"), stdout);
+          printf("Try '%s --help' for more information.\n", argv[0]);
+          exit(2);
+        }
+      } else {
+        colormode = 0;
+      }
+      break;
     default:
       // abort();
       exit(2);
@@ -227,6 +271,10 @@ int main(int argc, char *argv[])
 
   set_escdelay(10);
   //ESCDELAY = 10;
+
+  // Blank out regexinput
+
+  strcpy(regexinput, "");
 
   setlocale(LC_ALL, "");
 
