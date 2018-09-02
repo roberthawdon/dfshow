@@ -26,6 +26,7 @@
 #include <string.h>
 #include <signal.h>
 #include <regex.h>
+#include <wchar.h>
 #include "config.h"
 #include "colors.h"
 #include "common.h"
@@ -150,9 +151,11 @@ void fileShowStatus(const char * currentfile, int top)
 
 void displayFile(const char * currentfile, int top)
 {
-  unsigned char line[8192];
+  wchar_t line[8192];
   int count = 0;
   int displaycount = 0;
+  int i;
+  int s;
   //mvprintw(0, 66, "%i", top);
   viewmode = 1;
   totallines = 0;
@@ -162,20 +165,35 @@ void displayFile(const char * currentfile, int top)
   setColors(DISPLAY_PAIR);
   if (file != NULL )
     {
-      while (fgets(line, sizeof line, file) != NULL) /* read a line */
+      while (fgetws(line, sizeof line, file) != NULL) /* read a line */
         {
           totallines++;
+          s = 0;
           // This logic converts Windows/Dos line endings to Unix
-          if (line && (2 <= strlen(line)))
-            {
-              size_t size = strcspn(line, "\r\n");
-              line[size] = 0;
-            }
+          // if (line && (2 <= wcslen(line)))
+          //   {
+          //     size_t size = wcscspn(line, L"\r\n");
+          //     line[size] = 0;
+          //   }
           if ((count == top + displaycount) && (displaycount < displaysize))
             {
               //use line or in a function return it
               //in case of a return first close the file with "fclose(file);"
-              mvprintw(displaycount + 1, 0, "%s" , line);
+
+              //mvprintw(displaycount + 1, 0, "%s" , line);
+
+              for (i = 0; i < wcslen(line); i++){
+                mvprintw(displaycount + 1, s, "%lc", line[i]);
+                if (line[i] == L'\t'){
+                  s = s + calculateTab(s);
+                } else {
+                  s++;
+                }
+                if ( ( s ) == COLS){
+                  break;
+                }
+              }
+
               displaycount++;
               count++;
             } else {

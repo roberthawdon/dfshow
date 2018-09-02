@@ -358,6 +358,27 @@ void showManPage(const char * prog)
   initscr();
 }
 
+int calculateTab(int pos)
+{
+  int tabsize = 8;
+  int currentpos;
+  int result;
+
+  currentpos = pos;
+
+  while (currentpos > tabsize){
+    currentpos = currentpos - tabsize;
+  }
+
+  result = tabsize - currentpos;
+
+  if (result <= 0){
+    result = tabsize;
+  }
+
+  return(result);
+}
+
 void clear_workspace()
 {
   size_t line_count = 1;
