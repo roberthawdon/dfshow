@@ -127,6 +127,7 @@ extern int filecolors;
 extern char *objectWild;
 extern int markedinfo;
 extern int markedauto;
+extern int useEnvPager;
 
 /* Formatting time in a similar fashion to `ls` */
 static char const *long_time_format[2] =
@@ -861,10 +862,20 @@ int SendToPager(char* object)
   int e = 0;
   char *escObject = str_replace(object, "'", "'\"'\"'");
 
-  if ( getenv("PAGER")) {
-    strcpy(page, getenv("PAGER"));
+  if (can_run_command("sf")){
+    strcpy(page, "sf");
     pset = 1;
+  } else {
+    useEnvPager = 1;
   }
+
+  if (useEnvPager){
+    if ( getenv("PAGER")) {
+      strcpy(page, getenv("PAGER"));
+      pset = 1;
+    }
+  }
+
   if ( pset ) {
     strcat(page, " ");
     strcpy(esc, "'");

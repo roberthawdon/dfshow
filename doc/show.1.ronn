@@ -76,6 +76,9 @@ Disables the danger color scheme when running with elevated privileges.
 * `--marked`=[<MARKED>]:
 Displays information about marked files. Can be set to `always`, `never`, or `auto`.
 
+* `--no-sf`:
+Doesn't display files using `sf` (if installed) and defaults to the user's PAGER setting.
+
 ## OVERVIEW
 The `show` application lets users view the names of files and directories on a disk with information about the files. Files can be copied, moved, viewed, and edited (in your system's default editor). The application is run using the show command. The output is similar to the `ls` command.
 

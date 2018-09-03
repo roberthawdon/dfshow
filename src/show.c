@@ -58,6 +58,7 @@ int invalidstart = 0;
 int filecolors = 0;
 int markedinfo = 0;
 int markedauto = 0;
+int useEnvPager = 0;
 
 int messageBreak = 0;
 
@@ -263,7 +264,8 @@ Options specific to show:\n\
       --no-danger              turns off danger colors when running with\n\
                                elevated privileges\n\
       --marked=[MARKED]        shows information about marked objects. See\n\
-                               MARKED section below for valid options.\n"), stdout);
+                               MARKED section below for valid options\n\
+      --no-sf                  does not display files in sf\n"), stdout);
   fputs (("\n\
 The THEME argument can be:\n\
                default:    original theme\n\
@@ -311,6 +313,7 @@ int main(int argc, char *argv[])
          {"color",          optional_argument, 0, GETOPT_COLOR_CHAR},
          {"theme",          optional_argument, 0, GETOPT_THEME_CHAR},
          {"marked",         optional_argument, 0, GETOPT_MARKED_CHAR},
+         {"no-sf",          no_argument,       0, GETOPT_ENVPAGER_CHAR},
          {0, 0, 0, 0}
         };
       int option_index = 0;
@@ -434,6 +437,9 @@ Valid arguments are:\n\
     case GETOPT_VERSION_CHAR:
       printVersion(argv[0]);
       exit(0);
+      break;
+    case GETOPT_ENVPAGER_CHAR:
+      useEnvPager = 1;
       break;
     default:
       // abort();

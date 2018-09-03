@@ -379,6 +379,35 @@ int calculateTab(int pos)
   return(result);
 }
 
+int can_run_command(const char *cmd) {
+  const char *path = getenv("PATH");
+  char *buf;
+  char *p;
+  if(strchr(cmd, '/')) {
+      return access(cmd, X_OK)==0;
+  }
+  if(!path){
+    return -1; // something is horribly wrong...
+  }
+  buf = malloc(strlen(path)+strlen(cmd)+3);
+  for(; *path; ++path) {
+    p = buf;
+    for(; *path && *path!=':'; ++path,++p) {
+        *p = *path;
+    }
+    if(p==buf) *p++='.';
+    if(p[-1]!='/') *p++='/';
+    strcpy(p, cmd);
+    if(access(buf, X_OK)==0) {
+        free(buf);
+        return 1;
+    }
+    if(!*path) break;
+  }
+  free(buf);
+  return 0;
+}
+
 void clear_workspace()
 {
   size_t line_count = 1;
