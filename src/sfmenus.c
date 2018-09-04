@@ -162,7 +162,7 @@ void show_file_inputs()
           break;
         case 'p':
           show_file_position_input(topline);
-          if (topline > totallines){
+          if (topline > totallines + 1){
             topline = totallines;
           } else if (topline < 1){
             topline = 1;
@@ -173,7 +173,7 @@ void show_file_inputs()
           exittoshell();
           break;
         case 258: // Down Arrow
-          if (topline < totallines){
+          if (topline < totallines + 1){
             topline++;
             displayFile(fileName, topline);
           }
@@ -187,8 +187,8 @@ void show_file_inputs()
         case 338: // PgDn
         case 265: // F1
           topline = topline + displaysize;
-          if (topline > totallines){
-            topline = totallines;
+          if (topline > totallines + 1){
+            topline = totallines + 1;
           }
           displayFile(fileName, topline);
           break;

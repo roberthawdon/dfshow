@@ -201,6 +201,9 @@ void displayFile(const char * currentfile, int top)
           }
         }
     }
+  attron(A_BOLD);
+  mvprintw(displaycount + 1, 0, "*eof");
+  attroff(A_BOLD);
   //mvprintw(0,66,"%i",totallines);
   fileShowStatus(currentfile, topline);
   fclose(file);
