@@ -1,5 +1,8 @@
 #include <limits.h>
 
+#define LINE_WRAP 0
+#define WORD_WRAP 1
+
 enum
   {
    GETOPT_HELP_CHAR = (CHAR_MIN - 2),

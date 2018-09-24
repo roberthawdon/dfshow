@@ -45,6 +45,9 @@ int topline = 1;
 int totallines = 0;
 int viewmode = 0;
 
+int wrap = 0;
+int wrapmode = LINE_WRAP;
+
 char fileName[512];
 
 extern FILE *file;
@@ -190,7 +193,14 @@ void displayFile(const char * currentfile, int top)
                   s++;
                 }
                 if ( ( s ) == COLS){
-                  break;
+                  if ( wrap ){
+                    if ( wrapmode != WORD_WRAP ){
+                      s = 0;
+                      displaycount++;
+                    }
+                  } else {
+                    break;
+                  }
                 }
               }
 
