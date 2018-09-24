@@ -10,6 +10,7 @@ enum
    GETOPT_THEME_CHAR = (CHAR_MIN - 4)
   };
 
+void buildMenuText();
 void file_view(char * currentfile);
 void fileShowStatus(const char * currentfile, int top);
 void displayFile(const char * currentfile, int top);

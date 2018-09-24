@@ -33,7 +33,7 @@
 #include "sfmenus.h"
 #include "sf.h"
 
-char fileMenuText[81];
+char fileMenuText[100];
 char filePosText[58];
 
 char regexinput[1024];
@@ -53,6 +53,18 @@ char fileName[512];
 extern FILE *file;
 
 struct sigaction sa;
+
+void buildMenuText(){
+  // Writing Menus
+  strcpy(fileMenuText, "<F1>-Down, <F2>-Up, <F3>-Top, <F4>-Bottom, !Find, !Help, !Position, !Quit");
+  if (wrap){
+    strcat(fileMenuText, ", !Wrap-off");
+  } else {
+    strcat(fileMenuText, ", !Wrap-on");
+  }
+  // Fun fact, in DF-EDIT 2.3d, the following text input typoed "absolute" as "absolue", this typo also exists in the Windows version from 1997 (2.3d-76), however, the 1986 documentation correctly writes it as "absolute".
+  strcpy(filePosText, "Position relative (<+num> || <-num>) or absolute (<num>):");
+}
 
 int themeSelect(char* themeinput){
   if (!strcmp(themeinput, "default")){
@@ -301,10 +313,7 @@ Valid arguments are:\n\
     }
   }
 
-  // Writing Menus
-  strcpy(fileMenuText, "<F1>-Down, <F2>-Up, <F3>-Top, <F4>-Bottom, !Find, !Help, !Position, !Quit, !Wrap");
-  // Fun fact, in DF-EDIT 2.3d, the following text input typoed "absolute" as "absolue", this typo also exists in the Windows version from 1997 (2.3d-76), however, the 1986 documentation correctly writes it as "absolute".
-  strcpy(filePosText, "Position relative (<+num> || <-num>) or absolute (<num>):");
+  buildMenuText();
 
   set_escdelay(10);
   //ESCDELAY = 10;

@@ -181,6 +181,8 @@ void show_file_inputs()
           } else {
             wrap = 1;
           }
+          buildMenuText();
+          printMenu(0, 0, fileMenuText);
           displayFile(fileName, topline);
           break;
         case 258: // Down Arrow
@@ -194,6 +196,10 @@ void show_file_inputs()
             topline--;
             displayFile(fileName, topline);
           }
+          break;
+        case 260: // Left Arrow
+          break;
+        case 261: // Right Arrow
           break;
         case 338: // PgDn
         case 265: // F1
