@@ -1,10 +1,10 @@
 AUTOMAKE_OPTIONS = foreign
 LDADD = -lncurses -lm
-bin_PROGRAMS = show sf
-show_SOURCES = src/show.c src/showfunctions.c src/showmenus.c src/colors.c src/common.c
-show_LDADD = $(LDADD)
-sf_SOURCES = src/sf.c src/sfmenus.c src/colors.c src/common.c
-sf_LDADD = $(LDADD)
-man_MANS = doc/show.1
-pkginclude_HEADERS = src/show.h src/sf.h src/showfunctions.h src/showmenus.h src/sfmenus.h src/colors.h src/common.h
+bin_PROGRAMS = $(top_builddir)/bin/show $(top_builddir)/bin/sf
+__top_builddir__bin_show_SOURCES = src/show.c src/showfunctions.c src/showmenus.c src/colors.c src/common.c
+__top_builddir__bin_show_LDADD = $(LDADD)
+__top_builddir__bin_sf_SOURCES = src/sf.c src/sfmenus.c src/colors.c src/common.c
+__top_builddir__bin_sf_LDADD = $(LDADD)
+man_MANS = $(top_builddir)/doc/show.1
+pkginclude_HEADERS = $(top_builddir)/src/show.h $(top_builddir)/src/sf.h $(top_builddir)/src/showfunctions.h $(top_builddir)/src/showmenus.h $(top_builddir)/src/sfmenus.h $(top_builddir)/src/colors.h $(top_builddir)/src/common.h
 EXTRA_DIST = doc

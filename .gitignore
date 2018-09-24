@@ -15,8 +15,6 @@ depcomp
 install-sh
 missing
 stamp-*
-show
-sf
-*.exe
+bin/*
 *.stackdump
 *~
