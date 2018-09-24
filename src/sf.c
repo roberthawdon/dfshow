@@ -197,6 +197,7 @@ void displayFile(const char * currentfile, int top)
                     if ( wrapmode != WORD_WRAP ){
                       s = 0;
                       displaycount++;
+                      count++;
                     }
                   } else {
                     break;
