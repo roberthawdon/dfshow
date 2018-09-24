@@ -133,6 +133,7 @@ DF-SHOW: An interactive directory/file browser written for Unix-like systems.\n\
 Based on the SHOW application from the PC-DOS DF-EDIT suite by Larry Kroeker.\n"), stdout);
   fputs (("\n\
 Options:\n\
+  -w, --wrap                   turn line wrapping on\n\
       --theme=[THEME]          color themes, see the THEME section below for\n\
                                valid themes.\n\
       --help                   displays help message, then exits\n\
@@ -252,6 +253,7 @@ int main(int argc, char *argv[])
     {
       static struct option long_options[] =
         {
+         {"wrap",           no_argument,       0, 'w'},
          {"help",           no_argument,       0, GETOPT_HELP_CHAR},
          {"version",        no_argument,       0, GETOPT_VERSION_CHAR},
          {"theme",          optional_argument, 0, GETOPT_THEME_CHAR},
@@ -259,13 +261,16 @@ int main(int argc, char *argv[])
         };
       int option_index = 0;
 
-      c = getopt_long(argc, argv, "", long_options, &option_index);
+      c = getopt_long(argc, argv, "w", long_options, &option_index);
 
       if ( c == -1 ){
         break;
       }
 
     switch(c){
+    case 'w':
+      wrap = 1;
+      break;
     case GETOPT_HELP_CHAR:
       printHelp(argv[0]);
       exit(0);
