@@ -102,8 +102,8 @@ void topLineMessage(const char *message){
         {
         default: // Where's the "any" key?
           printMenu(0, 0, fileMenuText);
-          return;
           //directory_view_menu_inputs();
+          return;
           break;
         }
     }
