@@ -33,7 +33,7 @@
 #include "sfmenus.h"
 #include "sf.h"
 
-char fileMenuText[74];
+char fileMenuText[81];
 char filePosText[58];
 
 char regexinput[1024];
@@ -296,7 +296,7 @@ Valid arguments are:\n\
   }
 
   // Writing Menus
-  strcpy(fileMenuText, "<F1>-Down, <F2>-Up, <F3>-Top, <F4>-Bottom, !Find, !Help, !Position, !Quit");
+  strcpy(fileMenuText, "<F1>-Down, <F2>-Up, <F3>-Top, <F4>-Bottom, !Find, !Help, !Position, !Quit, !Wrap");
   // Fun fact, in DF-EDIT 2.3d, the following text input typoed "absolute" as "absolue", this typo also exists in the Windows version from 1997 (2.3d-76), however, the 1986 documentation correctly writes it as "absolute".
   strcpy(filePosText, "Position relative (<+num> || <-num>) or absolute (<num>):");
 

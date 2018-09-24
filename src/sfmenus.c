@@ -41,6 +41,9 @@ extern int displaysize;
 extern int totallines;
 extern int viewmode;
 
+extern int wrap;
+extern int wrapmode;
+
 void show_file_find(int charcase)
 {
   int regexcase;
@@ -171,6 +174,14 @@ void show_file_inputs()
           break;
         case 'q':
           exittoshell();
+          break;
+        case 'w':
+          if (wrap){
+            wrap = 0;
+          } else {
+            wrap = 1;
+          }
+          displayFile(fileName, topline);
           break;
         case 258: // Down Arrow
           if (topline < totallines + 1){
