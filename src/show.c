@@ -228,7 +228,7 @@ void printHelp(char* programName){
   printf (("Usage: %s [OPTION]... [FILE]...\n"), programName);
   fputs (("\n\
 DF-SHOW: An interactive directory/file browser written for Unix-like systems.\n\
-Based on the SHOW application from the PC-DOS DF-EDIT suite by Larry Kroeker.\n"), stdout);
+Based on the applications from the PC-DOS DF-EDIT suite by Larry Kroeker.\n"), stdout);
   fputs (("\n\
 Sorts objects alphabetically if -St is not set.\n\
 "), stdout);

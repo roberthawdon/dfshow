@@ -142,7 +142,7 @@ void printHelp(char* programName)
   printf (("Usage: %s [OPTION]... [FILE]...\n"), programName);
   fputs (("\n\
 DF-SHOW: An interactive directory/file browser written for Unix-like systems.\n\
-Based on the SHOW application from the PC-DOS DF-EDIT suite by Larry Kroeker.\n"), stdout);
+Based on the applications from the PC-DOS DF-EDIT suite by Larry Kroeker.\n"), stdout);
   fputs (("\n\
 Options:\n\
   -w, --wrap                   turn line wrapping on\n\
@@ -156,6 +156,7 @@ The THEME argument can be:\n\
                monochrome: comaptability mode for monochrome displays\n\
                nt:         a theme that closer resembles win32 versions of\n\
                            DF-EDIT\n"), stdout);
+  printf ("\nPlease report any bugs to: <%s>\n", PACKAGE_BUGREPORT);
 }
 
 void fileShowStatus(const char * currentfile, int top)
