@@ -1068,7 +1068,11 @@ void directory_view_menu_inputs()
         case 268: // F4
           clear_workspace();
           selected = totalfilecount - 1;
-          topfileref = totalfilecount - displaysize;
+          if (totalfilecount > displaysize){
+            topfileref = totalfilecount - displaysize;
+          } else {
+            topfileref = 0;
+          }
           display_dir(currentpwd, ob, topfileref, selected);
           break;
         case 269: // F5
