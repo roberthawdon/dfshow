@@ -12,6 +12,5 @@ int check_numbers_only(const char *s);
 char *str_replace(char *orig, char *rep, char *with);
 char * read_line(FILE *fin);
 void showManPage(const char * prog);
-int calculateTab(int pos);
 int can_run_command(const char *cmd);
 int exittoshell();
