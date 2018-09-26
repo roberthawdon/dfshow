@@ -42,6 +42,7 @@ int colormode = 0;
 int messageBreak = 0;
 int displaysize;
 int topline = 1;
+int leftcol = 1;
 int totallines = 0;
 int viewmode = 0;
 
@@ -85,7 +86,7 @@ void refreshScreen()
     mvprintw(0,0,"Show File - Enter pathname:");
   } else if (viewmode == 1){
     printMenu(0, 0, fileMenuText);
-    displayFile(fileName, topline);
+    displayFile(fileName);
   } else if (viewmode == 2){
     printMenu(0,0,filePosText);
   }
@@ -159,24 +160,32 @@ The THEME argument can be:\n\
   printf ("\nPlease report any bugs to: <%s>\n", PACKAGE_BUGREPORT);
 }
 
-void fileShowStatus(const char * currentfile, int top)
+void fileShowStatus(const char * currentfile)
 {
   char statusText[512];
-  sprintf(statusText, "File = <%s>  Top = <%i>", currentfile, top);
+  if (wrap){
+    sprintf(statusText, "File = <%s>  Top = <%i>", currentfile, topline);
+  } else {
+    sprintf(statusText, "File = <%s>  Top = <%i:%i>", currentfile, topline, leftcol);
+  }
   printMenu(LINES - 1, 0, statusText);
 }
 
-void displayFile(const char * currentfile, int top)
+void displayFile(const char * currentfile)
 {
   wchar_t line[8192];
   int count = 0;
   int displaycount = 0;
+  int top, left;
   int i;
   int s;
+  top = topline;
+  left = leftcol;
   //mvprintw(0, 66, "%i", top);
   viewmode = 1;
   totallines = 0;
   top--;
+  left--;
   file=fopen(currentfile,"rb");
   clear_workspace();
   setColors(DISPLAY_PAIR);
@@ -199,7 +208,7 @@ void displayFile(const char * currentfile, int top)
 
               //mvprintw(displaycount + 1, 0, "%s" , line);
 
-              for (i = 0; i < wcslen(line); i++){
+              for (i = left; i < wcslen(line); i++){
                 mvprintw(displaycount + 1, s, "%lc", line[i]);
                 if (line[i] == L'\t'){
                   s = s + calculateTab(s);
@@ -230,7 +239,7 @@ void displayFile(const char * currentfile, int top)
   mvprintw(displaycount + 1, 0, "*eof");
   attroff(A_BOLD);
   //mvprintw(0,66,"%i",totallines);
-  fileShowStatus(currentfile, topline);
+  fileShowStatus(currentfile);
   fclose(file);
 }
 
@@ -247,7 +256,7 @@ void file_view(char * currentfile)
   refresh();
 
   if ( check_file(currentfile) ){
-    displayFile(currentfile, topline);
+    displayFile(currentfile);
     show_file_inputs();
   } else {
     sprintf(notFoundMessage, "File [%s] does not exist", currentfile);

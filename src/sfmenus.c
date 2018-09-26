@@ -36,6 +36,7 @@ extern char filePosText[58];
 extern char regexinput[1024];
 extern FILE *file;
 extern int topline;
+extern int leftcol;
 extern char fileName[512];
 extern int displaysize;
 extern int totallines;
@@ -69,7 +70,7 @@ void show_file_find(int charcase)
     result = findInFile(fileName, regexinput, regexcase);
     if ( result > 0 ){
       topline = result;
-      displayFile(fileName, topline);
+      displayFile(fileName);
     } else if ( result == -2 ){
       // Not a feature in DF-EDIT 2.3d, but a nice to have
       sprintf(errormessage, "No further references to '%s' found.", regexinput);
@@ -170,7 +171,7 @@ void show_file_inputs()
           } else if (topline < 1){
             topline = 1;
           }
-          displayFile(fileName, topline);
+          displayFile(fileName);
           break;
         case 'q':
           exittoshell();
@@ -179,27 +180,36 @@ void show_file_inputs()
           if (wrap){
             wrap = 0;
           } else {
+            leftcol = 1;
             wrap = 1;
           }
           buildMenuText();
           printMenu(0, 0, fileMenuText);
-          displayFile(fileName, topline);
+          displayFile(fileName);
           break;
         case 258: // Down Arrow
           if (topline < totallines + 1){
             topline++;
-            displayFile(fileName, topline);
+            displayFile(fileName);
           }
           break;
         case 259: // Up Arrow
           if (topline > 1){
             topline--;
-            displayFile(fileName, topline);
+            displayFile(fileName);
           }
           break;
         case 260: // Left Arrow
+          if ((leftcol > 1) && (wrap != 1)){
+            leftcol--;
+            displayFile(fileName);
+          }
           break;
         case 261: // Right Arrow
+          if (wrap != 1){
+            leftcol++;
+            displayFile(fileName);
+          }
           break;
         case 338: // PgDn
         case 265: // F1
@@ -207,7 +217,7 @@ void show_file_inputs()
           if (topline > totallines + 1){
             topline = totallines + 1;
           }
-          displayFile(fileName, topline);
+          displayFile(fileName);
           break;
         case 339: // PgUp
         case 266: // F2
@@ -215,15 +225,15 @@ void show_file_inputs()
           if (topline < 1){
             topline = 1;
           }
-          displayFile(fileName, topline);
+          displayFile(fileName);
           break;
         case 267: // F3
           topline = 1;
-          displayFile(fileName, topline);
+          displayFile(fileName);
           break;
         case 268: // F4
           topline = totallines + 1; // Show EOF
-          displayFile(fileName, topline);
+          displayFile(fileName);
           break;
         }
     }

@@ -12,8 +12,8 @@ enum
 
 void buildMenuText();
 void file_view(char * currentfile);
-void fileShowStatus(const char * currentfile, int top);
-void displayFile(const char * currentfile, int top);
+void fileShowStatus(const char * currentfile);
+void displayFile(const char * currentfile);
 void sigwinchHandle(int sig);
 int findInFile(const char * currentfile, const char * search, int charcase);
 void refreshScreen();
