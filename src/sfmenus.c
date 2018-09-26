@@ -222,7 +222,7 @@ void show_file_inputs()
           displayFile(fileName, topline);
           break;
         case 268: // F4
-          topline = totallines;
+          topline = totallines + 1; // Show EOF
           displayFile(fileName, topline);
           break;
         }
