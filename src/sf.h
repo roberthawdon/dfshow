@@ -11,6 +11,7 @@ enum
   };
 
 void buildMenuText();
+int calculateTab(int pos);
 void file_view(char * currentfile);
 void fileShowStatus(const char * currentfile);
 void displayFile(const char * currentfile);
