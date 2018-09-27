@@ -98,7 +98,8 @@ int calculateTab(int pos)
   int currentpos;
   int result;
 
-  currentpos = pos + leftcol - 1;
+  // currentpos = pos + leftcol - 1;
+  currentpos = pos;
 
   while (currentpos > tabsize){
     currentpos = currentpos - tabsize;
@@ -229,8 +230,8 @@ void displayFile(const char * currentfile)
 
               //mvprintw(displaycount + 1, 0, "%s" , line);
 
-              for (i = left; i < wcslen(line); i++){
-                mvprintw(displaycount + 1, s, "%lc", line[i]);
+              for (i = 0; i < wcslen(line); i++){
+                mvprintw(displaycount + 1, s - left, "%lc", line[i]);
                 if (line[i] == L'\t'){
                   s = s + calculateTab(s);
                 } else {
