@@ -237,7 +237,7 @@ void displayFile(const char * currentfile)
                 } else {
                   s++;
                 }
-                if ( ( s ) == COLS){
+                if ( ( s ) == COLS + left){
                   if ( wrap ){
                     if ( wrapmode != WORD_WRAP ){
                       s = 0;
