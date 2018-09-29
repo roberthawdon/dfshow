@@ -163,9 +163,7 @@ int findInFile(const char * currentfile, const char * search, int charcase)
 void printHelp(char* programName)
 {
   printf (("Usage: %s [OPTION]... [FILE]...\n"), programName);
-  fputs (("\n\
-DF-SHOW: An interactive directory/file browser written for Unix-like systems.\n\
-Based on the applications from the PC-DOS DF-EDIT suite by Larry Kroeker.\n"), stdout);
+  fputs ((PROGRAM_DESC), stdout);
   fputs (("\n\
 Options:\n\
   -w, --wrap                   turn line wrapping on\n\
