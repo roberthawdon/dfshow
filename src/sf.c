@@ -44,6 +44,7 @@ int displaysize;
 int topline = 1;
 int leftcol = 1;
 int totallines = 0;
+int longestline = 0;
 int viewmode = 0;
 
 int wrap = 0;
@@ -201,6 +202,7 @@ void displayFile(const char * currentfile)
   int s;
   top = topline;
   left = leftcol;
+  longestline = 0;
   //mvprintw(0, 66, "%i", top);
   viewmode = 1;
   totallines = 0;
@@ -215,6 +217,10 @@ void displayFile(const char * currentfile)
         {
           totallines++;
           s = 0;
+          // Calculating the longest line
+          if (wcslen(line) > longestline){
+            longestline = wcslen(line);
+          }
           // This logic converts Windows/Dos line endings to Unix
           // if (line && (2 <= wcslen(line)))
           //   {

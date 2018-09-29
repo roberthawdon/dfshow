@@ -40,6 +40,7 @@ extern int leftcol;
 extern char fileName[512];
 extern int displaysize;
 extern int totallines;
+extern int longestline;
 extern int viewmode;
 
 extern int wrap;
@@ -206,7 +207,7 @@ void show_file_inputs()
           }
           break;
         case 261: // Right Arrow
-          if (wrap != 1){
+          if ((leftcol < longestline) && (wrap != 1)){
             leftcol++;
             displayFile(fileName);
           }
@@ -233,6 +234,14 @@ void show_file_inputs()
           break;
         case 268: // F4
           topline = totallines + 1; // Show EOF
+          displayFile(fileName);
+          break;
+        case 262: // Home
+          leftcol = 1;
+          displayFile(fileName);
+          break;
+        case 360: // End
+          leftcol = longestline;
           displayFile(fileName);
           break;
         }
