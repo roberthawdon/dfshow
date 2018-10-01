@@ -237,12 +237,15 @@ void show_file_inputs()
           displayFile(fileName);
           break;
         case 262: // Home
+	  // Let's not disable this key when Wrapping is on, just in case.
           leftcol = 1;
           displayFile(fileName);
           break;
         case 360: // End
-          leftcol = longestline;
-          displayFile(fileName);
+	  if (wrap != 1){
+            leftcol = longestline;
+            displayFile(fileName);
+	  }
           break;
         }
     }
