@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv='content-type' value='text/html;charset=utf8'>
+  <meta name='generator' value='Ronn/v0.7.3 (http://github.com/rtomayko/ronn/tree/0.7.3)'>
+  <title>sf(1) - An interactive file viewer written for Unix-like systems.</title>
+  <style type='text/css' media='all'>
+  /* style: man */
+  body#manpage {margin:0}
+  .mp {max-width:100ex;padding:0 9ex 1ex 4ex}
+  .mp p,.mp pre,.mp ul,.mp ol,.mp dl {margin:0 0 20px 0}
+  .mp h2 {margin:10px 0 0 0}
+  .mp > p,.mp > pre,.mp > ul,.mp > ol,.mp > dl {margin-left:8ex}
+  .mp h3 {margin:0 0 0 4ex}
+  .mp dt {margin:0;clear:left}
+  .mp dt.flush {float:left;width:8ex}
+  .mp dd {margin:0 0 0 9ex}
+  .mp h1,.mp h2,.mp h3,.mp h4 {clear:left}
+  .mp pre {margin-bottom:20px}
+  .mp pre+h2,.mp pre+h3 {margin-top:22px}
+  .mp h2+pre,.mp h3+pre {margin-top:5px}
+  .mp img {display:block;margin:auto}
+  .mp h1.man-title {display:none}
+  .mp,.mp code,.mp pre,.mp tt,.mp kbd,.mp samp,.mp h3,.mp h4 {font-family:monospace;font-size:14px;line-height:1.42857142857143}
+  .mp h2 {font-size:16px;line-height:1.25}
+  .mp h1 {font-size:20px;line-height:2}
+  .mp {text-align:justify;background:#fff}
+  .mp,.mp code,.mp pre,.mp pre code,.mp tt,.mp kbd,.mp samp {color:#131211}
+  .mp h1,.mp h2,.mp h3,.mp h4 {color:#030201}
+  .mp u {text-decoration:underline}
+  .mp code,.mp strong,.mp b {font-weight:bold;color:#131211}
+  .mp em,.mp var {font-style:italic;color:#232221;text-decoration:none}
+  .mp a,.mp a:link,.mp a:hover,.mp a code,.mp a pre,.mp a tt,.mp a kbd,.mp a samp {color:#0000ff}
+  .mp b.man-ref {font-weight:normal;color:#434241}
+  .mp pre {padding:0 4ex}
+  .mp pre code {font-weight:normal;color:#434241}
+  .mp h2+pre,h3+pre {padding-left:0}
+  ol.man-decor,ol.man-decor li {margin:3px 0 10px 0;padding:0;float:left;width:33%;list-style-type:none;text-transform:uppercase;color:#999;letter-spacing:1px}
+  ol.man-decor {width:100%}
+  ol.man-decor li.tl {text-align:left}
+  ol.man-decor li.tc {text-align:center;letter-spacing:4px}
+  ol.man-decor li.tr {text-align:right;float:right}
+  </style>
+</head>
+<!--
+  The following styles are deprecated and will be removed at some point:
+  div#man, div#man ol.man, div#man ol.head, div#man ol.man.
+
+  The .man-page, .man-decor, .man-head, .man-foot, .man-title, and
+  .man-navigation should be used instead.
+-->
+<body id='manpage'>
+  <div class='mp' id='man'>
+
+  <div class='man-navigation' style='display:none'>
+    <a href="#NAME">NAME</a>
+    <a href="#USAGE">USAGE</a>
+    <a href="#DESCRIPTION">DESCRIPTION</a>
+    <a href="#OPTIONS">OPTIONS</a>
+    <a href="#OVERVIEW">OVERVIEW</a>
+    <a href="#COMMANDS">COMMANDS</a>
+    <a href="#AUTHOR">AUTHOR</a>
+    <a href="#COPYRIGHT">COPYRIGHT</a>
+    <a href="#SEE-ALSO">SEE ALSO</a>
+  </div>
+
+  <ol class='man-decor man-head man head'>
+    <li class='tl'>sf(1)</li>
+    <li class='tc'></li>
+    <li class='tr'>sf(1)</li>
+  </ol>
+
+  <h2 id="NAME">NAME</h2>
+<p class="man-name">
+  <code>sf</code> - <span class="man-whatis">An interactive file viewer written for Unix-like systems.</span>
+</p>
+
+<h2 id="USAGE">USAGE</h2>
+
+<p><code>sf</code> <var>&lt;options</var>> [<var>target</var>]</p>
+
+<h2 id="DESCRIPTION">DESCRIPTION</h2>
+
+<p>DF-SHOW: An interactive directory/file browser written for Unix-like systems. Based on the applications from the PC-DOS DF-EDIT suite by Larry Kroeker.</p>
+
+<h2 id="OPTIONS">OPTIONS</h2>
+
+<ul>
+<li><p><code>-w</code>, <code>--wrap</code>
+Enables line wrapping.</p></li>
+<li><p><code>--theme</code>=[<var>THEME</var>]:
+Color themes. Can be set to <code>default</code>, <code>monochrome</code>, or <code>nt</code>.</p></li>
+<li><p><code>--help</code>:
+Displays help message, then exits.</p></li>
+<li><p><code>--version</code>:
+Displays program version, then exits.</p></li>
+</ul>
+
+
+<h2 id="OVERVIEW">OVERVIEW</h2>
+
+<p>The <code>sf</code> (or Show File) application displays a text file through a logical window which can be moved forward and backward on the file. The utility is invoked by using the <code>sf</code> command or through the <code>show</code> application.</p>
+
+<p>If the <code>sf</code> application is invoked without specifiing a file name, the following prompt requesting a file is displayed.</p>
+
+<p>  <code>Show File - Enter pathname:</code></p>
+
+<p>The screen format is very simple with a command line at the top of the screen, a display window consisting of the middle rows of the screen, and a file identification line at the bottom of the window. The identification line gives the line and column number of the top left character in the window. An example of the command line and information line is given below.</p>
+
+<p>  <code>F1-Down, F2-Up, F3-Top, F4-Bottom, Find, Help, Position, Quit, Wrap-on</code></p>
+
+<p>  <code>File = /home/robert/sf.txt  Top = 1:1</code></p>
+
+<p>The end of the file is indicated by a "<code>*eof</code>" line displayed in the file window after the last line of the file.</p>
+
+<h2 id="COMMANDS">COMMANDS</h2>
+
+<p>The <code>sf</code> application provides functions to move the window up or down on the file being displayed. These functions are invoked by function keys specified before the function name. Commands are provided to position the window to a spesific line of the file and to quit the utility. These commands are invoked by using the first letter of the command name. Each of the commands and functions are described below.</p>
+
+<dl>
+<dt><code>F1</code>, <code>PgDn</code></dt><dd><p>Move the file window down or forward on the file by the size of the display to show the next section of the file.</p></dd>
+<dt><code>F2</code>, <code>PgUp</code></dt><dd><p>Move the file window up or backward on the file by the size of the display to show the previous section of the file.</p></dd>
+<dt class="flush"><code>F3</code></dt><dd><p>Top of File - Position the file window to the first line of the file.</p></dd>
+<dt class="flush"><code>F4</code></dt><dd><p>Bottom of File - Position the file window to the last line of the file.</p></dd>
+<dt class="flush"><code>Find</code></dt><dd><p>Searches for a string provided in the form of a Regex. Case sensitivity is requested by the following prompt, afterwards the user is asked to input the string to search. To abort at this prompt, the <em>ESC</em> key must be used.</p>
+
+<p><code>Ignore-case Case-sensitive (enter = I)</code></p>
+
+<p>Following this selection, one of the following prompts will be displayed:</p>
+
+<p><code>Match Case - Enter string:</code></p>
+
+<p><code>Ignore Case - Enter string:</code></p></dd>
+<dt class="flush"><code>Help</code></dt><dd><p>Launches the <code>man</code> pages for <code>sf</code>.</p></dd>
+<dt><code>Position</code></dt><dd><p>Position the file window to a spesific line of the file or relative from the current file postion. Thew new file postion is requested by the following prompt.</p>
+
+<p><code>Position relative (+num || -num) or absolute (num):</code></p>
+
+<p>If a number without a plus "+" or minus "-" sign is specified, then the file window is moved to the specified line number if it exists. If a number with a plus "+" sign is specified, then the file window is moved down or forward by the specified number of lines. Otherwise if a number with a minus "-" sign is specified then the file window is moved up or backward by the specified number of lines.</p></dd>
+<dt class="flush"><code>Quit</code></dt><dd><p>Terminate the <code>sf</code> application and return to the utility which invoked it, or the user's terminal.</p></dd>
+<dt><code>Wrap-on</code>, <code>Wrap-off</code></dt><dd><p>Toggles line wrapping on or off. When enabled, the information line only shows the line number.</p></dd>
+<dt class="flush"><code>Home</code></dt><dd><p>Position the file window to the first column of the file.</p></dd>
+<dt class="flush"><code>End</code></dt><dd><p>Position the file window to the last column of the file.</p></dd>
+</dl>
+
+
+<h2 id="AUTHOR">AUTHOR</h2>
+
+<p>Written by Robert Ian Hawdon.</p>
+
+<h2 id="COPYRIGHT">COPYRIGHT</h2>
+
+<p>Copyright (C) 2018 License GPLv3+: GNU GPL version 3 or later <a href="https://gnu.org/licenses/gpl.html" data-bare-link="true">https://gnu.org/licenses/gpl.html</a>.</p>
+
+<p>This program comes with ABSOLUTELY NO WARRANTY. This is free software, and you are welcome to redistribute it under certain conditions.</p>
+
+<h2 id="SEE-ALSO">SEE ALSO</h2>
+
+<p><a class="man-ref" href="show.1.html">show<span class="s">(1)</span></a></p>
+
+<p>DF-SHOW on GitHub: <a href="https://github.com/roberthawdon/dfshow" data-bare-link="true">https://github.com/roberthawdon/dfshow</a></p>
+
+
+  <ol class='man-decor man-foot man foot'>
+    <li class='tl'></li>
+    <li class='tc'>October 2018</li>
+    <li class='tr'>sf(1)</li>
+  </ol>
+
+  </div>
+</body>
+</html>

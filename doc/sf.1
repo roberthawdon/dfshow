@@ -1,0 +1,130 @@
+.\" generated with Ronn/v0.7.3
+.\" http://github.com/rtomayko/ronn/tree/0.7.3
+.
+.TH "SF" "1" "October 2018" "" ""
+.
+.SH "NAME"
+\fBsf\fR \- An interactive file viewer written for Unix\-like systems\.
+.
+.SH "USAGE"
+\fBsf\fR \fI<options\fR> [\fItarget\fR]
+.
+.SH "DESCRIPTION"
+DF\-SHOW: An interactive directory/file browser written for Unix\-like systems\. Based on the applications from the PC\-DOS DF\-EDIT suite by Larry Kroeker\.
+.
+.SH "OPTIONS"
+.
+.IP "\(bu" 4
+\fB\-w\fR, \fB\-\-wrap\fR Enables line wrapping\.
+.
+.IP "\(bu" 4
+\fB\-\-theme\fR=[\fITHEME\fR]: Color themes\. Can be set to \fBdefault\fR, \fBmonochrome\fR, or \fBnt\fR\.
+.
+.IP "\(bu" 4
+\fB\-\-help\fR: Displays help message, then exits\.
+.
+.IP "\(bu" 4
+\fB\-\-version\fR: Displays program version, then exits\.
+.
+.IP "" 0
+.
+.SH "OVERVIEW"
+The \fBsf\fR (or Show File) application displays a text file through a logical window which can be moved forward and backward on the file\. The utility is invoked by using the \fBsf\fR command or through the \fBshow\fR application\.
+.
+.P
+If the \fBsf\fR application is invoked without specifiing a file name, the following prompt requesting a file is displayed\.
+.
+.P
+\fBShow File \- Enter pathname:\fR
+.
+.P
+The screen format is very simple with a command line at the top of the screen, a display window consisting of the middle rows of the screen, and a file identification line at the bottom of the window\. The identification line gives the line and column number of the top left character in the window\. An example of the command line and information line is given below\.
+.
+.P
+\fBF1\-Down, F2\-Up, F3\-Top, F4\-Bottom, Find, Help, Position, Quit, Wrap\-on\fR
+.
+.P
+\fBFile = /home/robert/sf\.txt Top = 1:1\fR
+.
+.P
+The end of the file is indicated by a "\fB*eof\fR" line displayed in the file window after the last line of the file\.
+.
+.SH "COMMANDS"
+The \fBsf\fR application provides functions to move the window up or down on the file being displayed\. These functions are invoked by function keys specified before the function name\. Commands are provided to position the window to a spesific line of the file and to quit the utility\. These commands are invoked by using the first letter of the command name\. Each of the commands and functions are described below\.
+.
+.TP
+\fBF1\fR, \fBPgDn\fR
+Move the file window down or forward on the file by the size of the display to show the next section of the file\.
+.
+.TP
+\fBF2\fR, \fBPgUp\fR
+Move the file window up or backward on the file by the size of the display to show the previous section of the file\.
+.
+.TP
+\fBF3\fR
+Top of File \- Position the file window to the first line of the file\.
+.
+.TP
+\fBF4\fR
+Bottom of File \- Position the file window to the last line of the file\.
+.
+.TP
+\fBFind\fR
+Searches for a string provided in the form of a Regex\. Case sensitivity is requested by the following prompt, afterwards the user is asked to input the string to search\. To abort at this prompt, the \fIESC\fR key must be used\.
+.
+.IP
+\fBIgnore\-case Case\-sensitive (enter = I)\fR
+.
+.IP
+Following this selection, one of the following prompts will be displayed:
+.
+.IP
+\fBMatch Case \- Enter string:\fR
+.
+.IP
+\fBIgnore Case \- Enter string:\fR
+.
+.TP
+\fBHelp\fR
+Launches the \fBman\fR pages for \fBsf\fR\.
+.
+.TP
+\fBPosition\fR
+Position the file window to a spesific line of the file or relative from the current file postion\. Thew new file postion is requested by the following prompt\.
+.
+.IP
+\fBPosition relative (+num || \-num) or absolute (num):\fR
+.
+.IP
+If a number without a plus "+" or minus "\-" sign is specified, then the file window is moved to the specified line number if it exists\. If a number with a plus "+" sign is specified, then the file window is moved down or forward by the specified number of lines\. Otherwise if a number with a minus "\-" sign is specified then the file window is moved up or backward by the specified number of lines\.
+.
+.TP
+\fBQuit\fR
+Terminate the \fBsf\fR application and return to the utility which invoked it, or the user\'s terminal\.
+.
+.TP
+\fBWrap\-on\fR, \fBWrap\-off\fR
+Toggles line wrapping on or off\. When enabled, the information line only shows the line number\.
+.
+.TP
+\fBHome\fR
+Position the file window to the first column of the file\.
+.
+.TP
+\fBEnd\fR
+Position the file window to the last column of the file\.
+.
+.SH "AUTHOR"
+Written by Robert Ian Hawdon\.
+.
+.SH "COPYRIGHT"
+Copyright (C) 2018 License GPLv3+: GNU GPL version 3 or later \fIhttps://gnu\.org/licenses/gpl\.html\fR\.
+.
+.P
+This program comes with ABSOLUTELY NO WARRANTY\. This is free software, and you are welcome to redistribute it under certain conditions\.
+.
+.SH "SEE ALSO"
+show(1)
+.
+.P
+DF\-SHOW on GitHub: \fIhttps://github\.com/roberthawdon/dfshow\fR

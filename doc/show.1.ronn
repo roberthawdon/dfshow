@@ -7,7 +7,7 @@ show(1) -- An interactive directory/file browser written for Unix-like systems.
 
 ## DESCRIPTION
 
-DF-SHOW is an interactive directory/file browser written for Unix-like systems. Based on the SHOW application from the PC-DOS DF-EDIT suite by Larry Kroeker.
+DF-SHOW: An interactive directory/file browser written for Unix-like systems. Based on the applications from the PC-DOS DF-EDIT suite by Larry Kroeker.
 
 ## OPTIONS
 
@@ -376,6 +376,6 @@ Copyright (C) 2018 License GPLv3+: GNU GPL version 3 or later <https://gnu.org/l
 This program comes with ABSOLUTELY NO WARRANTY. This is free software, and you are welcome to redistribute it under certain conditions.
 
 ## SEE ALSO
-chmod(1), chown(1)
+sf(1), chmod(1), chown(1)
 
 DF-SHOW on GitHub: <https://github.com/roberthawdon/dfshow>

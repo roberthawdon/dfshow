@@ -1,0 +1,101 @@
+sf(1) -- An interactive file viewer written for Unix-like systems.
+====
+
+## USAGE
+
+`sf` <<options>> [<target>]
+
+## DESCRIPTION
+
+DF-SHOW: An interactive directory/file browser written for Unix-like systems. Based on the applications from the PC-DOS DF-EDIT suite by Larry Kroeker.
+
+## OPTIONS
+
+* `-w`, `--wrap`
+Enables line wrapping.
+
+* `--theme`=[<THEME>]:
+Color themes. Can be set to `default`, `monochrome`, or `nt`.
+
+* `--help`:
+Displays help message, then exits.
+
+* `--version`:
+Displays program version, then exits.
+
+## OVERVIEW
+The `sf` (or Show File) application displays a text file through a logical window which can be moved forward and backward on the file. The utility is invoked by using the `sf` command or through the `show` application.
+
+If the `sf` application is invoked without specifiing a file name, the following prompt requesting a file is displayed.
+
+  `Show File - Enter pathname:`
+
+The screen format is very simple with a command line at the top of the screen, a display window consisting of the middle rows of the screen, and a file identification line at the bottom of the window. The identification line gives the line and column number of the top left character in the window. An example of the command line and information line is given below.
+
+  `F1-Down, F2-Up, F3-Top, F4-Bottom, Find, Help, Position, Quit, Wrap-on`
+
+  `File = /home/robert/sf.txt  Top = 1:1`
+
+The end of the file is indicated by a "`*eof`" line displayed in the file window after the last line of the file.
+
+## COMMANDS
+
+The `sf` application provides functions to move the window up or down on the file being displayed. These functions are invoked by function keys specified before the function name. Commands are provided to position the window to a spesific line of the file and to quit the utility. These commands are invoked by using the first letter of the command name. Each of the commands and functions are described below.
+
+* `F1`, `PgDn`:
+Move the file window down or forward on the file by the size of the display to show the next section of the file.
+
+* `F2`, `PgUp`:
+Move the file window up or backward on the file by the size of the display to show the previous section of the file.
+
+* `F3`:
+Top of File - Position the file window to the first line of the file.
+
+* `F4`:
+Bottom of File - Position the file window to the last line of the file.
+
+* `Find`:
+Searches for a string provided in the form of a Regex. Case sensitivity is requested by the following prompt, afterwards the user is asked to input the string to search. To abort at this prompt, the _ESC_ key must be used.
+
+  `Ignore-case Case-sensitive (enter = I)`
+
+  Following this selection, one of the following prompts will be displayed:
+
+  `Match Case - Enter string:`
+
+  `Ignore Case - Enter string:`
+
+* `Help`:
+Launches the `man` pages for `sf`.
+
+* `Position`:
+Position the file window to a spesific line of the file or relative from the current file postion. Thew new file postion is requested by the following prompt.
+
+  `Position relative (+num || -num) or absolute (num):`
+
+  If a number without a plus "+" or minus "-" sign is specified, then the file window is moved to the specified line number if it exists. If a number with a plus "+" sign is specified, then the file window is moved down or forward by the specified number of lines. Otherwise if a number with a minus "-" sign is specified then the file window is moved up or backward by the specified number of lines.
+
+* `Quit`:
+Terminate the `sf` application and return to the utility which invoked it, or the user's terminal.
+
+* `Wrap-on`, `Wrap-off`:
+Toggles line wrapping on or off. When enabled, the information line only shows the line number.
+
+* `Home`:
+Position the file window to the first column of the file.
+
+* `End`:
+Position the file window to the last column of the file.
+
+## AUTHOR
+Written by Robert Ian Hawdon.
+
+## COPYRIGHT
+Copyright (C) 2018 License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.
+
+This program comes with ABSOLUTELY NO WARRANTY. This is free software, and you are welcome to redistribute it under certain conditions.
+
+## SEE ALSO
+show(1)
+
+DF-SHOW on GitHub: <https://github.com/roberthawdon/dfshow>
