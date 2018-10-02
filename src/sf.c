@@ -47,6 +47,8 @@ int totallines = 0;
 int longestline = 0;
 int viewmode = 0;
 
+int tabsize = 8;
+
 int wrap = 0;
 int wrapmode = LINE_WRAP;
 
@@ -95,7 +97,6 @@ void refreshScreen()
 
 int calculateTab(int pos)
 {
-  int tabsize = 8;
   int currentpos;
   int result;
 
@@ -202,6 +203,7 @@ char *ReadFile(char *name)
 	file = fopen(name, "rb");
 	if (!file)
     {
+      // To do, use message printer
       fprintf(stderr, "Unable to open file %s", name);
       return('\0');
     }
@@ -215,6 +217,7 @@ char *ReadFile(char *name)
 	buffer=(char *)malloc(fileLen+1);
 	if (!buffer)
     {
+      // To do, use message printer
       fprintf(stderr, "Memory error!");
       fclose(file);
       return('\0');
@@ -231,79 +234,69 @@ char *ReadFile(char *name)
 
 void displayFile(const char * currentfile)
 {
-  wchar_t line[8192];
+  FILE *stream;
+  char *line = NULL;
+  size_t len = 0;
+  ssize_t nread;
   int count = 0;
   int displaycount = 0;
   int top, left;
-  int i;
-  int s;
+  int i, s;
   top = topline;
   left = leftcol;
   longestline = 0;
-  //mvprintw(0, 66, "%i", top);
   viewmode = 1;
   totallines = 0;
   top--;
   left--;
-  file=fopen(currentfile,"rb");
   clear_workspace();
   setColors(DISPLAY_PAIR);
-  if (file != NULL )
-    {
-      while (fgetws(line, sizeof line, file) != NULL) /* read a line */
-        {
-          totallines++;
-          s = 0;
-          // Calculating the longest line
-          if (wcslen(line) > longestline){
-            longestline = wcslen(line);
-          }
-          // This logic converts Windows/Dos line endings to Unix
-          // if (line && (2 <= wcslen(line)))
-          //   {
-          //     size_t size = wcscspn(line, L"\r\n");
-          //     line[size] = 0;
-          //   }
-          if ((count == top + displaycount) && (displaycount < displaysize))
-            {
-              //use line or in a function return it
-              //in case of a return first close the file with "fclose(file);"
 
-              //mvprintw(displaycount + 1, 0, "%s" , line);
+  stream = fopen(currentfile, "rb");
+  if (stream == NULL) {
 
-              for (i = 0; i < wcslen(line); i++){
-                mvprintw(displaycount + 1, s - left, "%lc", line[i]);
-                if (line[i] == L'\t'){
-                  s = s + calculateTab(s);
-                } else {
-                  s++;
-                }
-                if ( ( s ) == COLS + left){
-                  if ( wrap ){
-                    if ( wrapmode != WORD_WRAP ){
-                      s = 0;
-                      displaycount++;
-                      count++;
-                    }
-                  } else {
-                    break;
-                  }
-                }
-              }
+    return;
+    }
 
+  while ((nread = getline(&line, &len, stream)) != -1) {
+    totallines++;
+    s = 0;
+    if (nread > longestline){
+      longestline = nread;
+    }
+    if ((count == top + displaycount) && (displaycount < displaysize)){
+      for(i = 0; i < nread; i++){
+        mvprintw(displaycount + 1, s - left, "%lc", line[i]);
+        // This doesn't increase the max line.
+        if (line[i] == '\t'){
+          s = s + calculateTab(s);
+        } else {
+          s++;
+        }
+        if ( s == COLS + left){
+          if ( wrap ) {
+            if ( wrapmode != WORD_WRAP ){
+              s = 0;
               displaycount++;
               count++;
-            } else {
-            count++;
+            }
+          } else {
+            break;
           }
         }
+      }
+      displaycount++;
+      count++;
+    } else {
+      count++;
     }
+  }
   attron(A_BOLD);
   mvprintw(displaycount + 1, 0, "*eof");
   attroff(A_BOLD);
-  //mvprintw(0,66,"%i",totallines);
   fileShowStatus(currentfile);
-  fclose(file);
+  free(line);
+  fclose(stream);
 }
 
 void file_view(char * currentfile)
