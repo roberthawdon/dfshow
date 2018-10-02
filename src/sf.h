@@ -17,5 +17,4 @@ void fileShowStatus(const char * currentfile);
 void displayFile(const char * currentfile);
 void sigwinchHandle(int sig);
 int findInFile(const char * currentfile, const char * search, int charcase);
-char *ReadFile(char *name);
 void refreshScreen();
