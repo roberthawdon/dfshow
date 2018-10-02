@@ -85,6 +85,11 @@ int themeSelect(char* themeinput){
 
 void refreshScreen()
 {
+  endwin();
+  clear();
+  refresh();
+  initscr();
+  displaysize = LINES - 2;
   if (viewmode == 0){
     mvprintw(0,0,"Show File - Enter pathname:");
   } else if (viewmode == 1){
@@ -118,11 +123,6 @@ int calculateTab(int pos)
 
 void sigwinchHandle(int sig)
 {
-  endwin();
-  clear();
-  refresh();
-  initscr();
-  displaysize = LINES - 2;
   refreshScreen();
 }
 
