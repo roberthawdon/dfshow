@@ -181,6 +181,11 @@ int themeSelect(char* themeinput){
 
 void refreshScreen()
 {
+  endwin();
+  clear();
+  refresh();
+  initscr();
+  //mvprintw(0,0,"%d:%d", LINES, COLS);
   if (COLS < 89){
     strcpy(functionMenuText, functionMenuTextShort);
   } else {
@@ -215,11 +220,6 @@ void refreshScreen()
 }
 
 void sigwinchHandle(int sig){
-  endwin();
-  clear();
-  refresh();
-  initscr();
-  //mvprintw(0,0,"%d:%d", LINES, COLS);
   refreshScreen();
 }
 
