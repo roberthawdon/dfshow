@@ -26,11 +26,11 @@
 #include <signal.h>
 #include <getopt.h>
 #include "config.h"
-#include "functions.h"
-#include "views.h"
-#include "menus.h"
+#include "showfunctions.h"
+#include "showmenus.h"
 #include "colors.h"
-#include "main.h"
+#include "common.h"
+#include "show.h"
 
 char currentpwd[1024];
 
@@ -58,10 +58,14 @@ int invalidstart = 0;
 int filecolors = 0;
 int markedinfo = 0;
 int markedauto = 0;
+int useEnvPager = 0;
+
+int messageBreak = 0;
 
 char *objectWild;
 
-extern results* ob;
+results *ob;
+
 extern history *hs;
 extern int topfileref;
 extern int selected;
@@ -70,6 +74,53 @@ extern char sortmode[5];
 extern int showhidden;
 
 struct sigaction sa;
+
+int directory_view(char * currentpwd)
+{
+  objectWild = objectFromPath(currentpwd);
+  if ( strchr(objectWild, MULTICHAR) || strchr(objectWild, ONECHAR)){
+    strcpy(currentpwd, dirFromPath(currentpwd));
+  } else {
+    strcpy(objectWild, "");
+  }
+
+  topfileref = 0;
+  clear();
+  setColors(COMMAND_PAIR);
+
+  // directory_top_menu();
+
+  printMenu(0, 0, fileMenuText);
+
+  set_history(currentpwd, "", "", 0, 0);
+  ob = get_dir(currentpwd);
+  reorder_ob(ob, sortmode);
+  display_dir(currentpwd, ob, topfileref, 0);
+
+  // function_key_menu();
+
+  printMenu(LINES-1, 0, functionMenuText);
+
+  refresh();
+
+  directory_view_menu_inputs();
+
+  free(ob); //freeing memory
+  return 0;
+}
+
+int global_menu()
+{
+  clear();
+
+  printMenu(0, 0, globalMenuText);
+
+  refresh();
+
+  global_menu_inputs();
+
+  return 0;
+}
 
 int setMarked(char* markedinput)
 {
@@ -130,6 +181,11 @@ int themeSelect(char* themeinput){
 
 void refreshScreen()
 {
+  endwin();
+  clear();
+  refresh();
+  initscr();
+  //mvprintw(0,0,"%d:%d", LINES, COLS);
   if (COLS < 89){
     strcpy(functionMenuText, functionMenuTextShort);
   } else {
@@ -164,29 +220,13 @@ void refreshScreen()
 }
 
 void sigwinchHandle(int sig){
-  endwin();
-  clear();
-  refresh();
-  initscr();
-  //mvprintw(0,0,"%d:%d", LINES, COLS);
   refreshScreen();
 }
 
 
-int exittoshell()
-{
-  clear();
-  endwin();
-  free(hs);
-  exit(0);
-  return 0;
-}
-
 void printHelp(char* programName){
   printf (("Usage: %s [OPTION]... [FILE]...\n"), programName);
-  fputs (("\n\
-DF-SHOW: An interactive directory/file browser written for Unix-like systems.\n\
-Based on the SHOW application from the PC-DOS DF-EDIT suite by Larry Kroeker.\n"), stdout);
+  fputs ((PROGRAM_DESC), stdout);
   fputs (("\n\
 Sorts objects alphabetically if -St is not set.\n\
 "), stdout);
@@ -222,7 +262,8 @@ Options specific to show:\n\
       --no-danger              turns off danger colors when running with\n\
                                elevated privileges\n\
       --marked=[MARKED]        shows information about marked objects. See\n\
-                               MARKED section below for valid options.\n"), stdout);
+                               MARKED section below for valid options\n\
+      --no-sf                  does not display files in sf\n"), stdout);
   fputs (("\n\
 The THEME argument can be:\n\
                default:    original theme\n\
@@ -237,15 +278,6 @@ Exit status:\n\
  1  if minor problems (e.g., cannot access subdirectory),\n\
  2  if major problems (e.g., cannot access command-line arguement).\n"), stdout);
   printf ("\nPlease report any bugs to: <%s>\n", PACKAGE_BUGREPORT);
-}
-
-void printVersion(char* programName){
-  printf (("%s %s\n"), programName, VERSION);
-  fputs (("\
-Copyright (C) 2018 Robert Ian Hawdon\n\
-License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.\n\
-This program comes with ABSOLUTELY NO WARRANTY. This is free software, and you\n\
-are welcome to redistribute it under certain conditions.\n"), stdout);
 }
 
 int main(int argc, char *argv[])
@@ -279,6 +311,7 @@ int main(int argc, char *argv[])
          {"color",          optional_argument, 0, GETOPT_COLOR_CHAR},
          {"theme",          optional_argument, 0, GETOPT_THEME_CHAR},
          {"marked",         optional_argument, 0, GETOPT_MARKED_CHAR},
+         {"no-sf",          no_argument,       0, GETOPT_ENVPAGER_CHAR},
          {0, 0, 0, 0}
         };
       int option_index = 0;
@@ -402,6 +435,9 @@ Valid arguments are:\n\
     case GETOPT_VERSION_CHAR:
       printVersion(argv[0]);
       exit(0);
+      break;
+    case GETOPT_ENVPAGER_CHAR:
+      useEnvPager = 1;
       break;
     default:
       // abort();

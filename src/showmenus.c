@@ -29,9 +29,9 @@
 #include <libgen.h>
 #include <signal.h>
 #include <regex.h>
-#include "functions.h"
-#include "main.h"
-#include "views.h"
+#include "common.h"
+#include "showfunctions.h"
+#include "show.h"
 #include "colors.h"
 
 int c;
@@ -94,8 +94,6 @@ extern char *objectWild;
 
 //char testMenu[256];
 
-void topLineMessage(const char *message);
-
 int sanitizeTopFileRef(int topfileref)
 {
   if ( (selected - topfileref ) > displaysize ){
@@ -140,43 +138,6 @@ void refreshDirectory(char *sortmode, int origtopfileref, int origselected)
     topfileref = sanitizeTopFileRef(selected);
   }
   display_dir(currentpwd, ob, topfileref, selected);
-}
-
-void printMenu(int line, int col, char *menustring)
-{
-  int i, len, charcount;
-  charcount = 0;
-  move(line, col);
-  clrtoeol();
-  len = strlen(menustring);
-  setColors(COMMAND_PAIR);
-  for (i = 0; i < len; i++)
-     {
-      if ( menustring[i] == '!' ) {
-          i++;
-          setColors(HILITE_PAIR);
-          mvprintw(line, col + charcount, "%c", menustring[i]);
-          setColors(COMMAND_PAIR);
-          charcount++;
-      } else if ( menustring[i] == '<' ) {
-          i++;
-          setColors(HILITE_PAIR);
-          mvprintw(line, col + charcount, "%c", menustring[i]);
-          charcount++;
-      } else if ( menustring[i] == '>' ) {
-          i++;
-          setColors(COMMAND_PAIR);
-          mvprintw(line, col + charcount, "%c", menustring[i]);
-          charcount++;
-      } else if ( menustring[i] == '\\' ) {
-          i++;
-          mvprintw(line, col + charcount, "%c", menustring[i]);
-          charcount++;
-      } else {
-          mvprintw(line, col + charcount, "%c", menustring[i]);
-          charcount++;
-        }
-    }
 }
 
 void directory_view_menu_inputs(); // Needed to allow menu inputs to switch between each other
@@ -524,11 +485,10 @@ void huntInput(int selected, int charcase)
   mvprintw(0, 0, inputmessage);
   curs_set(TRUE);
   move(0, strlen(inputmessage) + 1);
+  curs_set(FALSE);
   if (readline(regexinput, 1024, "") == -1) {
-    curs_set(FALSE);
     abortinput = 1;
   } else {
-    curs_set(FALSE);
     if (!CheckMarked(ob)){
       strcpy(chpwd, currentpwd);
       if (!check_last_char(chpwd, "/")){
@@ -1108,7 +1068,11 @@ void directory_view_menu_inputs()
         case 268: // F4
           clear_workspace();
           selected = totalfilecount - 1;
-          topfileref = totalfilecount - displaysize;
+          if (totalfilecount > displaysize){
+            topfileref = totalfilecount - displaysize;
+          } else {
+            topfileref = 0;
+          }
           display_dir(currentpwd, ob, topfileref, selected);
           break;
         case 269: // F5
@@ -1261,7 +1225,8 @@ void global_menu_inputs()
           }
           break;
         case 'h':
-          showManPage();
+          showManPage("show");
+          refreshScreen();
           if (historyref == 0){
             printMenu(0, 0, globalMenuText);
           } else {
@@ -1271,6 +1236,7 @@ void global_menu_inputs()
           break;
         case 'q':
           if (historyref == 0){
+            free(hs);
             exittoshell();
             refresh();
           } else {
@@ -1289,22 +1255,3 @@ void global_menu_inputs()
         }
     }
 }
-
-void topLineMessage(const char *message){
-  move(0,0);
-  clrtoeol();
-  setColors(ERROR_PAIR);
-  mvprintw(0,0, "%s", message);
-  setColors(COMMAND_PAIR);
-  while(1)
-    {
-      *pc = getch();
-      switch(*pc)
-        {
-        default: // Where's the "any" key?
-          directory_view_menu_inputs();
-          break;
-        }
-    }
-}
-
