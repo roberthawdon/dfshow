@@ -28,21 +28,14 @@ typedef struct {
 } history;
 
 int wildcard(const char *value, char *wcard);
-char *str_replace(char *orig, char *rep, char *with);
 int findResultByName(results *ob, char *name);
 char *dateString(time_t date, char *style);
-int readline(char *buffer, int buflen, char *oldbuf);
 char * dirFromPath(const char* myStr);
 char * objectFromPath(const char* myStr);
-int check_dir(char *pwd);
-int check_file(char *file);
 int check_object(const char *object);
-int check_exec(const char *object);
 void mk_dir(char *path);
 void copy_file(char *source_input, char *target_input);
 void delete_file(char *source_input);
-int check_last_char(const char *str, const char *chk);
-int check_first_char(const char *str, const char *chk);
 int seglength(const void *seg, char *segname, int LEN);
 int cmp_str(const void *lhs, const void *rhs);
 int cmp_int(const void *lhs, const void *rhs);
@@ -60,7 +53,6 @@ int SendToEditor(char* object);
 void CheckEnv(const char* key);
 void LaunchShell();
 void LaunchExecutable(const char* object, const char* args);
-void showManPage();
 int UpdateOwnerGroup(const char* object, const char* pwdstr, const char* grpstr);
 int RenameObject(char* source, char* dest);
 int CheckMarked(results* ob);
@@ -74,7 +66,6 @@ const char * writePermsEntry(char * perms, mode_t mode);
 void writeResultStruct(results* ob, const char * filename, struct stat buffer, int count);
 char *markedDisplay(results* ob);
 int huntFile(const char * file, const char * search, int charcase);
-char * read_line(FILE *fin);
 
 #define MULTICHAR '*'
 #define ONECHAR '?'

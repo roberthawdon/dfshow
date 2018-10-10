@@ -12,13 +12,16 @@ enum
    GETOPT_NODANGER_CHAR = (CHAR_MIN - 8),
    GETOPT_COLOR_CHAR = (CHAR_MIN - 9),
    GETOPT_THEME_CHAR = (CHAR_MIN - 10),
-   GETOPT_MARKED_CHAR = (CHAR_MIN - 11)
+   GETOPT_MARKED_CHAR = (CHAR_MIN - 11),
+   GETOPT_ENVPAGER_CHAR = (CHAR_MIN - 12)
   };
 
+int directory_view(char * currentpwd);
+char *getcwd(char *buf, size_t size);
+int global_menu();
 void refreshScreen();
 int exittoshell();
 void printHelp(char* programName);
-void printVersion(char* programName);
 int checkStyle(char* styleinput);
 int setColor(char* colorinput);
 int themeSelect(char* themeinput);

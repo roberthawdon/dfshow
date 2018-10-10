@@ -36,12 +36,12 @@
 #include <wchar.h>
 #include <math.h>
 #include <regex.h>
+#include "common.h"
 #include "config.h"
-#include "functions.h"
-#include "views.h"
-#include "menus.h"
+#include "showfunctions.h"
+#include "showmenus.h"
 #include "colors.h"
-#include "main.h"
+#include "show.h"
 
 #if HAVE_SYS_SYSMACROS_H
 # include <sys/sysmacros.h>
@@ -110,8 +110,9 @@ history *hs;
 
 time_t currenttime;
 
-DIR *folder;
+extern DIR *folder;
 
+extern int messageBreak;
 extern char currentpwd[1024];
 extern char timestyle[9];
 extern int viewMode;
@@ -126,6 +127,7 @@ extern int filecolors;
 extern char *objectWild;
 extern int markedinfo;
 extern int markedauto;
+extern int useEnvPager;
 
 /* Formatting time in a similar fashion to `ls` */
 static char const *long_time_format[2] =
@@ -135,43 +137,6 @@ static char const *long_time_format[2] =
    // Without year, for recent files.
    "%b %e %H:%M"
   };
-
-char * read_line(FILE *fin) {
-  char *buffer;
-  char *tmp;
-  int read_chars = 0;
-  int bufsize = 8192;
-  char *line = malloc(bufsize);
-
-  if ( !line ) {
-    return NULL;
-  }
-
-  buffer = line;
-
-  while ( fgets(buffer, bufsize - read_chars, fin) ) {
-    read_chars = strlen(line);
-
-    if ( line[read_chars - 1] == '\n' ) {
-      line[read_chars - 1] = '\0';
-      return line;
-    }
-
-    else {
-      bufsize = 2 * bufsize;
-      tmp = realloc(line, bufsize);
-      if ( tmp ) {
-        line = tmp;
-        buffer = line + read_chars;
-      }
-      else {
-        free(line);
-        return NULL;
-      }
-    }
-  }
-  return NULL;
-}
 
 int wildcard(const char *value, char *wcard) {
 
@@ -260,54 +225,6 @@ int wildcard(const char *value, char *wcard) {
     }
 
     return match;
-}
-
-// Credit for the following function must go to this guy:
-// https://stackoverflow.com/a/779960
-char *str_replace(char *orig, char *rep, char *with) {
-    char *result; // the return string
-    char *ins;    // the next insert point
-    char *tmp;    // varies
-    int len_rep;  // length of rep (the string to remove)
-    int len_with; // length of with (the string to replace rep with)
-    int len_front; // distance between rep and end of last rep
-    int count;    // number of replacements
-
-    // sanity checks and initialization
-    if (!orig || !rep)
-        return NULL;
-    len_rep = strlen(rep);
-    if (len_rep == 0)
-        return NULL; // empty rep causes infinite loop during count
-    if (!with)
-        with = "";
-    len_with = strlen(with);
-
-    // count the number of replacements needed
-    ins = orig;
-    for (count = 0; tmp = strstr(ins, rep); ++count) {
-        ins = tmp + len_rep;
-    }
-
-    tmp = result = malloc(strlen(orig) + (len_with - len_rep) * count + 1);
-
-    if (!result)
-        return NULL;
-
-    // first time through the loop, all the variable are set correctly
-    // from here on,
-    //    tmp points to the end of the result string
-    //    ins points to the next occurrence of rep in orig
-    //    orig points to the remainder of orig after "end of rep"
-    while (count--) {
-        ins = strstr(orig, rep);
-        len_front = ins - orig;
-        tmp = strncpy(tmp, orig, len_front) + len_front;
-        tmp = strcpy(tmp, with) + len_with;
-        orig += len_front + len_rep; // move to next "end of rep"
-    }
-    strcpy(tmp, orig);
-    return result;
 }
 
 const char * writePermsEntry(char * perms, mode_t mode){
@@ -509,89 +426,6 @@ char *dateString(time_t date, char *style)
   }
   strftime(outputString, 32, long_time_format[recent], localtime(&(date)));
   return (outputString);
-}
-
-int readline(char *buffer, int buflen, char *oldbuf)
-/* Read up to buflen-1 characters into `buffer`.
- * A terminating '\0' character is added after the input.  */
-{
-  int old_curs = curs_set(1);
-  int pos;
-  int len;
-  int oldlen;
-  int x, y, c;
-  int oldMode = viewMode;
-  int status = 0;
-
-  oldlen = strlen(oldbuf);
-  setColors(INPUT_PAIR);
-  // attron(COLOR_PAIR(INPUT_PAIR));
-
-  pos = oldlen;
-  len = oldlen;
-
-  getyx(stdscr, y, x);
-
-  strcpy(buffer, oldbuf);
-
-  for (;;) {
-
-    buffer[len] = ' ';
-    mvaddnstr(y, x, buffer, len+1); // Prints buffer on screen
-    move(y, x+pos); //
-    c = getch();
-
-    if (c == KEY_ENTER || c == '\n' || c == '\r') {
-      // attron(COLOR_PAIR(COMMAND_PAIR));
-      setColors(COMMAND_PAIR);
-      break;
-    } else if (isprint(c)) {
-      if (pos < buflen-1) {
-        memmove(buffer+pos+1, buffer+pos, len-pos);
-        buffer[pos++] = c;
-        len += 1;
-      } else {
-        beep();
-      }
-    } else if (c == KEY_LEFT) {
-      if (pos > 0) pos -= 1; else beep();
-    } else if (c == KEY_RIGHT) {
-      if (pos < len) pos += 1; else beep();
-    } else if ((c == KEY_BACKSPACE) || (c == 127)) {
-      if (pos > 0) {
-        memmove(buffer+pos-1, buffer+pos, len-pos);
-        pos -= 1;
-        len -= 1;
-        clrtoeol();
-      } else {
-        beep();
-      }
-    } else if (c == KEY_DC) {
-      if (pos < len) {
-        memmove(buffer+pos, buffer+pos+1, len-pos-1);
-        len -= 1;
-        clrtoeol();
-      } else {
-        beep();
-      }
-    } else if (c == 27) {
-      //pos = oldlen;
-      //len = oldlen;
-      //strcpy(buffer, oldbuf); //abort
-      status = -1;
-      pos = 0;
-      len = 0;
-      strcpy(buffer, ""); //abort by blanking
-      // attron(COLOR_PAIR(COMMAND_PAIR));
-      setColors(COMMAND_PAIR);
-      break;
-    } else {
-      beep();
-    }
-  }
-  buffer[len] = '\0';
-  if (old_curs != ERR) curs_set(old_curs);
-  return(status);
 }
 
 char *readableSize(double size, char *buf, int si){
@@ -961,16 +795,6 @@ void LaunchExecutable(const char* object, const char* args)
   refreshScreen();
 }
 
-void showManPage()
-{
-  clear();
-  endwin();
-  // system("clear"); // Not exactly sure if I want this yet.
-  system("man show");
-  initscr();
-  refreshScreen();
-}
-
 void mk_dir(char *path)
 {
   struct stat st = {0};
@@ -1038,10 +862,20 @@ int SendToPager(char* object)
   int e = 0;
   char *escObject = str_replace(object, "'", "'\"'\"'");
 
-  if ( getenv("PAGER")) {
-    strcpy(page, getenv("PAGER"));
+  if (can_run_command("sf")){
+    strcpy(page, "sf");
     pset = 1;
+  } else {
+    useEnvPager = 1;
   }
+
+  if (useEnvPager){
+    if ( getenv("PAGER")) {
+      strcpy(page, getenv("PAGER"));
+      pset = 1;
+    }
+  }
+
   if ( pset ) {
     strcat(page, " ");
     strcpy(esc, "'");
@@ -1301,34 +1135,6 @@ int cmp_dflist_size(const void *lhs, const void *rhs)
 
 }
 
-int check_dir(char *pwd)
-{
-  const char *path = pwd;
-  struct stat sb;
-  if (stat(path, &sb) == 0 && S_ISDIR(sb.st_mode)){
-    folder = opendir ( path );
-    if (access ( path, F_OK ) != -1 ){
-      if ( folder ){
-        closedir ( folder );
-        return 1;
-      } else {
-        return 0;
-      }
-    } else {
-    return 0;
-    }
-  }
-  return 0;
-}
-
-int check_file(char *file){
-  if( access( file, F_OK ) != -1 ) {
-    return 1;
-  } else {
-    return 0;
-  }
-}
-
 int check_object(const char *object){
   struct stat sb;
   if (stat(object, &sb) == 0 ){
@@ -1339,33 +1145,6 @@ int check_object(const char *object){
     } else {
       return 0;
     }
-    return 0;
-  }
-}
-
-int check_exec(const char *object)
-{
-  if (access(object, X_OK) == 0) {
-    return 1;
-  } else {
-    return 0;
-  }
-}
-
-int check_last_char(const char *str, const char *chk)
-{
-  if (!strcmp(&str[strlen(str) - 1], chk)){
-    return 1;
-  } else {
-    return 0;
-  }
-}
-
-int check_first_char(const char *str, const char *chk)
-{
-   if (str[0] == chk[0]){
-    return 1;
-  } else {
     return 0;
   }
 }
@@ -1630,6 +1409,7 @@ results* get_dir(char *pwd)
       }else{
         sprintf(direrror, "Could not open the directory" );
         topLineMessage(direrror);
+        historyref--;
         // return ob;
       }
     }
@@ -1643,7 +1423,20 @@ results* get_dir(char *pwd)
 
   } else {
     sprintf(direrror, "The location %s cannot be opened or is not a directory\n", path);
-    topLineMessage(direrror);
+    historyref--;
+    if (historyref > 0 ){
+      strcpy(pwd, hs[historyref - 1].path);
+      strcat(pwd, "/");
+      strcat(pwd, hs[historyref - 1].objectWild);
+      // Following lines don't work, fix later
+      topfileref = hs[historyref - 1].topfileref;
+      selected = hs[historyref - 1].selected;
+      topLineMessage(direrror);
+      goto fetch;
+    } else {
+      topLineMessage(direrror);
+      global_menu();
+    }
     // return ob;
   }
   hlinklen = seglength(ob, "hlink", count);
