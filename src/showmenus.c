@@ -129,6 +129,7 @@ void refreshDirectory(char *sortmode, int origtopfileref, int origselected)
 {
   char currentselectname[512];
   strcpy(currentselectname, ob[origselected].name);
+  free(ob);
   ob = get_dir(currentpwd);
   clear_workspace();
   reorder_ob(ob, sortmode);
@@ -868,6 +869,7 @@ void directory_view_menu_inputs()
           } else {
             showhidden = 0;
           }
+          free(ob);
           ob = get_dir(currentpwd);
           clear_workspace();
           reorder_ob(ob, sortmode);
@@ -897,6 +899,7 @@ void directory_view_menu_inputs()
               // }
               strcpy(currentpwd, chpwd);
               chdir(currentpwd);
+              free(ob);
               ob = get_dir(currentpwd);
               reorder_ob(ob, sortmode);
               //selected = hs[historyref].selected;
@@ -1103,6 +1106,7 @@ void directory_view_menu_inputs()
           break;
         case 271: // F7
           markall = 1;
+          free(ob);
           ob = get_dir(currentpwd);
           markall = 0; // Leaving this set as 1 keeps things marked even after refresh. This is bad
           clear_workspace();
@@ -1111,6 +1115,7 @@ void directory_view_menu_inputs()
           break;
         case 272: // F8
           markall = 0;
+          free(ob);
           ob = get_dir(currentpwd);
           clear_workspace();
           reorder_ob(ob, sortmode);
