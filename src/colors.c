@@ -106,7 +106,7 @@ void setColorMode(int mode){
     lightColorPair[ERROR_PAIR] = 1;
     init_pair(HEADING_PAIR, COLOR_WHITE, COLOR_BLACK);
     lightColorPair[HEADING_PAIR] = 0;
-    init_pair(DEADLINK_PAIR, COLOR_WHITE, COLOR_BLACK);
+    init_pair(DEADLINK_PAIR, COLOR_BLACK, COLOR_WHITE);
     lightColorPair[DEADLINK_PAIR] = 0;
     break;
   case 2:
