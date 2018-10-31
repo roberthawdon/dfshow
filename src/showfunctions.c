@@ -662,7 +662,11 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
 
   if (filecolors && !selected){
     if ( strcmp(ob[currentitem].slink, "" )) {
-      setColors(SLINK_PAIR);
+      if (check_file(ob[currentitem].slink)){
+        setColors(SLINK_PAIR);
+      } else {
+        setColors(DEADLINK_PAIR);
+      }
     } else {
       setColors(ob[currentitem].color);
     }
@@ -686,6 +690,8 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
       if ( strcmp(ob[currentitem].slink, "" )) {
         if ( check_dir(ob[currentitem].slink) ){
           setColors(DIR_PAIR);
+        } else if ( !check_file(ob[currentitem].slink) ){
+          setColors(DEADLINK_PAIR);
         } else {
           setColors(ob[currentitem].color);
         }
