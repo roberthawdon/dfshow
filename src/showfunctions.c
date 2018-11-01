@@ -227,7 +227,7 @@ int wildcard(const char *value, char *wcard) {
     return match;
 }
 
-void writePermsEntry(char * perms, mode_t mode){
+int writePermsEntry(char * perms, mode_t mode){
 
   typecolor = DISPLAY_PAIR;
 
@@ -317,6 +317,8 @@ void writePermsEntry(char * perms, mode_t mode){
   } else {
     perms[9] = '-';
   }
+
+  return typecolor;
 
 }
 
@@ -519,6 +521,11 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   int linepadding;
   int colpos;
 
+  char tmpperms[11];
+
+  struct stat buffer;
+  int status;
+
   // Owner, Group, Author
   switch(ogavis){
   case 0:
@@ -691,7 +698,9 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
         } else if ( !check_file(ob[currentitem].slink) ){
           setColors(DEADLINK_PAIR);
         } else {
-          setColors(ob[currentitem].color);
+          // setColors(ob[currentitem].color);
+          status = lstat(ob[currentitem].slink, &buffer);
+          setColors(writePermsEntry(tmpperms, buffer.st_mode));
         }
       }
     }
