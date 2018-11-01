@@ -227,7 +227,7 @@ int wildcard(const char *value, char *wcard) {
     return match;
 }
 
-const char * writePermsEntry(char * perms, mode_t mode){
+void writePermsEntry(char * perms, mode_t mode){
 
   typecolor = DISPLAY_PAIR;
 
@@ -317,8 +317,6 @@ const char * writePermsEntry(char * perms, mode_t mode){
   } else {
     perms[9] = '-';
   }
-
-  return perms;
 
 }
 
