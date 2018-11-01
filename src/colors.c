@@ -74,6 +74,8 @@ void setColorMode(int mode){
     lightColorPair[ERROR_PAIR] = 1;
     init_pair(HEADING_PAIR, COLOR_GREEN, COLOR_BLACK);
     lightColorPair[HEADING_PAIR] = 0;
+    init_pair(DEADLINK_PAIR, COLOR_RED, COLOR_BLACK);
+    lightColorPair[DEADLINK_PAIR] = 1;
     break;
   case 1:
     init_pair(COMMAND_PAIR, COLOR_WHITE, COLOR_BLACK);
@@ -104,6 +106,8 @@ void setColorMode(int mode){
     lightColorPair[ERROR_PAIR] = 1;
     init_pair(HEADING_PAIR, COLOR_WHITE, COLOR_BLACK);
     lightColorPair[HEADING_PAIR] = 0;
+    init_pair(DEADLINK_PAIR, COLOR_BLACK, COLOR_WHITE);
+    lightColorPair[DEADLINK_PAIR] = 0;
     break;
   case 2:
     init_pair(COMMAND_PAIR, COLOR_CYAN, COLOR_BLUE);
@@ -134,6 +138,8 @@ void setColorMode(int mode){
     lightColorPair[ERROR_PAIR] = 1;
     init_pair(HEADING_PAIR, COLOR_YELLOW, COLOR_BLUE);
     lightColorPair[HEADING_PAIR] = 1;
+    init_pair(DEADLINK_PAIR, COLOR_RED, COLOR_BLUE);
+    lightColorPair[DEADLINK_PAIR] = 1;
     break;
   }
 }

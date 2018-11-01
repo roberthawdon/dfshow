@@ -227,7 +227,7 @@ int wildcard(const char *value, char *wcard) {
     return match;
 }
 
-const char * writePermsEntry(char * perms, mode_t mode){
+int writePermsEntry(char * perms, mode_t mode){
 
   typecolor = DISPLAY_PAIR;
 
@@ -318,7 +318,7 @@ const char * writePermsEntry(char * perms, mode_t mode){
     perms[9] = '-';
   }
 
-  return perms;
+  return typecolor;
 
 }
 
@@ -521,6 +521,11 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   int linepadding;
   int colpos;
 
+  char tmpperms[11];
+
+  struct stat buffer;
+  int status;
+
   // Owner, Group, Author
   switch(ogavis){
   case 0:
@@ -662,7 +667,11 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
 
   if (filecolors && !selected){
     if ( strcmp(ob[currentitem].slink, "" )) {
-      setColors(SLINK_PAIR);
+      if (check_file(ob[currentitem].slink)){
+        setColors(SLINK_PAIR);
+      } else {
+        setColors(DEADLINK_PAIR);
+      }
     } else {
       setColors(ob[currentitem].color);
     }
@@ -686,8 +695,12 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
       if ( strcmp(ob[currentitem].slink, "" )) {
         if ( check_dir(ob[currentitem].slink) ){
           setColors(DIR_PAIR);
+        } else if ( !check_file(ob[currentitem].slink) ){
+          setColors(DEADLINK_PAIR);
         } else {
-          setColors(ob[currentitem].color);
+          // setColors(ob[currentitem].color);
+          status = lstat(ob[currentitem].slink, &buffer);
+          setColors(writePermsEntry(tmpperms, buffer.st_mode));
         }
       }
     }

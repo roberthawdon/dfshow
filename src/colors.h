@@ -12,6 +12,7 @@
 #define HILITE_PAIR   12
 #define ERROR_PAIR    13
 #define HEADING_PAIR  14
+#define DEADLINK_PAIR 15
 
 
 void setColorMode(int mode);
