@@ -526,6 +526,10 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   struct stat buffer;
   int status;
 
+  char slinkpoint[5];
+
+  strcpy(slinkpoint, " -> ");
+
   // Owner, Group, Author
   switch(ogavis){
   case 0:
@@ -689,7 +693,10 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
     if (!selected){
       setColors(DISPLAY_PAIR);
     }
-    mvprintw(displaystart + listref, (entryMetaLen + entryNameLen + start)," -> ");
+
+    for ( i = 0; i < maxlen; i++) {
+      mvprintw(displaystart + listref, (entryMetaLen + entryNameLen + start) + i, "%lc", slinkpoint[i]);
+    }
 
     if (filecolors && !selected){
       if ( strcmp(ob[currentitem].slink, "" )) {
