@@ -287,6 +287,14 @@ void file_view(char * currentfile)
 int main(int argc, char *argv[])
 {
   int c;
+  char themeEnv[48];
+
+  // Check for theme env variable
+  if ( getenv("DFS_THEME")) {
+    if (themeSelect(getenv("DFS_THEME")) != -1 ){
+      colormode = themeSelect(getenv("DFS_THEME"));
+    }
+  }
 
   while (1)
     {
@@ -329,6 +337,10 @@ Valid arguments are:\n\
   - nt\n"), stdout);
           printf("Try '%s --help' for more information.\n", argv[0]);
           exit(2);
+        } else {
+          strcpy(themeEnv,"DFS_THEME=");
+          strcat(themeEnv,optarg);
+          putenv(themeEnv);
         }
       } else {
         colormode = 0;
