@@ -56,6 +56,15 @@ char fileName[512];
 
 extern FILE *file;
 
+FILE *stream;
+char *line = NULL;
+size_t len = 0;
+ssize_t nread;
+int count;
+int displaycount;
+int top, left;
+int i, s;
+
 struct sigaction sa;
 
 void buildMenuText(){
@@ -94,7 +103,7 @@ void refreshScreen()
     mvprintw(0,0,"Show File - Enter pathname:");
   } else if (viewmode == 1){
     printMenu(0, 0, fileMenuText);
-    displayFile(fileName);
+    loadFile(fileName);
   } else if (viewmode == 2){
     printMenu(0,0,filePosText);
   }
@@ -182,49 +191,32 @@ The THEME argument can be:\n\
   printf ("\nPlease report any bugs to: <%s>\n", PACKAGE_BUGREPORT);
 }
 
-void fileShowStatus(const char * currentfile)
+void fileShowStatus()
 {
   char statusText[512];
   if (wrap){
-    sprintf(statusText, "File = <%s>  Top = <%i>", currentfile, topline);
+    sprintf(statusText, "File = <%s>  Top = <%i>", fileName, topline);
   } else {
-    sprintf(statusText, "File = <%s>  Top = <%i:%i>", currentfile, topline, leftcol);
+    sprintf(statusText, "File = <%s>  Top = <%i:%i>", fileName, topline, leftcol);
   }
   printMenu(LINES - 1, 0, statusText);
 }
 
-void displayFile(const char * currentfile)
+void updateView()
 {
-  FILE *stream;
-  char *line = NULL;
-  size_t len = 0;
-  ssize_t nread;
-  int count = 0;
-  int displaycount = 0;
-  int top, left;
-  int i, s;
   top = topline;
   left = leftcol;
-  longestline = 0;
-  viewmode = 1;
-  totallines = 0;
+  len = 0;
   top--;
   left--;
+  count = displaycount = 0;
   clear_workspace();
   setColors(DISPLAY_PAIR);
 
-  stream = fopen(currentfile, "rb");
-  if (stream == NULL) {
-
-    return;
-    }
+  rewind(stream);
 
   while ((nread = getline(&line, &len, stream)) != -1) {
-    totallines++;
     s = 0;
-    if (nread > longestline){
-      longestline = nread;
-    }
     if ((count == top + displaycount) && (displaycount < displaysize)){
       for(i = 0; i < nread; i++){
         mvprintw(displaycount + 1, s - left, "%lc", line[i]);
@@ -255,9 +247,31 @@ void displayFile(const char * currentfile)
   attron(A_BOLD);
   mvprintw(displaycount + 1, 0, "*eof");
   attroff(A_BOLD);
-  fileShowStatus(currentfile);
-  free(line);
-  fclose(stream);
+  fileShowStatus();
+}
+
+void loadFile(const char * currentfile)
+{
+
+  len = 0;
+  longestline = 0;
+  viewmode = 1;
+  totallines = 0;
+
+  stream = fopen(currentfile, "rb");
+  if (stream == NULL) {
+
+    return;
+    }
+
+  while ((nread = getline(&line, &len, stream)) != -1) {
+    totallines++;
+    s = 0;
+    if (nread > longestline){
+      longestline = nread;
+    }
+  }
+  updateView();
 }
 
 void file_view(char * currentfile)
@@ -273,7 +287,7 @@ void file_view(char * currentfile)
   refresh();
 
   if ( check_file(currentfile) ){
-    displayFile(currentfile);
+    loadFile(currentfile);
     show_file_inputs();
   } else {
     sprintf(notFoundMessage, "File [%s] does not exist", currentfile);

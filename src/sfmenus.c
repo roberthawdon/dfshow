@@ -46,6 +46,9 @@ extern int viewmode;
 extern int wrap;
 extern int wrapmode;
 
+extern FILE *stream;
+extern char *line;
+
 void show_file_find(int charcase)
 {
   int regexcase;
@@ -71,7 +74,7 @@ void show_file_find(int charcase)
     result = findInFile(fileName, regexinput, regexcase);
     if ( result > 0 ){
       topline = result;
-      displayFile(fileName);
+      updateView();
     } else if ( result == -2 ){
       // Not a feature in DF-EDIT 2.3d, but a nice to have
       sprintf(errormessage, "No further references to '%s' found.", regexinput);
@@ -172,9 +175,11 @@ void show_file_inputs()
           } else if (topline < 1){
             topline = 1;
           }
-          displayFile(fileName);
+          updateView();
           break;
         case 'q':
+          free(line);
+          fclose(stream);
           exittoshell();
           break;
         case 'w':
@@ -186,30 +191,31 @@ void show_file_inputs()
           }
           buildMenuText();
           printMenu(0, 0, fileMenuText);
-          displayFile(fileName);
+          updateView();
           break;
         case 258: // Down Arrow
           if (topline < totallines + 1){
             topline++;
-            displayFile(fileName);
+            //loadFile(fileName);
+            updateView();
           }
           break;
         case 259: // Up Arrow
           if (topline > 1){
             topline--;
-            displayFile(fileName);
+            updateView();
           }
           break;
         case 260: // Left Arrow
           if ((leftcol > 1) && (wrap != 1)){
             leftcol--;
-            displayFile(fileName);
+            updateView();
           }
           break;
         case 261: // Right Arrow
           if ((leftcol < longestline) && (wrap != 1)){
             leftcol++;
-            displayFile(fileName);
+            updateView();
           }
           break;
         case 338: // PgDn
@@ -218,7 +224,7 @@ void show_file_inputs()
           if (topline > totallines + 1){
             topline = totallines + 1;
           }
-          displayFile(fileName);
+          updateView();
           break;
         case 339: // PgUp
         case 266: // F2
@@ -226,25 +232,25 @@ void show_file_inputs()
           if (topline < 1){
             topline = 1;
           }
-          displayFile(fileName);
+          updateView();
           break;
         case 267: // F3
           topline = 1;
-          displayFile(fileName);
+          updateView();
           break;
         case 268: // F4
           topline = totallines + 1; // Show EOF
-          displayFile(fileName);
+          updateView();
           break;
         case 262: // Home
 	  // Let's not disable this key when Wrapping is on, just in case.
           leftcol = 1;
-          displayFile(fileName);
+          updateView();
           break;
         case 360: // End
 	  if (wrap != 1){
             leftcol = longestline;
-            displayFile(fileName);
+            updateView();
 	  }
           break;
         }

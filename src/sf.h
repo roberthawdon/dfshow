@@ -13,8 +13,9 @@ enum
 void buildMenuText();
 int calculateTab(int pos);
 void file_view(char * currentfile);
-void fileShowStatus(const char * currentfile);
-void displayFile(const char * currentfile);
+void fileShowStatus();
+void loadFile(const char * currentfile);
+void updateView();
 void sigwinchHandle(int sig);
 int findInFile(const char * currentfile, const char * search, int charcase);
 void refreshScreen();
