@@ -285,10 +285,18 @@ int main(int argc, char *argv[])
 {
   uid_t uid=getuid(), euid=geteuid();
   int c;
+  char themeEnv[48];
 
   // Check if we're root to display danger
   if (uid == 0 || euid == 0){
     danger = 1;
+  }
+
+  // Check for theme env variable
+  if ( getenv("DFS_THEME")) {
+    if (themeSelect(getenv("DFS_THEME")) != -1 ){
+      colormode = themeSelect(getenv("DFS_THEME"));
+    }
   }
 
   // Getting arguments
@@ -361,6 +369,10 @@ Valid arguments are:\n\
   - nt\n"), stdout);
           printf("Try '%s --help' for more information.\n", argv[0]);
           exit(2);
+        } else {
+          strcpy(themeEnv,"DFS_THEME=");
+          strcat(themeEnv,optarg);
+          putenv(themeEnv);
         }
       } else {
         colormode = 0;
