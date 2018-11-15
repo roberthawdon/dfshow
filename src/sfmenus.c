@@ -173,7 +173,7 @@ void show_file_inputs()
         case 'p':
           show_file_position_input(topline);
           if (topline > totallines + 1){
-            topline = totallines;
+            topline = totallines + 1;
           } else if (topline < 1){
             topline = 1;
           }

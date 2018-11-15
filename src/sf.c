@@ -213,7 +213,7 @@ void updateView()
   len = 0;
   top--;
   left--;
-  count = displaycount = 0;
+  displaycount = 0;
 
   clear_workspace();
   setColors(DISPLAY_PAIR);
@@ -237,7 +237,6 @@ void updateView()
             if ( wrapmode != WORD_WRAP ){
               s = 0;
               displaycount++;
-              // count++;
             }
           } else {
             break;
@@ -245,10 +244,8 @@ void updateView()
         }
       }
       displaycount++;
-      // count++;
     } else {
       break;
-      // count++;
     }
   }
   attron(A_BOLD);
