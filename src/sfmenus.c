@@ -49,6 +49,8 @@ extern int wrapmode;
 extern FILE *stream;
 extern char *line;
 
+extern long int *filePos;
+
 void show_file_find(int charcase)
 {
   int regexcase;
@@ -178,7 +180,8 @@ void show_file_inputs()
           updateView();
           break;
         case 'q':
-          free(line);
+          // free(line);
+          free(filePos);
           fclose(stream);
           exittoshell();
           break;

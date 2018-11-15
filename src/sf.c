@@ -63,7 +63,11 @@ ssize_t nread;
 int count;
 int displaycount;
 int top, left;
+int lasttop;
 int i, s;
+
+long int topPos;
+long int *filePos;
 
 struct sigaction sa;
 
@@ -210,14 +214,16 @@ void updateView()
   top--;
   left--;
   count = displaycount = 0;
+
   clear_workspace();
   setColors(DISPLAY_PAIR);
 
-  rewind(stream);
+  fseek(stream, filePos[top], SEEK_SET);
+  top = 0;
 
   while ((nread = getline(&line, &len, stream)) != -1) {
     s = 0;
-    if ((count == top + displaycount) && (displaycount < displaysize)){
+    if (displaycount < displaysize){
       for(i = 0; i < nread; i++){
         mvprintw(displaycount + 1, s - left, "%lc", line[i]);
         // This doesn't increase the max line.
@@ -231,7 +237,7 @@ void updateView()
             if ( wrapmode != WORD_WRAP ){
               s = 0;
               displaycount++;
-              count++;
+              // count++;
             }
           } else {
             break;
@@ -239,15 +245,17 @@ void updateView()
         }
       }
       displaycount++;
-      count++;
+      // count++;
     } else {
-      count++;
+      break;
+      // count++;
     }
   }
   attron(A_BOLD);
   mvprintw(displaycount + 1, 0, "*eof");
   attroff(A_BOLD);
   fileShowStatus();
+  free(line);
 }
 
 void loadFile(const char * currentfile)
@@ -258,6 +266,9 @@ void loadFile(const char * currentfile)
   viewmode = 1;
   totallines = 0;
 
+  filePos = malloc(sizeof(long int) * 1); // Initial isze of lookup
+  filePos[0] = 0;
+
   stream = fopen(currentfile, "rb");
   if (stream == NULL) {
 
@@ -266,7 +277,9 @@ void loadFile(const char * currentfile)
 
   while ((nread = getline(&line, &len, stream)) != -1) {
     totallines++;
-    s = 0;
+    filePos = realloc(filePos, sizeof(long int) * totallines + 1);
+    filePos[totallines] = ftell(stream);
+    // s = 0;
     if (nread > longestline){
       longestline = nread;
     }
