@@ -2,6 +2,9 @@
 
 void printVersion(char* programName);
 void printMenu(int line, int col, char *menustring);
+void wPrintMenu(int line, int col, wchar_t *menustring);
+void printLine(int line, int col, char *textString);
+void wPrintLine(int line, int col, wchar_t *textString);
 void topLineMessage(const char *message);
 int readline(char *buffer, int buflen, char *oldbuf);
 int check_dir(char *pwd);

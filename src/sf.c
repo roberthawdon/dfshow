@@ -197,13 +197,13 @@ The THEME argument can be:\n\
 
 void fileShowStatus()
 {
-  char statusText[512];
+  wchar_t statusText[1024];
   if (wrap){
-    sprintf(statusText, "File = <%s>  Top = <%i>", fileName, topline);
+    swprintf(statusText, 1024, L"File = <%s>  Top = <%i>", fileName, topline);
   } else {
-    sprintf(statusText, "File = <%s>  Top = <%i:%i>", fileName, topline, leftcol);
+    swprintf(statusText, 1024, L"File = <%s>  Top = <%i:%i>", fileName, topline, leftcol);
   }
-  printMenu(LINES - 1, 0, statusText);
+  wPrintMenu(LINES - 1, 0, statusText);
 }
 
 void updateView()

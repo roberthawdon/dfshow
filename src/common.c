@@ -52,42 +52,73 @@ This program comes with ABSOLUTELY NO WARRANTY. This is free software, and you\n
 are welcome to redistribute it under certain conditions.\n"), stdout);
 }
 
-void printMenu(int line, int col, char *menustring)
+void wPrintMenu(int line, int col, wchar_t *menustring)
 {
   int i, len, charcount;
   charcount = 0;
   move(line, col);
   clrtoeol();
-  len = strlen(menustring);
+  len = wcslen(menustring);
   setColors(COMMAND_PAIR);
   for (i = 0; i < len; i++)
-     {
+    {
       if ( menustring[i] == '!' ) {
-          i++;
-          setColors(HILITE_PAIR);
-          mvprintw(line, col + charcount, "%c", menustring[i]);
-          setColors(COMMAND_PAIR);
-          charcount++;
+        i++;
+        setColors(HILITE_PAIR);
+        mvprintw(line, col + charcount, "%lc", menustring[i]);
+        setColors(COMMAND_PAIR);
+        charcount++;
       } else if ( menustring[i] == '<' ) {
-          i++;
-          setColors(HILITE_PAIR);
-          mvprintw(line, col + charcount, "%c", menustring[i]);
-          charcount++;
+        i++;
+        setColors(HILITE_PAIR);
+        mvprintw(line, col + charcount, "%lc", menustring[i]);
+        charcount++;
       } else if ( menustring[i] == '>' ) {
-          i++;
-          setColors(COMMAND_PAIR);
-          mvprintw(line, col + charcount, "%c", menustring[i]);
-          charcount++;
+        i++;
+        setColors(COMMAND_PAIR);
+        mvprintw(line, col + charcount, "%lc", menustring[i]);
+        charcount++;
       } else if ( menustring[i] == '\\' ) {
-          i++;
-          mvprintw(line, col + charcount, "%c", menustring[i]);
-          charcount++;
+        i++;
+        mvprintw(line, col + charcount, "%lc", menustring[i]);
+        charcount++;
       } else {
-          mvprintw(line, col + charcount, "%c", menustring[i]);
-          charcount++;
-        }
+        mvprintw(line, col + charcount, "%lc", menustring[i]);
+        charcount++;
+      }
     }
 }
+
+void printMenu(int line, int col, char *menustring)
+{
+  // Small wrapper to seemlessly forward calls to the wide char version
+  wchar_t *wMenuString;
+  wMenuString = malloc(sizeof(wchar_t) * strlen(menustring) + 1);
+  swprintf(wMenuString, strlen(menustring) + 1, L"%s", menustring);
+  wPrintMenu(line, col, wMenuString);
+  free(wMenuString);
+}
+
+void wPrintLine(int line, int col, wchar_t *textString){
+  int i;
+  clrtoeol();
+  for ( i = 0; i < wcslen(textString) ; i++){
+    mvprintw(line, col + i, "%lc", textString[i]);
+    if ( (col + i) == COLS ){
+      break;
+    }
+  }
+}
+
+void printLine(int line, int col, char *textString){
+  // Small wrapper to seemlessly forward calls to the wide char version
+  wchar_t *wTextString;
+  wTextString = malloc( sizeof ( wchar_t ) * strlen(textString) + 1);
+  swprintf(wTextString, strlen(textString) + 1, L"%s", textString);
+  wPrintLine(line, col, wTextString);
+  free(wTextString);
+}
+
 
 void topLineMessage(const char *message){
   move(0,0);
