@@ -23,6 +23,7 @@
 #include <ncurses.h>
 #include <string.h>
 #include <ctype.h>
+#include <wctype.h>
 #include <dirent.h>
 #include <sys/stat.h>
 #include "colors.h"
@@ -140,7 +141,7 @@ void topLineMessage(const char *message){
     }
 }
 
-int readline(char *buffer, int buflen, char *oldbuf)
+int wReadLine(wchar_t *buffer, int buflen, wchar_t *oldbuf)
 /* Read up to buflen-1 characters into `buffer`.
  * A terminating '\0' character is added after the input.  */
 {
@@ -151,7 +152,7 @@ int readline(char *buffer, int buflen, char *oldbuf)
   int x, y, c;
   int status = 0;
 
-  oldlen = strlen(oldbuf);
+  oldlen = wcslen(oldbuf);
   setColors(INPUT_PAIR);
   // attron(COLOR_PAIR(INPUT_PAIR));
 
@@ -160,34 +161,25 @@ int readline(char *buffer, int buflen, char *oldbuf)
 
   getyx(stdscr, y, x);
 
-  strcpy(buffer, oldbuf);
+  wcscpy(buffer, oldbuf);
 
   for (;;) {
 
     buffer[len] = ' ';
-    mvaddnstr(y, x, buffer, len+1); // Prints buffer on screen
+    mvaddnwstr(y, x, buffer, len+1); // Prints buffer on screen
     move(y, x+pos); //
     c = getch();
 
     if (c == KEY_ENTER || c == '\n' || c == '\r') {
-      // attron(COLOR_PAIR(COMMAND_PAIR));
       setColors(COMMAND_PAIR);
       break;
-    } else if (isprint(c)) {
-      if (pos < buflen-1) {
-        memmove(buffer+pos+1, buffer+pos, len-pos);
-        buffer[pos++] = c;
-        len += 1;
-      } else {
-        beep();
-      }
     } else if (c == KEY_LEFT) {
       if (pos > 0) pos -= 1; else beep();
     } else if (c == KEY_RIGHT) {
       if (pos < len) pos += 1; else beep();
     } else if ((c == KEY_BACKSPACE) || (c == 127)) {
       if (pos > 0) {
-        memmove(buffer+pos-1, buffer+pos, len-pos);
+        wmemmove(buffer+pos-1, buffer+pos, len-pos);
         pos -= 1;
         len -= 1;
         clrtoeol();
@@ -196,7 +188,7 @@ int readline(char *buffer, int buflen, char *oldbuf)
       }
     } else if (c == KEY_DC) {
       if (pos < len) {
-        memmove(buffer+pos, buffer+pos+1, len-pos-1);
+        wmemmove(buffer+pos, buffer+pos+1, len-pos-1);
         len -= 1;
         clrtoeol();
       } else {
@@ -205,21 +197,26 @@ int readline(char *buffer, int buflen, char *oldbuf)
     } else if (c == 270) {
       // F6 deletes to the end of line. Recently discovered in DF-EDIT 2.3d hidden in program documentation (2018-08-18)
       if ( pos < len ) {
-        memmove(buffer+pos, buffer+pos+(len-pos), 0);
+        wmemmove(buffer+pos, buffer+pos+(len-pos), 0);
         len = pos;
         clrtoeol();
       }
     } else if (c == 27) {
-      //pos = oldlen;
-      //len = oldlen;
-      //strcpy(buffer, oldbuf); //abort
       status = -1;
       pos = 0;
       len = 0;
-      strcpy(buffer, ""); //abort by blanking
-      // attron(COLOR_PAIR(COMMAND_PAIR));
+      wcscpy(buffer, L""); //abort by blanking
       setColors(COMMAND_PAIR);
       break;
+    } else if (iswprint(c)) {
+      if (pos < buflen-1) {
+        //memmove(buffer+pos+1, buffer+pos, len-pos);
+        wmemmove(buffer+pos+1, buffer+pos, len-pos);
+        buffer[pos++] = c;
+        len += 1;
+      } else {
+        beep();
+      }
     } else {
       beep();
     }
@@ -228,6 +225,23 @@ int readline(char *buffer, int buflen, char *oldbuf)
   if (old_curs != ERR) curs_set(old_curs);
   return(status);
 }
+
+int readline(char *buffer, int buflen, char *oldbuf)
+{
+
+  // Small wrapper to seemlessly forward calls to the wide char version
+  wchar_t *wBuffer, *wOldBuf;
+  int status;
+  wBuffer = malloc(sizeof(wchar_t) * buflen);
+  wOldBuf = malloc(sizeof(wchar_t) * strlen(oldbuf) + 1);
+  swprintf(wOldBuf, strlen(oldbuf) + 1, L"%s", oldbuf);
+  status = wReadLine(wBuffer, buflen, wOldBuf);
+  sprintf(buffer, "%ls", wBuffer);
+  free(wBuffer);
+  free(wOldBuf);
+  return(status);
+}
+
 
 int check_dir(char *pwd)
 {
