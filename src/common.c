@@ -149,8 +149,9 @@ int wReadLine(wchar_t *buffer, int buflen, wchar_t *oldbuf)
   int pos;
   int len;
   int oldlen;
-  int x, y, c;
+  int x, y;
   int status = 0;
+  wint_t c;
 
   oldlen = wcslen(oldbuf);
   setColors(INPUT_PAIR);
@@ -168,16 +169,21 @@ int wReadLine(wchar_t *buffer, int buflen, wchar_t *oldbuf)
     buffer[len] = ' ';
     mvaddnwstr(y, x, buffer, len+1); // Prints buffer on screen
     move(y, x+pos); //
-    c = getch();
+    //c = getch();
+    get_wch(&c);
 
     if (c == KEY_ENTER || c == '\n' || c == '\r') {
+      // Enter Key
       setColors(COMMAND_PAIR);
       break;
     } else if (c == KEY_LEFT) {
+      // Left Key
       if (pos > 0) pos -= 1; else beep();
     } else if (c == KEY_RIGHT) {
+      // Right Key
       if (pos < len) pos += 1; else beep();
     } else if ((c == KEY_BACKSPACE) || (c == 127)) {
+      // Backspace Key
       if (pos > 0) {
         wmemmove(buffer+pos-1, buffer+pos, len-pos);
         pos -= 1;
@@ -187,6 +193,7 @@ int wReadLine(wchar_t *buffer, int buflen, wchar_t *oldbuf)
         beep();
       }
     } else if (c == KEY_DC) {
+      // Delete Key
       if (pos < len) {
         wmemmove(buffer+pos, buffer+pos+1, len-pos-1);
         len -= 1;
@@ -195,6 +202,7 @@ int wReadLine(wchar_t *buffer, int buflen, wchar_t *oldbuf)
         beep();
       }
     } else if (c == 270) {
+      // F6 Key
       // F6 deletes to the end of line. Recently discovered in DF-EDIT 2.3d hidden in program documentation (2018-08-18)
       if ( pos < len ) {
         wmemmove(buffer+pos, buffer+pos+(len-pos), 0);
@@ -202,6 +210,7 @@ int wReadLine(wchar_t *buffer, int buflen, wchar_t *oldbuf)
         clrtoeol();
       }
     } else if (c == 27) {
+      // ESC Key
       status = -1;
       pos = 0;
       len = 0;
@@ -209,8 +218,8 @@ int wReadLine(wchar_t *buffer, int buflen, wchar_t *oldbuf)
       setColors(COMMAND_PAIR);
       break;
     } else if (iswprint(c)) {
+      // Anything else that can be printed.
       if (pos < buflen-1) {
-        //memmove(buffer+pos+1, buffer+pos, len-pos);
         wmemmove(buffer+pos+1, buffer+pos, len-pos);
         buffer[pos++] = c;
         len += 1;
