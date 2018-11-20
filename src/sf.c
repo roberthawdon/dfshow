@@ -45,6 +45,7 @@ int topline = 1;
 int leftcol = 1;
 int totallines = 0;
 int longestline = 0;
+int longestlongline = 0;
 int viewmode = 0;
 
 int tabsize = 8;
@@ -58,6 +59,7 @@ extern FILE *file;
 
 FILE *stream;
 char *line = NULL;
+wchar_t *longline = NULL;
 size_t len = 0;
 ssize_t nread;
 int count;
@@ -141,8 +143,6 @@ void sigwinchHandle(int sig)
 
 int findInFile(const char * currentfile, const char * search, int charcase)
 {
-  char *line;
-  int count = 0;
   regex_t regex;
   int reti;
   char msgbuf[8192];
@@ -153,24 +153,22 @@ int findInFile(const char * currentfile, const char * search, int charcase)
     return(-1);
   }
 
-  file=fopen(currentfile, "rb");
+  fseek(stream, filePos[top], SEEK_SET);
+  top = 0;
+  count = 0;
 
-  if ( file ) {
-    while (line = read_line(file) ){
+  if ( stream ) {
+    while (line = read_line(stream) ){
       count++;
       reti = regexec(&regex, line, 0, NULL, 0);
       if (!reti && count > topline) {
-        fclose(file);
-        free(line);
         regfree(&regex);
         return(count);
       }
     }
   }
 
-  free(line);
   regfree(&regex);
-  fclose(file);
   return (-2);
 
 }
@@ -208,6 +206,7 @@ void fileShowStatus()
 
 void updateView()
 {
+  int longlinelen = 0;
   top = topline;
   left = leftcol;
   len = 0;
@@ -223,9 +222,11 @@ void updateView()
 
   while ((nread = getline(&line, &len, stream)) != -1) {
     s = 0;
+    mbstowcs(longline, line, len);
+    longlinelen = wcslen(longline);
     if (displaycount < displaysize){
-      for(i = 0; i < nread; i++){
-        mvprintw(displaycount + 1, s - left, "%lc", line[i]);
+      for(i = 0; i < longlinelen; i++){
+        mvprintw(displaycount + 1, s - left, "%lc", longline[i]);
         // This doesn't increase the max line.
         if (line[i] == '\t'){
           s = s + calculateTab(s);
@@ -260,6 +261,7 @@ void loadFile(const char * currentfile)
 
   len = 0;
   longestline = 0;
+  longestlongline = 0;
   viewmode = 1;
   totallines = 0;
 
@@ -272,13 +274,19 @@ void loadFile(const char * currentfile)
     return;
     }
 
+  longline = malloc(sizeof(wchar_t));
+
   while ((nread = getline(&line, &len, stream)) != -1) {
     totallines++;
     filePos = realloc(filePos, sizeof(long int) * totallines + 1);
     filePos[totallines] = ftell(stream);
-    // s = 0;
     if (nread > longestline){
       longestline = nread;
+      longline = realloc(longline, sizeof(wchar_t) * longestline +1);
+    }
+    mbstowcs(longline, line, len);
+    if (wcslen(longline) > longestlongline){
+      longestlongline = wcslen(longline);
     }
   }
   updateView();
