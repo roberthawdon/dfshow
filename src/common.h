@@ -1,8 +1,12 @@
 #define PROGRAM_DESC "\nDF-SHOW: An interactive directory/file browser written for Unix-like systems.\nBased on the applications from the PC-DOS DF-EDIT suite by Larry Kroeker.\n"
 
 void printVersion(char* programName);
+void wPrintMenu(int line, int col, wchar_t *menustring);
 void printMenu(int line, int col, char *menustring);
+void wPrintLine(int line, int col, wchar_t *textString);
+void printLine(int line, int col, char *textString);
 void topLineMessage(const char *message);
+int wReadLine(wchar_t *buffer, int buflen, wchar_t *oldbuf);
 int readline(char *buffer, int buflen, char *oldbuf);
 int check_dir(char *pwd);
 int check_file(char *file);

@@ -40,7 +40,7 @@ extern int leftcol;
 extern char fileName[512];
 extern int displaysize;
 extern int totallines;
-extern int longestline;
+extern int longestlongline;
 extern int viewmode;
 
 extern int wrap;
@@ -50,6 +50,7 @@ extern FILE *stream;
 extern char *line;
 
 extern long int *filePos;
+extern wchar_t *longline;
 
 void show_file_find(int charcase)
 {
@@ -180,7 +181,7 @@ void show_file_inputs()
           updateView();
           break;
         case 'q':
-          // free(line);
+          free(longline);
           free(filePos);
           fclose(stream);
           exittoshell();
@@ -216,7 +217,7 @@ void show_file_inputs()
           }
           break;
         case 261: // Right Arrow
-          if ((leftcol < longestline) && (wrap != 1)){
+          if ((leftcol < longestlongline) && (wrap != 1)){
             leftcol++;
             updateView();
           }
@@ -252,7 +253,7 @@ void show_file_inputs()
           break;
         case 360: // End
 	  if (wrap != 1){
-            leftcol = longestline;
+            leftcol = longestlongline;
             updateView();
 	  }
           break;

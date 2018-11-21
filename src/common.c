@@ -23,6 +23,7 @@
 #include <ncurses.h>
 #include <string.h>
 #include <ctype.h>
+#include <wctype.h>
 #include <dirent.h>
 #include <sys/stat.h>
 #include "colors.h"
@@ -52,42 +53,73 @@ This program comes with ABSOLUTELY NO WARRANTY. This is free software, and you\n
 are welcome to redistribute it under certain conditions.\n"), stdout);
 }
 
-void printMenu(int line, int col, char *menustring)
+void wPrintMenu(int line, int col, wchar_t *menustring)
 {
   int i, len, charcount;
   charcount = 0;
   move(line, col);
   clrtoeol();
-  len = strlen(menustring);
+  len = wcslen(menustring);
   setColors(COMMAND_PAIR);
   for (i = 0; i < len; i++)
-     {
+    {
       if ( menustring[i] == '!' ) {
-          i++;
-          setColors(HILITE_PAIR);
-          mvprintw(line, col + charcount, "%c", menustring[i]);
-          setColors(COMMAND_PAIR);
-          charcount++;
+        i++;
+        setColors(HILITE_PAIR);
+        mvprintw(line, col + charcount, "%lc", menustring[i]);
+        setColors(COMMAND_PAIR);
+        charcount++;
       } else if ( menustring[i] == '<' ) {
-          i++;
-          setColors(HILITE_PAIR);
-          mvprintw(line, col + charcount, "%c", menustring[i]);
-          charcount++;
+        i++;
+        setColors(HILITE_PAIR);
+        mvprintw(line, col + charcount, "%lc", menustring[i]);
+        charcount++;
       } else if ( menustring[i] == '>' ) {
-          i++;
-          setColors(COMMAND_PAIR);
-          mvprintw(line, col + charcount, "%c", menustring[i]);
-          charcount++;
+        i++;
+        setColors(COMMAND_PAIR);
+        mvprintw(line, col + charcount, "%lc", menustring[i]);
+        charcount++;
       } else if ( menustring[i] == '\\' ) {
-          i++;
-          mvprintw(line, col + charcount, "%c", menustring[i]);
-          charcount++;
+        i++;
+        mvprintw(line, col + charcount, "%lc", menustring[i]);
+        charcount++;
       } else {
-          mvprintw(line, col + charcount, "%c", menustring[i]);
-          charcount++;
-        }
+        mvprintw(line, col + charcount, "%lc", menustring[i]);
+        charcount++;
+      }
     }
 }
+
+void printMenu(int line, int col, char *menustring)
+{
+  // Small wrapper to seemlessly forward calls to the wide char version
+  wchar_t *wMenuString;
+  wMenuString = malloc(sizeof(wchar_t) * strlen(menustring) + 1);
+  swprintf(wMenuString, strlen(menustring) + 1, L"%s", menustring);
+  wPrintMenu(line, col, wMenuString);
+  free(wMenuString);
+}
+
+void wPrintLine(int line, int col, wchar_t *textString){
+  int i;
+  clrtoeol();
+  for ( i = 0; i < wcslen(textString) ; i++){
+    mvprintw(line, col + i, "%lc", textString[i]);
+    if ( (col + i) == COLS ){
+      break;
+    }
+  }
+}
+
+void printLine(int line, int col, char *textString){
+  // Small wrapper to seemlessly forward calls to the wide char version
+  wchar_t *wTextString;
+  wTextString = malloc( sizeof ( wchar_t ) * strlen(textString) + 1);
+  swprintf(wTextString, strlen(textString) + 1, L"%s", textString);
+  wPrintLine(line, col, wTextString);
+  free(wTextString);
+}
+
 
 void topLineMessage(const char *message){
   move(0,0);
@@ -109,7 +141,7 @@ void topLineMessage(const char *message){
     }
 }
 
-int readline(char *buffer, int buflen, char *oldbuf)
+int wReadLine(wchar_t *buffer, int buflen, wchar_t *oldbuf)
 /* Read up to buflen-1 characters into `buffer`.
  * A terminating '\0' character is added after the input.  */
 {
@@ -117,10 +149,11 @@ int readline(char *buffer, int buflen, char *oldbuf)
   int pos;
   int len;
   int oldlen;
-  int x, y, c;
+  int x, y;
   int status = 0;
+  wint_t c;
 
-  oldlen = strlen(oldbuf);
+  oldlen = wcslen(oldbuf);
   setColors(INPUT_PAIR);
   // attron(COLOR_PAIR(INPUT_PAIR));
 
@@ -129,34 +162,30 @@ int readline(char *buffer, int buflen, char *oldbuf)
 
   getyx(stdscr, y, x);
 
-  strcpy(buffer, oldbuf);
+  wcscpy(buffer, oldbuf);
 
   for (;;) {
 
     buffer[len] = ' ';
-    mvaddnstr(y, x, buffer, len+1); // Prints buffer on screen
+    mvaddnwstr(y, x, buffer, len+1); // Prints buffer on screen
     move(y, x+pos); //
-    c = getch();
+    //c = getch();
+    get_wch(&c);
 
     if (c == KEY_ENTER || c == '\n' || c == '\r') {
-      // attron(COLOR_PAIR(COMMAND_PAIR));
+      // Enter Key
       setColors(COMMAND_PAIR);
       break;
-    } else if (isprint(c)) {
-      if (pos < buflen-1) {
-        memmove(buffer+pos+1, buffer+pos, len-pos);
-        buffer[pos++] = c;
-        len += 1;
-      } else {
-        beep();
-      }
     } else if (c == KEY_LEFT) {
+      // Left Key
       if (pos > 0) pos -= 1; else beep();
     } else if (c == KEY_RIGHT) {
+      // Right Key
       if (pos < len) pos += 1; else beep();
     } else if ((c == KEY_BACKSPACE) || (c == 127)) {
+      // Backspace Key
       if (pos > 0) {
-        memmove(buffer+pos-1, buffer+pos, len-pos);
+        wmemmove(buffer+pos-1, buffer+pos, len-pos);
         pos -= 1;
         len -= 1;
         clrtoeol();
@@ -164,31 +193,39 @@ int readline(char *buffer, int buflen, char *oldbuf)
         beep();
       }
     } else if (c == KEY_DC) {
+      // Delete Key
       if (pos < len) {
-        memmove(buffer+pos, buffer+pos+1, len-pos-1);
+        wmemmove(buffer+pos, buffer+pos+1, len-pos-1);
         len -= 1;
         clrtoeol();
       } else {
         beep();
       }
     } else if (c == 270) {
+      // F6 Key
       // F6 deletes to the end of line. Recently discovered in DF-EDIT 2.3d hidden in program documentation (2018-08-18)
       if ( pos < len ) {
-        memmove(buffer+pos, buffer+pos+(len-pos), 0);
+        wmemmove(buffer+pos, buffer+pos+(len-pos), 0);
         len = pos;
         clrtoeol();
       }
     } else if (c == 27) {
-      //pos = oldlen;
-      //len = oldlen;
-      //strcpy(buffer, oldbuf); //abort
+      // ESC Key
       status = -1;
       pos = 0;
       len = 0;
-      strcpy(buffer, ""); //abort by blanking
-      // attron(COLOR_PAIR(COMMAND_PAIR));
+      wcscpy(buffer, L""); //abort by blanking
       setColors(COMMAND_PAIR);
       break;
+    } else if (iswprint(c)) {
+      // Anything else that can be printed.
+      if (pos < buflen-1) {
+        wmemmove(buffer+pos+1, buffer+pos, len-pos);
+        buffer[pos++] = c;
+        len += 1;
+      } else {
+        beep();
+      }
     } else {
       beep();
     }
@@ -197,6 +234,23 @@ int readline(char *buffer, int buflen, char *oldbuf)
   if (old_curs != ERR) curs_set(old_curs);
   return(status);
 }
+
+int readline(char *buffer, int buflen, char *oldbuf)
+{
+
+  // Small wrapper to seemlessly forward calls to the wide char version
+  wchar_t *wBuffer, *wOldBuf;
+  int status;
+  wBuffer = malloc(sizeof(wchar_t) * buflen);
+  wOldBuf = malloc(sizeof(wchar_t) * strlen(oldbuf) + 1);
+  swprintf(wOldBuf, strlen(oldbuf) + 1, L"%s", oldbuf);
+  status = wReadLine(wBuffer, buflen, wOldBuf);
+  sprintf(buffer, "%ls", wBuffer);
+  free(wBuffer);
+  free(wOldBuf);
+  return(status);
+}
+
 
 int check_dir(char *pwd)
 {

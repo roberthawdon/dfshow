@@ -474,17 +474,6 @@ char *genPadding(int num_of_spaces) {
   return dest;
 }
 
-void printLine(int line, int col, char *textString){
-  int i;
-  clrtoeol();
-  for ( i = 0; i < strlen(textString) ; i++){
-    mvprintw(line, col + i, "%c", textString[i]);
-    if ( (col + i) == COLS ){
-      break;
-    }
-  }
-}
-
 void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorlen, int sizelen, int majorlen, int minorlen, int datelen, int namelen, int selected, int listref, int topref, results* ob){
 
   int i;
@@ -1499,7 +1488,7 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   int i, s1, s2, s3;
   int headerpos, displaypos;
   char *susedString, *savailableString;
-  char pwdprint[1024];
+  wchar_t pwdprint[1024];
   char *markedInfoLine;
 
   if (markedauto) {
@@ -1523,9 +1512,9 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   selected = selected - topfileref;
 
   if (strcmp(objectWild, "")){
-    sprintf(pwdprint, "%s/%s", pwd, objectWild);
+    swprintf(pwdprint, 1024, L"%s/%s", pwd, objectWild);
   } else {
-    strcpy(pwdprint, pwd);
+    swprintf(pwdprint, 1024, L"%s", pwd);
   }
 
   if (human) {
@@ -1662,7 +1651,7 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
     setColors(INFO_PAIR);
   }
   // attroff(A_BOLD); // Required to ensure the last selected item doesn't bold the header
-  printLine(1, 2, pwdprint);
+  wPrintLine(1, 2, pwdprint);
   printLine(2, 2, sizeHeader);
 
   if (markedinfo){
