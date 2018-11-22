@@ -128,7 +128,12 @@ int sanitizeTopFileRef(int topfileref)
 void refreshDirectory(char *sortmode, int origtopfileref, int origselected)
 {
   char currentselectname[512];
-  strcpy(currentselectname, ob[origselected].name);
+  if (invalidstart) {
+    strcpy(currentselectname, "");
+    invalidstart = 0;
+  } else {
+    strcpy(currentselectname, ob[origselected].name);
+  }
   free(ob);
   ob = get_dir(currentpwd);
   clear_workspace();
@@ -147,6 +152,7 @@ void global_menu_inputs();
 void show_directory_input()
 {
   char oldpwd[1024];
+  char direrror[1024];
   strcpy(oldpwd, currentpwd);
   move(0,0);
   clrtoeol();
@@ -176,21 +182,32 @@ void show_directory_input()
     // if (!check_dir(currentpwd)){
     //   global_menu();
     // }
-    if ( invalidstart ){
-      invalidstart = 0;
-      set_history(currentpwd, "", "", 0, 0);
+    if (check_object(currentpwd) == 1){
+      if ( invalidstart ){
+        // invalidstart = 0;
+        set_history(currentpwd, "", "", 0, 0);
+      } else {
+        set_history(currentpwd, objectWild, ob[selected].name, topfileref, selected);
+      }
+      topfileref = 0;
+      selected = 0;
+      chdir(currentpwd);
+      refreshDirectory(sortmode, 0, selected);
     } else {
-      set_history(currentpwd, objectWild, ob[selected].name, topfileref, selected);
+      sprintf(direrror, "The location %s cannot be opened or is not a directory\n", currentpwd);
+      strcpy(currentpwd, oldpwd);
+      topLineMessage(direrror);
     }
-    topfileref = 0;
-    selected = 0;
-    chdir(currentpwd);
-    refreshDirectory(sortmode, 0, selected);
   } else {
     strcpy(currentpwd, oldpwd); // Copying old value back if the input was aborted
   }
-  directory_view_menu_inputs();
+  if (historyref > 0){
+    directory_view_menu_inputs();
+  } else {
+    global_menu_inputs();
+  }
 }
+
 
 int replace_file_confirm_input(char *filename)
 {

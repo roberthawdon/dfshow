@@ -220,6 +220,8 @@ void updateView()
   fseek(stream, filePos[top], SEEK_SET);
   top = 0;
 
+  line = malloc(sizeof(char) + 1); // Preallocating memory appears to fix a crash on FreeBSD, it might also fix the same issue on macOS
+
   while ((nread = getline(&line, &len, stream)) != -1) {
     s = 0;
     mbstowcs(longline, line, len);
@@ -274,6 +276,7 @@ void loadFile(const char * currentfile)
     return;
     }
 
+  line = malloc(sizeof(char) + 1);
   longline = malloc(sizeof(wchar_t));
 
   while ((nread = getline(&line, &len, stream)) != -1) {
@@ -289,6 +292,7 @@ void loadFile(const char * currentfile)
       longestlongline = wcslen(longline);
     }
   }
+  free(line);
   updateView();
 }
 
