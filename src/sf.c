@@ -276,6 +276,7 @@ void loadFile(const char * currentfile)
     return;
     }
 
+  line = malloc(sizeof(char) + 1);
   longline = malloc(sizeof(wchar_t));
 
   while ((nread = getline(&line, &len, stream)) != -1) {
@@ -291,6 +292,7 @@ void loadFile(const char * currentfile)
       longestlongline = wcslen(longline);
     }
   }
+  free(line);
   updateView();
 }
 

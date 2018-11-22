@@ -1431,22 +1431,9 @@ results* get_dir(char *pwd)
     goto fetch;
 
   } else {
+    // This should never be called.
     sprintf(direrror, "The location %s cannot be opened or is not a directory\n", path);
-    historyref--;
-    if (historyref > 0 ){
-      strcpy(pwd, hs[historyref - 1].path);
-      strcat(pwd, "/");
-      strcat(pwd, hs[historyref - 1].objectWild);
-      // Following lines don't work, fix later
-      topfileref = hs[historyref - 1].topfileref;
-      selected = hs[historyref - 1].selected;
-      topLineMessage(direrror);
-      goto fetch;
-    } else {
-      topLineMessage(direrror);
-      global_menu();
-    }
-    // return ob;
+    topLineMessage(direrror);
   }
   hlinklen = seglength(ob, "hlink", count);
   ownerlen = seglength(ob, "owner", count);
