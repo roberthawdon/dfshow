@@ -1,5 +1,11 @@
 AUTOMAKE_OPTIONS = foreign
+
+if DARWIN
+LDADD = -lncurses -lm
+else
 LDADD = -lncursesw -lm
+endif
+
 bin_PROGRAMS = $(top_builddir)/bin/show $(top_builddir)/bin/sf
 __top_builddir__bin_show_SOURCES = src/show.c src/showfunctions.c src/showmenus.c src/colors.c src/common.c
 __top_builddir__bin_show_LDADD = $(LDADD)

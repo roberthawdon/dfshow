@@ -9,5 +9,7 @@ AC_CHECK_MEMBERS([struct stat.st_author])
 AC_CHECK_HEADERS([stdio.h limits.h signal.h ctype.h wctype.h getopt.h sys/types.h sys/stat.h dirent.h fcntl.h pwd.h string.h stdlib.h unistd.h time.h sys/statvfs.h libgen.h errno.h wchar.h hurd.h math.h sys/sysmacros.h regex.h])
 AC_CHECK_HEADERS(ncurses.h, , AC_MSG_ERROR(ncurses header (ncurses.h) not found. You may need to install an ncurses development package.))
 
+AM_CONDITIONAL([DARWIN], [test $(uname) -eq "Darwin"])
+
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
