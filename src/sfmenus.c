@@ -123,27 +123,30 @@ int show_file_find_case_input()
 void show_file_position_input(int currentpos)
 {
   char newpos[11];
+  int status;
   viewmode = 2;
   move(0,0);
   clrtoeol();
   printMenu(0,0,filePosText);
   curs_set(TRUE);
   move(0,52);
-  readline(newpos, 11, "");
+  status = readline(newpos, 11, ""); // DF-EDIT defaulted to 0, but it also defaulted to overtype mode, so for ease of use, we'll leave the default blank.
   curs_set(FALSE);
-  if (check_first_char(newpos, "+")){
-    memmove(newpos, newpos+1, strlen(newpos));
-    if (check_numbers_only(newpos)){
-      topline = topline + atoi(newpos);
-    }
-  } else if (check_first_char(newpos, "-")) {
-    memmove(newpos, newpos+1, strlen(newpos));
-    if (check_numbers_only(newpos)){
-      topline = topline - atoi(newpos);
-    }
-  } else {
-    if (check_numbers_only(newpos)){
-      topline = atoi(newpos);
+  if (status != -1){
+    if (check_first_char(newpos, "+")){
+      memmove(newpos, newpos+1, strlen(newpos));
+      if (check_numbers_only(newpos)){
+        topline = topline + atoi(newpos);
+      }
+    } else if (check_first_char(newpos, "-")) {
+      memmove(newpos, newpos+1, strlen(newpos));
+      if (check_numbers_only(newpos)){
+        topline = topline - atoi(newpos);
+      }
+    } else {
+      if (check_numbers_only(newpos)){
+        topline = atoi(newpos);
+      }
     }
   }
   printMenu(0, 0, fileMenuText);
