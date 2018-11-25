@@ -132,7 +132,7 @@ void show_file_position_input(int currentpos)
   move(0,52);
   status = readline(newpos, 11, ""); // DF-EDIT defaulted to 0, but it also defaulted to overtype mode, so for ease of use, we'll leave the default blank.
   curs_set(FALSE);
-  if (status != -1){
+  if ((status != -1) && (strcmp(newpos,"") != 0)){
     if (check_first_char(newpos, "+")){
       memmove(newpos, newpos+1, strlen(newpos));
       if (check_numbers_only(newpos)){
