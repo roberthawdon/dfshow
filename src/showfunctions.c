@@ -376,7 +376,7 @@ void writeResultStruct(results* ob, const char * filename, struct stat buffer, i
   ob[count].date = buffer.st_mtime;
 
   filedate = dateString(ob[count].date, timestyle);
-  strcpy(ob[count].datedisplay, filedate);
+  mbstowcs(ob[count].datedisplay, filedate, 33);
 
   strcpy(ob[count].name, filename);
 
@@ -613,9 +613,9 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   sizepad = (sizelen - strlen(sizestring)) + ogpad + 1;
 
   if ( (dateminlen - datelen) > 0 ) {
-    datepad = dateminlen - strlen(ob[currentitem].datedisplay);
+    datepad = dateminlen - wcslen(ob[currentitem].datedisplay);
   } else {
-    datepad = datelen - strlen(ob[currentitem].datedisplay);
+    datepad = datelen - wcslen(ob[currentitem].datedisplay);
   }
 
   s1 = genPadding(hlinkstart);
@@ -628,7 +628,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
     strcpy(marked, " ");
   }
 
-  swprintf(entryMeta, 1024, L"  %s %s%s%i %s%s%s %s%s ", marked, ob[currentitem].perm, s1, *ob[currentitem].hlink, ogaval, s2, sizestring, ob[currentitem].datedisplay, s3);
+  swprintf(entryMeta, 1024, L"  %s %s%s%i %s%s%s %ls%s ", marked, ob[currentitem].perm, s1, *ob[currentitem].hlink, ogaval, s2, sizestring, ob[currentitem].datedisplay, s3);
 
   swprintf(entryName, 1024, L"%s", ob[currentitem].name);
 
@@ -1018,7 +1018,7 @@ int seglength(const void *seg, char *segname, int LEN)
     longest = strlen(minorstr);
   }
   else if (!strcmp(segname, "datedisplay")) {
-    longest = strlen(dfseg[0].datedisplay);
+    longest = wcslen(dfseg[0].datedisplay);
   }
   else if (!strcmp(segname, "name")) {
     longest = strlen(dfseg[0].name);
@@ -1062,7 +1062,7 @@ int seglength(const void *seg, char *segname, int LEN)
         len = strlen(minorstr);
       }
       else if (!strcmp(segname, "datedisplay")) {
-        len = strlen(dfseg[i].datedisplay);
+        len = wcslen(dfseg[i].datedisplay);
       }
       else if (!strcmp(segname, "name")) {
         len = strlen(dfseg[i].name);
