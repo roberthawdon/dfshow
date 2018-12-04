@@ -24,5 +24,26 @@
 #define BRIGHT_CYAN    14
 #define BRIGHT_WHITE   15
 
+#define COLORMENU_PAIR_0  100
+#define COLORMENU_PAIR_1  101
+#define COLORMENU_PAIR_2  102
+#define COLORMENU_PAIR_3  103
+#define COLORMENU_PAIR_4  104
+#define COLORMENU_PAIR_5  105
+#define COLORMENU_PAIR_6  106
+#define COLORMENU_PAIR_7  107
+#define COLORMENU_PAIR_8  108
+#define COLORMENU_PAIR_9  109
+#define COLORMENU_PAIR_A  110
+#define COLORMENU_PAIR_B  111
+#define COLORMENU_PAIR_C  112
+#define COLORMENU_PAIR_D  113
+#define COLORMENU_PAIR_E  114
+#define COLORMENU_PAIR_F  115
+
+
+#define DEFAULT_COLOR_PAIR 255
+
 void setColorMode(int mode);
 void setColors(int pair);
+void themeBuilder();

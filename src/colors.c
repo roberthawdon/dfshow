@@ -19,10 +19,10 @@
 #define _GNU_SOURCE
 #include <stdio.h>
 #include <ncurses.h>
+#include "common.h"
 #include "colors.h"
 
 int lightColorPair[15];
-
 // int commandL, infoL, inputL, selectL, displayL, dangerL, dirL, slinkL, exeL, suidL, sgidL, hiliteL = 0;
 
 extern int colormode;
@@ -143,6 +143,24 @@ void setColorMode(int mode){
     lightColorPair[DEADLINK_PAIR] = 0;
     break;
   }
+  init_pair(COLORMENU_PAIR_0, COLOR_BLACK, COLOR_WHITE);
+  init_pair(COLORMENU_PAIR_1, COLOR_RED, DEFAULT_COLOR);
+  init_pair(COLORMENU_PAIR_2, COLOR_GREEN, DEFAULT_COLOR);
+  init_pair(COLORMENU_PAIR_3, COLOR_YELLOW, DEFAULT_COLOR);
+  init_pair(COLORMENU_PAIR_4, COLOR_BLUE, DEFAULT_COLOR);
+  init_pair(COLORMENU_PAIR_5, COLOR_MAGENTA, DEFAULT_COLOR);
+  init_pair(COLORMENU_PAIR_6, COLOR_CYAN, DEFAULT_COLOR);
+  init_pair(COLORMENU_PAIR_7, COLOR_WHITE, DEFAULT_COLOR);
+  init_pair(COLORMENU_PAIR_8, BRIGHT_BLACK, COLOR_WHITE);
+  init_pair(COLORMENU_PAIR_9, BRIGHT_RED, DEFAULT_COLOR);
+  init_pair(COLORMENU_PAIR_A, BRIGHT_GREEN, DEFAULT_COLOR);
+  init_pair(COLORMENU_PAIR_B, BRIGHT_YELLOW, DEFAULT_COLOR);
+  init_pair(COLORMENU_PAIR_C, BRIGHT_BLUE, DEFAULT_COLOR);
+  init_pair(COLORMENU_PAIR_D, BRIGHT_MAGENTA, DEFAULT_COLOR);
+  init_pair(COLORMENU_PAIR_E, BRIGHT_CYAN, DEFAULT_COLOR);
+  init_pair(COLORMENU_PAIR_F, BRIGHT_WHITE, DEFAULT_COLOR);
+
+  init_pair(DEFAULT_COLOR_PAIR, DEFAULT_COLOR, DEFAULT_COLOR);
 }
 
 void setColors(int pair)
@@ -153,4 +171,65 @@ void setColors(int pair)
   } else {
     attroff(A_BOLD);
   }
+}
+
+void themeBuilder()
+{
+  clear();
+  printMenu(0, 0, "Color number, !Help, !Load, !Quit, !Save");
+
+  setColors(COMMAND_PAIR);
+  mvprintw(2, 4, "Command lines");
+  setColors(DISPLAY_PAIR);
+  mvprintw(3, 4, "Display lines");
+  setColors(ERROR_PAIR);
+  mvprintw(4, 4, "Error messages");
+  setColors(INFO_PAIR);
+  mvprintw(5, 4, "Information lines");
+  setColors(DANGER_PAIR);
+  mvprintw(6, 4, "Danger lines");
+  setColors(SELECT_PAIR);
+  mvprintw(7, 4, "Selected block lines");
+  setColors(HILITE_PAIR);
+  mvprintw(8, 4, "Highlight");
+
+  attron(COLOR_PAIR(DEFAULT_COLOR_PAIR));
+  mvprintw(2, 45, "!-Default");
+  attron(COLOR_PAIR(COLORMENU_PAIR_0));
+  mvprintw(3, 45, "0-Black");
+  attron(COLOR_PAIR(COLORMENU_PAIR_1));
+  mvprintw(4, 45, "1-Red");
+  attron(COLOR_PAIR(COLORMENU_PAIR_2));
+  mvprintw(5, 45, "2-Green");
+  attron(COLOR_PAIR(COLORMENU_PAIR_3));
+  mvprintw(6, 45, "3-Yellow");
+  attron(COLOR_PAIR(COLORMENU_PAIR_4));
+  mvprintw(7, 45, "4-Blue");
+  attron(COLOR_PAIR(COLORMENU_PAIR_5));
+  mvprintw(8, 45, "5-Magenta");
+  attron(COLOR_PAIR(COLORMENU_PAIR_6));
+  mvprintw(9, 45, "6-Cyan");
+  attron(COLOR_PAIR(COLORMENU_PAIR_7));
+  mvprintw(10, 45, "7-White");
+  attron(COLOR_PAIR(COLORMENU_PAIR_8));
+  mvprintw(11, 45, "8-Bright Black");
+  attron(COLOR_PAIR(COLORMENU_PAIR_9));
+  mvprintw(12, 45, "9-Bright Red");
+  attron(COLOR_PAIR(COLORMENU_PAIR_A));
+  mvprintw(13, 45, "A-Bright Green");
+  attron(COLOR_PAIR(COLORMENU_PAIR_B));
+  mvprintw(14, 45, "B-Bright Yellow");
+  attron(COLOR_PAIR(COLORMENU_PAIR_C));
+  mvprintw(15, 45, "C-Bright Blue");
+  attron(COLOR_PAIR(COLORMENU_PAIR_D));
+  mvprintw(16, 45, "D-Bright Magenta");
+  attron(COLOR_PAIR(COLORMENU_PAIR_E));
+  mvprintw(17, 45, "E-Bright Cyan");
+  attron(COLOR_PAIR(COLORMENU_PAIR_F));
+  mvprintw(18, 45, "F-Bright White");
+
+  setColors(ERROR_PAIR);
+  mvprintw(21, 22, "Select 0 to F for desired foreground color");
+  mvprintw(22, 22, "Use alt-0 to alt-F for background color");
+
 }

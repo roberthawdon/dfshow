@@ -1184,19 +1184,7 @@ void directory_view_menu_inputs()
             }
           break;
         case 276: // F12
-          // clear();
-          // endwin();
-
-          // printf("0: %s - %s\n", hs[0].path, hs[0].objectWild);
-          // printf("1: %s - %s\n", hs[1].path, hs[1].objectWild);
-          // printf("2: %s - %s\n", hs[2].path, hs[2].objectWild);
-          // printf("3: %s - %s\n", hs[3].path, hs[3].objectWild);
-          // printf("4: %s - %s\n", hs[4].path, hs[4].objectWild);
-          // printf("5: %s - %s\n", hs[5].path, hs[5].objectWild);
-          // printf("6: %s - %s\n", hs[6].path, hs[6].objectWild);
-
-          // exit(0);
-          //refreshScreen();
+          themeBuilder();
           break;
         case 262: // Home
           selected = topfileref;
