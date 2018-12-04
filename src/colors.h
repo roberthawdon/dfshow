@@ -41,7 +41,7 @@
 #define COLORMENU_PAIR_E  114
 #define COLORMENU_PAIR_F  115
 
-
+#define COLORMENU_SELECT  254
 #define DEFAULT_COLOR_PAIR 255
 
 void theme_menu_inputs();

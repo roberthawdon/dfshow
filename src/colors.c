@@ -25,6 +25,9 @@
 int lightColorPair[255];
 // int commandL, infoL, inputL, selectL, displayL, dangerL, dirL, slinkL, exeL, suidL, sgidL, hiliteL = 0;
 
+int colorThemePos = 0;
+int totalItemCount = 6;
+
 extern int colormode;
 extern int c;
 extern int * pc;
@@ -36,13 +39,44 @@ void theme_menu_inputs()
       *pc = getch();
       switch(*pc)
         {
-        case 27:
+        case 27: // ALT
           *pc = getch();
           switch(*pc)
             {
-            default:
-              mvprintw(LINES-2, 1, "Alt character pressed is = %3d Hopefully it can be printed as '%c'", c, c);
-              refresh();
+            case '!':
+              break;
+            case '0':
+              break;
+            case '1':
+              break;
+            case '2':
+              break;
+            case '3':
+              break;
+            case '4':
+              break;
+            case '5':
+              break;
+            case '6':
+              break;
+            case '7':
+              break;
+            case '8':
+              break;
+            case '9':
+              break;
+            case 'a':
+              break;
+            case 'b':
+              break;
+            case 'c':
+              break;
+            case 'd':
+              break;
+            case 'e':
+              break;
+            case 'f':
+              break;
             }
           break;
         case '!':
@@ -84,22 +118,28 @@ void theme_menu_inputs()
         case 'l':
           break;
         case 'q':
+          curs_set(FALSE);
           exittoshell();
           break;
         case 's':
           break;
         case 10: // Enter - Falls through
         case 258: // Down Arrow
+          if (colorThemePos < totalItemCount){
+            colorThemePos++;
+            themeBuilder();
+          }
           break;
         case 259: // Up Arrow
+          if (colorThemePos > 0) {
+            colorThemePos--;
+            themeBuilder();
+          }
           break;
         case 260: // Left Arrow
           break;
         case 261: // Right Arrow
           break;
-        default:
-            mvprintw(LINES-2, 1, "Character pressed is = %3d Hopefully it can be printed as '%c'", c, c);
-            refresh();
         }
     }
 }
@@ -306,7 +346,7 @@ void themeBuilder()
   setColors(COLORMENU_PAIR_7);
   mvprintw(10, 45, "7-White");
   setColors(COLORMENU_PAIR_8);
-  mvprintw(11, 45, "8-Bright Black");
+  mvprintw(11, 45, "8-Gray");
   setColors(COLORMENU_PAIR_9);
   mvprintw(12, 45, "9-Bright Red");
   setColors(COLORMENU_PAIR_A);
@@ -325,6 +365,9 @@ void themeBuilder()
   setColors(ERROR_PAIR);
   mvprintw(21, 22, "Select 0 to F for desired foreground color");
   mvprintw(22, 22, "Use alt-0 to alt-F for background color");
+
+  curs_set(TRUE);
+  move(colorThemePos + 2, 1);
 
   theme_menu_inputs();
 
