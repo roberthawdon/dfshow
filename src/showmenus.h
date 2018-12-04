@@ -3,7 +3,6 @@ void modify_owner_input();
 void modify_group_input();
 void modify_permissions_input();
 void show_directory_input();
-void theme_menu_inputs();
 void directory_view_menu_inputs();
 void global_menu_inputs();
 char * execute_argument_input(const char *exec);
