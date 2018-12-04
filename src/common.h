@@ -1,4 +1,5 @@
 #define PROGRAM_DESC "\nDF-SHOW: An interactive directory/file browser written for Unix-like systems.\nBased on the applications from the PC-DOS DF-EDIT suite by Larry Kroeker.\n"
+#include <wchar.h>
 
 void printVersion(char* programName);
 void wPrintMenu(int line, int col, wchar_t *menustring);

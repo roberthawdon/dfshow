@@ -44,6 +44,7 @@
 
 #define DEFAULT_COLOR_PAIR 255
 
+void theme_menu_inputs();
 void setColorMode(int mode);
 void setColors(int pair);
 void themeBuilder();

@@ -22,10 +22,87 @@
 #include "common.h"
 #include "colors.h"
 
-int lightColorPair[15];
+int lightColorPair[255];
 // int commandL, infoL, inputL, selectL, displayL, dangerL, dirL, slinkL, exeL, suidL, sgidL, hiliteL = 0;
 
 extern int colormode;
+extern int c;
+extern int * pc;
+
+void theme_menu_inputs()
+{
+  while(1)
+    {
+      *pc = getch();
+      switch(*pc)
+        {
+        case 27:
+          *pc = getch();
+          switch(*pc)
+            {
+            default:
+              mvprintw(LINES-2, 1, "Alt character pressed is = %3d Hopefully it can be printed as '%c'", c, c);
+              refresh();
+            }
+          break;
+        case '!':
+          break;
+        case '0':
+          break;
+        case '1':
+          break;
+        case '2':
+          break;
+        case '3':
+          break;
+        case '4':
+          break;
+        case '5':
+          break;
+        case '6':
+          break;
+        case '7':
+          break;
+        case '8':
+          break;
+        case '9':
+          break;
+        case 'a':
+          break;
+        case 'b':
+          break;
+        case 'c':
+          break;
+        case 'd':
+          break;
+        case 'e':
+          break;
+        case 'f':
+          break;
+        case 'h':
+          break;
+        case 'l':
+          break;
+        case 'q':
+          exittoshell();
+          break;
+        case 's':
+          break;
+        case 10: // Enter - Falls through
+        case 258: // Down Arrow
+          break;
+        case 259: // Up Arrow
+          break;
+        case 260: // Left Arrow
+          break;
+        case 261: // Right Arrow
+          break;
+        default:
+            mvprintw(LINES-2, 1, "Character pressed is = %3d Hopefully it can be printed as '%c'", c, c);
+            refresh();
+        }
+    }
+}
 
 void setColorMode(int mode){
   use_default_colors();
@@ -144,23 +221,40 @@ void setColorMode(int mode){
     break;
   }
   init_pair(COLORMENU_PAIR_0, COLOR_BLACK, COLOR_WHITE);
+  lightColorPair[COLORMENU_PAIR_0] = 0;
   init_pair(COLORMENU_PAIR_1, COLOR_RED, DEFAULT_COLOR);
+  lightColorPair[COLORMENU_PAIR_1] = 0;
   init_pair(COLORMENU_PAIR_2, COLOR_GREEN, DEFAULT_COLOR);
+  lightColorPair[COLORMENU_PAIR_2] = 0;
   init_pair(COLORMENU_PAIR_3, COLOR_YELLOW, DEFAULT_COLOR);
+  lightColorPair[COLORMENU_PAIR_3] = 0;
   init_pair(COLORMENU_PAIR_4, COLOR_BLUE, DEFAULT_COLOR);
+  lightColorPair[COLORMENU_PAIR_4] = 0;
   init_pair(COLORMENU_PAIR_5, COLOR_MAGENTA, DEFAULT_COLOR);
+  lightColorPair[COLORMENU_PAIR_5] = 0;
   init_pair(COLORMENU_PAIR_6, COLOR_CYAN, DEFAULT_COLOR);
+  lightColorPair[COLORMENU_PAIR_6] = 0;
   init_pair(COLORMENU_PAIR_7, COLOR_WHITE, DEFAULT_COLOR);
+  lightColorPair[COLORMENU_PAIR_7] = 0;
   init_pair(COLORMENU_PAIR_8, BRIGHT_BLACK, COLOR_WHITE);
+  lightColorPair[COLORMENU_PAIR_8] = 0;
   init_pair(COLORMENU_PAIR_9, BRIGHT_RED, DEFAULT_COLOR);
+  lightColorPair[COLORMENU_PAIR_9] = 0;
   init_pair(COLORMENU_PAIR_A, BRIGHT_GREEN, DEFAULT_COLOR);
+  lightColorPair[COLORMENU_PAIR_A] = 0;
   init_pair(COLORMENU_PAIR_B, BRIGHT_YELLOW, DEFAULT_COLOR);
+  lightColorPair[COLORMENU_PAIR_B] = 0;
   init_pair(COLORMENU_PAIR_C, BRIGHT_BLUE, DEFAULT_COLOR);
+  lightColorPair[COLORMENU_PAIR_C] = 0;
   init_pair(COLORMENU_PAIR_D, BRIGHT_MAGENTA, DEFAULT_COLOR);
+  lightColorPair[COLORMENU_PAIR_D] = 0;
   init_pair(COLORMENU_PAIR_E, BRIGHT_CYAN, DEFAULT_COLOR);
+  lightColorPair[COLORMENU_PAIR_E] = 0;
   init_pair(COLORMENU_PAIR_F, BRIGHT_WHITE, DEFAULT_COLOR);
+  lightColorPair[COLORMENU_PAIR_F] = 0;
 
   init_pair(DEFAULT_COLOR_PAIR, DEFAULT_COLOR, DEFAULT_COLOR);
+  lightColorPair[DEFAULT_COLOR_PAIR] = 0;
 }
 
 void setColors(int pair)
@@ -193,43 +287,45 @@ void themeBuilder()
   setColors(HILITE_PAIR);
   mvprintw(8, 4, "Highlight");
 
-  attron(COLOR_PAIR(DEFAULT_COLOR_PAIR));
+  setColors(DEFAULT_COLOR_PAIR);
   mvprintw(2, 45, "!-Default");
-  attron(COLOR_PAIR(COLORMENU_PAIR_0));
+  setColors(COLORMENU_PAIR_0);
   mvprintw(3, 45, "0-Black");
-  attron(COLOR_PAIR(COLORMENU_PAIR_1));
+  setColors(COLORMENU_PAIR_1);
   mvprintw(4, 45, "1-Red");
-  attron(COLOR_PAIR(COLORMENU_PAIR_2));
+  setColors(COLORMENU_PAIR_2);
   mvprintw(5, 45, "2-Green");
-  attron(COLOR_PAIR(COLORMENU_PAIR_3));
+  setColors(COLORMENU_PAIR_3);
   mvprintw(6, 45, "3-Yellow");
-  attron(COLOR_PAIR(COLORMENU_PAIR_4));
+  setColors(COLORMENU_PAIR_4);
   mvprintw(7, 45, "4-Blue");
-  attron(COLOR_PAIR(COLORMENU_PAIR_5));
+  setColors(COLORMENU_PAIR_5);
   mvprintw(8, 45, "5-Magenta");
-  attron(COLOR_PAIR(COLORMENU_PAIR_6));
+  setColors(COLORMENU_PAIR_6);
   mvprintw(9, 45, "6-Cyan");
-  attron(COLOR_PAIR(COLORMENU_PAIR_7));
+  setColors(COLORMENU_PAIR_7);
   mvprintw(10, 45, "7-White");
-  attron(COLOR_PAIR(COLORMENU_PAIR_8));
+  setColors(COLORMENU_PAIR_8);
   mvprintw(11, 45, "8-Bright Black");
-  attron(COLOR_PAIR(COLORMENU_PAIR_9));
+  setColors(COLORMENU_PAIR_9);
   mvprintw(12, 45, "9-Bright Red");
-  attron(COLOR_PAIR(COLORMENU_PAIR_A));
+  setColors(COLORMENU_PAIR_A);
   mvprintw(13, 45, "A-Bright Green");
-  attron(COLOR_PAIR(COLORMENU_PAIR_B));
+  setColors(COLORMENU_PAIR_B);
   mvprintw(14, 45, "B-Bright Yellow");
-  attron(COLOR_PAIR(COLORMENU_PAIR_C));
+  setColors(COLORMENU_PAIR_C);
   mvprintw(15, 45, "C-Bright Blue");
-  attron(COLOR_PAIR(COLORMENU_PAIR_D));
+  setColors(COLORMENU_PAIR_D);
   mvprintw(16, 45, "D-Bright Magenta");
-  attron(COLOR_PAIR(COLORMENU_PAIR_E));
+  setColors(COLORMENU_PAIR_E);
   mvprintw(17, 45, "E-Bright Cyan");
-  attron(COLOR_PAIR(COLORMENU_PAIR_F));
+  setColors(COLORMENU_PAIR_F);
   mvprintw(18, 45, "F-Bright White");
 
   setColors(ERROR_PAIR);
   mvprintw(21, 22, "Select 0 to F for desired foreground color");
   mvprintw(22, 22, "Use alt-0 to alt-F for background color");
+
+  theme_menu_inputs();
 
 }
