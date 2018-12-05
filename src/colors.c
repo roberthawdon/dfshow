@@ -66,6 +66,114 @@ int itemLookup(int menuPos){
   return(selectedItem);
 }
 
+void updateColorPair(int code, int location){
+  int colorCode = -1;
+  int colorBold = 0;
+  switch(code){
+  case 0:
+    colorCode = COLOR_BLACK;
+    break;
+  case 1:
+    colorCode = COLOR_RED;
+    break;
+  case 2:
+    colorCode = COLOR_GREEN;
+    break;
+  case 3:
+    colorCode = COLOR_YELLOW;
+    break;
+  case 4:
+    colorCode = COLOR_BLUE;
+    break;
+  case 5:
+    colorCode = COLOR_MAGENTA;
+    break;
+  case 6:
+    colorCode = COLOR_CYAN;
+    break;
+  case 7:
+    colorCode = COLOR_WHITE;
+    break;
+  case 8:
+    if (COLORS > 8){
+      colorCode = BRIGHT_BLACK;
+    } else {
+      colorCode = COLOR_BLACK;
+      colorBold = 1;
+    }
+    break;
+  case 9:
+    if (COLORS > 8){
+      colorCode = BRIGHT_RED;
+    } else {
+      colorCode = COLOR_RED;
+      colorBold = 1;
+    }
+    break;
+  case 10:
+    if (COLORS > 8){
+      colorCode = BRIGHT_GREEN;
+    } else {
+      colorCode = COLOR_GREEN;
+      colorBold = 1;
+    }
+    break;
+  case 11:
+    if (COLORS > 8){
+      colorCode = BRIGHT_YELLOW;
+    } else {
+      colorCode = COLOR_YELLOW;
+      colorBold = 1;
+    }
+    break;
+  case 12:
+    if (COLORS > 8){
+      colorCode = BRIGHT_BLUE;
+    } else {
+      colorCode = COLOR_BLUE;
+      colorBold = 1;
+    }
+    break;
+  case 13:
+    if (COLORS > 8){
+      colorCode = BRIGHT_MAGENTA;
+    } else {
+      colorCode = COLOR_MAGENTA;
+      colorBold = 1;
+    }
+    break;
+  case 14:
+    if (COLORS > 8){
+      colorCode = BRIGHT_CYAN;
+    } else {
+      colorCode = COLOR_CYAN;
+      colorBold = 1;
+    }
+    break;
+  case 15:
+    if (COLORS > 8){
+      colorCode = BRIGHT_WHITE;
+    } else {
+      colorCode = COLOR_WHITE;
+      colorBold = 1;
+    }
+    break;
+  case -1:
+    colorCode = DEFAULT_COLOR;
+    break;
+  case -2:
+    colorCode = DEFAULT_COLOR;
+    colorBold = 1;
+    break;
+  }
+  if (location == 0) {
+    colors[itemLookup(colorThemePos)].foreground = colorCode;
+  } else {
+    colors[itemLookup(colorThemePos)].background = colorCode;
+  }
+  colors[itemLookup(colorThemePos)].bold = colorBold;
+}
+
 void theme_menu_inputs()
 {
   while(1)
@@ -78,202 +186,184 @@ void theme_menu_inputs()
           switch(*pc)
             {
             case '!':
-              colors[itemLookup(colorThemePos)].background = DEFAULT_COLOR;
+              updateColorPair(-1, 1);
               refreshColors();
               themeBuilder();
               break;
             case '?':
-              colors[itemLookup(colorThemePos)].background = DEFAULT_COLOR;
+              updateColorPair(-2, 1);
               refreshColors();
               themeBuilder();
               break;
             case '0':
-              colors[itemLookup(colorThemePos)].background = COLOR_BLACK;
+              updateColorPair(COLOR_BLACK, 1);
               refreshColors();
               themeBuilder();
               break;
             case '1':
-              colors[itemLookup(colorThemePos)].background = COLOR_RED;
+              updateColorPair(COLOR_RED, 1);
               refreshColors();
               themeBuilder();
               break;
             case '2':
-              colors[itemLookup(colorThemePos)].background = COLOR_GREEN;
+              updateColorPair(COLOR_GREEN, 1);
               refreshColors();
               themeBuilder();
               break;
             case '3':
-              colors[itemLookup(colorThemePos)].background = COLOR_YELLOW;
+              updateColorPair(COLOR_YELLOW, 1);
               refreshColors();
               themeBuilder();
               break;
             case '4':
-              colors[itemLookup(colorThemePos)].background = COLOR_BLUE;
+              updateColorPair(COLOR_BLUE, 1);
               refreshColors();
               themeBuilder();
               break;
             case '5':
-              colors[itemLookup(colorThemePos)].background = COLOR_MAGENTA;
+              updateColorPair(COLOR_MAGENTA, 1);
               refreshColors();
               themeBuilder();
               break;
             case '6':
-              colors[itemLookup(colorThemePos)].background = COLOR_CYAN;
+              updateColorPair(COLOR_CYAN, 1);
               refreshColors();
               themeBuilder();
               break;
             case '7':
-              colors[itemLookup(colorThemePos)].background = COLOR_WHITE;
+              updateColorPair(COLOR_WHITE, 1);
               refreshColors();
               themeBuilder();
               break;
             case '8':
-              colors[itemLookup(colorThemePos)].background = BRIGHT_BLACK;
+              updateColorPair(BRIGHT_BLACK, 1);
               refreshColors();
               themeBuilder();
               break;
             case '9':
-              colors[itemLookup(colorThemePos)].background = BRIGHT_RED;
+              updateColorPair(BRIGHT_RED, 1);
               refreshColors();
               themeBuilder();
               break;
             case 'a':
-              colors[itemLookup(colorThemePos)].background = BRIGHT_GREEN;
+              updateColorPair(BRIGHT_GREEN, 1);
               refreshColors();
               themeBuilder();
               break;
             case 'b':
-              colors[itemLookup(colorThemePos)].background = BRIGHT_YELLOW;
+              updateColorPair(BRIGHT_YELLOW, 1);
               refreshColors();
               themeBuilder();
               break;
             case 'c':
-              colors[itemLookup(colorThemePos)].background = BRIGHT_BLUE;
+              updateColorPair(BRIGHT_BLUE, 1);
               refreshColors();
               themeBuilder();
               break;
             case 'd':
-              colors[itemLookup(colorThemePos)].background = BRIGHT_MAGENTA;
+              updateColorPair(BRIGHT_MAGENTA, 1);
               refreshColors();
               themeBuilder();
               break;
             case 'e':
-              colors[itemLookup(colorThemePos)].background = BRIGHT_CYAN;
+              updateColorPair(BRIGHT_CYAN, 1);
               refreshColors();
               themeBuilder();
               break;
             case 'f':
-              colors[itemLookup(colorThemePos)].background = BRIGHT_WHITE;
+              updateColorPair(BRIGHT_WHITE, 1);
               refreshColors();
               themeBuilder();
               break;
             }
           break;
         case '!':
-          colors[itemLookup(colorThemePos)].foreground = DEFAULT_COLOR;
-          colors[itemLookup(colorThemePos)].bold = 0;
+          updateColorPair(-1, 0);
           refreshColors();
           themeBuilder();
           break;
         case '?':
-          colors[itemLookup(colorThemePos)].foreground = DEFAULT_COLOR;
-          colors[itemLookup(colorThemePos)].bold = 1;
+          updateColorPair(-2, 0);
           refreshColors();
           themeBuilder();
           break;
         case '0':
-          colors[itemLookup(colorThemePos)].foreground = COLOR_BLACK;
-          colors[itemLookup(colorThemePos)].bold = 0;
+          updateColorPair(COLOR_BLACK, 0);
           refreshColors();
           themeBuilder();
           break;
         case '1':
-          colors[itemLookup(colorThemePos)].foreground = COLOR_RED;
-          colors[itemLookup(colorThemePos)].bold = 0;
+          updateColorPair(COLOR_RED, 0);
           refreshColors();
           themeBuilder();
           break;
         case '2':
-          colors[itemLookup(colorThemePos)].foreground = COLOR_GREEN;
-          colors[itemLookup(colorThemePos)].bold = 0;
+          updateColorPair(COLOR_GREEN, 0);
           refreshColors();
           themeBuilder();
           break;
         case '3':
-          colors[itemLookup(colorThemePos)].foreground = COLOR_YELLOW;
-          colors[itemLookup(colorThemePos)].bold = 0;
+          updateColorPair(COLOR_YELLOW, 0);
           refreshColors();
           themeBuilder();
           break;
         case '4':
-          colors[itemLookup(colorThemePos)].foreground = COLOR_BLUE;
-          colors[itemLookup(colorThemePos)].bold = 0;
+          updateColorPair(COLOR_BLUE, 0);
           refreshColors();
           themeBuilder();
           break;
         case '5':
-          colors[itemLookup(colorThemePos)].foreground = COLOR_MAGENTA;
-          colors[itemLookup(colorThemePos)].bold = 0;
+          updateColorPair(COLOR_MAGENTA, 0);
           refreshColors();
           themeBuilder();
           break;
         case '6':
-          colors[itemLookup(colorThemePos)].foreground = COLOR_CYAN;
-          colors[itemLookup(colorThemePos)].bold = 0;
+          updateColorPair(COLOR_CYAN, 0);
           refreshColors();
           themeBuilder();
           break;
         case '7':
-          colors[itemLookup(colorThemePos)].foreground = COLOR_WHITE;
-          colors[itemLookup(colorThemePos)].bold = 0;
+          updateColorPair(COLOR_WHITE, 0);
           refreshColors();
           themeBuilder();
           break;
         case '8':
-          colors[itemLookup(colorThemePos)].foreground = BRIGHT_BLACK;
-          colors[itemLookup(colorThemePos)].bold = 0;
+          updateColorPair(BRIGHT_BLACK, 0);
           refreshColors();
           themeBuilder();
           break;
         case '9':
-          colors[itemLookup(colorThemePos)].foreground = BRIGHT_RED;
-          colors[itemLookup(colorThemePos)].bold = 0;
+          updateColorPair(BRIGHT_RED, 0);
           refreshColors();
           themeBuilder();
           break;
         case 'a':
-          colors[itemLookup(colorThemePos)].foreground = BRIGHT_GREEN;
-          colors[itemLookup(colorThemePos)].bold = 0;
+          updateColorPair(BRIGHT_GREEN, 0);
           refreshColors();
           themeBuilder();
           break;
         case 'b':
-          colors[itemLookup(colorThemePos)].foreground = BRIGHT_YELLOW;
-          colors[itemLookup(colorThemePos)].bold = 0;
+          updateColorPair(BRIGHT_YELLOW, 0);
           refreshColors();
           themeBuilder();
           break;
         case 'c':
-          colors[itemLookup(colorThemePos)].foreground = BRIGHT_BLUE;
-          colors[itemLookup(colorThemePos)].bold = 0;
+          updateColorPair(BRIGHT_BLUE, 0);
           refreshColors();
           themeBuilder();
           break;
         case 'd':
-          colors[itemLookup(colorThemePos)].foreground = BRIGHT_MAGENTA;
-          colors[itemLookup(colorThemePos)].bold = 0;
+          updateColorPair(BRIGHT_MAGENTA, 0);
           refreshColors();
           themeBuilder();
           break;
         case 'e':
-          colors[itemLookup(colorThemePos)].foreground = BRIGHT_CYAN;
-          colors[itemLookup(colorThemePos)].bold = 0;
+          updateColorPair(BRIGHT_CYAN, 0);
           refreshColors();
           themeBuilder();
           break;
         case 'f':
-          colors[itemLookup(colorThemePos)].foreground = BRIGHT_WHITE;
-          colors[itemLookup(colorThemePos)].bold = 0;
+          updateColorPair(BRIGHT_WHITE, 0);
           refreshColors();
           themeBuilder();
           break;

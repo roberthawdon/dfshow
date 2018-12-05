@@ -52,6 +52,7 @@ typedef struct {
 } colorPairs;
 
 void setColorPairs(int pair, int foreground, int background, int bold);
+void updateColorPair(int code, int location);
 void refreshColors();
 int itemLookup(int menuPos);
 void theme_menu_inputs();
