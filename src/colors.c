@@ -484,17 +484,17 @@ void themeBuilder()
   setColors(COLORMENU_PAIR_8);
   mvprintw(12, 45, "8-Dark Gray");
   setColors(COLORMENU_PAIR_9);
-  mvprintw(13, 45, "9-Bright Red");
+  mvprintw(13, 45, "9-Light Red");
   setColors(COLORMENU_PAIR_A);
-  mvprintw(14, 45, "A-Bright Green");
+  mvprintw(14, 45, "A-Light Green");
   setColors(COLORMENU_PAIR_B);
   mvprintw(15, 45, "B-Yellow");
   setColors(COLORMENU_PAIR_C);
-  mvprintw(16, 45, "C-Bright Blue");
+  mvprintw(16, 45, "C-Light Blue");
   setColors(COLORMENU_PAIR_D);
-  mvprintw(17, 45, "D-Bright Magenta");
+  mvprintw(17, 45, "D-Light Magenta");
   setColors(COLORMENU_PAIR_E);
-  mvprintw(18, 45, "E-Bright Cyan");
+  mvprintw(18, 45, "E-Light Cyan");
   setColors(COLORMENU_PAIR_F);
   mvprintw(19, 45, "F-White");
 
