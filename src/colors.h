@@ -41,9 +41,19 @@
 #define COLORMENU_PAIR_E  114
 #define COLORMENU_PAIR_F  115
 
-#define COLORMENU_SELECT  254
+#define COLORMENU_SELECT  253
+#define DEFAULT_BOLD_PAIR 254
 #define DEFAULT_COLOR_PAIR 255
 
+typedef struct {
+  int foreground;
+  int background;
+  int bold;
+} colorPairs;
+
+void setColorPairs(int pair, int foreground, int background, int bold);
+void refreshColors();
+int itemLookup(int menuPos);
 void theme_menu_inputs();
 void setColorMode(int mode);
 void setColors(int pair);
