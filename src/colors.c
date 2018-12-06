@@ -19,6 +19,7 @@
 #define _GNU_SOURCE
 #include <stdio.h>
 #include <ncurses.h>
+#include <string.h>
 #include "common.h"
 #include "colors.h"
 
@@ -26,11 +27,15 @@ int lightColorPair[256];
 // int commandL, infoL, inputL, selectL, displayL, dangerL, dirL, slinkL, exeL, suidL, sgidL, hiliteL = 0;
 
 int colorThemePos = 0;
-int totalItemCount = 6;
+int totalItemCount = 7;
 
 int selectedItem;
 
+int bgToggle = 0;
+
 colorPairs colors[256];
+
+char fgbgLabel[11];
 
 extern int colormode;
 extern int c;
@@ -51,12 +56,15 @@ int itemLookup(int menuPos){
     selectedItem = INFO_PAIR;
     break;
   case 4:
-    selectedItem = DANGER_PAIR;
+    selectedItem = HEADING_PAIR;
     break;
   case 5:
-    selectedItem = SELECT_PAIR;
+    selectedItem = DANGER_PAIR;
     break;
   case 6:
+    selectedItem = SELECT_PAIR;
+    break;
+  case 7:
     selectedItem = HILITE_PAIR;
     break;
   default:
@@ -181,189 +189,93 @@ void theme_menu_inputs()
       *pc = getch();
       switch(*pc)
         {
-        case 27: // ALT
-          *pc = getch();
-          switch(*pc)
-            {
-            case '!':
-              updateColorPair(-1, 1);
-              refreshColors();
-              themeBuilder();
-              break;
-            case '?':
-              updateColorPair(-2, 1);
-              refreshColors();
-              themeBuilder();
-              break;
-            case '0':
-              updateColorPair(COLOR_BLACK, 1);
-              refreshColors();
-              themeBuilder();
-              break;
-            case '1':
-              updateColorPair(COLOR_RED, 1);
-              refreshColors();
-              themeBuilder();
-              break;
-            case '2':
-              updateColorPair(COLOR_GREEN, 1);
-              refreshColors();
-              themeBuilder();
-              break;
-            case '3':
-              updateColorPair(COLOR_YELLOW, 1);
-              refreshColors();
-              themeBuilder();
-              break;
-            case '4':
-              updateColorPair(COLOR_BLUE, 1);
-              refreshColors();
-              themeBuilder();
-              break;
-            case '5':
-              updateColorPair(COLOR_MAGENTA, 1);
-              refreshColors();
-              themeBuilder();
-              break;
-            case '6':
-              updateColorPair(COLOR_CYAN, 1);
-              refreshColors();
-              themeBuilder();
-              break;
-            case '7':
-              updateColorPair(COLOR_WHITE, 1);
-              refreshColors();
-              themeBuilder();
-              break;
-            case '8':
-              updateColorPair(BRIGHT_BLACK, 1);
-              refreshColors();
-              themeBuilder();
-              break;
-            case '9':
-              updateColorPair(BRIGHT_RED, 1);
-              refreshColors();
-              themeBuilder();
-              break;
-            case 'a':
-              updateColorPair(BRIGHT_GREEN, 1);
-              refreshColors();
-              themeBuilder();
-              break;
-            case 'b':
-              updateColorPair(BRIGHT_YELLOW, 1);
-              refreshColors();
-              themeBuilder();
-              break;
-            case 'c':
-              updateColorPair(BRIGHT_BLUE, 1);
-              refreshColors();
-              themeBuilder();
-              break;
-            case 'd':
-              updateColorPair(BRIGHT_MAGENTA, 1);
-              refreshColors();
-              themeBuilder();
-              break;
-            case 'e':
-              updateColorPair(BRIGHT_CYAN, 1);
-              refreshColors();
-              themeBuilder();
-              break;
-            case 'f':
-              updateColorPair(BRIGHT_WHITE, 1);
-              refreshColors();
-              themeBuilder();
-              break;
-            }
-          break;
         case '!':
-          updateColorPair(-1, 0);
+          updateColorPair(-1, bgToggle);
           refreshColors();
           themeBuilder();
           break;
         case '?':
-          updateColorPair(-2, 0);
+          updateColorPair(-2, bgToggle);
           refreshColors();
           themeBuilder();
           break;
         case '0':
-          updateColorPair(COLOR_BLACK, 0);
+          updateColorPair(COLOR_BLACK, bgToggle);
           refreshColors();
           themeBuilder();
           break;
         case '1':
-          updateColorPair(COLOR_RED, 0);
+          updateColorPair(COLOR_RED, bgToggle);
           refreshColors();
           themeBuilder();
           break;
         case '2':
-          updateColorPair(COLOR_GREEN, 0);
+          updateColorPair(COLOR_GREEN, bgToggle);
           refreshColors();
           themeBuilder();
           break;
         case '3':
-          updateColorPair(COLOR_YELLOW, 0);
+          updateColorPair(COLOR_YELLOW, bgToggle);
           refreshColors();
           themeBuilder();
           break;
         case '4':
-          updateColorPair(COLOR_BLUE, 0);
+          updateColorPair(COLOR_BLUE, bgToggle);
           refreshColors();
           themeBuilder();
           break;
         case '5':
-          updateColorPair(COLOR_MAGENTA, 0);
+          updateColorPair(COLOR_MAGENTA, bgToggle);
           refreshColors();
           themeBuilder();
           break;
         case '6':
-          updateColorPair(COLOR_CYAN, 0);
+          updateColorPair(COLOR_CYAN, bgToggle);
           refreshColors();
           themeBuilder();
           break;
         case '7':
-          updateColorPair(COLOR_WHITE, 0);
+          updateColorPair(COLOR_WHITE, bgToggle);
           refreshColors();
           themeBuilder();
           break;
         case '8':
-          updateColorPair(BRIGHT_BLACK, 0);
+          updateColorPair(BRIGHT_BLACK, bgToggle);
           refreshColors();
           themeBuilder();
           break;
         case '9':
-          updateColorPair(BRIGHT_RED, 0);
+          updateColorPair(BRIGHT_RED, bgToggle);
           refreshColors();
           themeBuilder();
           break;
         case 'a':
-          updateColorPair(BRIGHT_GREEN, 0);
+          updateColorPair(BRIGHT_GREEN, bgToggle);
           refreshColors();
           themeBuilder();
           break;
         case 'b':
-          updateColorPair(BRIGHT_YELLOW, 0);
+          updateColorPair(BRIGHT_YELLOW, bgToggle);
           refreshColors();
           themeBuilder();
           break;
         case 'c':
-          updateColorPair(BRIGHT_BLUE, 0);
+          updateColorPair(BRIGHT_BLUE, bgToggle);
           refreshColors();
           themeBuilder();
           break;
         case 'd':
-          updateColorPair(BRIGHT_MAGENTA, 0);
+          updateColorPair(BRIGHT_MAGENTA, bgToggle);
           refreshColors();
           themeBuilder();
           break;
         case 'e':
-          updateColorPair(BRIGHT_CYAN, 0);
+          updateColorPair(BRIGHT_CYAN, bgToggle);
           refreshColors();
           themeBuilder();
           break;
         case 'f':
-          updateColorPair(BRIGHT_WHITE, 0);
+          updateColorPair(BRIGHT_WHITE, bgToggle);
           refreshColors();
           themeBuilder();
           break;
@@ -376,6 +288,14 @@ void theme_menu_inputs()
           exittoshell();
           break;
         case 's':
+          break;
+        case 't':
+          if (bgToggle == 0){
+            bgToggle = 1;
+          } else {
+            bgToggle = 0;
+          }
+          themeBuilder();
           break;
         case 10: // Enter - Falls through
         case 258: // Down Arrow
@@ -394,6 +314,9 @@ void theme_menu_inputs()
           break;
         case 261: // Right Arrow
           break;
+          // default:
+          //     mvprintw(LINES-2, 1, "Character pressed is = %d Hopefully it can be printed as '%c'", c, c);
+          //     refresh();
         }
     }
 }
@@ -534,7 +457,12 @@ void setColors(int pair)
 void themeBuilder()
 {
   clear();
-  printMenu(0, 0, "Color number, !Help, !Load, !Quit, !Save");
+  if (bgToggle){
+    strcpy(fgbgLabel, "background");
+  } else {
+    strcpy(fgbgLabel, "foreground");
+  }
+  printMenu(0, 0, "Color number, !Help, !Load, !Quit, !Save, !Toggle");
 
   setColors(COMMAND_PAIR);
   mvprintw(2, 4, "Command lines");
@@ -544,12 +472,14 @@ void themeBuilder()
   mvprintw(4, 4, "Error messages");
   setColors(INFO_PAIR);
   mvprintw(5, 4, "Information lines");
+  setColors(HEADING_PAIR);
+  mvprintw(6, 4, "Heading lines");
   setColors(DANGER_PAIR);
-  mvprintw(6, 4, "Danger lines");
+  mvprintw(7, 4, "Danger lines");
   setColors(SELECT_PAIR);
-  mvprintw(7, 4, "Selected block lines");
+  mvprintw(8, 4, "Selected block lines");
   setColors(HILITE_PAIR);
-  mvprintw(8, 4, "Highlight");
+  mvprintw(9, 4, "Highlight");
 
   setColors(DEFAULT_COLOR_PAIR);
   mvprintw(2, 45, "!-Default");
@@ -589,8 +519,7 @@ void themeBuilder()
   mvprintw(19, 45, "F-White");
 
   setColors(DEFAULT_BOLD_PAIR);
-  mvprintw(22, 22, "Select 0 to F for desired foreground color");
-  mvprintw(23, 22, "Use alt-0 to alt-F for background color");
+  mvprintw(22, 22, "Select 0 to F for desired %s color", fgbgLabel);
 
   curs_set(TRUE);
   move(colorThemePos + 2, 1);

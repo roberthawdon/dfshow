@@ -8,6 +8,7 @@ void wPrintLine(int line, int col, wchar_t *textString);
 void printLine(int line, int col, char *textString);
 void topLineMessage(const char *message);
 int wReadLine(wchar_t *buffer, int buflen, wchar_t *oldbuf);
+int altModifierKey();
 int readline(char *buffer, int buflen, char *oldbuf);
 int check_dir(char *pwd);
 int check_file(char *file);
