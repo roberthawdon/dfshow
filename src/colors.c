@@ -322,6 +322,18 @@ void theme_menu_inputs()
 }
 
 void setColorPairs(int pair, int foreground, int background, int bold){
+  if (COLORS < 9){
+    checkColor:
+    if ( foreground > 8 ){
+      foreground = foreground - 8;
+      bold = 1;
+      goto checkColor;
+    }
+    if ( background > 8 ){
+      background = background - 8;
+      goto checkColor;
+    }
+  }
   colors[pair].foreground = foreground;
   colors[pair].background = background;
   colors[pair].bold = bold;
@@ -340,39 +352,21 @@ void setColorMode(int mode){
   lightColorPair[0] = 0; // Unused array value
   switch(mode){
   case 0:
-    if (COLORS > 8){
-      setColorPairs(COMMAND_PAIR, DEFAULT_COLOR, DEFAULT_COLOR, 0);
-      setColorPairs(INFO_PAIR, COLOR_GREEN, DEFAULT_COLOR, 0);
-      setColorPairs(INPUT_PAIR, COLOR_BLACK, COLOR_WHITE, 0);
-      setColorPairs(SELECT_PAIR, BRIGHT_BLUE, DEFAULT_COLOR, 0);
-      setColorPairs(DISPLAY_PAIR, COLOR_CYAN, DEFAULT_COLOR, 0);
-      setColorPairs(DANGER_PAIR, BRIGHT_RED, DEFAULT_COLOR, 0);
-      setColorPairs(DIR_PAIR, BRIGHT_MAGENTA, DEFAULT_COLOR, 0);
-      setColorPairs(SLINK_PAIR, DEFAULT_COLOR, DEFAULT_COLOR, 1);
-      setColorPairs(EXE_PAIR, BRIGHT_YELLOW, DEFAULT_COLOR, 0);
-      setColorPairs(SUID_PAIR, DEFAULT_COLOR, COLOR_RED, 0);
-      setColorPairs(SGID_PAIR, BRIGHT_BLACK, COLOR_GREEN, 0);
-      setColorPairs(HILITE_PAIR, DEFAULT_COLOR, DEFAULT_COLOR, 1);
-      setColorPairs(ERROR_PAIR, DEFAULT_COLOR, DEFAULT_COLOR, 1);
-      setColorPairs(HEADING_PAIR, COLOR_GREEN, DEFAULT_COLOR, 0);
-      setColorPairs(DEADLINK_PAIR, BRIGHT_RED, DEFAULT_COLOR, 0);
-    } else {
-      setColorPairs(COMMAND_PAIR, DEFAULT_COLOR, DEFAULT_COLOR, 0);
-      setColorPairs(INFO_PAIR, COLOR_GREEN, DEFAULT_COLOR, 0);
-      setColorPairs(INPUT_PAIR, COLOR_BLACK, COLOR_WHITE, 0);
-      setColorPairs(SELECT_PAIR, COLOR_BLUE, DEFAULT_COLOR, 1);
-      setColorPairs(DISPLAY_PAIR, COLOR_CYAN, DEFAULT_COLOR, 0);
-      setColorPairs(DANGER_PAIR, COLOR_RED, DEFAULT_COLOR, 1);
-      setColorPairs(DIR_PAIR, COLOR_MAGENTA, DEFAULT_COLOR, 1);
-      setColorPairs(SLINK_PAIR, DEFAULT_COLOR, DEFAULT_COLOR, 1);
-      setColorPairs(EXE_PAIR, COLOR_YELLOW, DEFAULT_COLOR, 1);
-      setColorPairs(SUID_PAIR, DEFAULT_COLOR, COLOR_RED, 0);
-      setColorPairs(SGID_PAIR, COLOR_BLACK, COLOR_GREEN, 1);
-      setColorPairs(HILITE_PAIR, DEFAULT_COLOR, DEFAULT_COLOR, 1);
-      setColorPairs(ERROR_PAIR, DEFAULT_COLOR, DEFAULT_COLOR, 1);
-      setColorPairs(HEADING_PAIR, COLOR_GREEN, DEFAULT_COLOR, 0);
-      setColorPairs(DEADLINK_PAIR, COLOR_RED, DEFAULT_COLOR, 1);
-    }
+    setColorPairs(COMMAND_PAIR, DEFAULT_COLOR, DEFAULT_COLOR, 0);
+    setColorPairs(INFO_PAIR, COLOR_GREEN, DEFAULT_COLOR, 0);
+    setColorPairs(INPUT_PAIR, COLOR_BLACK, COLOR_WHITE, 0);
+    setColorPairs(SELECT_PAIR, BRIGHT_BLUE, DEFAULT_COLOR, 0);
+    setColorPairs(DISPLAY_PAIR, COLOR_CYAN, DEFAULT_COLOR, 0);
+    setColorPairs(DANGER_PAIR, BRIGHT_RED, DEFAULT_COLOR, 0);
+    setColorPairs(DIR_PAIR, BRIGHT_MAGENTA, DEFAULT_COLOR, 0);
+    setColorPairs(SLINK_PAIR, DEFAULT_COLOR, DEFAULT_COLOR, 1);
+    setColorPairs(EXE_PAIR, BRIGHT_YELLOW, DEFAULT_COLOR, 0);
+    setColorPairs(SUID_PAIR, DEFAULT_COLOR, COLOR_RED, 0);
+    setColorPairs(SGID_PAIR, BRIGHT_BLACK, COLOR_GREEN, 0);
+    setColorPairs(HILITE_PAIR, DEFAULT_COLOR, DEFAULT_COLOR, 1);
+    setColorPairs(ERROR_PAIR, DEFAULT_COLOR, DEFAULT_COLOR, 1);
+    setColorPairs(HEADING_PAIR, COLOR_GREEN, DEFAULT_COLOR, 0);
+    setColorPairs(DEADLINK_PAIR, BRIGHT_RED, DEFAULT_COLOR, 0);
     break;
   case 1:
     setColorPairs(COMMAND_PAIR, DEFAULT_COLOR, DEFAULT_COLOR, 0);
