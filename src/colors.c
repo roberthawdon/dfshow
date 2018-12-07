@@ -78,6 +78,56 @@ int itemLookup(int menuPos){
 }
 
 void setColorPairs(int pair, int foreground, int background, int bold){
+  switch(pair){
+  case 1:
+    strcpy(colors[pair].name, "command");
+    break;
+  case 2:
+    strcpy(colors[pair].name, "info");
+    break;
+  case 3:
+    strcpy(colors[pair].name, "input");
+    break;
+  case 4:
+    strcpy(colors[pair].name, "select");
+    break;
+  case 5:
+    strcpy(colors[pair].name, "display");
+    break;
+  case 6:
+    strcpy(colors[pair].name, "danger");
+    break;
+  case 7:
+    strcpy(colors[pair].name, "dir");
+    break;
+  case 8:
+    strcpy(colors[pair].name, "symlink");
+    break;
+  case 9:
+    strcpy(colors[pair].name, "exec");
+    break;
+  case 10:
+    strcpy(colors[pair].name, "suid");
+    break;
+  case 11:
+    strcpy(colors[pair].name, "sgid");
+    break;
+  case 12:
+    strcpy(colors[pair].name, "hilite");
+    break;
+  case 13:
+    strcpy(colors[pair].name, "error");
+    break;
+  case 14:
+    strcpy(colors[pair].name, "heading");
+    break;
+  case 15:
+    strcpy(colors[pair].name, "deadlink");
+    break;
+  default:
+    sprintf(colors[pair].name, "undef-%i", pair);
+    break;
+  }
   if (COLORS < 9){
   checkColor:
     if ( foreground > 8 ){
@@ -96,6 +146,7 @@ void setColorPairs(int pair, int foreground, int background, int bold){
 }
 
 void saveTheme(){
+  int i;
   char filename[1024];
   move(0,0);
   clrtoeol();
@@ -104,8 +155,15 @@ void saveTheme(){
   readline(filename, 1024, "");
   // Do someting
   group = config_setting_add(root, "theme", CONFIG_TYPE_GROUP);
-  setting = config_setting_add(group, "command", CONFIG_TYPE_INT);
-  config_setting_set_int(setting, colors[COMMAND_PAIR].foreground);
+  for (i = 1; i < 16; i++){
+    array = config_setting_add(group, colors[i].name, CONFIG_TYPE_ARRAY);
+    setting = config_setting_add(array, NULL, CONFIG_TYPE_INT);
+    config_setting_set_int(setting, colors[i].foreground);
+    setting = config_setting_add(array, NULL, CONFIG_TYPE_INT);
+    config_setting_set_int(setting, colors[i].background);
+    setting = config_setting_add(array, NULL, CONFIG_TYPE_INT);
+    config_setting_set_int(setting, colors[i].bold);
+  }
   config_write_file(&themeConfig, filename);
   themeBuilder();
 }

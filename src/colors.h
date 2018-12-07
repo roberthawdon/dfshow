@@ -46,6 +46,7 @@
 #define DEFAULT_COLOR_PAIR 63
 
 typedef struct {
+  char name[24];
   int foreground;
   int background;
   int bold;
