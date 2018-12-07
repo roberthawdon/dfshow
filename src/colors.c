@@ -75,6 +75,28 @@ int itemLookup(int menuPos){
   return(selectedItem);
 }
 
+void saveTheme(){
+  char filename[1024];
+  move(0,0);
+  clrtoeol();
+  printMenu(0,0, "Save file - Enter pathname:");
+  move(0,28);
+  readline(filename, 1024, "");
+  // Do something
+  themeBuilder();
+}
+
+void loadTheme(){
+  char filename[1024];
+  move(0,0);
+  clrtoeol();
+  printMenu(0,0, "Load file - Enter pathname:");
+  move(0,28);
+  readline(filename, 1024, "");
+  // Do something
+  themeBuilder();
+}
+
 void updateColorPair(int code, int location){
   int colorCode = -1;
   int colorBold = 0;
@@ -283,12 +305,14 @@ void theme_menu_inputs()
         case 'h':
           break;
         case 'l':
+          loadTheme();
           break;
         case 'q':
           curs_set(FALSE);
           exittoshell();
           break;
         case 's':
+          saveTheme();
           break;
         case 't':
           if (bgToggle == 0){
