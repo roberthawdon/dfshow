@@ -359,7 +359,7 @@ int main(int argc, char *argv[])
       exit(0);
       break;
     case GETOPT_VERSION_CHAR:
-      printVersion(argv[0]);
+      printVersion(PROGRAM_NAME);
       exit(0);
       break;
     case GETOPT_THEME_CHAR:

@@ -1,5 +1,6 @@
 #include <limits.h>
 
+#define PROGRAM_NAME "sf"
 #define LINE_WRAP 0
 #define WORD_WRAP 1
 

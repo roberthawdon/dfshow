@@ -1,3 +1,4 @@
+#define PROGRAM_NAME "show"
 #include <limits.h>
 
 // Defining enum for help and version char (method borrowed from coreutils)

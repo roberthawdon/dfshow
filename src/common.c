@@ -45,7 +45,7 @@ int exittoshell()
 }
 
 void printVersion(char* programName){
-  printf (("%s %s\n"), programName, VERSION);
+  printf (("DF-SHOW %s %s\n"), programName, VERSION);
   fputs (("\
 Copyright (C) 2018 Robert Ian Hawdon\n\
 License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.\n\
