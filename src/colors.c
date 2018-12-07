@@ -20,6 +20,7 @@
 #include <stdio.h>
 #include <ncurses.h>
 #include <string.h>
+#include <libconfig.h>
 #include "common.h"
 #include "colors.h"
 
@@ -476,41 +477,41 @@ void themeBuilder()
   mvprintw(9, 4, "Highlight");
 
   setColors(DEFAULT_COLOR_PAIR);
-  mvprintw(2, 45, "!-Default");
+  mvprintw(2, 45, "!-Default      ");
   setColors(DEFAULT_BOLD_PAIR);
-  mvprintw(3, 45, "?-Default Bold");
+  mvprintw(3, 45, "?-Default Bold ");
   setColors(COLORMENU_PAIR_0);
-  mvprintw(4, 45, "0-Black");
+  mvprintw(4, 45, "0-Black        ");
   setColors(COLORMENU_PAIR_1);
-  mvprintw(5, 45, "1-Red");
+  mvprintw(5, 45, "1-Red          ");
   setColors(COLORMENU_PAIR_2);
-  mvprintw(6, 45, "2-Green");
+  mvprintw(6, 45, "2-Green        ");
   setColors(COLORMENU_PAIR_3);
-  mvprintw(7, 45, "3-Brown");
+  mvprintw(7, 45, "3-Brown        ");
   setColors(COLORMENU_PAIR_4);
-  mvprintw(8, 45, "4-Blue");
+  mvprintw(8, 45, "4-Blue         ");
   setColors(COLORMENU_PAIR_5);
-  mvprintw(9, 45, "5-Magenta");
+  mvprintw(9, 45, "5-Magenta      ");
   setColors(COLORMENU_PAIR_6);
-  mvprintw(10, 45, "6-Cyan");
+  mvprintw(10, 45, "6-Cyan         ");
   setColors(COLORMENU_PAIR_7);
-  mvprintw(11, 45, "7-Light Gray");
+  mvprintw(11, 45, "7-Light Gray   ");
   setColors(COLORMENU_PAIR_8);
-  mvprintw(12, 45, "8-Dark Gray");
+  mvprintw(12, 45, "8-Dark Gray    ");
   setColors(COLORMENU_PAIR_9);
-  mvprintw(13, 45, "9-Light Red");
+  mvprintw(13, 45, "9-Light Red    ");
   setColors(COLORMENU_PAIR_A);
-  mvprintw(14, 45, "A-Light Green");
+  mvprintw(14, 45, "A-Light Green  ");
   setColors(COLORMENU_PAIR_B);
-  mvprintw(15, 45, "B-Yellow");
+  mvprintw(15, 45, "B-Yellow       ");
   setColors(COLORMENU_PAIR_C);
-  mvprintw(16, 45, "C-Light Blue");
+  mvprintw(16, 45, "C-Light Blue   ");
   setColors(COLORMENU_PAIR_D);
   mvprintw(17, 45, "D-Light Magenta");
   setColors(COLORMENU_PAIR_E);
-  mvprintw(18, 45, "E-Light Cyan");
+  mvprintw(18, 45, "E-Light Cyan   ");
   setColors(COLORMENU_PAIR_F);
-  mvprintw(19, 45, "F-White");
+  mvprintw(19, 45, "F-White        ");
 
   setColors(DEFAULT_BOLD_PAIR);
   mvprintw(22, 22, "Select 0 to F for desired %s color", fgbgLabel);
