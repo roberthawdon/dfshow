@@ -1,9 +1,9 @@
 AUTOMAKE_OPTIONS = foreign
 
 if DARWIN
-LDADD = -lncurses -lm
+LDADD = -lncurses -lm -lconfig
 else
-LDADD = -lncursesw -lm
+LDADD = -lncursesw -lm -lconfig
 endif
 
 bin_PROGRAMS = $(top_builddir)/bin/show $(top_builddir)/bin/sf

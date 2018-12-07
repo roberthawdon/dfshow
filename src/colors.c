@@ -41,6 +41,8 @@ char fgbgLabel[11];
 extern int colormode;
 extern int c;
 extern int * pc;
+extern config_t themeConfig;
+extern config_setting_t *root, *setting, *group, *array;
 
 int itemLookup(int menuPos){
   switch(menuPos){
@@ -75,6 +77,24 @@ int itemLookup(int menuPos){
   return(selectedItem);
 }
 
+void setColorPairs(int pair, int foreground, int background, int bold){
+  if (COLORS < 9){
+  checkColor:
+    if ( foreground > 8 ){
+      foreground = foreground - 8;
+      bold = 1;
+      goto checkColor;
+    }
+    if ( background > 8 ){
+      background = background - 8;
+      goto checkColor;
+    }
+  }
+  colors[pair].foreground = foreground;
+  colors[pair].background = background;
+  colors[pair].bold = bold;
+}
+
 void saveTheme(){
   char filename[1024];
   move(0,0);
@@ -82,7 +102,11 @@ void saveTheme(){
   printMenu(0,0, "Save file - Enter pathname:");
   move(0,28);
   readline(filename, 1024, "");
-  // Do something
+  // Do someting
+  group = config_setting_add(root, "theme", CONFIG_TYPE_GROUP);
+  setting = config_setting_add(group, "command", CONFIG_TYPE_INT);
+  config_setting_set_int(setting, colors[COMMAND_PAIR].foreground);
+  config_write_file(&themeConfig, filename);
   themeBuilder();
 }
 
@@ -344,24 +368,6 @@ void theme_menu_inputs()
           //     refresh();
         }
     }
-}
-
-void setColorPairs(int pair, int foreground, int background, int bold){
-  if (COLORS < 9){
-    checkColor:
-    if ( foreground > 8 ){
-      foreground = foreground - 8;
-      bold = 1;
-      goto checkColor;
-    }
-    if ( background > 8 ){
-      background = background - 8;
-      goto checkColor;
-    }
-  }
-  colors[pair].foreground = foreground;
-  colors[pair].background = background;
-  colors[pair].bold = bold;
 }
 
 void refreshColors(){

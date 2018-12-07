@@ -27,6 +27,7 @@
 #include <signal.h>
 #include <regex.h>
 #include <wchar.h>
+#include <libconfig.h>
 #include "config.h"
 #include "colors.h"
 #include "common.h"
@@ -72,6 +73,9 @@ long int topPos;
 long int *filePos;
 
 struct sigaction sa;
+
+extern config_t themeConfig;
+extern config_setting_t *root, *setting, *group, *array;
 
 void buildMenuText(){
   // Writing Menus
@@ -324,6 +328,9 @@ int main(int argc, char *argv[])
 {
   int c;
   char themeEnv[48];
+
+  config_init(&themeConfig);
+  root = config_root_setting(&themeConfig);
 
   // Check for theme env variable
   if ( getenv("DFS_THEME")) {

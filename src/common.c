@@ -26,11 +26,15 @@
 #include <wctype.h>
 #include <dirent.h>
 #include <sys/stat.h>
+#include <libconfig.h>
 #include "colors.h"
 #include "config.h"
 
 DIR *folder;
 FILE *file;
+
+config_t themeConfig;
+config_setting_t *root, *setting, *group, *array;
 
 extern int * pc;
 
@@ -45,7 +49,7 @@ int exittoshell()
 }
 
 void printVersion(char* programName){
-  printf (("DF-SHOW %s %s\n"), programName, VERSION);
+  printf (("Directory File Show (DF-SHOW) - %s %s\n"), programName, VERSION);
   fputs (("\
 Copyright (C) 2018 Robert Ian Hawdon\n\
 License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.\n\
