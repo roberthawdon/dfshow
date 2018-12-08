@@ -74,9 +74,6 @@ long int *filePos;
 
 struct sigaction sa;
 
-extern config_t themeConfig;
-extern config_setting_t *root, *setting, *group, *array;
-
 void buildMenuText(){
   // Writing Menus
   strcpy(fileMenuText, "<F1>-Down, <F2>-Up, <F3>-Top, <F4>-Bottom, !Find, !Help, !Position, !Quit");
@@ -328,9 +325,6 @@ int main(int argc, char *argv[])
 {
   int c;
   char themeEnv[48];
-
-  config_init(&themeConfig);
-  root = config_root_setting(&themeConfig);
 
   // Check for theme env variable
   if ( getenv("DFS_THEME")) {

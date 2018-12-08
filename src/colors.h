@@ -55,6 +55,7 @@ typedef struct {
 void setColorPairs(int pair, int foreground, int background, int bold);
 void updateColorPair(int code, int location);
 void refreshColors();
+int applyTheme(const char *filename);
 void saveTheme();
 void loadTheme();
 int itemLookup(int menuPos);

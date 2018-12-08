@@ -67,9 +67,6 @@ char *objectWild;
 
 results *ob;
 
-extern config_t themeConfig;
-extern config_setting_t *root, *setting, *group, *array;
-
 extern history *hs;
 extern int topfileref;
 extern int selected;
@@ -290,9 +287,6 @@ int main(int argc, char *argv[])
   uid_t uid=getuid(), euid=geteuid();
   int c;
   char themeEnv[48];
-
-  config_init(&themeConfig);
-  root = config_root_setting(&themeConfig);
 
   // Check if we're root to display danger
   if (uid == 0 || euid == 0){

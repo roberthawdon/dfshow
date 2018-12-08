@@ -41,8 +41,6 @@ char fgbgLabel[11];
 extern int colormode;
 extern int c;
 extern int * pc;
-extern config_t themeConfig;
-extern config_setting_t *root, *setting, *group, *array;
 
 int itemLookup(int menuPos){
   switch(menuPos){
@@ -145,37 +143,79 @@ void setColorPairs(int pair, int foreground, int background, int bold){
   colors[pair].bold = bold;
 }
 
-void saveTheme(){
+void refreshColors(){
   int i;
+  for ( i = 0; i < 256; i++ ){
+    init_pair(i, colors[i].foreground, colors[i].background);
+    lightColorPair[i] = colors[i].bold;
+  }
+}
+
+void saveTheme(){
+  config_t cfg;
+  config_setting_t *root, *setting, *group, *array;
+  int e, i;
   char filename[1024];
   move(0,0);
   clrtoeol();
-  printMenu(0,0, "Save file - Enter pathname:");
-  move(0,28);
-  readline(filename, 1024, "");
-  // Do someting
-  group = config_setting_add(root, "theme", CONFIG_TYPE_GROUP);
-  for (i = 1; i < 16; i++){
-    array = config_setting_add(group, colors[i].name, CONFIG_TYPE_ARRAY);
-    setting = config_setting_add(array, NULL, CONFIG_TYPE_INT);
-    config_setting_set_int(setting, colors[i].foreground);
-    setting = config_setting_add(array, NULL, CONFIG_TYPE_INT);
-    config_setting_set_int(setting, colors[i].background);
-    setting = config_setting_add(array, NULL, CONFIG_TYPE_INT);
-    config_setting_set_int(setting, colors[i].bold);
+  printMenu(0,0, "Save Colors - Enter pathname:");
+  move(0,30);
+  e = readline(filename, 1024, "");
+  if ( e == 0 ){
+    config_init(&cfg);
+    root = config_root_setting(&cfg);
+    group = config_setting_add(root, "theme", CONFIG_TYPE_GROUP);
+    for (i = 1; i < 16; i++){
+      array = config_setting_add(group, colors[i].name, CONFIG_TYPE_ARRAY);
+      setting = config_setting_add(array, NULL, CONFIG_TYPE_INT);
+      config_setting_set_int(setting, colors[i].foreground);
+      setting = config_setting_add(array, NULL, CONFIG_TYPE_INT);
+      config_setting_set_int(setting, colors[i].background);
+      setting = config_setting_add(array, NULL, CONFIG_TYPE_INT);
+      config_setting_set_int(setting, colors[i].bold);
+    }
+    config_write_file(&cfg, filename);
+    config_destroy(&cfg);
   }
-  config_write_file(&themeConfig, filename);
   themeBuilder();
 }
 
+int applyTheme(const char *filename){
+  config_t cfg;
+  config_setting_t *root, *setting, *group, *array;
+  int groupLen, i, h;
+  config_init(&cfg);
+  config_read_file(&cfg, filename);
+  group = config_lookup(&cfg, "theme");
+  groupLen = config_setting_length(group);
+  for (i = 0; i < groupLen; i++){
+    array = config_setting_get_elem(group, i);
+    for (h = 0; h < 256; h++){
+      if (!strcmp(colors[h].name, config_setting_name(array))){
+        setting = config_setting_lookup(group, config_setting_name(array));
+        colors[h].foreground = config_setting_get_int_elem(setting, 0);
+        colors[h].background = config_setting_get_int_elem(setting, 1);
+        colors[h].bold = config_setting_get_int_elem(setting, 2);
+      }
+    }
+
+  }
+  config_destroy(&cfg);
+  refreshColors();
+  return(0);
+}
+
 void loadTheme(){
+  int e;
   char filename[1024];
   move(0,0);
   clrtoeol();
-  printMenu(0,0, "Load file - Enter pathname:");
-  move(0,28);
-  readline(filename, 1024, "");
-  // Do something
+  printMenu(0,0, "Load Colors - Enter pathname:");
+  move(0,30);
+  e = readline(filename, 1024, "");
+  if ( e == 0 ){
+    applyTheme(filename);
+  }
   themeBuilder();
 }
 
@@ -426,14 +466,6 @@ void theme_menu_inputs()
           //     refresh();
         }
     }
-}
-
-void refreshColors(){
-  int i;
-  for ( i = 0; i < 256; i++ ){
-    init_pair(i, colors[i].foreground, colors[i].background);
-    lightColorPair[i] = colors[i].bold;
-  }
 }
 
 void setColorMode(int mode){

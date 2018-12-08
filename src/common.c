@@ -33,9 +33,6 @@
 DIR *folder;
 FILE *file;
 
-config_t themeConfig;
-config_setting_t *root, *setting, *group, *array;
-
 extern int * pc;
 
 extern char fileMenuText[256];
