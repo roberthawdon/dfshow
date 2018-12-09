@@ -1184,10 +1184,6 @@ void directory_view_menu_inputs()
             }
           break;
         case 276: // F12
-          themeBuilder();
-          theme_menu_inputs();
-          display_dir(currentpwd, ob, topfileref, selected);
-          directory_view_menu_inputs();
           break;
         case 262: // Home
           selected = topfileref;
@@ -1216,6 +1212,19 @@ void global_menu_inputs()
       *pc = getch();
       switch(*pc)
         {
+        case 'o':
+          themeBuilder();
+          theme_menu_inputs();
+          if (historyref == 0){
+            clear();
+            global_menu_inputs();
+          } else {
+            refreshDirectory(sortmode, topfileref, selected);
+            display_dir(currentpwd, ob, topfileref, selected);
+            printMenu(LINES-1, 0, functionMenuText); // Global menu inputs doesn't include this. Even though it isn't used.
+            global_menu_inputs();
+          }
+          break;
         case 'm':
           make_directory_input();
           break;

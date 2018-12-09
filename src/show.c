@@ -468,7 +468,7 @@ Valid arguments are:\n\
 
   // Writing Menus
   strcpy(fileMenuText, "!Copy, !Delete, !Edit, !Hidden, !Modify, !Quit, !Rename, !Show, h!Unt, e!Xec");
-  strcpy(globalMenuText, "!Run command, !Edit file, !Help, !Make dir, !Quit, !Show dir");
+  strcpy(globalMenuText, "c!Olors, !Run command, !Edit file, !Help, !Make dir, !Quit, !Show dir");
   strcpy(functionMenuTextShort, "<F1>-Down <F2>-Up <F3>-Top <F4>-Bottom <F5>-Refresh <F6>-Mark/Unmark <F7>-All <F8>-None <F9>-Sort");
   strcpy(functionMenuTextLong, "<F1>-Down <F2>-Up <F3>-Top <F4>-Bottom <F5>-Refresh <F6>-Mark/Unmark <F7>-All <F8>-None <F9>-Sort <F10>-Block");
   strcpy(modifyMenuText, "Modify: !Owner/Group, !Permissions");
