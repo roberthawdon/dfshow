@@ -192,7 +192,7 @@ int applyTheme(const char *filename){
     array = config_setting_get_elem(group, i);
     for (h = 0; h < 256; h++){
       if (!strcmp(colors[h].name, config_setting_name(array))){
-        setting = config_setting_lookup(group, config_setting_name(array));
+        setting = config_setting_get_member(group, config_setting_name(array));
         colors[h].foreground = config_setting_get_int_elem(setting, 0);
         colors[h].background = config_setting_get_int_elem(setting, 1);
         colors[h].bold = config_setting_get_int_elem(setting, 2);
