@@ -1185,6 +1185,9 @@ void directory_view_menu_inputs()
           break;
         case 276: // F12
           themeBuilder();
+          theme_menu_inputs();
+          display_dir(currentpwd, ob, topfileref, selected);
+          directory_view_menu_inputs();
           break;
         case 262: // Home
           selected = topfileref;

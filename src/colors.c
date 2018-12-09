@@ -18,6 +18,7 @@
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdlib.h>
 #include <ncurses.h>
 #include <string.h>
 #include <libconfig.h>
@@ -208,13 +209,25 @@ int applyTheme(const char *filename){
 void loadTheme(){
   int e;
   char filename[1024];
+  char * rewrite;
   move(0,0);
   clrtoeol();
   printMenu(0,0, "Load Colors - Enter pathname:");
   move(0,30);
   e = readline(filename, 1024, "");
   if ( e == 0 ){
-    applyTheme(filename);
+    if (check_first_char(filename, "~")){
+      rewrite = str_replace(filename, "~", getenv("HOME"));
+      strcpy(filename, rewrite);
+      free(rewrite);
+    }
+    if (check_file(filename) ){
+      applyTheme(filename);
+    } else {
+      curs_set(FALSE);
+      topLineMessage("Error: Unable to read file");
+      curs_set(TRUE);
+    }
   }
   themeBuilder();
 }
@@ -431,7 +444,8 @@ void theme_menu_inputs()
           break;
         case 'q':
           curs_set(FALSE);
-          exittoshell();
+          // exittoshell();
+          return;
           break;
         case 's':
           saveTheme();
@@ -639,6 +653,5 @@ void themeBuilder()
   curs_set(TRUE);
   move(colorThemePos + 2, 1);
 
-  theme_menu_inputs();
 
 }
