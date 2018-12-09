@@ -437,8 +437,6 @@ void theme_menu_inputs()
           refreshColors();
           themeBuilder();
           break;
-        case 'h':
-          break;
         case 'l':
           loadTheme();
           break;
@@ -591,7 +589,7 @@ void themeBuilder()
   } else {
     strcpy(fgbgLabel, "foreground");
   }
-  printMenu(0, 0, "Color number, !Help, !Load, !Quit, !Save, !Toggle");
+  printMenu(0, 0, "Color number, !Load, !Quit, !Save, !Toggle");
 
   setColors(COMMAND_PAIR);
   mvprintw(2, 4, "Command lines");

@@ -1,7 +1,7 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "SHOW" "1" "October 2018" "" ""
+.TH "SHOW" "1" "December 2018" "" ""
 .
 .SH "NAME"
 \fBshow\fR \- An interactive directory/file browser written for Unix\-like systems\.
@@ -454,10 +454,14 @@ Using \fISHIFT\fR whilst selecting an option performs that action in reverse ord
 When a file group display is terminated with the Quit command, one of the following commands can be used to display another group of files, invoke the editor for a fire, or terminate the application completely\. The first character of the command is used to invoke the desired function\. The command line is shown below\.
 .
 .P
-\fBRun command, Edit file, Help, Make dir, Quit, Show dir\fR
+\fBcOlors, Run command, Edit file, Help, Make dir, Quit, Show dir\fR
 .
 .P
 These commands are desctibed below\.
+.
+.TP
+\fBcOlors\fR
+Launches an inbuilt color configuration utility which cusomizes the colors for the various display areas in all the utilities\. Further information can be found in the \fICOLORS\fR section\.
 .
 .TP
 \fBRun command\fR
@@ -490,7 +494,106 @@ Terminate \fBshow\fR\.
 Invoke the application to display another directory\. The directory name is requrested by the following prompt\. An empty response is used to abort this command\.
 .
 .IP
-\fBShow Directory \- Enter pathnem:\fR
+\fBShow Directory \- Enter pathname:\fR
+.
+.SH "COLORS"
+The inbuilt Colors utility is used to customize the colors used in the applications\. It is accessed from the global menu of the \fBshow\fR utility\.
+.
+.P
+The following screen is displayed after launch\.
+.
+.P
+\fBColor number, Load, Quit, Save, Toggle\fR
+.
+.IP "" 4
+.
+.nf
+
+  Command lines                            !\-Default
+  Display lines                            ?\-Default Bold
+  Error messages                           0\-Black
+  Information lines                        1\-Red
+  Heading lines                            2\-Green
+  Danger lines                             3\-Brown
+  Selected block lines                     4\-Blue
+  Highlight                                5\-Magenta
+                                           6\-Cyan
+                                           7\-Light Gray
+                                           8\-Dark Gray
+                                           9\-Light Red
+                                           A\-Light Green
+                                           B\-Yellow
+                                           C\-Light Blue
+                                           D\-Light Magenta
+                                           E\-Light Cyan
+                                           F\-White
+
+
+                    Select 0 to F for desired foreground color
+.
+.fi
+.
+.IP "" 0
+.
+.P
+Initially, the cursor is positioned beside the "Command lines" string\. The cursor can be moved to each of the display types using the up and down cursor keys, and each color can be set by using the number of the desired color\. The background color can be set by using the \fBToggle\fR command\. Each of the types of lines are described below\.
+.
+.TP
+\fBCommand lines\fR
+The color of the top and bottom lines of each utility\. These lines display the valid command, funcation keys and other global information\.
+.
+.TP
+\fBDisplay lines\fR
+The color for the main text lines in each utilities\' display\.
+.
+.TP
+\fBError messages\fR
+The color in which any error messages are displayed\.
+.
+.TP
+\fBInformation lines\fR
+The color used to display general information such as the directory header information\.
+.
+.TP
+\fBHeading lines\fR
+The color used to display the headings for each column in \fBshow\fR\.
+.
+.TP
+\fBDanger lines\fR
+The color used to replace the informationa lines with a warning, such as when running as the root user\.
+.
+.TP
+\fBSelected block lines\fR
+The color of the selected block lines of the current file in the \fBshow\fR utility\.
+.
+.TP
+\fBHighlight\fR
+The color of the command/function keys\.
+.
+.P
+After each of the colors have been changed to the desired color, the theme must be saved with the \fBSave\fR command\. All the commands are described below\.
+.
+.TP
+\fBLoad\fR
+Loads a theme file so it can be modified or used\. The following promt requests the data file name\.
+.
+.IP
+\fBLoad Colors \- Enter file pathname:\fR
+.
+.TP
+\fBQuit\fR
+Quit the color modification utility and return to \fBshow\fR\.
+.
+.TP
+\fBSave\fR
+Save the theme information in a data file for use by all the utilities\. The following promt requests the data file name\.
+.
+.IP
+\fBSave Colors \- Enter file pathname:\fR
+.
+.TP
+\fBToggle\fR
+Switches between foreground and background selection\.
 .
 .SH "SECURITY CONSIDERATIONS"
 DF\-SHOW is designed to be run as a non privileged user, and obays restrictions set by the system\. It is possible to launch \fBshow\fR as root\. When this occurs, \fBshow\fR warns the user by displaying the informational messages in a different color\.
