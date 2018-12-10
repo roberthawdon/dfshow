@@ -157,12 +157,18 @@ void saveTheme(){
   config_setting_t *root, *setting, *group, *array;
   int e, i;
   char filename[1024];
+  char * rewrite;
   move(0,0);
   clrtoeol();
   printMenu(0,0, "Save Colors - Enter pathname:");
   move(0,30);
   e = readline(filename, 1024, "");
   if ( e == 0 ){
+    if (check_first_char(filename, "~")){
+      rewrite = str_replace(filename, "~", getenv("HOME"));
+      strcpy(filename, rewrite);
+      free(rewrite);
+    }
     config_init(&cfg);
     root = config_root_setting(&cfg);
     group = config_setting_add(root, "theme", CONFIG_TYPE_GROUP);
