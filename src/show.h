@@ -17,6 +17,7 @@ enum
    GETOPT_ENVPAGER_CHAR = (CHAR_MIN - 12)
   };
 
+void readConfig();
 int directory_view(char * currentpwd);
 char *getcwd(char *buf, size_t size);
 int global_menu();

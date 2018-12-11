@@ -1,4 +1,5 @@
 #define PROGRAM_DESC "\nDF-SHOW: An interactive directory/file browser written for Unix-like systems.\nBased on the applications from the PC-DOS DF-EDIT suite by Larry Kroeker.\n"
+#define GLOBAL_CONF "/etc/dfshow.conf"
 #include <wchar.h>
 
 void printVersion(char* programName);

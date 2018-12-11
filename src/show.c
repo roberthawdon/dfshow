@@ -34,6 +34,7 @@
 #include "show.h"
 
 char currentpwd[1024];
+char themeEnv[48];
 
 char fileMenuText[256];
 char globalMenuText[256];
@@ -75,6 +76,64 @@ extern char sortmode[5];
 extern int showhidden;
 
 struct sigaction sa;
+
+int setMarked(char* markedinput);
+
+void readConfig()
+{
+  config_t cfg;
+  config_setting_t *root, *setting, *group, *array; //probably don't need the array, but it may be used in the future.
+  char themeName[24];
+  char markedParam[8];
+  config_init(&cfg);
+  if (config_read_file(&cfg, GLOBAL_CONF)){
+    // Deal with the globals first
+    group = config_lookup(&cfg, "common");
+    if (group){
+      setting = config_setting_get_member(group, "theme");
+      if (setting){
+        strcpy(themeName, config_setting_get_string(setting));
+        strcpy(themeEnv,"DFS_THEME=");
+        strcat(themeEnv,themeName);
+        putenv(themeEnv);
+      }
+    }
+    // Now for program specific
+    group = config_lookup(&cfg, PROGRAM_NAME);
+    if (group){
+      // Check File Colour
+      setting = config_setting_get_member(group, "color");
+      if (setting){
+        if (config_setting_get_int(setting)){
+          filecolors = 1;
+        }
+      }
+      // Check Marked
+      setting = config_setting_get_member(group, "marked");
+      if (setting){
+        strcpy(markedParam, config_setting_get_string(setting));
+        setMarked(markedParam);
+      }
+      // Check Sort
+      // Check Reverse
+      // Check Timestyle
+      // Check Hidden
+      // Check Ignore Backups
+      // Check No SF
+      // Check No Danger
+      // Check SI
+      // Check Human Readable
+      setting = config_setting_get_member(group, "human-readable");
+      if (setting){
+        if (config_setting_get_int(setting)){
+          human = 1;
+        }
+      }
+      // Check owner column
+    }
+  };
+  config_destroy(&cfg);
+}
 
 int directory_view(char * currentpwd)
 {
@@ -286,12 +345,15 @@ int main(int argc, char *argv[])
 {
   uid_t uid=getuid(), euid=geteuid();
   int c;
-  char themeEnv[48];
 
   // Check if we're root to display danger
   if (uid == 0 || euid == 0){
     danger = 1;
   }
+
+  // Read the config
+
+  readConfig();
 
   // Check for theme env variable
   if ( getenv("DFS_THEME")) {
