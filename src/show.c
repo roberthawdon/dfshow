@@ -78,6 +78,7 @@ extern int showhidden;
 struct sigaction sa;
 
 int setMarked(char* markedinput);
+int checkStyle(char* styleinput);
 
 void readConfig()
 {
@@ -115,13 +116,60 @@ void readConfig()
         setMarked(markedParam);
       }
       // Check Sort
+      setting = config_setting_get_member(group, "sortmode");
+      if (setting){
+        strcpy(sortmode, config_setting_get_string(setting));
+      }
       // Check Reverse
+      setting = config_setting_get_member(group, "reverse");
+      if (setting){
+        if (config_setting_get_int(setting)){
+          reverse = 1;
+        }
+      }
       // Check Timestyle
+      setting = config_setting_get_member(group, "timestyle");
+      if (setting){
+        strcpy(timestyle, config_setting_get_string(setting));
+        if(!checkStyle(timestyle)){
+          strcpy(timestyle, "locale");
+        }
+      }
       // Check Hidden
+      setting = config_setting_get_member(group, "hidden");
+      if (setting){
+        if (config_setting_get_int(setting)){
+          showhidden = 1;
+        }
+      }
       // Check Ignore Backups
+      setting = config_setting_get_member(group, "ignore-backups");
+      if (setting){
+        if (config_setting_get_int(setting)){
+          showbackup = 0;
+        }
+      }
       // Check No SF
+      setting = config_setting_get_member(group, "no-sf");
+      if (setting){
+        if (config_setting_get_int(setting)){
+          useEnvPager = 1;
+        }
+      }
       // Check No Danger
+      setting = config_setting_get_member(group, "no-danger");
+      if (setting){
+        if (config_setting_get_int(setting)){
+          danger = 0;
+        }
+      }
       // Check SI
+      setting = config_setting_get_member(group, "si");
+      if (setting){
+        if (config_setting_get_int(setting)){
+          si = 1;
+        }
+      }
       // Check Human Readable
       setting = config_setting_get_member(group, "human-readable");
       if (setting){
@@ -129,7 +177,29 @@ void readConfig()
           human = 1;
         }
       }
-      // Check owner column
+    }
+    // Check owner column
+    group = config_lookup(&cfg, "show.owner");
+    if (group){
+      ogavis = 0;
+      setting = config_setting_get_member(group, "owner");
+      if (setting){
+        if (config_setting_get_int(setting)){
+          ogavis = ogavis + 1;
+        }
+      }
+      setting = config_setting_get_member(group, "group");
+      if (setting){
+        if (config_setting_get_int(setting)){
+          ogavis = ogavis + 2;
+        }
+      }
+      setting = config_setting_get_member(group, "author");
+      if (setting){
+        if (config_setting_get_int(setting)){
+          ogavis = ogavis + 4;
+        }
+      }
     }
   };
   config_destroy(&cfg);

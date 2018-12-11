@@ -11,6 +11,7 @@ enum
    GETOPT_THEME_CHAR = (CHAR_MIN - 4)
   };
 
+void readConfig();
 void buildMenuText();
 int calculateTab(int pos);
 void file_view(char * currentfile);

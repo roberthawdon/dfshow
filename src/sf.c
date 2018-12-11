@@ -36,6 +36,7 @@
 
 char fileMenuText[100];
 char filePosText[58];
+char themeEnv[48];
 
 char regexinput[1024];
 
@@ -73,6 +74,40 @@ long int topPos;
 long int *filePos;
 
 struct sigaction sa;
+
+
+void readConfig()
+{
+  config_t cfg;
+  config_setting_t *root, *setting, *group, *array; //probably don't need the array, but it may be used in the future.
+  char themeName[24];
+  char markedParam[8];
+  config_init(&cfg);
+  if (config_read_file(&cfg, GLOBAL_CONF)){
+    // Deal with the globals first
+    group = config_lookup(&cfg, "common");
+    if (group){
+      setting = config_setting_get_member(group, "theme");
+      if (setting){
+        strcpy(themeName, config_setting_get_string(setting));
+        strcpy(themeEnv,"DFS_THEME=");
+        strcat(themeEnv,themeName);
+        putenv(themeEnv);
+      }
+    }
+    // Now for program specific
+    group = config_lookup(&cfg, PROGRAM_NAME);
+    if (group){
+      // Check Wrap
+      setting = config_setting_get_member(group, "wrap");
+      if (setting){
+        if (config_setting_get_int(setting)){
+          wrap = 1;
+        }
+      }
+    }
+  }
+}
 
 void buildMenuText(){
   // Writing Menus
@@ -324,7 +359,8 @@ void file_view(char * currentfile)
 int main(int argc, char *argv[])
 {
   int c;
-  char themeEnv[48];
+
+  readConfig();
 
   // Check for theme env variable
   if ( getenv("DFS_THEME")) {
