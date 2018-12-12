@@ -75,28 +75,34 @@ extern int totalfilecount;
 extern char sortmode[5];
 extern int showhidden;
 
+extern char globalConfLocation[128];
+extern char homeConfLocation[128];
+
+
 struct sigaction sa;
 
 int setMarked(char* markedinput);
 int checkStyle(char* styleinput);
 
-void readConfig()
+void readConfig(const char * confFile)
 {
   config_t cfg;
   config_setting_t *root, *setting, *group, *array; //probably don't need the array, but it may be used in the future.
   char themeName[24];
   char markedParam[8];
   config_init(&cfg);
-  if (config_read_file(&cfg, GLOBAL_CONF)){
+  if (config_read_file(&cfg, confFile)){
     // Deal with the globals first
     group = config_lookup(&cfg, "common");
     if (group){
       setting = config_setting_get_member(group, "theme");
       if (setting){
-        strcpy(themeName, config_setting_get_string(setting));
-        strcpy(themeEnv,"DFS_THEME=");
-        strcat(themeEnv,themeName);
-        putenv(themeEnv);
+        if (!getenv("DFS_THEME_OVERRIDE")){
+          strcpy(themeName, config_setting_get_string(setting));
+          strcpy(themeEnv,"DFS_THEME=");
+          strcat(themeEnv,themeName);
+          putenv(themeEnv);
+        }
       }
     }
     // Now for program specific
@@ -416,6 +422,9 @@ int main(int argc, char *argv[])
   uid_t uid=getuid(), euid=geteuid();
   int c;
 
+  // Set Config locations
+  setConfLocations();
+
   // Check if we're root to display danger
   if (uid == 0 || euid == 0){
     danger = 1;
@@ -423,7 +432,8 @@ int main(int argc, char *argv[])
 
   // Read the config
 
-  readConfig();
+  readConfig(globalConfLocation);
+  readConfig(homeConfLocation);
 
   // Check for theme env variable
   if ( getenv("DFS_THEME")) {
@@ -506,6 +516,7 @@ Valid arguments are:\n\
           strcpy(themeEnv,"DFS_THEME=");
           strcat(themeEnv,optarg);
           putenv(themeEnv);
+          putenv("DFS_THEME_OVERRIDE=TRUE");
         }
       } else {
         colormode = 0;

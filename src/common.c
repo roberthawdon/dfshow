@@ -29,13 +29,26 @@
 #include <libconfig.h>
 #include "colors.h"
 #include "config.h"
+#include "common.h"
 
 DIR *folder;
 FILE *file;
 
+char globalConfLocation[128] = "/etc/";
+char homeConfLocation[128];
+
 extern int * pc;
 
 extern char fileMenuText[256];
+
+void setConfLocations()
+{
+  strcat(globalConfLocation, CONF_NAME);
+
+  strcpy(homeConfLocation, getenv("HOME"));
+  strcat(homeConfLocation, "/.dfshow/");
+  strcat(homeConfLocation, CONF_NAME);
+}
 
 int exittoshell()
 {

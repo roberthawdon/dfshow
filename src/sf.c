@@ -75,24 +75,29 @@ long int *filePos;
 
 struct sigaction sa;
 
+extern char globalConfLocation[128];
+extern char homeConfLocation[128];
 
-void readConfig()
+
+void readConfig(const char * confFile)
 {
   config_t cfg;
   config_setting_t *root, *setting, *group, *array; //probably don't need the array, but it may be used in the future.
   char themeName[24];
   char markedParam[8];
   config_init(&cfg);
-  if (config_read_file(&cfg, GLOBAL_CONF)){
+  if (config_read_file(&cfg, confFile)){
     // Deal with the globals first
     group = config_lookup(&cfg, "common");
     if (group){
       setting = config_setting_get_member(group, "theme");
       if (setting){
-        strcpy(themeName, config_setting_get_string(setting));
-        strcpy(themeEnv,"DFS_THEME=");
-        strcat(themeEnv,themeName);
-        putenv(themeEnv);
+        if (!getenv("DFS_THEME_OVERRIDE")){
+          strcpy(themeName, config_setting_get_string(setting));
+          strcpy(themeEnv,"DFS_THEME=");
+          strcat(themeEnv,themeName);
+          putenv(themeEnv);
+        }
       }
     }
     // Now for program specific
@@ -360,7 +365,12 @@ int main(int argc, char *argv[])
 {
   int c;
 
-  readConfig();
+  setConfLocations();
+
+  // Read the config
+
+  readConfig(globalConfLocation);
+  readConfig(homeConfLocation);
 
   // Check for theme env variable
   if ( getenv("DFS_THEME")) {
