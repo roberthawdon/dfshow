@@ -43,6 +43,9 @@ extern int colormode;
 extern int c;
 extern int * pc;
 
+extern char globalConfLocation[128];
+extern char homeConfLocation[128];
+
 int itemLookup(int menuPos){
   switch(menuPos){
   case 0:
@@ -162,27 +165,36 @@ void saveTheme(){
   clrtoeol();
   printMenu(0,0, "Save Colors - Enter pathname:");
   move(0,30);
-  e = readline(filename, 1024, "");
+  rewrite = malloc(sizeof(char) * strlen(dirFromPath(homeConfLocation) +1));
+  sprintf(rewrite, "%s/", dirFromPath(homeConfLocation));
+  e = readline(filename, 1024, rewrite);
+  free(rewrite);
   if ( e == 0 ){
     if (check_first_char(filename, "~")){
       rewrite = str_replace(filename, "~", getenv("HOME"));
       strcpy(filename, rewrite);
       free(rewrite);
     }
-    config_init(&cfg);
-    root = config_root_setting(&cfg);
-    group = config_setting_add(root, "theme", CONFIG_TYPE_GROUP);
-    for (i = 1; i < 16; i++){
-      array = config_setting_add(group, colors[i].name, CONFIG_TYPE_ARRAY);
-      setting = config_setting_add(array, NULL, CONFIG_TYPE_INT);
-      config_setting_set_int(setting, colors[i].foreground);
-      setting = config_setting_add(array, NULL, CONFIG_TYPE_INT);
-      config_setting_set_int(setting, colors[i].background);
-      setting = config_setting_add(array, NULL, CONFIG_TYPE_INT);
-      config_setting_set_int(setting, colors[i].bold);
+    if (check_dir(dirFromPath(filename))){
+      config_init(&cfg);
+      root = config_root_setting(&cfg);
+      group = config_setting_add(root, "theme", CONFIG_TYPE_GROUP);
+      for (i = 1; i < 16; i++){
+        array = config_setting_add(group, colors[i].name, CONFIG_TYPE_ARRAY);
+        setting = config_setting_add(array, NULL, CONFIG_TYPE_INT);
+        config_setting_set_int(setting, colors[i].foreground);
+        setting = config_setting_add(array, NULL, CONFIG_TYPE_INT);
+        config_setting_set_int(setting, colors[i].background);
+        setting = config_setting_add(array, NULL, CONFIG_TYPE_INT);
+        config_setting_set_int(setting, colors[i].bold);
+      }
+      config_write_file(&cfg, filename);
+      config_destroy(&cfg);
+    } else {
+      curs_set(FALSE);
+      topLineMessage("Error: Unable to write file");
+      curs_set(TRUE);
     }
-    config_write_file(&cfg, filename);
-    config_destroy(&cfg);
   }
   themeBuilder();
 }
@@ -220,7 +232,10 @@ void loadTheme(){
   clrtoeol();
   printMenu(0,0, "Load Colors - Enter pathname:");
   move(0,30);
-  e = readline(filename, 1024, "");
+  rewrite = malloc(sizeof(char) * strlen(dirFromPath(homeConfLocation) +1));
+  sprintf(rewrite, "%s/", dirFromPath(homeConfLocation));
+  e = readline(filename, 1024, rewrite);
+  free(rewrite);
   if ( e == 0 ){
     if (check_first_char(filename, "~")){
       rewrite = str_replace(filename, "~", getenv("HOME"));

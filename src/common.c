@@ -45,9 +45,7 @@ void setConfLocations()
 {
   strcat(globalConfLocation, CONF_NAME);
 
-  strcpy(homeConfLocation, getenv("HOME"));
-  strcat(homeConfLocation, "/.dfshow/");
-  strcat(homeConfLocation, CONF_NAME);
+  sprintf(homeConfLocation, "%s/%s/%s", getenv("HOME"), HOME_CONF_DIR, CONF_NAME);
 }
 
 int exittoshell()
@@ -56,6 +54,57 @@ int exittoshell()
   endwin();
   exit(0);
   return 0;
+}
+
+char * dirFromPath(const char* myStr){
+  char *outStr;
+  int i = strlen(myStr);
+  int n = 0;
+
+  while(i <= strlen(myStr) && myStr[i] != '/'){
+    i--;
+  }
+
+  outStr = malloc(sizeof (char) * i + 1);
+
+  if (i < 2){
+    strcpy(outStr, "/");
+  } else{
+    while(n <= i){
+      outStr[n] = myStr[n];
+      n++;
+    }
+
+    outStr[n - 1] = '\0';
+  }
+
+  return outStr;
+
+}
+
+char * objectFromPath(const char *myStr){
+  char *outStr;
+  int i = strlen(myStr);
+  int n = 0;
+  int c = 0;
+
+  while(i <= strlen(myStr) && myStr[i] != '/'){
+    i--;
+    n++;
+  }
+
+  outStr = malloc(sizeof (char) * n);
+
+  i++; // Removes the initial /
+
+  for(; i < strlen(myStr); c++){
+    outStr[c] = myStr[i];
+    i++;
+  }
+
+  outStr[n - 1] = '\0';
+  return outStr;
+
 }
 
 void printVersion(char* programName){

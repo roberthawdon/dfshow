@@ -30,8 +30,6 @@ typedef struct {
 int wildcard(const char *value, char *wcard);
 int findResultByName(results *ob, char *name);
 char *dateString(time_t date, char *style);
-char * dirFromPath(const char* myStr);
-char * objectFromPath(const char* myStr);
 int check_object(const char *object);
 void mk_dir(char *path);
 void copy_file(char *source_input, char *target_input);

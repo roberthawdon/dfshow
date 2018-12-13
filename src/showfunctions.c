@@ -729,57 +729,6 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   free(ogaval);
 }
 
-char * dirFromPath(const char* myStr){
-  char *outStr;
-  int i = strlen(myStr);
-  int n = 0;
-
-  while(i <= strlen(myStr) && myStr[i] != '/'){
-    i--;
-  }
-
-  outStr = malloc(sizeof (char) * i + 1);
-
-  if (i < 2){
-    strcpy(outStr, "/");
-  } else{
-    while(n <= i){
-      outStr[n] = myStr[n];
-      n++;
-    }
-
-    outStr[n - 1] = '\0';
-  }
-
-  return outStr;
-
-}
-
-char * objectFromPath(const char *myStr){
-  char *outStr;
-  int i = strlen(myStr);
-  int n = 0;
-  int c = 0;
-
-  while(i <= strlen(myStr) && myStr[i] != '/'){
-    i--;
-    n++;
-  }
-
-  outStr = malloc(sizeof (char) * n);
-
-  i++; // Removes the initial /
-
-  for(; i < strlen(myStr); c++){
-    outStr[c] = myStr[i];
-    i++;
-  }
-
-  outStr[n - 1] = '\0';
-  return outStr;
-
-}
-
 void LaunchShell()
 {
   clear();
