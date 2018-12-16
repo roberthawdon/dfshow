@@ -454,7 +454,7 @@ Valid arguments are:\n\
 
   start_color();
   cbreak();
-  setColorMode(colormode);
+  setDefaultTheme();
   bkgd(COLOR_PAIR(DISPLAY_PAIR));
   cbreak();
   noecho();

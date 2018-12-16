@@ -36,6 +36,8 @@
 char currentpwd[1024];
 char themeEnv[48];
 
+char themeName[24] = "default";
+
 char fileMenuText[256];
 char globalMenuText[256];
 char functionMenuText[256];
@@ -88,7 +90,6 @@ void readConfig(const char * confFile)
 {
   config_t cfg;
   config_setting_t *root, *setting, *group, *array; //probably don't need the array, but it may be used in the future.
-  char themeName[24];
   char markedParam[8];
   config_init(&cfg);
   if (config_read_file(&cfg, confFile)){
@@ -503,21 +504,26 @@ Valid arguments are:\n\
       break;
     case GETOPT_THEME_CHAR:
       if (optarg){
-        if (themeSelect(optarg) == -1 ){
-          printf("%s: invalid argument '%s' for 'theme'\n", argv[0], optarg);
-          fputs (("\
-Valid arguments are:\n\
-  - default\n\
-  - monochrome\n\
-  - nt\n"), stdout);
-          printf("Try '%s --help' for more information.\n", argv[0]);
-          exit(2);
-        } else {
-          strcpy(themeEnv,"DFS_THEME=");
-          strcat(themeEnv,optarg);
-          putenv(themeEnv);
-          putenv("DFS_THEME_OVERRIDE=TRUE");
-        }
+        // if (themeSelect(optarg) == -1 ){
+        //   printf("%s: invalid argument '%s' for 'theme'\n", argv[0], optarg);
+        //   fputs (("                           \
+Valid ar// guments are:\n\
+  - defa// ult\n\
+  - mono// chrome\n\
+  - nt\n// "), stdout);
+        //   printf("Try '%s --help' for more information.\n", argv[0]);
+        //   exit(2);
+        // } else {
+        //   strcpy(themeEnv,"DFS_THEME=");
+        //   strcat(themeEnv,optarg);
+        //   putenv(themeEnv);
+        //   putenv("DFS_THEME_OVERRIDE=TRUE");
+        // }
+        strcpy(themeName, optarg);
+        strcpy(themeEnv,"DFS_THEME=");
+        strcat(themeEnv,optarg);
+        putenv(themeEnv);
+        putenv("DFS_THEME_OVERRIDE=TRUE");
       } else {
         colormode = 0;
       }
@@ -637,7 +643,8 @@ Valid arguments are:\n\
 
   start_color();
   cbreak(); //Added for new method
-  setColorMode(colormode);
+  setDefaultTheme();
+  loadAppTheme(themeName);
   bkgd(COLOR_PAIR(DISPLAY_PAIR));
   cbreak();
   // nodelay(stdscr, TRUE);

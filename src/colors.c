@@ -253,6 +253,17 @@ void loadTheme(){
   themeBuilder();
 }
 
+void loadAppTheme(const char * themeName)
+{
+  char * rewrite;
+  rewrite = malloc(sizeof(char) * strlen(dirFromPath(homeConfLocation) + strlen(themeName) + 2));
+  sprintf(rewrite, "%s/%s", dirFromPath(homeConfLocation), themeName);
+  if (check_file(rewrite)){
+    applyTheme(rewrite);
+  }
+  free(rewrite);
+}
+
 void updateColorPair(int code, int location){
   int colorCode = -1;
   int colorBold = 0;
@@ -501,62 +512,25 @@ void theme_menu_inputs()
     }
 }
 
-void setColorMode(int mode){
+void setDefaultTheme(){
   use_default_colors();
   lightColorPair[0] = 0; // Unused array value
-  switch(mode){
-  case 0:
-    setColorPairs(COMMAND_PAIR, DEFAULT_COLOR, DEFAULT_COLOR, 0);
-    setColorPairs(INFO_PAIR, COLOR_GREEN, DEFAULT_COLOR, 0);
-    setColorPairs(INPUT_PAIR, COLOR_BLACK, COLOR_WHITE, 0);
-    setColorPairs(SELECT_PAIR, BRIGHT_BLUE, DEFAULT_COLOR, 0);
-    setColorPairs(DISPLAY_PAIR, COLOR_CYAN, DEFAULT_COLOR, 0);
-    setColorPairs(DANGER_PAIR, BRIGHT_RED, DEFAULT_COLOR, 0);
-    setColorPairs(DIR_PAIR, BRIGHT_MAGENTA, DEFAULT_COLOR, 0);
-    setColorPairs(SLINK_PAIR, DEFAULT_COLOR, DEFAULT_COLOR, 1);
-    setColorPairs(EXE_PAIR, BRIGHT_YELLOW, DEFAULT_COLOR, 0);
-    setColorPairs(SUID_PAIR, DEFAULT_COLOR, COLOR_RED, 0);
-    setColorPairs(SGID_PAIR, BRIGHT_BLACK, COLOR_GREEN, 0);
-    setColorPairs(HILITE_PAIR, DEFAULT_COLOR, DEFAULT_COLOR, 1);
-    setColorPairs(ERROR_PAIR, DEFAULT_COLOR, DEFAULT_COLOR, 1);
-    setColorPairs(HEADING_PAIR, COLOR_GREEN, DEFAULT_COLOR, 0);
-    setColorPairs(DEADLINK_PAIR, BRIGHT_RED, DEFAULT_COLOR, 0);
-    break;
-  case 1:
-    setColorPairs(COMMAND_PAIR, DEFAULT_COLOR, DEFAULT_COLOR, 0);
-    setColorPairs(INFO_PAIR, DEFAULT_COLOR, DEFAULT_COLOR, 0);
-    setColorPairs(INPUT_PAIR, COLOR_BLACK, COLOR_WHITE, 0);
-    setColorPairs(SELECT_PAIR, COLOR_BLACK, COLOR_WHITE, 0);
-    setColorPairs(DISPLAY_PAIR, DEFAULT_COLOR, DEFAULT_COLOR, 0);
-    setColorPairs(DANGER_PAIR, COLOR_BLACK, COLOR_WHITE, 0);
-    setColorPairs(DIR_PAIR, DEFAULT_COLOR, DEFAULT_COLOR, 1);
-    setColorPairs(SLINK_PAIR, DEFAULT_COLOR, DEFAULT_COLOR, 1);
-    setColorPairs(EXE_PAIR, DEFAULT_COLOR, DEFAULT_COLOR, 1);
-    setColorPairs(SUID_PAIR, DEFAULT_COLOR, DEFAULT_COLOR, 0);
-    setColorPairs(SGID_PAIR, DEFAULT_COLOR, DEFAULT_COLOR, 1);
-    setColorPairs(HILITE_PAIR, DEFAULT_COLOR, DEFAULT_COLOR, 1);
-    setColorPairs(ERROR_PAIR, DEFAULT_COLOR, DEFAULT_COLOR, 1);
-    setColorPairs(HEADING_PAIR, DEFAULT_COLOR, DEFAULT_COLOR, 0);
-    setColorPairs(DEADLINK_PAIR, COLOR_BLACK, COLOR_WHITE, 0);
-    break;
-  case 2:
-    setColorPairs(COMMAND_PAIR, BRIGHT_CYAN, COLOR_BLUE, 0);
-    setColorPairs(INFO_PAIR, BRIGHT_WHITE, COLOR_BLUE, 0);
-    setColorPairs(INPUT_PAIR, COLOR_BLUE, COLOR_WHITE, 0);
-    setColorPairs(SELECT_PAIR, COLOR_BLUE, COLOR_WHITE, 0);
-    setColorPairs(DISPLAY_PAIR, BRIGHT_CYAN, COLOR_BLUE, 0);
-    setColorPairs(DANGER_PAIR, BRIGHT_RED, COLOR_BLUE, 0);
-    setColorPairs(DIR_PAIR, BRIGHT_MAGENTA, COLOR_BLUE, 0);
-    setColorPairs(SLINK_PAIR, BRIGHT_WHITE, COLOR_BLUE, 0);
-    setColorPairs(EXE_PAIR, BRIGHT_YELLOW, COLOR_BLUE, 0);
-    setColorPairs(SUID_PAIR, COLOR_WHITE, COLOR_RED, 0);
-    setColorPairs(SGID_PAIR, BRIGHT_BLACK, COLOR_GREEN, 0);
-    setColorPairs(HILITE_PAIR, BRIGHT_YELLOW, COLOR_BLUE, 0);
-    setColorPairs(ERROR_PAIR, BRIGHT_RED, COLOR_BLUE, 0);
-    setColorPairs(HEADING_PAIR, BRIGHT_YELLOW, COLOR_BLUE, 0);
-    setColorPairs(DEADLINK_PAIR, BRIGHT_RED, COLOR_BLUE, 0);
-    break;
-  }
+  setColorPairs(COMMAND_PAIR, DEFAULT_COLOR, DEFAULT_COLOR, 0);
+  setColorPairs(INFO_PAIR, COLOR_GREEN, DEFAULT_COLOR, 0);
+  setColorPairs(INPUT_PAIR, COLOR_BLACK, COLOR_WHITE, 0);
+  setColorPairs(SELECT_PAIR, BRIGHT_BLUE, DEFAULT_COLOR, 0);
+  setColorPairs(DISPLAY_PAIR, COLOR_CYAN, DEFAULT_COLOR, 0);
+  setColorPairs(DANGER_PAIR, BRIGHT_RED, DEFAULT_COLOR, 0);
+  setColorPairs(DIR_PAIR, BRIGHT_MAGENTA, DEFAULT_COLOR, 0);
+  setColorPairs(SLINK_PAIR, DEFAULT_COLOR, DEFAULT_COLOR, 1);
+  setColorPairs(EXE_PAIR, BRIGHT_YELLOW, DEFAULT_COLOR, 0);
+  setColorPairs(SUID_PAIR, DEFAULT_COLOR, COLOR_RED, 0);
+  setColorPairs(SGID_PAIR, BRIGHT_BLACK, COLOR_GREEN, 0);
+  setColorPairs(HILITE_PAIR, DEFAULT_COLOR, DEFAULT_COLOR, 1);
+  setColorPairs(ERROR_PAIR, DEFAULT_COLOR, DEFAULT_COLOR, 1);
+  setColorPairs(HEADING_PAIR, COLOR_GREEN, DEFAULT_COLOR, 0);
+  setColorPairs(DEADLINK_PAIR, BRIGHT_RED, DEFAULT_COLOR, 0);
+
   setColorPairs(COLORMENU_PAIR_0, COLOR_BLACK, COLOR_WHITE, 0);
   setColorPairs(COLORMENU_PAIR_1, COLOR_RED, DEFAULT_COLOR, 0);
   setColorPairs(COLORMENU_PAIR_2, COLOR_GREEN, DEFAULT_COLOR, 0);
