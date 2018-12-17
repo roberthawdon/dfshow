@@ -253,10 +253,10 @@ void loadTheme(){
   themeBuilder();
 }
 
-void loadAppTheme(const char * themeName)
+void loadAppTheme(const char *themeName)
 {
   char * rewrite;
-  rewrite = malloc(sizeof(char) * strlen(dirFromPath(homeConfLocation) + strlen(themeName) + 2));
+  rewrite = malloc(sizeof(char) * (strlen(dirFromPath(homeConfLocation)) + strlen(themeName) + 2));
   sprintf(rewrite, "%s/%s", dirFromPath(homeConfLocation), themeName);
   if (check_file(rewrite)){
     applyTheme(rewrite);

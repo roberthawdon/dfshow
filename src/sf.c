@@ -412,20 +412,26 @@ int main(int argc, char *argv[])
       break;
     case GETOPT_THEME_CHAR:
       if (optarg){
-        if (themeSelect(optarg) == -1 ){
-          printf("%s: invalid argument '%s' for 'theme'\n", argv[0], optarg);
-          fputs (("\
-Valid arguments are:\n\
-  - default\n\
-  - monochrome\n\
-  - nt\n"), stdout);
-          printf("Try '%s --help' for more information.\n", argv[0]);
-          exit(2);
-        } else {
-          strcpy(themeEnv,"DFS_THEME=");
-          strcat(themeEnv,optarg);
-          putenv(themeEnv);
-        }
+        // if (themeSelect(optarg) == -1 ){
+        //   printf("%s: invalid argument '%s' for 'theme'\n", argv[0], optarg);
+        //   fputs (("                           \
+        Valid ar// guments are:\n\
+        - defa// ult\n\
+        - mono// chrome\n\
+        - nt\n// "), stdout);
+        //   printf("Try '%s --help' for more information.\n", argv[0]);
+        //   exit(2);
+        // } else {
+        //   strcpy(themeEnv,"DFS_THEME=");
+        //   strcat(themeEnv,optarg);
+        //   putenv(themeEnv);
+        //   putenv("DFS_THEME_OVERRIDE=TRUE");
+        // }
+        strcpy(themeName, optarg);
+        strcpy(themeEnv,"DFS_THEME=");
+        strcat(themeEnv,optarg);
+        putenv(themeEnv);
+        putenv("DFS_THEME_OVERRIDE=TRUE");
       } else {
         colormode = 0;
       }

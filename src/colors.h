@@ -58,7 +58,7 @@ void refreshColors();
 int applyTheme(const char *filename);
 void saveTheme();
 void loadTheme();
-void loadAppTheme(const char * themeName);
+void loadAppTheme(const char *themeName);
 int itemLookup(int menuPos);
 void theme_menu_inputs();
 void setDefaultTheme();
