@@ -36,8 +36,6 @@
 char currentpwd[1024];
 char themeEnv[48];
 
-char themeName[24] = "default";
-
 char fileMenuText[256];
 char globalMenuText[256];
 char functionMenuText[256];
@@ -80,6 +78,7 @@ extern int showhidden;
 extern char globalConfLocation[128];
 extern char homeConfLocation[128];
 
+extern char themeName[24];
 
 struct sigaction sa;
 

@@ -37,6 +37,8 @@ FILE *file;
 char globalConfLocation[128] = "/etc/";
 char homeConfLocation[128];
 
+char themeName[24] = "default";
+
 extern int * pc;
 
 extern char fileMenuText[256];

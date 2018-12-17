@@ -78,6 +78,7 @@ struct sigaction sa;
 extern char globalConfLocation[128];
 extern char homeConfLocation[128];
 
+extern char themeName[24];
 
 void readConfig(const char * confFile)
 {
@@ -455,6 +456,7 @@ Valid arguments are:\n\
   start_color();
   cbreak();
   setDefaultTheme();
+  loadAppTheme(themeName);
   bkgd(COLOR_PAIR(DISPLAY_PAIR));
   cbreak();
   noecho();
