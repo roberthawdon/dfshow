@@ -34,7 +34,7 @@
 DIR *folder;
 FILE *file;
 
-char globalConfLocation[128] = "/etc/";
+char globalConfLocation[128];
 char homeConfLocation[128];
 
 char themeName[24] = "default";
@@ -45,7 +45,8 @@ extern char fileMenuText[256];
 
 void setConfLocations()
 {
-  strcat(globalConfLocation, CONF_NAME);
+  // strcat(globalConfLocation, CONF_NAME);
+  sprintf(globalConfLocation, "%s/%s", SYSCONFIG, CONF_NAME);
 
   sprintf(homeConfLocation, "%s/%s/%s", getenv("HOME"), HOME_CONF_DIR, CONF_NAME);
 }
