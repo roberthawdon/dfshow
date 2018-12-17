@@ -34,7 +34,6 @@
 #include "show.h"
 
 char currentpwd[1024];
-char themeEnv[48];
 
 char fileMenuText[256];
 char globalMenuText[256];
@@ -99,9 +98,7 @@ void readConfig(const char * confFile)
       if (setting){
         if (!getenv("DFS_THEME_OVERRIDE")){
           strcpy(themeName, config_setting_get_string(setting));
-          strcpy(themeEnv,"DFS_THEME=");
-          strcat(themeEnv,themeName);
-          putenv(themeEnv);
+          setenv("DFS_THEME", themeName, 1);
         }
       }
     }
@@ -437,9 +434,7 @@ int main(int argc, char *argv[])
 
   // Check for theme env variable
   if ( getenv("DFS_THEME")) {
-    if (themeSelect(getenv("DFS_THEME")) != -1 ){
-      colormode = themeSelect(getenv("DFS_THEME"));
-    }
+    strcpy(themeName, getenv("DFS_THEME"));
   }
 
   // Getting arguments
@@ -519,10 +514,8 @@ Valid ar// guments are:\n\
         //   putenv("DFS_THEME_OVERRIDE=TRUE");
         // }
         strcpy(themeName, optarg);
-        strcpy(themeEnv,"DFS_THEME=");
-        strcat(themeEnv,optarg);
-        putenv(themeEnv);
-        putenv("DFS_THEME_OVERRIDE=TRUE");
+        setenv("DFS_THEME", themeName, 1);
+        setenv("DFS_THEME_OVERRIDE", "TRUE", 1);
       } else {
         colormode = 0;
       }

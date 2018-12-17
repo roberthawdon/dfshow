@@ -821,6 +821,7 @@ int SendToPager(char* object)
   char *escObject = str_replace(object, "'", "'\"'\"'");
 
   if (can_run_command("sf")){
+    setenv("DFS_THEME_OVERRIDE", "TRUE", 1);
     strcpy(page, "sf");
     pset = 1;
   } else {

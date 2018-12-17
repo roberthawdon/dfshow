@@ -243,6 +243,8 @@ void loadTheme(){
       free(rewrite);
     }
     if (check_file(filename) ){
+      setenv("DFS_THEME", objectFromPath(filename), 1);
+      setenv("DFS_THEME_OVERRIDE", "TRUE", 1);
       applyTheme(filename);
     } else {
       curs_set(FALSE);
@@ -256,12 +258,15 @@ void loadTheme(){
 void loadAppTheme(const char *themeName)
 {
   char * rewrite;
-  rewrite = malloc(sizeof(char) * (strlen(dirFromPath(homeConfLocation)) + strlen(themeName) + 2));
-  sprintf(rewrite, "%s/%s", dirFromPath(homeConfLocation), themeName);
-  if (check_file(rewrite)){
-    applyTheme(rewrite);
-  }
-  free(rewrite);
+  // Ignore if the theme requested is called 'default'
+  if (strcmp(themeName, "default")){
+      rewrite = malloc(sizeof(char) * (strlen(dirFromPath(homeConfLocation)) + strlen(themeName) + 2));
+      sprintf(rewrite, "%s/%s", dirFromPath(homeConfLocation), themeName);
+      if (check_file(rewrite)){
+        applyTheme(rewrite);
+      }
+      free(rewrite);
+    }
 }
 
 void updateColorPair(int code, int location){
