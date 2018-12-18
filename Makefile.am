@@ -1,6 +1,9 @@
 AUTOMAKE_OPTIONS = foreign
 
-CFLAGS = -DSYSCONFIG=\"$(sysconfdir)\"
+dfshowconfdir = $(sysconfdir)
+dfshowdatadir = $(datadir)/dfshow
+
+CFLAGS = -DSYSCONFIG=\"$(dfshowconfdir)\" -DDATADIR=\"$(dfshowdatadir)\"
 
 if DARWIN
 LDADD = -lncurses -lm -lconfig
@@ -13,8 +16,8 @@ __top_builddir__bin_show_SOURCES = src/show.c src/showfunctions.c src/showmenus.
 __top_builddir__bin_show_LDADD = $(LDADD)
 __top_builddir__bin_sf_SOURCES = src/sf.c src/sfmenus.c src/colors.c src/common.c
 __top_builddir__bin_sf_LDADD = $(LDADD)
-dfshowconfdir = $(sysconfdir)
-dfshowconf_DATA = examples/dfshow.conf
+dfshowconf_DATA = conf/dfshow.conf
+dfshowdata_DATA = themes/default themes/monochrome themes/nt
 
 man_MANS = $(top_builddir)/doc/show.1 $(top_builddir)/doc/sf.1
 pkginclude_HEADERS = $(top_builddir)/src/show.h $(top_builddir)/src/sf.h $(top_builddir)/src/showfunctions.h $(top_builddir)/src/showmenus.h $(top_builddir)/src/sfmenus.h $(top_builddir)/src/colors.h $(top_builddir)/src/common.h
