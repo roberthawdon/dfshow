@@ -145,5 +145,6 @@ Screenshots
    :alt: Show File
 
 **Colors (Built into Show)**
+
 .. image:: https://user-images.githubusercontent.com/4301139/50188068-33858e80-0318-11e9-815d-782a11c8003c.png
    :alt: Colors
