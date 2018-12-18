@@ -143,3 +143,7 @@ Screenshots
 
 .. image:: https://user-images.githubusercontent.com/4301139/46380920-243d6000-c69c-11e8-8213-fde20b9f865b.png
    :alt: Show File
+
+**Colors (Built into Show)**
+.. image:: https://user-images.githubusercontent.com/4301139/50188068-33858e80-0318-11e9-815d-782a11c8003c.png
+   :alt: Colors

@@ -3,7 +3,7 @@ AUTOMAKE_OPTIONS = foreign
 dfshowconfdir = $(sysconfdir)
 dfshowdatadir = $(datadir)/dfshow
 
-CFLAGS = -DSYSCONFIG=\"$(dfshowconfdir)\" -DDATADIR=\"$(dfshowdatadir)\"
+AM_CFLAGS = -DSYSCONFIG=\"$(dfshowconfdir)\" -DDATADIR=\"$(dfshowdatadir)\"
 
 if DARWIN
 LDADD = -lncurses -lm -lconfig
