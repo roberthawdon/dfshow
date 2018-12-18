@@ -149,9 +149,25 @@ void setColorPairs(int pair, int foreground, int background, int bold){
 
 void refreshColors(){
   int i;
+  int foreground, background, bold;
   for ( i = 0; i < 256; i++ ){
-    init_pair(i, colors[i].foreground, colors[i].background);
-    lightColorPair[i] = colors[i].bold;
+    foreground = colors[i].foreground;
+    background = colors[i].background;
+    bold = colors[i].bold;
+    if (COLORS < 9){
+    checkColor:
+      if ( foreground > 8 ){
+        foreground = foreground - 8;
+        bold = 1;
+        goto checkColor;
+      }
+      if ( background > 8 ){
+        background = background - 8;
+        goto checkColor;
+      }
+    }
+    init_pair(i, foreground, background);
+    lightColorPair[i] = bold;
   }
 }
 

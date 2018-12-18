@@ -60,6 +60,7 @@ void saveTheme();
 void loadTheme();
 void loadAppTheme(const char *themeName);
 int itemLookup(int menuPos);
+void lowColorCheck();
 void theme_menu_inputs();
 void setDefaultTheme();
 void setColors(int pair);

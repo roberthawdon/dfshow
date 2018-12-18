@@ -77,7 +77,7 @@ struct sigaction sa;
 extern char globalConfLocation[128];
 extern char homeConfLocation[128];
 
-extern char themeName[24];
+extern char themeName[128];
 
 void readConfig(const char * confFile)
 {
