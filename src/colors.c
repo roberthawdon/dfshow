@@ -21,7 +21,9 @@
 #include <stdlib.h>
 #include <ncurses.h>
 #include <string.h>
+#include <unistd.h>
 #include <libconfig.h>
+#include <dirent.h>
 #include "common.h"
 #include "colors.h"
 
@@ -45,6 +47,46 @@ extern int * pc;
 
 extern char globalConfLocation[128];
 extern char homeConfLocation[128];
+
+void processListThemes(const char * pathName)
+{
+  DIR *dfDir;
+  struct dirent *res;
+  char currentPath[1024];
+  char currentFile[1024];
+  config_t cfg;
+  config_setting_t *group;
+  strcpy(currentPath, pathName);
+  dfDir = opendir ( currentPath );
+  if (access (currentPath, F_OK) != -1){
+    if (dfDir){
+      while ( ( res = readdir (dfDir))){
+        sprintf(currentFile, "%s/%s", currentPath, res->d_name);
+        if (!check_dir(currentFile)){
+          config_init(&cfg);
+          config_read_file(&cfg, currentFile);
+          group = config_lookup(&cfg, "theme");
+          if (group){
+            printf(" - %s\n", objectFromPath(currentFile));
+          }
+        }
+      }
+      free(res);
+    }
+  }
+}
+
+void listThemes()
+{
+  if (check_dir(DATADIR)) {
+    printf("\nGlobal Themes:\n");
+    processListThemes(DATADIR);
+  }
+  if (check_dir(dirFromPath(homeConfLocation))) {
+    printf("\nPersonal Themes:\n");
+    processListThemes(dirFromPath(homeConfLocation));
+  }
+}
 
 int itemLookup(int menuPos){
   switch(menuPos){

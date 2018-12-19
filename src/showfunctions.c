@@ -1396,6 +1396,7 @@ results* get_dir(char *pwd)
   namelen = seglength(ob, "name", count);
   slinklen = seglength(ob, "slink", count);
 
+  free(res);
   return ob;
 }
 

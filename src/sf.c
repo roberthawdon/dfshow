@@ -224,11 +224,8 @@ Options:\n\
       --help                   displays help message, then exits\n\
       --version                displays version, then exits\n"), stdout);
   fputs (("\n\
-The THEME argument can be:\n\
-               default:    original theme\n\
-               monochrome: comaptability mode for monochrome displays\n\
-               nt:         a theme that closer resembles win32 versions of\n\
-                           DF-EDIT\n"), stdout);
+The THEME argument can be:\n"), stdout);
+  listThemes();
   printf ("\nPlease report any bugs to: <%s>\n", PACKAGE_BUGREPORT);
 }
 
@@ -407,27 +404,14 @@ int main(int argc, char *argv[])
       break;
     case GETOPT_THEME_CHAR:
       if (optarg){
-        // if (themeSelect(optarg) == -1 ){
-        //   printf("%s: invalid argument '%s' for 'theme'\n", argv[0], optarg);
-        //   fputs (("                           \
-        Valid ar// guments are:\n\
-        - defa// ult\n\
-        - mono// chrome\n\
-        - nt\n// "), stdout);
-        //   printf("Try '%s --help' for more information.\n", argv[0]);
-        //   exit(2);
-        // } else {
-        //   strcpy(themeEnv,"DFS_THEME=");
-        //   strcat(themeEnv,optarg);
-        //   putenv(themeEnv);
-        //   putenv("DFS_THEME_OVERRIDE=TRUE");
-        // }
         if (strcmp(optarg, "\0")){
           strcpy(themeName, optarg);
           setenv("DFS_THEME_OVERRIDE", "TRUE", 1);
         }
       } else {
-        colormode = 0;
+        printf("%s: The following themes are available:\n", PROGRAM_NAME);
+        listThemes();
+        exit(2);
       }
       break;
     default:

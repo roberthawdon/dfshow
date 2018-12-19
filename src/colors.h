@@ -52,6 +52,8 @@ typedef struct {
   int bold;
 } colorPairs;
 
+void processListThemes(const char * pathName);
+void listThemes();
 void setColorPairs(int pair, int foreground, int background, int bold);
 void updateColorPair(int code, int location);
 void refreshColors();
