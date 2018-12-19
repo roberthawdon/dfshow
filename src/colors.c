@@ -219,6 +219,7 @@ int applyTheme(const char *filename){
   config_t cfg;
   config_setting_t *root, *setting, *group, *array;
   int groupLen, i, h;
+  setenv("DFS_THEME", objectFromPath(filename), 1);
   config_init(&cfg);
   config_read_file(&cfg, filename);
   group = config_lookup(&cfg, "theme");
@@ -259,7 +260,6 @@ void loadTheme(){
       free(rewrite);
     }
     if (check_file(filename) ){
-      setenv("DFS_THEME", objectFromPath(filename), 1);
       setenv("DFS_THEME_OVERRIDE", "TRUE", 1);
       applyTheme(filename);
     } else {
@@ -275,7 +275,7 @@ void loadAppTheme(const char *themeName)
 {
   char * rewrite;
   // Ignore if the theme requested is called 'default'
-  if (strcmp(themeName, "default")){
+  if (strcmp(themeName, "default") && strcmp(themeName, "\0")){
       rewrite = malloc(sizeof(char) * (strlen(dirFromPath(homeConfLocation)) + strlen(themeName) + 2));
       sprintf(rewrite, "%s/%s", dirFromPath(homeConfLocation), themeName);
       if (check_file(rewrite)){

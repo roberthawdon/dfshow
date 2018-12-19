@@ -422,9 +422,10 @@ int main(int argc, char *argv[])
         //   putenv(themeEnv);
         //   putenv("DFS_THEME_OVERRIDE=TRUE");
         // }
-        strcpy(themeName, optarg);
-        setenv("DFS_THEME", themeName, 1);
-        setenv("DFS_THEME_OVERRIDE", "TRUE", 1);
+        if (strcmp(optarg, "\0")){
+          strcpy(themeName, optarg);
+          setenv("DFS_THEME_OVERRIDE", "TRUE", 1);
+        }
       } else {
         colormode = 0;
       }
