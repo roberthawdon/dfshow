@@ -31,7 +31,6 @@ int wildcard(const char *value, char *wcard);
 int findResultByName(results *ob, char *name);
 char *dateString(time_t date, char *style);
 int check_object(const char *object);
-void mk_dir(char *path);
 void copy_file(char *source_input, char *target_input);
 void delete_file(char *source_input);
 int seglength(const void *seg, char *segname, int LEN);

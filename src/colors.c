@@ -233,26 +233,28 @@ void saveTheme(){
       strcpy(filename, rewrite);
       free(rewrite);
     }
+    config_init(&cfg);
+    root = config_root_setting(&cfg);
+    group = config_setting_add(root, "theme", CONFIG_TYPE_GROUP);
+    for (i = 1; i < 16; i++){
+      array = config_setting_add(group, colors[i].name, CONFIG_TYPE_ARRAY);
+      setting = config_setting_add(array, NULL, CONFIG_TYPE_INT);
+      config_setting_set_int(setting, colors[i].foreground);
+      setting = config_setting_add(array, NULL, CONFIG_TYPE_INT);
+      config_setting_set_int(setting, colors[i].background);
+      setting = config_setting_add(array, NULL, CONFIG_TYPE_INT);
+      config_setting_set_int(setting, colors[i].bold);
+    }
     if (check_dir(dirFromPath(filename))){
-      config_init(&cfg);
-      root = config_root_setting(&cfg);
-      group = config_setting_add(root, "theme", CONFIG_TYPE_GROUP);
-      for (i = 1; i < 16; i++){
-        array = config_setting_add(group, colors[i].name, CONFIG_TYPE_ARRAY);
-        setting = config_setting_add(array, NULL, CONFIG_TYPE_INT);
-        config_setting_set_int(setting, colors[i].foreground);
-        setting = config_setting_add(array, NULL, CONFIG_TYPE_INT);
-        config_setting_set_int(setting, colors[i].background);
-        setting = config_setting_add(array, NULL, CONFIG_TYPE_INT);
-        config_setting_set_int(setting, colors[i].bold);
-      }
       config_write_file(&cfg, filename);
-      config_destroy(&cfg);
     } else {
       curs_set(FALSE);
-      topLineMessage("Error: Unable to write file");
+      mk_dir(dirFromPath(filename));
+      config_write_file(&cfg, filename);
+      // topLineMessage("Error: Unable to write file");
       curs_set(TRUE);
     }
+    config_destroy(&cfg);
   }
   themeBuilder();
 }

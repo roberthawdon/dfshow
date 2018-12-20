@@ -45,6 +45,15 @@ extern int * pc;
 
 extern char fileMenuText[256];
 
+void mk_dir(char *path)
+{
+  struct stat st = {0};
+
+  if (stat(path, &st) == -1) {
+    mkdir(path, 0755);
+  }
+}
+
 void setConfLocations()
 {
   sprintf(globalConfLocation, "%s/%s", SYSCONFIG, CONF_NAME);

@@ -753,15 +753,6 @@ void LaunchExecutable(const char* object, const char* args)
   refreshScreen();
 }
 
-void mk_dir(char *path)
-{
-  struct stat st = {0};
-
-  if (stat(path, &st) == -1) {
-    mkdir(path, 0755);
-  }
-}
-
 void copy_file(char *source_input, char *target_input)
 {
   char targetmod[1024];

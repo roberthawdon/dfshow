@@ -3,6 +3,7 @@
 #define HOME_CONF_DIR ".dfshow"
 #include <wchar.h>
 
+void mk_dir(char *path);
 void setConfLocations();
 void printVersion(char* programName);
 char * dirFromPath(const char* myStr);
