@@ -246,7 +246,29 @@ void saveTheme(){
       config_setting_set_int(setting, colors[i].bold);
     }
     if (check_dir(dirFromPath(filename))){
-      config_write_file(&cfg, filename);
+      if (check_file(filename)){
+        curs_set(FALSE);
+        printMenu(0,0, "File exists. Replace? (!Yes/!No)");
+        while(1)
+          {
+            *pc = getch();
+            switch(*pc)
+              {
+              case 'y':
+                config_write_file(&cfg, filename);
+                setenv("DFS_THEME", objectFromPath(filename), 1);
+                //No Break, drop through to default
+              default:
+                curs_set(TRUE);
+                themeBuilder();
+                break;
+              }
+            break;
+          }
+      } else {
+        config_write_file(&cfg, filename);
+        setenv("DFS_THEME", objectFromPath(filename), 1);
+      }
     } else {
       curs_set(FALSE);
       mk_dir(dirFromPath(filename));

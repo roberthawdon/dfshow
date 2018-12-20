@@ -15,7 +15,7 @@ DF-SHOW: An interactive directory/file browser written for Unix-like systems. Ba
 Enables line wrapping.
 
 * `--theme`=[<THEME>]:
-Color themes. Can be set to `default`, `monochrome`, or `nt`.
+Color themes. Passsing this argument without an option will display available themes.
 
 * `--help`:
 Displays help message, then exits.

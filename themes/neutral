@@ -1,0 +1,18 @@
+theme : 
+{
+  command = [ -1, -1, 0 ];
+  info = [ 2, -1, 0 ];
+  input = [ 0, 7, 0 ];
+  select = [ 12, -1, 0 ];
+  display = [ -1, -1, 0 ];
+  danger = [ 9, -1, 0 ];
+  dir = [ 13, -1, 0 ];
+  symlink = [ -1, -1, 1 ];
+  exec = [ 11, -1, 0 ];
+  suid = [ -1, 1, 0 ];
+  sgid = [ 8, 2, 0 ];
+  hilite = [ 8, -1, 0 ];
+  error = [ -1, -1, 1 ];
+  heading = [ 2, -1, 0 ];
+  deadlink = [ 9, -1, 0 ];
+};
