@@ -81,6 +81,8 @@ extern char themeName[128];
 
 struct sigaction sa;
 
+extern int exitCode;
+
 int setMarked(char* markedinput);
 int checkStyle(char* styleinput);
 
@@ -646,6 +648,7 @@ Valid arguments are:\n\
   if (!check_dir(currentpwd)){
     //strcpy(currentpwd, "/"); // If dir doesn't exist, default to root
     invalidstart = 1;
+    exitCode = 1;
     global_menu();
   }
   testSlash:
@@ -654,5 +657,5 @@ Valid arguments are:\n\
     goto testSlash;
   }
   directory_view(currentpwd);
-  return 0;
+  return exitCode;
 }

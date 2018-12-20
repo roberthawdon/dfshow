@@ -34,6 +34,8 @@
 DIR *folder;
 FILE *file;
 
+int exitCode = 0;
+
 char globalConfLocation[128];
 char homeConfLocation[128];
 
@@ -54,8 +56,8 @@ int exittoshell()
 {
   clear();
   endwin();
-  exit(0);
-  return 0;
+  exit(exitCode);
+  return exitCode;
 }
 
 char * dirFromPath(const char* myStr){

@@ -92,6 +92,8 @@ extern int commandL, infoL, inputL, selectL, displayL, dangerL, dirL, slinkL, ex
 
 extern char *objectWild;
 
+extern int exitCode;
+
 //char testMenu[256];
 
 int sanitizeTopFileRef(int topfileref)
@@ -130,6 +132,7 @@ void refreshDirectory(char *sortmode, int origtopfileref, int origselected)
   char currentselectname[512];
   if (invalidstart) {
     strcpy(currentselectname, "");
+    exitCode = 0;
     invalidstart = 0;
   } else {
     strcpy(currentselectname, ob[origselected].name);

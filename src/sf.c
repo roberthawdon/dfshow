@@ -58,6 +58,8 @@ char fileName[512];
 
 extern FILE *file;
 
+extern int exitCode;
+
 FILE *stream;
 char *line = NULL;
 wchar_t *longline = NULL;
@@ -350,6 +352,7 @@ void file_view(char * currentfile)
   } else {
     sprintf(notFoundMessage, "File [%s] does not exist", currentfile);
     topLineMessage(notFoundMessage);
+    exitCode = 1;
   }
   // sleep(10); // No function, so we'll pause for 10 seconds to display our menu
 
