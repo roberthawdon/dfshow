@@ -396,6 +396,7 @@ void edit_file_input()
   readline(filepath, 1024, "");
   curs_set(FALSE);
   SendToEditor(filepath);
+  refreshDirectory(sortmode, topfileref, selected, 1);
 }
 
 void rename_file_input(char *file)
@@ -872,7 +873,7 @@ void directory_view_menu_inputs()
         case 'd':
           if ( CheckMarked(ob) ) {
             delete_multi_file_confirm_input(ob);
-            refreshDirectory(sortmode, topfileref, selected, 0);
+            refreshDirectory(sortmode, topfileref, selected, 1);
             directory_view_menu_inputs();
           } else {
             strcpy(selfile, currentpwd);
@@ -893,6 +894,7 @@ void directory_view_menu_inputs()
           strcat(chpwd, ob[selected].name);
           if (!check_dir(chpwd)){
             SendToEditor(chpwd);
+            refreshDirectory(sortmode, topfileref, selected, 1);
             // display_dir(currentpwd, ob, topfileref, selected);
           }
           break;
@@ -998,6 +1000,7 @@ void directory_view_menu_inputs()
               refreshDirectory(sortmode, topfileref, selected, 0);
             } else {
               e = SendToPager(chpwd);
+              refreshDirectory(sortmode, topfileref, selected, 1);
               // display_dir(currentpwd, ob, topfileref, selected);
             }
           }
@@ -1261,6 +1264,7 @@ void global_menu_inputs()
             printMenu(0, 0, globalMenuText);
           } else {
             //   display_dir(currentpwd, ob, topfileref, selected);
+            refreshDirectory(sortmode, topfileref, selected, 1);
             directory_view_menu_inputs();
           }
           break;
