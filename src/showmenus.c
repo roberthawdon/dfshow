@@ -143,7 +143,7 @@ void refreshDirectory(char *sortmode, int origtopfileref, int origselected)
   reorder_ob(ob, sortmode);
   selected = findResultByName(ob, currentselectname);
   // topfileref = sanitizeTopFileRef(origtopfileref);
-  if (((selected - topfileref) < 0 ) || (selected - topfileref) > displaysize ){
+  if (((selected - topfileref) < 0 ) || (selected - topfileref) > displaysize - 1 ){
     topfileref = sanitizeTopFileRef(selected);
   }
   display_dir(currentpwd, ob, topfileref, selected);
