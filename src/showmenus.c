@@ -136,13 +136,17 @@ void refreshDirectory(char *sortmode, int origtopfileref, int origselected, int 
     exitCode = 0;
     invalidstart = 0;
   } else {
-    strcpy(currentselectname, ob[origselected].name);
+    if (destructive == 2){
+      strcpy(currentselectname, currentfilename);
+    } else {
+      strcpy(currentselectname, ob[origselected].name);
+    }
   }
   free(ob);
   ob = get_dir(currentpwd);
   clear_workspace();
   reorder_ob(ob, sortmode);
-  if (destructive){
+  if (destructive > 0){
     i = findResultByName(ob, currentselectname);
     if (i != 0){
       selected = i;
@@ -421,11 +425,13 @@ void rename_file_input(char *file)
         if ( replace_file_confirm_input(dest) )
           {
             RenameObject(file, dest);
-            refreshDirectory(sortmode, 0, selected, 1);
+            strcpy(currentfilename, objectFromPath(dest));
+            refreshDirectory(sortmode, 0, selected, 2);
           }
       } else {
       RenameObject(file, dest);
-      refreshDirectory(sortmode, 0, selected, 1);
+      strcpy(currentfilename, objectFromPath(dest));
+      refreshDirectory(sortmode, 0, selected, 2);
     }
   }
   directory_view_menu_inputs();
