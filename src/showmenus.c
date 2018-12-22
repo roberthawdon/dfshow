@@ -92,6 +92,8 @@ extern int commandL, infoL, inputL, selectL, displayL, dangerL, dirL, slinkL, ex
 
 extern char *objectWild;
 
+extern int exitCode;
+
 //char testMenu[256];
 
 int sanitizeTopFileRef(int topfileref)
@@ -125,22 +127,41 @@ int sanitizeTopFileRef(int topfileref)
   return topfileref;
 }
 
-void refreshDirectory(char *sortmode, int origtopfileref, int origselected)
+void refreshDirectory(char *sortmode, int origtopfileref, int origselected, int destructive)
 {
   char currentselectname[512];
+  int i;
   if (invalidstart) {
     strcpy(currentselectname, "");
+    exitCode = 0;
     invalidstart = 0;
   } else {
-    strcpy(currentselectname, ob[origselected].name);
+    if (destructive == 2){
+      strcpy(currentselectname, currentfilename);
+    } else {
+      strcpy(currentselectname, ob[origselected].name);
+    }
   }
   free(ob);
   ob = get_dir(currentpwd);
   clear_workspace();
   reorder_ob(ob, sortmode);
-  selected = findResultByName(ob, currentselectname);
+  if (destructive > 0){
+    i = findResultByName(ob, currentselectname);
+    if (i != 0){
+      selected = i;
+    } else {
+      if (selected > totalfilecount - 1){
+        selected = totalfilecount - 1;
+      } else {
+        selected = origselected;
+      }
+    }
+  } else {
+    selected = findResultByName(ob, currentselectname);
+  }
   // topfileref = sanitizeTopFileRef(origtopfileref);
-  if (((selected - topfileref) < 0 ) || (selected - topfileref) > displaysize ){
+  if (((selected - topfileref) < 0 ) || (selected - topfileref) > displaysize - 1 ){
     topfileref = sanitizeTopFileRef(selected);
   }
   display_dir(currentpwd, ob, topfileref, selected);
@@ -192,7 +213,7 @@ void show_directory_input()
       topfileref = 0;
       selected = 0;
       chdir(currentpwd);
-      refreshDirectory(sortmode, 0, selected);
+      refreshDirectory(sortmode, 0, selected, 0);
     } else {
       sprintf(direrror, "The location %s cannot be opened or is not a directory\n", currentpwd);
       strcpy(currentpwd, oldpwd);
@@ -252,11 +273,11 @@ void copy_file_input(char *file)
         if ( replace_file_confirm_input(newfile) )
           {
             copy_file(file, newfile);
-            refreshDirectory(sortmode, 0, selected);
+            refreshDirectory(sortmode, 0, selected, 0);
           }
       } else {
       copy_file(file, newfile);
-      refreshDirectory(sortmode, 0, selected);
+      refreshDirectory(sortmode, 0, selected, 0);
     }
   }
   directory_view_menu_inputs();
@@ -362,7 +383,7 @@ void rename_multi_file_input(results* ob, char *input)
     } else {
       topLineMessage("Error: Directory Not Found.");
     }
-    refreshDirectory(sortmode, 0, selected);
+    refreshDirectory(sortmode, 0, selected, 1);
   }
 
   directory_view_menu_inputs();
@@ -379,6 +400,7 @@ void edit_file_input()
   readline(filepath, 1024, "");
   curs_set(FALSE);
   SendToEditor(filepath);
+  refreshDirectory(sortmode, topfileref, selected, 1);
 }
 
 void rename_file_input(char *file)
@@ -403,11 +425,13 @@ void rename_file_input(char *file)
         if ( replace_file_confirm_input(dest) )
           {
             RenameObject(file, dest);
-            refreshDirectory(sortmode, 0, selected);
+            strcpy(currentfilename, objectFromPath(dest));
+            refreshDirectory(sortmode, 0, selected, 2);
           }
       } else {
       RenameObject(file, dest);
-      refreshDirectory(sortmode, 0, selected);
+      strcpy(currentfilename, objectFromPath(dest));
+      refreshDirectory(sortmode, 0, selected, 2);
     }
   }
   directory_view_menu_inputs();
@@ -433,7 +457,7 @@ void make_directory_input()
     }
     mk_dir(newdir);
     curs_set(FALSE);
-    refreshDirectory(sortmode, 0, selected);
+    refreshDirectory(sortmode, 0, selected, 0);
   }
   directory_view_menu_inputs();
 }
@@ -546,7 +570,7 @@ void delete_file_confirm_input(char *file)
         {
         case 'y':
           delete_file(file);
-          refreshDirectory(sortmode, topfileref, selected);
+          refreshDirectory(sortmode, topfileref, selected, 1);
           // Not breaking here, intentionally dropping through to the default
         default:
           directory_view_menu_inputs();
@@ -643,7 +667,7 @@ void sort_view_inputs()
           reverse = 1;
           break;
         }
-      refreshDirectory(sortmode, topfileref, selected);
+      refreshDirectory(sortmode, topfileref, selected, 0);
       directory_view_menu_inputs();
     }
 }
@@ -713,7 +737,7 @@ void modify_group_input()
         topLineMessage(errmessage);
       }
     }
-    refreshDirectory(sortmode, topfileref, selected);
+    refreshDirectory(sortmode, topfileref, selected, 0);
 
     directory_view_menu_inputs();
   }
@@ -796,7 +820,7 @@ void modify_permissions_input()
     strcat(pfile, ob[selected].name);
     chmod(pfile, newperm);
   }
-  refreshDirectory(sortmode, topfileref, selected);
+  refreshDirectory(sortmode, topfileref, selected, 0);
 
   directory_view_menu_inputs();
 
@@ -855,7 +879,7 @@ void directory_view_menu_inputs()
         case 'd':
           if ( CheckMarked(ob) ) {
             delete_multi_file_confirm_input(ob);
-            refreshDirectory(sortmode, topfileref, selected);
+            refreshDirectory(sortmode, topfileref, selected, 1);
             directory_view_menu_inputs();
           } else {
             strcpy(selfile, currentpwd);
@@ -876,6 +900,7 @@ void directory_view_menu_inputs()
           strcat(chpwd, ob[selected].name);
           if (!check_dir(chpwd)){
             SendToEditor(chpwd);
+            refreshDirectory(sortmode, topfileref, selected, 1);
             // display_dir(currentpwd, ob, topfileref, selected);
           }
           break;
@@ -966,7 +991,7 @@ void directory_view_menu_inputs()
               selected = 0;
               strcpy(currentpwd, chpwd);
               chdir(currentpwd);
-              refreshDirectory(sortmode, topfileref, selected);
+              refreshDirectory(sortmode, topfileref, selected, 0);
             }
           } else if (!strcmp(ob[selected].name, ".")) {
             break;
@@ -978,9 +1003,10 @@ void directory_view_menu_inputs()
               selected = 0;
               strcpy(currentpwd, chpwd);
               chdir(currentpwd);
-              refreshDirectory(sortmode, topfileref, selected);
+              refreshDirectory(sortmode, topfileref, selected, 0);
             } else {
               e = SendToPager(chpwd);
+              refreshDirectory(sortmode, topfileref, selected, 1);
               // display_dir(currentpwd, ob, topfileref, selected);
             }
           }
@@ -1096,7 +1122,7 @@ void directory_view_menu_inputs()
           display_dir(currentpwd, ob, topfileref, selected);
           break;
         case 269: // F5
-          refreshDirectory(sortmode, topfileref, selected);
+          refreshDirectory(sortmode, topfileref, selected, 0);
           break;
         case 270: // F6
           strcpy(selfile, currentpwd);
@@ -1184,19 +1210,6 @@ void directory_view_menu_inputs()
             }
           break;
         case 276: // F12
-          // clear();
-          // endwin();
-
-          // printf("0: %s - %s\n", hs[0].path, hs[0].objectWild);
-          // printf("1: %s - %s\n", hs[1].path, hs[1].objectWild);
-          // printf("2: %s - %s\n", hs[2].path, hs[2].objectWild);
-          // printf("3: %s - %s\n", hs[3].path, hs[3].objectWild);
-          // printf("4: %s - %s\n", hs[4].path, hs[4].objectWild);
-          // printf("5: %s - %s\n", hs[5].path, hs[5].objectWild);
-          // printf("6: %s - %s\n", hs[6].path, hs[6].objectWild);
-
-          // exit(0);
-          //refreshScreen();
           break;
         case 262: // Home
           selected = topfileref;
@@ -1225,6 +1238,19 @@ void global_menu_inputs()
       *pc = getch();
       switch(*pc)
         {
+        case 'o':
+          themeBuilder();
+          theme_menu_inputs();
+          if (historyref == 0){
+            clear();
+            global_menu_inputs();
+          } else {
+            refreshDirectory(sortmode, topfileref, selected, 0);
+            display_dir(currentpwd, ob, topfileref, selected);
+            printMenu(LINES-1, 0, functionMenuText); // Global menu inputs doesn't include this. Even though it isn't used.
+            global_menu_inputs();
+          }
+          break;
         case 'm':
           make_directory_input();
           break;
@@ -1234,6 +1260,7 @@ void global_menu_inputs()
             printMenu(0, 0, globalMenuText);
           } else {
             // display_dir(currentpwd, ob, topfileref, selected);
+            refreshDirectory(sortmode, topfileref, selected, 1);
             directory_view_menu_inputs();
           }
           break;
@@ -1243,6 +1270,7 @@ void global_menu_inputs()
             printMenu(0, 0, globalMenuText);
           } else {
             //   display_dir(currentpwd, ob, topfileref, selected);
+            refreshDirectory(sortmode, topfileref, selected, 1);
             directory_view_menu_inputs();
           }
           break;

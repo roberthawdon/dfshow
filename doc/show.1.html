@@ -61,6 +61,7 @@
     <a href="#COMMANDS">COMMANDS</a>
     <a href="#FUNCTIONS">FUNCTIONS</a>
     <a href="#GLOBAL-COMMANDS">GLOBAL COMMANDS</a>
+    <a href="#COLORS">COLORS</a>
     <a href="#SECURITY-CONSIDERATIONS">SECURITY CONSIDERATIONS</a>
     <a href="#AUTHOR">AUTHOR</a>
     <a href="#COPYRIGHT">COPYRIGHT</a>
@@ -114,7 +115,7 @@ The <code>.</code> and <code>..</code> objects are never hidden due to their nav
 <p>The following options are specific to <code>show</code>:</p>
 
 <dl>
-<dt><code>--theme</code>=[<var>THEME</var>]</dt><dd><p>Color themes. Can be set to <code>default</code>, <code>monochrome</code>, or <code>nt</code>.</p></dd>
+<dt><code>--theme</code>=[<var>THEME</var>]</dt><dd><p>Color themes. Passing this argument without an option will display available themes.</p></dd>
 <dt><code>--monochrome</code></dt><dd><p>Compatibility mode for monochrome displays. (This command is deprecated, use <code>--theme</code> instead)</p></dd>
 <dt><code>--no-danger</code></dt><dd><p>Disables the danger color scheme when running with elevated privileges.</p></dd>
 <dt><code>--marked</code>=[<var>MARKED</var>]</dt><dd><p>Displays information about marked files. Can be set to <code>always</code>, <code>never</code>, or <code>auto</code>.</p></dd>
@@ -290,11 +291,12 @@ The <code>.</code> and <code>..</code> objects are never hidden due to their nav
 
 <p>When a file group display is terminated with the Quit command, one of the following commands can be used to display another group of files, invoke the editor for a fire, or terminate the application completely. The first character of the command is used to invoke the desired function. The command line is shown below.</p>
 
-<p>  <code>Run command, Edit file, Help, Make dir, Quit, Show dir</code></p>
+<p>  <code>cOlors, Run command, Edit file, Help, Make dir, Quit, Show dir</code></p>
 
 <p>These commands are desctibed below.</p>
 
 <dl>
+<dt class="flush"><code>cOlors</code></dt><dd><p>Launches an inbuilt color configuration utility which cusomizes the colors for the various display areas in all the utilities. Further information can be found in the <a href="#COLORS" title="COLORS" data-bare-link="true">COLORS</a> section.</p></dd>
 <dt><code>Run command</code></dt><dd><p>Invoke your shell. The <code>show</code> application is still resident, so the "exit" command will return to the application.</p></dd>
 <dt><code>Edit file</code></dt><dd><p>Invoke the default text editor to edit the specified file. The file name is requested by the following prompt. An empty response is used to abort this command.</p>
 
@@ -306,7 +308,66 @@ The <code>.</code> and <code>..</code> objects are never hidden due to their nav
 <dt class="flush"><code>Quit</code></dt><dd><p>Terminate <code>show</code>.</p></dd>
 <dt><code>Show dir</code></dt><dd><p>Invoke the application to display another directory. The directory name is requrested by the following prompt. An empty response is used to abort this command.</p>
 
-<p><code>Show Directory - Enter pathnem:</code></p></dd>
+<p><code>Show Directory - Enter pathname:</code></p></dd>
+</dl>
+
+
+<h2 id="COLORS">COLORS</h2>
+
+<p>The inbuilt Colors utility is used to customize the colors used in the applications. It is accessed from the global menu of the <code>show</code> utility.</p>
+
+<p>The following screen is displayed after launch.</p>
+
+<p>  <code>Color number, Load, Quit, Save, Toggle</code></p>
+
+<pre><code>  Command lines                            !-Default
+  Display lines                            ?-Default Bold
+  Error messages                           0-Black
+  Information lines                        1-Red
+  Heading lines                            2-Green
+  Danger lines                             3-Brown
+  Selected block lines                     4-Blue
+  Highlight                                5-Magenta
+                                           6-Cyan
+                                           7-Light Gray
+                                           8-Dark Gray
+                                           9-Light Red
+                                           A-Light Green
+                                           B-Yellow
+                                           C-Light Blue
+                                           D-Light Magenta
+                                           E-Light Cyan
+                                           F-White
+
+
+                    Select 0 to F for desired foreground color
+</code></pre>
+
+<p>Initially, the cursor is positioned beside the "Command lines" string. The cursor can be moved to each of the display types using the up and down cursor keys, and each color can be set by using the number of the desired color. The background color can be set by using the <code>Toggle</code> command. Each of the types of lines are described below.</p>
+
+<dl>
+<dt><code>Command lines</code></dt><dd><p>The color of the top and bottom lines of each utility. These lines display the valid command, funcation keys and other global information.</p></dd>
+<dt><code>Display lines</code></dt><dd><p>The color for the main text lines in each utilities' display.</p></dd>
+<dt><code>Error messages</code></dt><dd><p>The color in which any error messages are displayed.</p></dd>
+<dt><code>Information lines</code></dt><dd><p>The color used to display general information such as the directory header information.</p></dd>
+<dt><code>Heading lines</code></dt><dd><p>The color used to display the headings for each column in <code>show</code>.</p></dd>
+<dt><code>Danger lines</code></dt><dd><p>The color used to replace the informationa lines with a warning, such as when running as the root user.</p></dd>
+<dt><code>Selected block lines</code></dt><dd><p>The color of the selected block lines of the current file in the <code>show</code> utility.</p></dd>
+<dt><code>Highlight</code></dt><dd><p>The color of the command/function keys.</p></dd>
+</dl>
+
+
+<p>After each of the colors have been changed to the desired color, the theme must be saved with the <code>Save</code> command. All the commands are described below.</p>
+
+<dl>
+<dt class="flush"><code>Load</code></dt><dd><p>Loads a theme file so it can be modified or used. The following promt requests the data file name.</p>
+
+<p><code>Load Colors - Enter file pathname:</code></p></dd>
+<dt class="flush"><code>Quit</code></dt><dd><p>Quit the color modification utility and return to <code>show</code>.</p></dd>
+<dt class="flush"><code>Save</code></dt><dd><p>Save the theme information in a data file for use by all the utilities. The following promt requests the data file name.</p>
+
+<p><code>Save Colors - Enter file pathname:</code></p></dd>
+<dt class="flush"><code>Toggle</code></dt><dd><p>Switches between foreground and background selection.</p></dd>
 </dl>
 
 
@@ -333,7 +394,7 @@ The <code>.</code> and <code>..</code> objects are never hidden due to their nav
 
   <ol class='man-decor man-foot man foot'>
     <li class='tl'></li>
-    <li class='tc'>October 2018</li>
+    <li class='tc'>December 2018</li>
     <li class='tr'>show(1)</li>
   </ol>
 

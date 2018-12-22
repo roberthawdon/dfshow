@@ -65,7 +65,7 @@ Displays program version, then exits.
 The following options are specific to `show`:
 
 * `--theme`=[<THEME>]:
-Color themes. Can be set to `default`, `monochrome`, or `nt`.
+Color themes. Passing this argument without an option will display available themes.
 
 * `--monochrome`:
 Compatibility mode for monochrome displays. (This command is deprecated, use `--theme` instead)
@@ -336,9 +336,12 @@ The display functions with their associated key assignments are described here.
 ## GLOBAL COMMANDS
 When a file group display is terminated with the Quit command, one of the following commands can be used to display another group of files, invoke the editor for a fire, or terminate the application completely. The first character of the command is used to invoke the desired function. The command line is shown below.
 
-  `Run command, Edit file, Help, Make dir, Quit, Show dir`
+  `cOlors, Run command, Edit file, Help, Make dir, Quit, Show dir`
   
 These commands are desctibed below.
+
+* `cOlors`:
+Launches an inbuilt color configuration utility which cusomizes the colors for the various display areas in all the utilities. Further information can be found in the [COLORS][] section.
 
 * `Run command`:
 Invoke your shell. The `show` application is still resident, so the "exit" command will return to the application.
@@ -362,7 +365,82 @@ Terminate `show`.
 * `Show dir`:
 Invoke the application to display another directory. The directory name is requrested by the following prompt. An empty response is used to abort this command.
 
-  `Show Directory - Enter pathnem:`
+  `Show Directory - Enter pathname:`
+
+## COLORS
+
+The inbuilt Colors utility is used to customize the colors used in the applications. It is accessed from the global menu of the `show` utility.
+
+The following screen is displayed after launch.
+
+  `Color number, Load, Quit, Save, Toggle`
+   
+      Command lines                            !-Default
+      Display lines                            ?-Default Bold
+      Error messages                           0-Black
+      Information lines                        1-Red
+      Heading lines                            2-Green
+      Danger lines                             3-Brown
+      Selected block lines                     4-Blue
+      Highlight                                5-Magenta
+                                               6-Cyan
+                                               7-Light Gray
+                                               8-Dark Gray
+                                               9-Light Red
+                                               A-Light Green
+                                               B-Yellow
+                                               C-Light Blue
+                                               D-Light Magenta
+                                               E-Light Cyan
+                                               F-White
+  
+  
+                        Select 0 to F for desired foreground color
+
+Initially, the cursor is positioned beside the "Command lines" string. The cursor can be moved to each of the display types using the up and down cursor keys, and each color can be set by using the number of the desired color. The background color can be set by using the `Toggle` command. Each of the types of lines are described below.
+
+* `Command lines`:
+The color of the top and bottom lines of each utility. These lines display the valid command, funcation keys and other global information.
+
+* `Display lines`:
+The color for the main text lines in each utilities' display.
+
+* `Error messages`:
+The color in which any error messages are displayed.
+
+* `Information lines`:
+The color used to display general information such as the directory header information.
+
+* `Heading lines`:
+The color used to display the headings for each column in `show`.
+
+* `Danger lines`:
+The color used to replace the informationa lines with a warning, such as when running as the root user.
+
+* `Selected block lines`:
+The color of the selected block lines of the current file in the `show` utility.
+
+* `Highlight`:
+The color of the command/function keys.
+
+After each of the colors have been changed to the desired color, the theme must be saved with the `Save` command. All the commands are described below.
+
+* `Load`:
+Loads a theme file so it can be modified or used. The following promt requests the data file name.
+
+  `Load Colors - Enter file pathname:`
+
+* `Quit`:
+Quit the color modification utility and return to `show`.
+
+* `Save`:
+Save the theme information in a data file for use by all the utilities. The following promt requests the data file name.
+
+  `Save Colors - Enter file pathname:`
+
+* `Toggle`:
+Switches between foreground and background selection.
+
 
 ## SECURITY CONSIDERATIONS
 DF-SHOW is designed to be run as a non privileged user, and obays restrictions set by the system. It is possible to launch `show` as root. When this occurs, `show` warns the user by displaying the informational messages in a different color.

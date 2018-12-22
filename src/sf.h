@@ -1,5 +1,6 @@
 #include <limits.h>
 
+#define PROGRAM_NAME "sf"
 #define LINE_WRAP 0
 #define WORD_WRAP 1
 
@@ -10,6 +11,7 @@ enum
    GETOPT_THEME_CHAR = (CHAR_MIN - 4)
   };
 
+void readConfig(const char * confFile);
 void buildMenuText();
 int calculateTab(int pos);
 void file_view(char * currentfile);

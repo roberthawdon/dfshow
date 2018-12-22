@@ -18,130 +18,646 @@
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdlib.h>
 #include <ncurses.h>
+#include <string.h>
+#include <unistd.h>
+#include <libconfig.h>
+#include <dirent.h>
+#include "common.h"
 #include "colors.h"
 
-int lightColorPair[15];
-
+int lightColorPair[256];
 // int commandL, infoL, inputL, selectL, displayL, dangerL, dirL, slinkL, exeL, suidL, sgidL, hiliteL = 0;
 
-extern int colormode;
+int colorThemePos = 0;
+int totalItemCount = 7;
 
-void setColorMode(int mode){
-  lightColorPair[0] = 0; // Unused array value
-  /*
-    Pairs:
-    1    : Command Lines
-    2    : Information Lines
-    3    : Text Input
-    4    : Selected Block Lines
-    5    : Display Lines
-    6    : Danger Lines
-    7    : Directory
-    8    : Symlink
-    9    : Executable
-    10   : SUID
-    11   : SGID
-    12   : Highlight Pair
-   */
-  switch(mode){
+int selectedItem;
+
+int bgToggle = 0;
+
+colorPairs colors[256];
+
+char fgbgLabel[11];
+
+extern int colormode;
+extern int c;
+extern int * pc;
+
+extern char globalConfLocation[128];
+extern char homeConfLocation[128];
+
+void processListThemes(const char * pathName)
+{
+  DIR *dfDir;
+  struct dirent *res;
+  char currentPath[1024];
+  char currentFile[1024];
+  config_t cfg;
+  config_setting_t *group;
+  strcpy(currentPath, pathName);
+  dfDir = opendir ( currentPath );
+  if (access (currentPath, F_OK) != -1){
+    if (dfDir){
+      while ( ( res = readdir (dfDir))){
+        sprintf(currentFile, "%s/%s", currentPath, res->d_name);
+        if (!check_dir(currentFile)){
+          config_init(&cfg);
+          config_read_file(&cfg, currentFile);
+          group = config_lookup(&cfg, "theme");
+          if (group){
+            printf(" - %s\n", objectFromPath(currentFile));
+          }
+        }
+      }
+      free(res);
+    }
+  }
+}
+
+void listThemes()
+{
+  if (check_dir(DATADIR)) {
+    printf("\nGlobal Themes:\n");
+    processListThemes(DATADIR);
+  }
+  if (check_dir(dirFromPath(homeConfLocation))) {
+    printf("\nPersonal Themes:\n");
+    processListThemes(dirFromPath(homeConfLocation));
+  }
+}
+
+int itemLookup(int menuPos){
+  switch(menuPos){
   case 0:
-    init_pair(COMMAND_PAIR, COLOR_WHITE, COLOR_BLACK);
-    lightColorPair[COMMAND_PAIR] = 0;
-    init_pair(INFO_PAIR, COLOR_GREEN, COLOR_BLACK);
-    lightColorPair[INFO_PAIR] = 0;
-    init_pair(INPUT_PAIR, COLOR_BLACK, COLOR_WHITE);
-    lightColorPair[INPUT_PAIR] = 0;
-    init_pair(SELECT_PAIR, COLOR_BLUE, COLOR_BLACK);
-    lightColorPair[SELECT_PAIR] = 1;
-    init_pair(DISPLAY_PAIR, COLOR_CYAN, COLOR_BLACK);
-    lightColorPair[DISPLAY_PAIR] = 0;
-    init_pair(DANGER_PAIR, COLOR_RED, COLOR_BLACK);
-    lightColorPair[DANGER_PAIR] = 1;
-    init_pair(DIR_PAIR, COLOR_MAGENTA, COLOR_BLACK);
-    lightColorPair[DIR_PAIR] = 1;
-    init_pair(SLINK_PAIR, COLOR_WHITE, COLOR_BLACK);
-    lightColorPair[SLINK_PAIR] = 1;
-    init_pair(EXE_PAIR, COLOR_YELLOW, COLOR_BLACK);
-    lightColorPair[EXE_PAIR] = 1;
-    init_pair(SUID_PAIR, COLOR_WHITE, COLOR_RED);
-    lightColorPair[SUID_PAIR] = 0;
-    init_pair(SGID_PAIR, COLOR_BLACK, COLOR_GREEN);
-    lightColorPair[SGID_PAIR] = 1;
-    init_pair(HILITE_PAIR, COLOR_WHITE, COLOR_BLACK);
-    lightColorPair[HILITE_PAIR] = 1;
-    init_pair(ERROR_PAIR, COLOR_WHITE, COLOR_BLACK);
-    lightColorPair[ERROR_PAIR] = 1;
-    init_pair(HEADING_PAIR, COLOR_GREEN, COLOR_BLACK);
-    lightColorPair[HEADING_PAIR] = 0;
-    init_pair(DEADLINK_PAIR, COLOR_RED, COLOR_BLACK);
-    lightColorPair[DEADLINK_PAIR] = 1;
+    selectedItem = COMMAND_PAIR;
     break;
   case 1:
-    init_pair(COMMAND_PAIR, COLOR_WHITE, COLOR_BLACK);
-    lightColorPair[COMMAND_PAIR] = 0;
-    init_pair(INFO_PAIR, COLOR_WHITE, COLOR_BLACK);
-    lightColorPair[INFO_PAIR] = 0;
-    init_pair(INPUT_PAIR, COLOR_BLACK, COLOR_WHITE);
-    lightColorPair[INPUT_PAIR] = 0;
-    init_pair(SELECT_PAIR, COLOR_BLACK, COLOR_WHITE);
-    lightColorPair[SELECT_PAIR] = 0;
-    init_pair(DISPLAY_PAIR, COLOR_WHITE, COLOR_BLACK);
-    lightColorPair[DISPLAY_PAIR] = 0;
-    init_pair(DANGER_PAIR, COLOR_BLACK, COLOR_WHITE);
-    lightColorPair[DANGER_PAIR] = 0;
-    init_pair(DIR_PAIR, COLOR_WHITE, COLOR_BLACK);
-    lightColorPair[DIR_PAIR] = 1;
-    init_pair(SLINK_PAIR, COLOR_WHITE, COLOR_BLACK);
-    lightColorPair[SLINK_PAIR] = 1;
-    init_pair(EXE_PAIR, COLOR_WHITE, COLOR_BLACK);
-    lightColorPair[EXE_PAIR] = 1;
-    init_pair(SUID_PAIR, COLOR_WHITE, COLOR_BLACK);
-    lightColorPair[SUID_PAIR] = 0;
-    init_pair(SGID_PAIR, COLOR_WHITE, COLOR_BLACK);
-    lightColorPair[SGID_PAIR] = 1;
-    init_pair(HILITE_PAIR, COLOR_WHITE, COLOR_BLACK);
-    lightColorPair[HILITE_PAIR] = 1;
-    init_pair(ERROR_PAIR, COLOR_WHITE, COLOR_BLACK);
-    lightColorPair[ERROR_PAIR] = 1;
-    init_pair(HEADING_PAIR, COLOR_WHITE, COLOR_BLACK);
-    lightColorPair[HEADING_PAIR] = 0;
-    init_pair(DEADLINK_PAIR, COLOR_BLACK, COLOR_WHITE);
-    lightColorPair[DEADLINK_PAIR] = 0;
+    selectedItem = DISPLAY_PAIR;
     break;
   case 2:
-    init_pair(COMMAND_PAIR, COLOR_CYAN, COLOR_BLUE);
-    lightColorPair[COMMAND_PAIR] = 1;
-    init_pair(INFO_PAIR, COLOR_WHITE, COLOR_BLUE);
-    lightColorPair[INFO_PAIR] = 1;
-    init_pair(INPUT_PAIR, COLOR_BLUE, COLOR_WHITE);
-    lightColorPair[INPUT_PAIR] = 0;
-    init_pair(SELECT_PAIR, COLOR_BLUE, COLOR_WHITE);
-    lightColorPair[SELECT_PAIR] = 0;
-    init_pair(DISPLAY_PAIR, COLOR_CYAN, COLOR_BLUE);
-    lightColorPair[DISPLAY_PAIR] = 1;
-    init_pair(DANGER_PAIR, COLOR_RED, COLOR_BLUE);
-    lightColorPair[DANGER_PAIR] = 1;
-    init_pair(DIR_PAIR, COLOR_MAGENTA, COLOR_BLUE);
-    lightColorPair[DIR_PAIR] = 1;
-    init_pair(SLINK_PAIR, COLOR_WHITE, COLOR_BLUE);
-    lightColorPair[SLINK_PAIR] = 1;
-    init_pair(EXE_PAIR, COLOR_YELLOW, COLOR_BLUE);
-    lightColorPair[EXE_PAIR] = 1;
-    init_pair(SUID_PAIR, COLOR_WHITE, COLOR_RED);
-    lightColorPair[SUID_PAIR] = 0;
-    init_pair(SGID_PAIR, COLOR_BLACK, COLOR_GREEN);
-    lightColorPair[SGID_PAIR] = 1;
-    init_pair(HILITE_PAIR, COLOR_YELLOW, COLOR_BLUE);
-    lightColorPair[HILITE_PAIR] = 1;
-    init_pair(ERROR_PAIR, COLOR_RED, COLOR_BLUE);
-    lightColorPair[ERROR_PAIR] = 1;
-    init_pair(HEADING_PAIR, COLOR_YELLOW, COLOR_BLUE);
-    lightColorPair[HEADING_PAIR] = 1;
-    init_pair(DEADLINK_PAIR, COLOR_RED, COLOR_BLUE);
-    lightColorPair[DEADLINK_PAIR] = 1;
+    selectedItem = ERROR_PAIR;
+    break;
+  case 3:
+    selectedItem = INFO_PAIR;
+    break;
+  case 4:
+    selectedItem = HEADING_PAIR;
+    break;
+  case 5:
+    selectedItem = DANGER_PAIR;
+    break;
+  case 6:
+    selectedItem = SELECT_PAIR;
+    break;
+  case 7:
+    selectedItem = HILITE_PAIR;
+    break;
+  default:
+    selectedItem = -1;
     break;
   }
+  return(selectedItem);
+}
+
+void setColorPairs(int pair, int foreground, int background, int bold){
+  switch(pair){
+  case 1:
+    strcpy(colors[pair].name, "command");
+    break;
+  case 2:
+    strcpy(colors[pair].name, "info");
+    break;
+  case 3:
+    strcpy(colors[pair].name, "input");
+    break;
+  case 4:
+    strcpy(colors[pair].name, "select");
+    break;
+  case 5:
+    strcpy(colors[pair].name, "display");
+    break;
+  case 6:
+    strcpy(colors[pair].name, "danger");
+    break;
+  case 7:
+    strcpy(colors[pair].name, "dir");
+    break;
+  case 8:
+    strcpy(colors[pair].name, "symlink");
+    break;
+  case 9:
+    strcpy(colors[pair].name, "exec");
+    break;
+  case 10:
+    strcpy(colors[pair].name, "suid");
+    break;
+  case 11:
+    strcpy(colors[pair].name, "sgid");
+    break;
+  case 12:
+    strcpy(colors[pair].name, "hilite");
+    break;
+  case 13:
+    strcpy(colors[pair].name, "error");
+    break;
+  case 14:
+    strcpy(colors[pair].name, "heading");
+    break;
+  case 15:
+    strcpy(colors[pair].name, "deadlink");
+    break;
+  default:
+    sprintf(colors[pair].name, "undef-%i", pair);
+    break;
+  }
+  if (COLORS < 9){
+  checkColor:
+    if ( foreground > 8 ){
+      foreground = foreground - 8;
+      bold = 1;
+      goto checkColor;
+    }
+    if ( background > 8 ){
+      background = background - 8;
+      goto checkColor;
+    }
+  }
+  colors[pair].foreground = foreground;
+  colors[pair].background = background;
+  colors[pair].bold = bold;
+}
+
+void refreshColors(){
+  int i;
+  int foreground, background, bold;
+  for ( i = 0; i < 256; i++ ){
+    foreground = colors[i].foreground;
+    background = colors[i].background;
+    bold = colors[i].bold;
+    if (COLORS < 9){
+    checkColor:
+      if ( foreground > 8 ){
+        foreground = foreground - 8;
+        bold = 1;
+        goto checkColor;
+      }
+      if ( background > 8 ){
+        background = background - 8;
+        goto checkColor;
+      }
+    }
+    init_pair(i, foreground, background);
+    lightColorPair[i] = bold;
+  }
+}
+
+void saveTheme(){
+  config_t cfg;
+  config_setting_t *root, *setting, *group, *array;
+  int e, i;
+  char filename[1024];
+  char * rewrite;
+  move(0,0);
+  clrtoeol();
+  printMenu(0,0, "Save Colors - Enter pathname:");
+  move(0,30);
+  rewrite = malloc(sizeof(char) * strlen(dirFromPath(homeConfLocation) +1));
+  sprintf(rewrite, "%s/", dirFromPath(homeConfLocation));
+  e = readline(filename, 1024, rewrite);
+  free(rewrite);
+  if ( e == 0 ){
+    if (check_first_char(filename, "~")){
+      rewrite = str_replace(filename, "~", getenv("HOME"));
+      strcpy(filename, rewrite);
+      free(rewrite);
+    }
+    config_init(&cfg);
+    root = config_root_setting(&cfg);
+    group = config_setting_add(root, "theme", CONFIG_TYPE_GROUP);
+    for (i = 1; i < 16; i++){
+      array = config_setting_add(group, colors[i].name, CONFIG_TYPE_ARRAY);
+      setting = config_setting_add(array, NULL, CONFIG_TYPE_INT);
+      config_setting_set_int(setting, colors[i].foreground);
+      setting = config_setting_add(array, NULL, CONFIG_TYPE_INT);
+      config_setting_set_int(setting, colors[i].background);
+      setting = config_setting_add(array, NULL, CONFIG_TYPE_INT);
+      config_setting_set_int(setting, colors[i].bold);
+    }
+    if (check_dir(dirFromPath(filename))){
+      if (check_file(filename)){
+        curs_set(FALSE);
+        printMenu(0,0, "File exists. Replace? (!Yes/!No)");
+        while(1)
+          {
+            *pc = getch();
+            switch(*pc)
+              {
+              case 'y':
+                config_write_file(&cfg, filename);
+                setenv("DFS_THEME", objectFromPath(filename), 1);
+                //No Break, drop through to default
+              default:
+                curs_set(TRUE);
+                themeBuilder();
+                break;
+              }
+            break;
+          }
+      } else {
+        config_write_file(&cfg, filename);
+        setenv("DFS_THEME", objectFromPath(filename), 1);
+      }
+    } else {
+      curs_set(FALSE);
+      mk_dir(dirFromPath(filename));
+      config_write_file(&cfg, filename);
+      // topLineMessage("Error: Unable to write file");
+      curs_set(TRUE);
+    }
+    config_destroy(&cfg);
+  }
+  themeBuilder();
+}
+
+int applyTheme(const char *filename){
+  config_t cfg;
+  config_setting_t *root, *setting, *group, *array;
+  int groupLen, i, h;
+  setenv("DFS_THEME", objectFromPath(filename), 1);
+  config_init(&cfg);
+  config_read_file(&cfg, filename);
+  group = config_lookup(&cfg, "theme");
+  groupLen = config_setting_length(group);
+  for (i = 0; i < groupLen; i++){
+    array = config_setting_get_elem(group, i);
+    for (h = 0; h < 256; h++){
+      if (!strcmp(colors[h].name, config_setting_name(array))){
+        setting = config_setting_get_member(group, config_setting_name(array));
+        colors[h].foreground = config_setting_get_int_elem(setting, 0);
+        colors[h].background = config_setting_get_int_elem(setting, 1);
+        colors[h].bold = config_setting_get_int_elem(setting, 2);
+      }
+    }
+
+  }
+  config_destroy(&cfg);
+  refreshColors();
+  return(0);
+}
+
+void loadTheme(){
+  int e;
+  char filename[1024];
+  char * rewrite;
+  move(0,0);
+  clrtoeol();
+  printMenu(0,0, "Load Colors - Enter pathname:");
+  move(0,30);
+  rewrite = malloc(sizeof(char) * strlen(dirFromPath(homeConfLocation) +1));
+  sprintf(rewrite, "%s/", dirFromPath(homeConfLocation));
+  e = readline(filename, 1024, rewrite);
+  free(rewrite);
+  if ( e == 0 ){
+    if (check_first_char(filename, "~")){
+      rewrite = str_replace(filename, "~", getenv("HOME"));
+      strcpy(filename, rewrite);
+      free(rewrite);
+    }
+    if (check_file(filename) ){
+      setenv("DFS_THEME_OVERRIDE", "TRUE", 1);
+      applyTheme(filename);
+    } else {
+      curs_set(FALSE);
+      topLineMessage("Error: Unable to read file");
+      curs_set(TRUE);
+    }
+  }
+  themeBuilder();
+}
+
+void loadAppTheme(const char *themeName)
+{
+  char * rewrite;
+  // Ignore if the theme requested is called 'default'
+  if (strcmp(themeName, "default") && strcmp(themeName, "\0")){
+      rewrite = malloc(sizeof(char) * (strlen(dirFromPath(homeConfLocation)) + strlen(themeName) + 2));
+      sprintf(rewrite, "%s/%s", dirFromPath(homeConfLocation), themeName);
+      if (check_file(rewrite)){
+        applyTheme(rewrite);
+      } else {
+        free(rewrite);
+        rewrite = malloc(sizeof(char) * (strlen(DATADIR) + strlen(themeName) + 2));
+        sprintf(rewrite, "%s/%s", DATADIR, themeName);
+        if (check_file(rewrite)){
+          applyTheme(rewrite);
+        }
+      }
+      free(rewrite);
+    }
+}
+
+void updateColorPair(int code, int location){
+  int colorCode = -1;
+  int colorBold = 0;
+  switch(code){
+  case 0:
+    colorCode = COLOR_BLACK;
+    break;
+  case 1:
+    colorCode = COLOR_RED;
+    break;
+  case 2:
+    colorCode = COLOR_GREEN;
+    break;
+  case 3:
+    colorCode = COLOR_YELLOW;
+    break;
+  case 4:
+    colorCode = COLOR_BLUE;
+    break;
+  case 5:
+    colorCode = COLOR_MAGENTA;
+    break;
+  case 6:
+    colorCode = COLOR_CYAN;
+    break;
+  case 7:
+    colorCode = COLOR_WHITE;
+    break;
+  case 8:
+    if (COLORS > 8){
+      colorCode = BRIGHT_BLACK;
+    } else {
+      colorCode = COLOR_BLACK;
+      colorBold = 1;
+    }
+    break;
+  case 9:
+    if (COLORS > 8){
+      colorCode = BRIGHT_RED;
+    } else {
+      colorCode = COLOR_RED;
+      colorBold = 1;
+    }
+    break;
+  case 10:
+    if (COLORS > 8){
+      colorCode = BRIGHT_GREEN;
+    } else {
+      colorCode = COLOR_GREEN;
+      colorBold = 1;
+    }
+    break;
+  case 11:
+    if (COLORS > 8){
+      colorCode = BRIGHT_YELLOW;
+    } else {
+      colorCode = COLOR_YELLOW;
+      colorBold = 1;
+    }
+    break;
+  case 12:
+    if (COLORS > 8){
+      colorCode = BRIGHT_BLUE;
+    } else {
+      colorCode = COLOR_BLUE;
+      colorBold = 1;
+    }
+    break;
+  case 13:
+    if (COLORS > 8){
+      colorCode = BRIGHT_MAGENTA;
+    } else {
+      colorCode = COLOR_MAGENTA;
+      colorBold = 1;
+    }
+    break;
+  case 14:
+    if (COLORS > 8){
+      colorCode = BRIGHT_CYAN;
+    } else {
+      colorCode = COLOR_CYAN;
+      colorBold = 1;
+    }
+    break;
+  case 15:
+    if (COLORS > 8){
+      colorCode = BRIGHT_WHITE;
+    } else {
+      colorCode = COLOR_WHITE;
+      colorBold = 1;
+    }
+    break;
+  case -1:
+    colorCode = DEFAULT_COLOR;
+    break;
+  case -2:
+    colorCode = DEFAULT_COLOR;
+    colorBold = 1;
+    break;
+  }
+  if (location == 0) {
+    colors[itemLookup(colorThemePos)].foreground = colorCode;
+  } else {
+    colors[itemLookup(colorThemePos)].background = colorCode;
+  }
+  colors[itemLookup(colorThemePos)].bold = colorBold;
+}
+
+void theme_menu_inputs()
+{
+  while(1)
+    {
+      *pc = getch();
+      switch(*pc)
+        {
+        case '!':
+          updateColorPair(-1, bgToggle);
+          refreshColors();
+          themeBuilder();
+          break;
+        case '?':
+          updateColorPair(-2, bgToggle);
+          refreshColors();
+          themeBuilder();
+          break;
+        case '0':
+          updateColorPair(COLOR_BLACK, bgToggle);
+          refreshColors();
+          themeBuilder();
+          break;
+        case '1':
+          updateColorPair(COLOR_RED, bgToggle);
+          refreshColors();
+          themeBuilder();
+          break;
+        case '2':
+          updateColorPair(COLOR_GREEN, bgToggle);
+          refreshColors();
+          themeBuilder();
+          break;
+        case '3':
+          updateColorPair(COLOR_YELLOW, bgToggle);
+          refreshColors();
+          themeBuilder();
+          break;
+        case '4':
+          updateColorPair(COLOR_BLUE, bgToggle);
+          refreshColors();
+          themeBuilder();
+          break;
+        case '5':
+          updateColorPair(COLOR_MAGENTA, bgToggle);
+          refreshColors();
+          themeBuilder();
+          break;
+        case '6':
+          updateColorPair(COLOR_CYAN, bgToggle);
+          refreshColors();
+          themeBuilder();
+          break;
+        case '7':
+          updateColorPair(COLOR_WHITE, bgToggle);
+          refreshColors();
+          themeBuilder();
+          break;
+        case '8':
+          updateColorPair(BRIGHT_BLACK, bgToggle);
+          refreshColors();
+          themeBuilder();
+          break;
+        case '9':
+          updateColorPair(BRIGHT_RED, bgToggle);
+          refreshColors();
+          themeBuilder();
+          break;
+        case 'a':
+          updateColorPair(BRIGHT_GREEN, bgToggle);
+          refreshColors();
+          themeBuilder();
+          break;
+        case 'b':
+          updateColorPair(BRIGHT_YELLOW, bgToggle);
+          refreshColors();
+          themeBuilder();
+          break;
+        case 'c':
+          updateColorPair(BRIGHT_BLUE, bgToggle);
+          refreshColors();
+          themeBuilder();
+          break;
+        case 'd':
+          updateColorPair(BRIGHT_MAGENTA, bgToggle);
+          refreshColors();
+          themeBuilder();
+          break;
+        case 'e':
+          updateColorPair(BRIGHT_CYAN, bgToggle);
+          refreshColors();
+          themeBuilder();
+          break;
+        case 'f':
+          updateColorPair(BRIGHT_WHITE, bgToggle);
+          refreshColors();
+          themeBuilder();
+          break;
+        case 'l':
+          loadTheme();
+          break;
+        case 'q':
+          curs_set(FALSE);
+          // exittoshell();
+          return;
+          break;
+        case 's':
+          saveTheme();
+          break;
+        case 't':
+          if (bgToggle == 0){
+            bgToggle = 1;
+          } else {
+            bgToggle = 0;
+          }
+          themeBuilder();
+          break;
+        case 10: // Enter - Falls through
+        case 258: // Down Arrow
+          if (colorThemePos < totalItemCount){
+            colorThemePos++;
+            themeBuilder();
+          }
+          break;
+        case 259: // Up Arrow
+          if (colorThemePos > 0) {
+            colorThemePos--;
+            themeBuilder();
+          }
+          break;
+        case 260: // Left Arrow
+          break;
+        case 261: // Right Arrow
+          break;
+          // default:
+          //     mvprintw(LINES-2, 1, "Character pressed is = %d Hopefully it can be printed as '%c'", c, c);
+          //     refresh();
+        }
+    }
+}
+
+void setDefaultTheme(){
+  use_default_colors();
+  lightColorPair[0] = 0; // Unused array value
+  setColorPairs(COMMAND_PAIR, DEFAULT_COLOR, DEFAULT_COLOR, 0);
+  setColorPairs(INFO_PAIR, COLOR_GREEN, DEFAULT_COLOR, 0);
+  setColorPairs(INPUT_PAIR, COLOR_BLACK, COLOR_WHITE, 0);
+  setColorPairs(SELECT_PAIR, BRIGHT_BLUE, DEFAULT_COLOR, 0);
+  setColorPairs(DISPLAY_PAIR, COLOR_CYAN, DEFAULT_COLOR, 0);
+  setColorPairs(DANGER_PAIR, BRIGHT_RED, DEFAULT_COLOR, 0);
+  setColorPairs(DIR_PAIR, BRIGHT_MAGENTA, DEFAULT_COLOR, 0);
+  setColorPairs(SLINK_PAIR, DEFAULT_COLOR, DEFAULT_COLOR, 1);
+  setColorPairs(EXE_PAIR, BRIGHT_YELLOW, DEFAULT_COLOR, 0);
+  setColorPairs(SUID_PAIR, DEFAULT_COLOR, COLOR_RED, 0);
+  setColorPairs(SGID_PAIR, BRIGHT_BLACK, COLOR_GREEN, 0);
+  setColorPairs(HILITE_PAIR, DEFAULT_COLOR, DEFAULT_COLOR, 1);
+  setColorPairs(ERROR_PAIR, DEFAULT_COLOR, DEFAULT_COLOR, 1);
+  setColorPairs(HEADING_PAIR, COLOR_GREEN, DEFAULT_COLOR, 0);
+  setColorPairs(DEADLINK_PAIR, BRIGHT_RED, DEFAULT_COLOR, 0);
+
+  setColorPairs(COLORMENU_PAIR_0, COLOR_BLACK, COLOR_WHITE, 0);
+  setColorPairs(COLORMENU_PAIR_1, COLOR_RED, DEFAULT_COLOR, 0);
+  setColorPairs(COLORMENU_PAIR_2, COLOR_GREEN, DEFAULT_COLOR, 0);
+  setColorPairs(COLORMENU_PAIR_3, COLOR_YELLOW, DEFAULT_COLOR, 0);
+  setColorPairs(COLORMENU_PAIR_4, COLOR_BLUE, DEFAULT_COLOR, 0);
+  setColorPairs(COLORMENU_PAIR_5, COLOR_MAGENTA, DEFAULT_COLOR, 0);
+  setColorPairs(COLORMENU_PAIR_6, COLOR_CYAN, DEFAULT_COLOR, 0);
+  setColorPairs(COLORMENU_PAIR_7, COLOR_WHITE, DEFAULT_COLOR, 0);
+  if (COLORS > 8){
+    setColorPairs(COLORMENU_PAIR_8, BRIGHT_BLACK, COLOR_WHITE, 0);
+    setColorPairs(COLORMENU_PAIR_9, BRIGHT_RED, DEFAULT_COLOR, 0);
+    setColorPairs(COLORMENU_PAIR_A, BRIGHT_GREEN, DEFAULT_COLOR, 0);
+    setColorPairs(COLORMENU_PAIR_B, BRIGHT_YELLOW, DEFAULT_COLOR, 0);
+    setColorPairs(COLORMENU_PAIR_C, BRIGHT_BLUE, DEFAULT_COLOR, 0);
+    setColorPairs(COLORMENU_PAIR_D, BRIGHT_MAGENTA, DEFAULT_COLOR, 0);
+    setColorPairs(COLORMENU_PAIR_E, BRIGHT_CYAN, DEFAULT_COLOR, 0);
+    setColorPairs(COLORMENU_PAIR_F, BRIGHT_WHITE, DEFAULT_COLOR, 0);
+  } else {
+    setColorPairs(COLORMENU_PAIR_8, COLOR_BLACK, COLOR_WHITE, 1);
+    setColorPairs(COLORMENU_PAIR_9, COLOR_RED, DEFAULT_COLOR, 1);
+    setColorPairs(COLORMENU_PAIR_A, COLOR_GREEN, DEFAULT_COLOR, 1);
+    setColorPairs(COLORMENU_PAIR_B, COLOR_YELLOW, DEFAULT_COLOR, 1);
+    setColorPairs(COLORMENU_PAIR_C, COLOR_BLUE, DEFAULT_COLOR, 1);
+    setColorPairs(COLORMENU_PAIR_D, COLOR_MAGENTA, DEFAULT_COLOR, 1);
+    setColorPairs(COLORMENU_PAIR_E, COLOR_CYAN, DEFAULT_COLOR, 1);
+    setColorPairs(COLORMENU_PAIR_F, COLOR_WHITE, DEFAULT_COLOR, 1);
+  }
+
+  setColorPairs(DEFAULT_BOLD_PAIR, DEFAULT_COLOR, DEFAULT_COLOR, 1);
+  setColorPairs(DEFAULT_COLOR_PAIR, DEFAULT_COLOR, DEFAULT_COLOR, 0);
+
+  refreshColors();
+
 }
 
 void setColors(int pair)
@@ -152,4 +668,77 @@ void setColors(int pair)
   } else {
     attroff(A_BOLD);
   }
+}
+
+void themeBuilder()
+{
+  clear();
+  if (bgToggle){
+    strcpy(fgbgLabel, "background");
+  } else {
+    strcpy(fgbgLabel, "foreground");
+  }
+  printMenu(0, 0, "Color number, !Load, !Quit, !Save, !Toggle");
+
+  setColors(COMMAND_PAIR);
+  mvprintw(2, 4, "Command lines");
+  setColors(DISPLAY_PAIR);
+  mvprintw(3, 4, "Display lines");
+  setColors(ERROR_PAIR);
+  mvprintw(4, 4, "Error messages");
+  setColors(INFO_PAIR);
+  mvprintw(5, 4, "Information lines");
+  setColors(HEADING_PAIR);
+  mvprintw(6, 4, "Heading lines");
+  setColors(DANGER_PAIR);
+  mvprintw(7, 4, "Danger lines");
+  setColors(SELECT_PAIR);
+  mvprintw(8, 4, "Selected block lines");
+  setColors(HILITE_PAIR);
+  mvprintw(9, 4, "Highlight");
+
+  setColors(DEFAULT_COLOR_PAIR);
+  mvprintw(2, 45, "!-Default      ");
+  setColors(DEFAULT_BOLD_PAIR);
+  mvprintw(3, 45, "?-Default Bold ");
+  setColors(COLORMENU_PAIR_0);
+  mvprintw(4, 45, "0-Black        ");
+  setColors(COLORMENU_PAIR_1);
+  mvprintw(5, 45, "1-Red          ");
+  setColors(COLORMENU_PAIR_2);
+  mvprintw(6, 45, "2-Green        ");
+  setColors(COLORMENU_PAIR_3);
+  mvprintw(7, 45, "3-Brown        ");
+  setColors(COLORMENU_PAIR_4);
+  mvprintw(8, 45, "4-Blue         ");
+  setColors(COLORMENU_PAIR_5);
+  mvprintw(9, 45, "5-Magenta      ");
+  setColors(COLORMENU_PAIR_6);
+  mvprintw(10, 45, "6-Cyan         ");
+  setColors(COLORMENU_PAIR_7);
+  mvprintw(11, 45, "7-Light Gray   ");
+  setColors(COLORMENU_PAIR_8);
+  mvprintw(12, 45, "8-Dark Gray    ");
+  setColors(COLORMENU_PAIR_9);
+  mvprintw(13, 45, "9-Light Red    ");
+  setColors(COLORMENU_PAIR_A);
+  mvprintw(14, 45, "A-Light Green  ");
+  setColors(COLORMENU_PAIR_B);
+  mvprintw(15, 45, "B-Yellow       ");
+  setColors(COLORMENU_PAIR_C);
+  mvprintw(16, 45, "C-Light Blue   ");
+  setColors(COLORMENU_PAIR_D);
+  mvprintw(17, 45, "D-Light Magenta");
+  setColors(COLORMENU_PAIR_E);
+  mvprintw(18, 45, "E-Light Cyan   ");
+  setColors(COLORMENU_PAIR_F);
+  mvprintw(19, 45, "F-White        ");
+
+  setColors(DEFAULT_BOLD_PAIR);
+  mvprintw(22, 22, "Select 0 to F for desired %s color", fgbgLabel);
+
+  curs_set(TRUE);
+  move(colorThemePos + 2, 1);
+
+
 }

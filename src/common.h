@@ -1,6 +1,13 @@
 #define PROGRAM_DESC "\nDF-SHOW: An interactive directory/file browser written for Unix-like systems.\nBased on the applications from the PC-DOS DF-EDIT suite by Larry Kroeker.\n"
+#define CONF_NAME "dfshow.conf"
+#define HOME_CONF_DIR ".dfshow"
+#include <wchar.h>
 
+void mk_dir(char *path);
+void setConfLocations();
 void printVersion(char* programName);
+char * dirFromPath(const char* myStr);
+char * objectFromPath(const char* myStr);
 void wPrintMenu(int line, int col, wchar_t *menustring);
 void printMenu(int line, int col, char *menustring);
 void wPrintLine(int line, int col, wchar_t *textString);

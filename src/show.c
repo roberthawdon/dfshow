@@ -25,6 +25,7 @@
 #include <unistd.h>
 #include <signal.h>
 #include <getopt.h>
+#include <libconfig.h>
 #include "config.h"
 #include "showfunctions.h"
 #include "showmenus.h"
@@ -73,7 +74,141 @@ extern int totalfilecount;
 extern char sortmode[5];
 extern int showhidden;
 
+extern char globalConfLocation[128];
+extern char homeConfLocation[128];
+
+extern char themeName[128];
+
 struct sigaction sa;
+
+extern int exitCode;
+
+int setMarked(char* markedinput);
+int checkStyle(char* styleinput);
+
+void readConfig(const char * confFile)
+{
+  config_t cfg;
+  config_setting_t *root, *setting, *group, *array; //probably don't need the array, but it may be used in the future.
+  char markedParam[8];
+  config_init(&cfg);
+  if (config_read_file(&cfg, confFile)){
+    // Deal with the globals first
+    group = config_lookup(&cfg, "common");
+    if (group){
+      setting = config_setting_get_member(group, "theme");
+      if (setting){
+        if (!getenv("DFS_THEME_OVERRIDE")){
+          strcpy(themeName, config_setting_get_string(setting));
+          setenv("DFS_THEME", themeName, 1);
+        }
+      }
+    }
+    // Now for program specific
+    group = config_lookup(&cfg, PROGRAM_NAME);
+    if (group){
+      // Check File Colour
+      setting = config_setting_get_member(group, "color");
+      if (setting){
+        if (config_setting_get_int(setting)){
+          filecolors = 1;
+        }
+      }
+      // Check Marked
+      setting = config_setting_get_member(group, "marked");
+      if (setting){
+        strcpy(markedParam, config_setting_get_string(setting));
+        setMarked(markedParam);
+      }
+      // Check Sort
+      setting = config_setting_get_member(group, "sortmode");
+      if (setting){
+        strcpy(sortmode, config_setting_get_string(setting));
+      }
+      // Check Reverse
+      setting = config_setting_get_member(group, "reverse");
+      if (setting){
+        if (config_setting_get_int(setting)){
+          reverse = 1;
+        }
+      }
+      // Check Timestyle
+      setting = config_setting_get_member(group, "timestyle");
+      if (setting){
+        strcpy(timestyle, config_setting_get_string(setting));
+        if(!checkStyle(timestyle)){
+          strcpy(timestyle, "locale");
+        }
+      }
+      // Check Hidden
+      setting = config_setting_get_member(group, "hidden");
+      if (setting){
+        if (config_setting_get_int(setting)){
+          showhidden = 1;
+        }
+      }
+      // Check Ignore Backups
+      setting = config_setting_get_member(group, "ignore-backups");
+      if (setting){
+        if (config_setting_get_int(setting)){
+          showbackup = 0;
+        }
+      }
+      // Check No SF
+      setting = config_setting_get_member(group, "no-sf");
+      if (setting){
+        if (config_setting_get_int(setting)){
+          useEnvPager = 1;
+        }
+      }
+      // Check No Danger
+      setting = config_setting_get_member(group, "no-danger");
+      if (setting){
+        if (config_setting_get_int(setting)){
+          danger = 0;
+        }
+      }
+      // Check SI
+      setting = config_setting_get_member(group, "si");
+      if (setting){
+        if (config_setting_get_int(setting)){
+          si = 1;
+        }
+      }
+      // Check Human Readable
+      setting = config_setting_get_member(group, "human-readable");
+      if (setting){
+        if (config_setting_get_int(setting)){
+          human = 1;
+        }
+      }
+    }
+    // Check owner column
+    group = config_lookup(&cfg, "show.owner");
+    if (group){
+      ogavis = 0;
+      setting = config_setting_get_member(group, "owner");
+      if (setting){
+        if (config_setting_get_int(setting)){
+          ogavis = ogavis + 1;
+        }
+      }
+      setting = config_setting_get_member(group, "group");
+      if (setting){
+        if (config_setting_get_int(setting)){
+          ogavis = ogavis + 2;
+        }
+      }
+      setting = config_setting_get_member(group, "author");
+      if (setting){
+        if (config_setting_get_int(setting)){
+          ogavis = ogavis + 4;
+        }
+      }
+    }
+  };
+  config_destroy(&cfg);
+}
 
 int directory_view(char * currentpwd)
 {
@@ -266,13 +401,8 @@ Options specific to show:\n\
                                MARKED section below for valid options\n\
       --no-sf                  does not display files in sf\n"), stdout);
   fputs (("\n\
-The THEME argument can be:\n\
-               default:    original theme\n\
-               monochrome: comaptability mode for monochrome displays\n\
-               nt:         a theme that closer resembles win32 versions of\n\
-                           DF-EDIT\n"), stdout);
-  fputs (("\n\
-The MARKED argument can be: always; never; auto.\n"), stdout);
+The THEME argument can be:\n"), stdout);
+  listThemes();
   fputs (("\n\
 Exit status:\n\
  0  if OK,\n\
@@ -285,18 +415,23 @@ int main(int argc, char *argv[])
 {
   uid_t uid=getuid(), euid=geteuid();
   int c;
-  char themeEnv[48];
+
+  // Set Config locations
+  setConfLocations();
 
   // Check if we're root to display danger
   if (uid == 0 || euid == 0){
     danger = 1;
   }
 
+  // Read the config
+
+  readConfig(globalConfLocation);
+  readConfig(homeConfLocation);
+
   // Check for theme env variable
   if ( getenv("DFS_THEME")) {
-    if (themeSelect(getenv("DFS_THEME")) != -1 ){
-      colormode = themeSelect(getenv("DFS_THEME"));
-    }
+    strcpy(themeName, getenv("DFS_THEME"));
   }
 
   // Getting arguments
@@ -360,22 +495,14 @@ Valid arguments are:\n\
       break;
     case GETOPT_THEME_CHAR:
       if (optarg){
-        if (themeSelect(optarg) == -1 ){
-          printf("%s: invalid argument '%s' for 'theme'\n", argv[0], optarg);
-          fputs (("\
-Valid arguments are:\n\
-  - default\n\
-  - monochrome\n\
-  - nt\n"), stdout);
-          printf("Try '%s --help' for more information.\n", argv[0]);
-          exit(2);
-        } else {
-          strcpy(themeEnv,"DFS_THEME=");
-          strcat(themeEnv,optarg);
-          putenv(themeEnv);
+        if (strcmp(optarg, "\0")){
+          strcpy(themeName, optarg);
+          setenv("DFS_THEME_OVERRIDE", "TRUE", 1);
         }
       } else {
-        colormode = 0;
+        printf("%s: The following themes are available:\n", PROGRAM_NAME);
+        listThemes();
+        exit(2);
       }
       break;
     case 'f':
@@ -446,7 +573,7 @@ Valid arguments are:\n\
       exit(0);
       break;
     case GETOPT_VERSION_CHAR:
-      printVersion(argv[0]);
+      printVersion(PROGRAM_NAME);
       exit(0);
       break;
     case GETOPT_ENVPAGER_CHAR:
@@ -467,7 +594,7 @@ Valid arguments are:\n\
 
   // Writing Menus
   strcpy(fileMenuText, "!Copy, !Delete, !Edit, !Hidden, !Modify, !Quit, !Rename, !Show, h!Unt, e!Xec");
-  strcpy(globalMenuText, "!Run command, !Edit file, !Help, !Make dir, !Quit, !Show dir");
+  strcpy(globalMenuText, "c!Olors, !Run command, !Edit file, !Help, !Make dir, !Quit, !Show dir");
   strcpy(functionMenuTextShort, "<F1>-Down <F2>-Up <F3>-Top <F4>-Bottom <F5>-Refresh <F6>-Mark/Unmark <F7>-All <F8>-None <F9>-Sort");
   strcpy(functionMenuTextLong, "<F1>-Down <F2>-Up <F3>-Top <F4>-Bottom <F5>-Refresh <F6>-Mark/Unmark <F7>-All <F8>-None <F9>-Sort <F10>-Block");
   strcpy(modifyMenuText, "Modify: !Owner/Group, !Permissions");
@@ -493,7 +620,8 @@ Valid arguments are:\n\
 
   start_color();
   cbreak(); //Added for new method
-  setColorMode(colormode);
+  setDefaultTheme();
+  loadAppTheme(themeName);
   bkgd(COLOR_PAIR(DISPLAY_PAIR));
   cbreak();
   // nodelay(stdscr, TRUE);
@@ -520,6 +648,7 @@ Valid arguments are:\n\
   if (!check_dir(currentpwd)){
     //strcpy(currentpwd, "/"); // If dir doesn't exist, default to root
     invalidstart = 1;
+    exitCode = 1;
     global_menu();
   }
   testSlash:
@@ -528,5 +657,5 @@ Valid arguments are:\n\
     goto testSlash;
   }
   directory_view(currentpwd);
-  return 0;
+  return exitCode;
 }

@@ -717,9 +717,12 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   linepadding = COLS - colpos;
 
   if (linepadding > 0){
-    mvprintw(displaystart + listref, colpos, "%s", genPadding(linepadding));
+    if (colpos > -1){
+      mvprintw(displaystart + listref, colpos, "%s", genPadding(linepadding));
+    } else {
+      mvprintw(displaystart + listref, 0, "%s", genPadding(COLS));
+    }
   }
-
 
   free(s1);
   free(s2);
@@ -727,57 +730,6 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   free(s4);
   free(sizestring);
   free(ogaval);
-}
-
-char * dirFromPath(const char* myStr){
-  char *outStr;
-  int i = strlen(myStr);
-  int n = 0;
-
-  while(i <= strlen(myStr) && myStr[i] != '/'){
-    i--;
-  }
-
-  outStr = malloc(sizeof (char) * i + 1);
-
-  if (i < 2){
-    strcpy(outStr, "/");
-  } else{
-    while(n <= i){
-      outStr[n] = myStr[n];
-      n++;
-    }
-
-    outStr[n - 1] = '\0';
-  }
-
-  return outStr;
-
-}
-
-char * objectFromPath(const char *myStr){
-  char *outStr;
-  int i = strlen(myStr);
-  int n = 0;
-  int c = 0;
-
-  while(i <= strlen(myStr) && myStr[i] != '/'){
-    i--;
-    n++;
-  }
-
-  outStr = malloc(sizeof (char) * n);
-
-  i++; // Removes the initial /
-
-  for(; i < strlen(myStr); c++){
-    outStr[c] = myStr[i];
-    i++;
-  }
-
-  outStr[n - 1] = '\0';
-  return outStr;
-
 }
 
 void LaunchShell()
@@ -802,15 +754,6 @@ void LaunchExecutable(const char* object, const char* args)
   system(command);
   initscr();
   refreshScreen();
-}
-
-void mk_dir(char *path)
-{
-  struct stat st = {0};
-
-  if (stat(path, &st) == -1) {
-    mkdir(path, 0755);
-  }
 }
 
 void copy_file(char *source_input, char *target_input)
@@ -872,6 +815,7 @@ int SendToPager(char* object)
   char *escObject = str_replace(object, "'", "'\"'\"'");
 
   if (can_run_command("sf")){
+    setenv("DFS_THEME_OVERRIDE", "TRUE", 1);
     strcpy(page, "sf");
     pset = 1;
   } else {
@@ -1446,6 +1390,7 @@ results* get_dir(char *pwd)
   namelen = seglength(ob, "name", count);
   slinklen = seglength(ob, "slink", count);
 
+  free(res);
   return ob;
 }
 

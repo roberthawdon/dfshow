@@ -91,12 +91,18 @@ Download the project and prepare sources with
     git clone https://github.com/roberthawdon/dfshow
     cd dfshow
     ./bootstrap
+    ./configure
+
+On some BSD systems, you may need to pass extra parameters to configure and build DF-SHOW:
+
+.. code-block:: bash
+
+    ./configure LDFLAGS="-L/usr/local/lib" CFLAGS="-I/usr/local/include"
 
 Build DF-SHOW with
 
 .. code-block:: bash
 
-    ./configure
     make
 
 Install DF-SHOW
@@ -137,3 +143,8 @@ Screenshots
 
 .. image:: https://user-images.githubusercontent.com/4301139/46380920-243d6000-c69c-11e8-8213-fde20b9f865b.png
    :alt: Show File
+
+**Colors (Built into Show)**
+
+.. image:: https://user-images.githubusercontent.com/4301139/50188068-33858e80-0318-11e9-815d-782a11c8003c.png
+   :alt: Colors

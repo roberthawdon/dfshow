@@ -3,3 +3,6 @@ script:
 - "./bootstrap"
 - "./configure"
 - make
+
+before_install:
+- sudo apt-get install -y libconfig-dev

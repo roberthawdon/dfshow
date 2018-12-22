@@ -26,26 +26,102 @@
 #include <wctype.h>
 #include <dirent.h>
 #include <sys/stat.h>
+#include <libconfig.h>
 #include "colors.h"
 #include "config.h"
+#include "common.h"
 
 DIR *folder;
 FILE *file;
+
+int exitCode = 0;
+
+char globalConfLocation[128];
+char homeConfLocation[128];
+
+char themeName[128] = "default";
 
 extern int * pc;
 
 extern char fileMenuText[256];
 
+void mk_dir(char *path)
+{
+  struct stat st = {0};
+
+  if (stat(path, &st) == -1) {
+    mkdir(path, 0755);
+  }
+}
+
+void setConfLocations()
+{
+  sprintf(globalConfLocation, "%s/%s", SYSCONFIG, CONF_NAME);
+
+  sprintf(homeConfLocation, "%s/%s/%s", getenv("HOME"), HOME_CONF_DIR, CONF_NAME);
+}
+
 int exittoshell()
 {
   clear();
   endwin();
-  exit(0);
-  return 0;
+  exit(exitCode);
+  return exitCode;
+}
+
+char * dirFromPath(const char* myStr){
+  char *outStr;
+  int i = strlen(myStr);
+  int n = 0;
+
+  while(i <= strlen(myStr) && myStr[i] != '/'){
+    i--;
+  }
+
+  outStr = malloc(sizeof (char) * i + 1);
+
+  if (i < 2){
+    strcpy(outStr, "/");
+  } else{
+    while(n <= i){
+      outStr[n] = myStr[n];
+      n++;
+    }
+
+    outStr[n - 1] = '\0';
+  }
+
+  return outStr;
+
+}
+
+char * objectFromPath(const char *myStr){
+  char *outStr;
+  int i = strlen(myStr);
+  int n = 0;
+  int c = 0;
+
+  while(i <= strlen(myStr) && myStr[i] != '/'){
+    i--;
+    n++;
+  }
+
+  outStr = malloc(sizeof (char) * n);
+
+  i++; // Removes the initial /
+
+  for(; i < strlen(myStr); c++){
+    outStr[c] = myStr[i];
+    i++;
+  }
+
+  outStr[n - 1] = '\0';
+  return outStr;
+
 }
 
 void printVersion(char* programName){
-  printf (("%s %s\n"), programName, VERSION);
+  printf (("Directory File Show (DF-SHOW) - %s %s\n"), programName, VERSION);
   fputs (("\
 Copyright (C) 2018 Robert Ian Hawdon\n\
 License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.\n\

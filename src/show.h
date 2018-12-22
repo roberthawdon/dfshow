@@ -1,3 +1,4 @@
+#define PROGRAM_NAME "show"
 #include <limits.h>
 
 // Defining enum for help and version char (method borrowed from coreutils)
@@ -16,6 +17,7 @@ enum
    GETOPT_ENVPAGER_CHAR = (CHAR_MIN - 12)
   };
 
+void readConfig(const char * confFile);
 int directory_view(char * currentpwd);
 char *getcwd(char *buf, size_t size);
 int global_menu();

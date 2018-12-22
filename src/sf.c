@@ -27,6 +27,7 @@
 #include <signal.h>
 #include <regex.h>
 #include <wchar.h>
+#include <libconfig.h>
 #include "config.h"
 #include "colors.h"
 #include "common.h"
@@ -57,6 +58,8 @@ char fileName[512];
 
 extern FILE *file;
 
+extern int exitCode;
+
 FILE *stream;
 char *line = NULL;
 wchar_t *longline = NULL;
@@ -72,6 +75,44 @@ long int topPos;
 long int *filePos;
 
 struct sigaction sa;
+
+extern char globalConfLocation[128];
+extern char homeConfLocation[128];
+
+extern char themeName[128];
+
+void readConfig(const char * confFile)
+{
+  config_t cfg;
+  config_setting_t *root, *setting, *group, *array; //probably don't need the array, but it may be used in the future.
+  char themeName[24];
+  char markedParam[8];
+  config_init(&cfg);
+  if (config_read_file(&cfg, confFile)){
+    // Deal with the globals first
+    group = config_lookup(&cfg, "common");
+    if (group){
+      setting = config_setting_get_member(group, "theme");
+      if (setting){
+        if (!getenv("DFS_THEME_OVERRIDE")){
+          strcpy(themeName, config_setting_get_string(setting));
+          setenv("DFS_THEME", themeName, 1);
+        }
+      }
+    }
+    // Now for program specific
+    group = config_lookup(&cfg, PROGRAM_NAME);
+    if (group){
+      // Check Wrap
+      setting = config_setting_get_member(group, "wrap");
+      if (setting){
+        if (config_setting_get_int(setting)){
+          wrap = 1;
+        }
+      }
+    }
+  }
+}
 
 void buildMenuText(){
   // Writing Menus
@@ -185,11 +226,8 @@ Options:\n\
       --help                   displays help message, then exits\n\
       --version                displays version, then exits\n"), stdout);
   fputs (("\n\
-The THEME argument can be:\n\
-               default:    original theme\n\
-               monochrome: comaptability mode for monochrome displays\n\
-               nt:         a theme that closer resembles win32 versions of\n\
-                           DF-EDIT\n"), stdout);
+The THEME argument can be:\n"), stdout);
+  listThemes();
   printf ("\nPlease report any bugs to: <%s>\n", PACKAGE_BUGREPORT);
 }
 
@@ -314,6 +352,7 @@ void file_view(char * currentfile)
   } else {
     sprintf(notFoundMessage, "File [%s] does not exist", currentfile);
     topLineMessage(notFoundMessage);
+    exitCode = 1;
   }
   // sleep(10); // No function, so we'll pause for 10 seconds to display our menu
 
@@ -323,13 +362,17 @@ void file_view(char * currentfile)
 int main(int argc, char *argv[])
 {
   int c;
-  char themeEnv[48];
+
+  setConfLocations();
+
+  // Read the config
+
+  readConfig(globalConfLocation);
+  readConfig(homeConfLocation);
 
   // Check for theme env variable
   if ( getenv("DFS_THEME")) {
-    if (themeSelect(getenv("DFS_THEME")) != -1 ){
-      colormode = themeSelect(getenv("DFS_THEME"));
-    }
+    strcpy(themeName, getenv("DFS_THEME"));
   }
 
   while (1)
@@ -359,27 +402,19 @@ int main(int argc, char *argv[])
       exit(0);
       break;
     case GETOPT_VERSION_CHAR:
-      printVersion(argv[0]);
+      printVersion(PROGRAM_NAME);
       exit(0);
       break;
     case GETOPT_THEME_CHAR:
       if (optarg){
-        if (themeSelect(optarg) == -1 ){
-          printf("%s: invalid argument '%s' for 'theme'\n", argv[0], optarg);
-          fputs (("\
-Valid arguments are:\n\
-  - default\n\
-  - monochrome\n\
-  - nt\n"), stdout);
-          printf("Try '%s --help' for more information.\n", argv[0]);
-          exit(2);
-        } else {
-          strcpy(themeEnv,"DFS_THEME=");
-          strcat(themeEnv,optarg);
-          putenv(themeEnv);
+        if (strcmp(optarg, "\0")){
+          strcpy(themeName, optarg);
+          setenv("DFS_THEME_OVERRIDE", "TRUE", 1);
         }
       } else {
-        colormode = 0;
+        printf("%s: The following themes are available:\n", PROGRAM_NAME);
+        listThemes();
+        exit(2);
       }
       break;
     default:
@@ -407,7 +442,8 @@ Valid arguments are:\n\
 
   start_color();
   cbreak();
-  setColorMode(colormode);
+  setDefaultTheme();
+  loadAppTheme(themeName);
   bkgd(COLOR_PAIR(DISPLAY_PAIR));
   cbreak();
   noecho();
