@@ -1,7 +1,7 @@
 DF-SHOW
 =======
 
-|Maintenance yes| |GPLv3 license| |Travis Build|
+|Maintenance yes| |GPLv3 license| |Travis Build| |Documentation|
 
 .. |Maintenance yes| image:: https://img.shields.io/badge/Maintained%3F-yes-green.svg
    :target: https://github.com/roberthawdon/dfshow/graphs/commit-activity
@@ -11,6 +11,9 @@ DF-SHOW
 
 .. |Travis Build| image:: https://api.travis-ci.org/roberthawdon/dfshow.svg?branch=master
    :target: https://travis-ci.org/roberthawdon/dfshow
+
+.. |Documentation| image:: https://readthedocs.org/projects/dfshow/badge/?version=latest
+   :target: https://dfshow.readthedocs.io/en/latest/?badge=latest
 
 :Author: Robert Ian Hawdon (git@robertianhawdon.me.uk)
 :Source: https://github.com/roberthawdon/dfshow

@@ -302,19 +302,6 @@ int setColor(char* colorinput)
   }
 }
 
-int themeSelect(char* themeinput){
-  if (!strcmp(themeinput, "default")){
-    colormode = 0;
-  } else if (!strcmp(themeinput, "monochrome")){
-    colormode = 1;
-  } else if (!strcmp(themeinput, "nt")){
-    colormode = 2;
-  } else {
-    colormode = -1;
-  }
-  return colormode;
-}
-
 void refreshScreen()
 {
   endwin();
@@ -393,8 +380,6 @@ Using color to highlight file attributes is disabled by default and with\n\
 Options specific to show:\n\
       --theme=[THEME]          color themes, see the THEME section below for\n\
                                valid themes.\n\
-      --monochrome             compatability mode for monochrome displays\n\
-                               (deprecated)\n\
       --no-danger              turns off danger colors when running with\n\
                                elevated privileges\n\
       --marked=[MARKED]        shows information about marked objects. See\n\
@@ -450,7 +435,6 @@ int main(int argc, char *argv[])
          {"si",             no_argument,       0, GETOPT_SI_CHAR},
          {"help",           no_argument,       0, GETOPT_HELP_CHAR},
          {"version",        no_argument,       0, GETOPT_VERSION_CHAR},
-         {"monochrome",     no_argument,       0, GETOPT_MONOCHROME_CHAR},
          {"no-danger",      no_argument,       0, GETOPT_NODANGER_CHAR},
          {"color",          optional_argument, 0, GETOPT_COLOR_CHAR},
          {"theme",          optional_argument, 0, GETOPT_THEME_CHAR},
@@ -500,7 +484,7 @@ Valid arguments are:\n\
           setenv("DFS_THEME_OVERRIDE", "TRUE", 1);
         }
       } else {
-        printf("%s: The following themes are available:\n", PROGRAM_NAME);
+        printf("%s: The following themes are available:\n", argv[0]);
         listThemes();
         exit(2);
       }
@@ -547,9 +531,6 @@ Valid arguments are:\n\
       break;
     case 'U':
       strcpy(sortmode, "none"); // Again, invalid
-      break;
-    case GETOPT_MONOCHROME_CHAR:
-      colormode = 1;
       break;
     case GETOPT_NODANGER_CHAR:
       danger = 0;

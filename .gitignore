@@ -1,7 +1,7 @@
 *.o
 .deps
 .dirstamp
-Makefile
+/Makefile
 Makefile.in
 aclocal.m4
 autom4te.cache
@@ -15,6 +15,7 @@ depcomp
 install-sh
 missing
 stamp-*
-bin/*
+/bin/*
+/docs/build/*
 *.stackdump
 *~
