@@ -67,9 +67,6 @@ The following options are specific to `show`:
 * `--theme`=[<THEME>]:
 Color themes. Passing this argument without an option will display available themes.
 
-* `--monochrome`:
-Compatibility mode for monochrome displays. (This command is deprecated, use `--theme` instead)
-
 * `--no-danger`:
 Disables the danger color scheme when running with elevated privileges.
 

@@ -126,19 +126,6 @@ void buildMenuText(){
   strcpy(filePosText, "Position relative (<+num> || <-num>) or absolute (<num>):");
 }
 
-int themeSelect(char* themeinput){
-  if (!strcmp(themeinput, "default")){
-    colormode = 0;
-  } else if (!strcmp(themeinput, "monochrome")){
-    colormode = 1;
-  } else if (!strcmp(themeinput, "nt")){
-    colormode = 2;
-  } else {
-    colormode = -1;
-  }
-  return colormode;
-}
-
 void refreshScreen()
 {
   endwin();
@@ -412,7 +399,7 @@ int main(int argc, char *argv[])
           setenv("DFS_THEME_OVERRIDE", "TRUE", 1);
         }
       } else {
-        printf("%s: The following themes are available:\n", PROGRAM_NAME);
+        printf("%s: The following themes are available:\n", argv[0]);
         listThemes();
         exit(2);
       }
