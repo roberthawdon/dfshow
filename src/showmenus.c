@@ -72,6 +72,8 @@ extern int showhidden;
 extern int markall;
 extern int viewMode;
 
+extern int enterAsShow;
+
 extern int reverse;
 
 extern int invalidstart;
@@ -970,6 +972,7 @@ void directory_view_menu_inputs()
           }
           break;
         case 's':
+        showCommand:
           strcpy(chpwd, currentpwd);
           if (!check_last_char(chpwd, "/")){
             strcat(chpwd, "/");
@@ -1040,7 +1043,10 @@ void directory_view_menu_inputs()
         case 27:
           global_menu_inputs();
           break;
-        case 10: // Enter - Falls through
+        case 10: // Enter - Falls through unless enterAsShow is 1
+          if (enterAsShow){
+            goto showCommand;
+          }
         case 258: // Down Arrow
           if (selected < (totalfilecount - 1)) {
             selected++;

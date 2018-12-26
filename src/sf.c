@@ -186,7 +186,7 @@ int findInFile(const char * currentfile, const char * search, int charcase)
   count = 0;
 
   if ( stream ) {
-    while (line = read_line(stream) ){
+    while ((line = read_line(stream) )){
       count++;
       reti = regexec(&regex, line, 0, NULL, 0);
       if (!reti && count > topline) {

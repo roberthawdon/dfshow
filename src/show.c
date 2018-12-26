@@ -61,6 +61,8 @@ int markedinfo = 0;
 int markedauto = 0;
 int useEnvPager = 0;
 
+int enterAsShow = 0;
+
 int messageBreak = 0;
 
 char *objectWild;
@@ -180,6 +182,13 @@ void readConfig(const char * confFile)
       if (setting){
         if (config_setting_get_int(setting)){
           human = 1;
+        }
+      }
+      // Check Enter As Show
+      setting = config_setting_get_member(group, "show-on-enter");
+      if (setting){
+        if (config_setting_get_int(setting)){
+          enterAsShow = 1;
         }
       }
     }
@@ -379,12 +388,14 @@ Using color to highlight file attributes is disabled by default and with\n\
   fputs (("\n\
 Options specific to show:\n\
       --theme=[THEME]          color themes, see the THEME section below for\n\
-                               valid themes.\n\
+                               valid themes\n\
       --no-danger              turns off danger colors when running with\n\
                                elevated privileges\n\
       --marked=[MARKED]        shows information about marked objects. See\n\
                                MARKED section below for valid options\n\
-      --no-sf                  does not display files in sf\n"), stdout);
+      --no-sf                  does not display files in sf\n\
+      --show-on-enter          repurposes the Enter key to launch the show\n\
+                               command\n"), stdout);
   fputs (("\n\
 The THEME argument can be:\n"), stdout);
   listThemes();
@@ -440,6 +451,7 @@ int main(int argc, char *argv[])
          {"theme",          optional_argument, 0, GETOPT_THEME_CHAR},
          {"marked",         optional_argument, 0, GETOPT_MARKED_CHAR},
          {"no-sf",          no_argument,       0, GETOPT_ENVPAGER_CHAR},
+         {"show-on-enter",  no_argument,       0, GETOPT_SHOWONENTER_CHAR},
          {0, 0, 0, 0}
         };
       int option_index = 0;
@@ -559,6 +571,9 @@ Valid arguments are:\n\
       break;
     case GETOPT_ENVPAGER_CHAR:
       useEnvPager = 1;
+      break;
+    case GETOPT_SHOWONENTER_CHAR:
+      enterAsShow = 1;
       break;
     default:
       // abort();

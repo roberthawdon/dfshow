@@ -1234,7 +1234,7 @@ int huntFile(const char * file, const char * search, int charcase)
   fin = fopen(file, "r");
 
   if ( fin ) {
-    while ( line = read_line(fin) ) {
+    while (( line = read_line(fin) )) {
 
       reti = regexec(&regex, line, 0, NULL, 0);
       if (!reti) {
@@ -1345,7 +1345,7 @@ results* get_dir(char *pwd)
           status = lstat(res->d_name, &buffer);
 
           sprintf(hlinkstr, "%d", buffer.st_nlink);
-          sprintf(sizestr, "%lld", buffer.st_size);
+          sprintf(sizestr, "%lld", (long long)buffer.st_size);
 
           writeResultStruct(ob, res->d_name, buffer, count);
 

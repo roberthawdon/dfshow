@@ -90,6 +90,10 @@ The following options are specific to ``show``:
   Doesn't display files using ``sf`` (if installed) and defaults to
   the user's PAGER setting.
 
+``--show-on-enter``
+  Sets the enter key to launch the show command instead of moving the
+  selection down by one.
+
 Commands
 --------
 
