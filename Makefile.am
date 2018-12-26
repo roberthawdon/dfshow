@@ -20,5 +20,5 @@ dfshowconf_DATA = conf/dfshow.conf
 dfshowdata_DATA = themes/*
 
 man_MANS = $(top_builddir)/man/show.1 $(top_builddir)/man/sf.1
-# pkginclude_HEADERS = $(top_builddir)/src/show.h $(top_builddir)/src/sf.h $(top_builddir)/src/showfunctions.h $(top_builddir)/src/showmenus.h $(top_builddir)/src/sfmenus.h $(top_builddir)/src/colors.h $(top_builddir)/src/common.h
+noinst_HEADERS = $(top_builddir)/src/show.h $(top_builddir)/src/sf.h $(top_builddir)/src/showfunctions.h $(top_builddir)/src/showmenus.h $(top_builddir)/src/sfmenus.h $(top_builddir)/src/colors.h $(top_builddir)/src/common.h
 EXTRA_DIST = doc
