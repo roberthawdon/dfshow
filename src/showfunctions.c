@@ -1100,6 +1100,7 @@ int check_object(const char *object){
     }
     return 0;
   }
+  return 0;
 }
 
 int UpdateOwnerGroup(const char* object, const char* pwdstr, const char* grpstr)
