@@ -1,15 +1,14 @@
 Directory File Show (DF-SHOW)
 =============================
 
-Contents
-^^^^^^^^
-
 .. toctree::
    :maxdepth: 3
 
+   dfshow
    installation
    show
    sf
+   license
 
 Indices and tables
 ==================

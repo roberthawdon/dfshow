@@ -100,7 +100,9 @@ extern int exitCode;
 
 int sanitizeTopFileRef(int topfileref)
 {
-  if ( (selected - topfileref ) > displaysize ){
+  if (((topfileref + displaysize) < totalfilecount - 1 ) && ((selected) > topfileref - 1)) {
+    // If we're already good, we don't need to adjust the topfileref
+  } else if ( (selected - topfileref ) > displaysize ){
     // We don't want the selected item off the bottom of the screen
     topfileref = selected - displaysize + 1;
   } else if ( (topfileref > totalfilecount) ){
@@ -162,10 +164,7 @@ void refreshDirectory(char *sortmode, int origtopfileref, int origselected, int 
   } else {
     selected = findResultByName(ob, currentselectname);
   }
-  // topfileref = sanitizeTopFileRef(origtopfileref);
-  if (((selected - topfileref) < 0 ) || (selected - topfileref) > displaysize - 1 ){
-    topfileref = sanitizeTopFileRef(selected);
-  }
+  topfileref = sanitizeTopFileRef(origtopfileref);
   display_dir(currentpwd, ob, topfileref, selected);
 }
 
