@@ -329,7 +329,7 @@ functions and their associated function keys is given list.
   Bottom of Display
 
 ``Down``, ``RETURN``
-  Down one line
+  Down one line (``RETURN`` can be repurposed to be the ``Show`` command using the ``--show-on-enter`` argument)
 
 ``Up``
   Up one line
