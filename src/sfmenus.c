@@ -1,6 +1,6 @@
 /*
   DF-SHOW - A clone of 'SHOW' directory browser from DF-EDIT by Larry Kroeker
-  Copyright (C) 2018  Robert Ian Hawdon
+  Copyright (C) 2018-2019  Robert Ian Hawdon
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
