@@ -94,6 +94,10 @@ The following options are specific to ``show``:
   Sets the enter key to launch the show command instead of moving the
   selection down by one.
 
+``--running``
+  Checks for parent instances of ``show``, this is useful when using
+  the Run Command option.
+
 Commands
 --------
 

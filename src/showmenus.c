@@ -100,11 +100,8 @@ extern int exitCode;
 
 int sanitizeTopFileRef(int topfileref)
 {
-  if (((topfileref + displaysize) < totalfilecount - 1 ) && ((selected) > topfileref - 1)) {
+  if (((topfileref + displaysize) < totalfilecount + 1 ) && ((selected) > topfileref + 1) && (selected < (topfileref + displaysize))) {
     // If we're already good, we don't need to adjust the topfileref
-  } else if ( (selected - topfileref ) > displaysize ){
-    // We don't want the selected item off the bottom of the screen
-    topfileref = selected - displaysize + 1;
   } else if ( (topfileref > totalfilecount) ){
     // If the top file ref exceeds the number of files, we'll want to do something about that
     topfileref = totalfilecount - (displaysize);
@@ -114,6 +111,10 @@ int sanitizeTopFileRef(int topfileref)
   } else if ((topfileref + displaysize) > totalfilecount){
     // If we end up with the top file ref in a position where the list of files ends before the end of the screen, we need to sort that too.
     topfileref = totalfilecount - (displaysize);
+  }
+  if ( (selected - topfileref ) > displaysize ){
+    // We don't want the selected item off the bottom of the screen
+    topfileref = selected - displaysize + 1;
   }
   if ( selected == 0 ) {
     // Just in case we're thrust to the top of the list - like when in a hidden directory and hidden files are switched off
@@ -902,7 +903,6 @@ void directory_view_menu_inputs()
           if (!check_dir(chpwd)){
             SendToEditor(chpwd);
             refreshDirectory(sortmode, topfileref, selected, 1);
-            // display_dir(currentpwd, ob, topfileref, selected);
           }
           break;
         case 'h':
@@ -916,12 +916,8 @@ void directory_view_menu_inputs()
           ob = get_dir(currentpwd);
           clear_workspace();
           reorder_ob(ob, sortmode);
-          // // Selecting top item to avoid buffer underflows
-          // selected = 0;
-          // topfileref = 0;
           selected = findResultByName(ob, currentfilename);
-          topfileref = sanitizeTopFileRef(topfileref);
-          display_dir(currentpwd, ob, topfileref, selected);
+          refreshDirectory(sortmode, topfileref, selected, 0);
           break;
         case 'm':
           printMenu(0, 0, modifyMenuText);
