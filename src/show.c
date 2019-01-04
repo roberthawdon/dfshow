@@ -65,6 +65,8 @@ int enterAsShow = 0;
 
 int messageBreak = 0;
 
+int showProcesses;
+
 char *objectWild;
 
 results *ob;
@@ -395,7 +397,8 @@ Options specific to show:\n\
                                MARKED section below for valid options\n\
       --no-sf                  does not display files in sf\n\
       --show-on-enter          repurposes the Enter key to launch the show\n\
-                               command\n"), stdout);
+                               command\n\
+      --running                display number of parent show processes\n"), stdout);
   fputs (("\n\
 The THEME argument can be:\n"), stdout);
   listThemes();
@@ -411,6 +414,8 @@ int main(int argc, char *argv[])
 {
   uid_t uid=getuid(), euid=geteuid();
   int c;
+
+  showProcesses = checkRunningEnv() + 1;
 
   // Set Config locations
   setConfLocations();
@@ -452,6 +457,7 @@ int main(int argc, char *argv[])
          {"marked",         optional_argument, 0, GETOPT_MARKED_CHAR},
          {"no-sf",          no_argument,       0, GETOPT_ENVPAGER_CHAR},
          {"show-on-enter",  no_argument,       0, GETOPT_SHOWONENTER_CHAR},
+         {"running",        no_argument,       0, GETOPT_SHOWRUNNING_CHAR},
          {0, 0, 0, 0}
         };
       int option_index = 0;
@@ -574,6 +580,15 @@ Valid arguments are:\n\
       break;
     case GETOPT_SHOWONENTER_CHAR:
       enterAsShow = 1;
+      break;
+    case GETOPT_SHOWRUNNING_CHAR:
+      if (checkRunningEnv() > 0){
+        printf("There are currently %i running parent show application(s).\n\nUse 'exit' to return to Show.\n", checkRunningEnv());
+        exit(0);
+      } else {
+        printf("There are no parent show applications currently running.\n");
+        exit(0);
+      }
       break;
     default:
       // abort();

@@ -79,6 +79,9 @@ Doesn't display files using `sf` (if installed) and defaults to the user's PAGER
 * `--show-on-enter`:
 Sets the enter key to launch the show command instead of moving the selection down by one.
 
+* `--running`:
+Checks for parent instances of `show`, this is useful when using the Run Command option.
+
 ## OVERVIEW
 The `show` application lets users view the names of files and directories on a disk with information about the files. Files can be copied, moved, viewed, and edited (in your system's default editor). The application is run using the show command. The output is similar to the `ls` command.
 

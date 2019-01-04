@@ -27,6 +27,7 @@ typedef struct {
   int selected;
 } history;
 
+int checkRunningEnv();
 int wildcard(const char *value, char *wcard);
 int findResultByName(results *ob, char *name);
 char *dateString(time_t date, char *style);

@@ -128,6 +128,7 @@ extern char *objectWild;
 extern int markedinfo;
 extern int markedauto;
 extern int useEnvPager;
+extern int showProcesses;
 
 /* Formatting time in a similar fashion to `ls` */
 static char const *long_time_format[2] =
@@ -137,6 +138,16 @@ static char const *long_time_format[2] =
    // Without year, for recent files.
    "%b %e %H:%M"
   };
+
+int checkRunningEnv(){
+  int i;
+  if (!getenv("DFS_RUNNING")){
+    i = 0;
+  } else {
+    i = atoi(getenv("DFS_RUNNING"));
+  }
+  return i;
+}
 
 int wildcard(const char *value, char *wcard) {
 
@@ -734,6 +745,9 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
 
 void LaunchShell()
 {
+  char c[5];
+  sprintf(c, "%i", showProcesses);
+  setenv("DFS_RUNNING", c, 1);
   clear();
   endwin();
   // system("clear"); // Not exactly sure if I want this yet.
