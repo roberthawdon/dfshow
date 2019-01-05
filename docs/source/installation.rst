@@ -54,19 +54,19 @@ If you’re using a version of Linux with dnf:
 you need to have ``dnf-plugins-core`` installed
 
 .. code-block:: bash
-                
+
    sudo dnf install dfshow
 
 If you have older distribution:
 
 .. code-block:: bash
-                
+
    sudo yum copr enable roberthawdon/DF-SHOW
 
 you need to have ``yum-plugin-copr`` installed
 
 .. code-block:: bash
-                
+
    sudo yum install dfshow
 
 For more information, please see the `roberthawdon/DF-SHOW`_ repository.
@@ -74,6 +74,21 @@ For more information, please see the `roberthawdon/DF-SHOW`_ repository.
 .. _`Fedora Copr`: https://copr.fedoraproject.org/coprs/
 
 .. _`roberthawdon/DF-SHOW`: https://copr.fedorainfracloud.org/coprs/roberthawdon/DF-SHOW/
+
+macOS
+^^^^^
+
+Versions of DF-SHOW for macOS are provided via Homebrew. Homebrew is available for macOS versions 10.6 (Snow Leopard) and above. Any version of macOS supporting Homebrew can be used to install DF-SHOW.
+
+Please visit the `Homebrew homepage`_ for instructions for installing Homebrew on your Mac.
+
+.. _`Homebrew homepage`: https://brew.sh/
+
+To install DF-SHOW via Homebrew, run the following in your terminal:
+
+.. code-block:: bash
+
+  brew install roberthawdon/homebrew-dfshow/dfshow
 
 Building from Source
 --------------------
