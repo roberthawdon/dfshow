@@ -86,6 +86,7 @@ extern char themeName[128];
 struct sigaction sa;
 
 extern int exitCode;
+extern int enableCtrlC;
 
 int setMarked(char* markedinput);
 int checkStyle(char* styleinput);
@@ -105,6 +106,12 @@ void readConfig(const char * confFile)
         if (!getenv("DFS_THEME_OVERRIDE")){
           strcpy(themeName, config_setting_get_string(setting));
           setenv("DFS_THEME", themeName, 1);
+        }
+      }
+      setting = config_setting_get_member(group, "sigint");
+      if (setting){
+        if (config_setting_get_int(setting)){
+          enableCtrlC = 1;
         }
       }
     }
@@ -356,7 +363,6 @@ void refreshScreen()
 void sigwinchHandle(int sig){
   refreshScreen();
 }
-
 
 void printHelp(char* programName){
   printf (("Usage: %s [OPTION]... [FILE]...\n"), programName);
@@ -628,6 +634,9 @@ Valid arguments are:\n\
   memset(&sa, 0, sizeof(struct sigaction));
   sa.sa_handler = sigwinchHandle;
   sigaction(SIGWINCH, &sa, NULL);
+  if (!enableCtrlC){
+    signal(SIGINT, sigintHandle);
+  }
 
   start_color();
   cbreak(); //Added for new method
