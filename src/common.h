@@ -26,4 +26,5 @@ char *str_replace(char *orig, char *rep, char *with);
 char * read_line(FILE *fin);
 void showManPage(const char * prog);
 int can_run_command(const char *cmd);
+void sigintHandle(int sig);
 int exittoshell();

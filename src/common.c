@@ -36,6 +36,7 @@ DIR *folder;
 FILE *file;
 
 int exitCode = 0;
+int enableCtrlC = 0;
 
 char globalConfLocation[128];
 char homeConfLocation[128];
@@ -519,6 +520,10 @@ int can_run_command(const char *cmd) {
   }
   free(buf);
   return 0;
+}
+
+void sigintHandle(int sig){
+  // Does nothing
 }
 
 void clear_workspace()

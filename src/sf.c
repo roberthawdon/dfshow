@@ -59,6 +59,7 @@ char fileName[512];
 extern FILE *file;
 
 extern int exitCode;
+extern int enableCtrlC;
 
 FILE *stream;
 char *line = NULL;
@@ -97,6 +98,12 @@ void readConfig(const char * confFile)
         if (!getenv("DFS_THEME_OVERRIDE")){
           strcpy(themeName, config_setting_get_string(setting));
           setenv("DFS_THEME", themeName, 1);
+        }
+      }
+      setting = config_setting_get_member(group, "sigint");
+      if (setting){
+        if (config_setting_get_int(setting)){
+          enableCtrlC = 1;
         }
       }
     }
@@ -333,7 +340,7 @@ void file_view(char * currentfile)
 
   refresh();
 
-  if ( check_file(currentfile) ){
+  if ( check_file(currentfile) && !check_dir(currentfile)){
     loadFile(currentfile);
     show_file_inputs();
   } else {
@@ -426,6 +433,10 @@ int main(int argc, char *argv[])
   memset(&sa, 0, sizeof(struct sigaction));
   sa.sa_handler = sigwinchHandle;
   sigaction(SIGWINCH, &sa, NULL);
+
+  if (!enableCtrlC){
+    signal(SIGINT, sigintHandle);
+  }
 
   start_color();
   cbreak();
