@@ -1251,18 +1251,49 @@ void global_menu_inputs()
         } else {
           refreshDirectory(sortmode, topfileref, selected, 0);
           display_dir(currentpwd, ob, topfileref, selected);
-          // printMenu(LINES-1, 0, functionMenuText); // Global menu inputs doesn't include this. Even though it isn't used.
+          printMenu(LINES-1, 0, functionMenuText); // Global menu inputs doesn't include this. Even though it isn't used.
           global_menu_inputs();
         }
+      } else if (*pc == menuHotkeyLookup(globalMenu, "g_run", globalMenuSize)) {
+        LaunchShell();
+        if (historyref == 0){
+          printMenu(0, 0, globalMenuText);
+        } else {
+          // display_dir(currentpwd, ob, topfileref, selected);
+          refreshDirectory(sortmode, topfileref, selected, 1);
+          directory_view_menu_inputs();
+        }
+      } else if (*pc == menuHotkeyLookup(globalMenu, "g_edit", globalMenuSize)) {
+        refreshDirectory(sortmode, topfileref, selected, 0);
+        display_dir(currentpwd, ob, topfileref, selected);
+        printMenu(LINES-1, 0, functionMenuText); // Global menu inputs doesn't include this. Even though it isn't used.
+        global_menu_inputs();
+      } else if (*pc == menuHotkeyLookup(globalMenu, "g_help", globalMenuSize)) {
+        showManPage("show");
+        refreshScreen();
+        if (historyref == 0){
+          printMenu(0, 0, globalMenuText);
+        } else {
+          //   display_dir(currentpwd, ob, topfileref, selected);
+          directory_view_menu_inputs();
+        }
+      } else if (*pc == menuHotkeyLookup(globalMenu, "g_mkdir", globalMenuSize)) {
+        make_directory_input();
       } else if (*pc == menuHotkeyLookup(globalMenu, "g_quit", globalMenuSize)) {
-          if (historyref == 0){
-            free(hs);
-            exittoshell();
-            refresh();
-          } else {
-            historyref = 0;
-            global_menu();
-          }
+        if (historyref == 0){
+          free(hs);
+          exittoshell();
+          refresh();
+        } else {
+          historyref = 0;
+          global_menu();
+        }
+      } else if (*pc == menuHotkeyLookup(globalMenu, "g_show", globalMenuSize)) {
+        show_directory_input();
+      } else if (*pc == 27) {
+        if (historyref != 0){
+          directory_view_menu_inputs();
+        }
       }
       // switch(*pc)
       //   {
