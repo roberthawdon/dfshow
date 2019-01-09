@@ -621,19 +621,19 @@ Valid arguments are:\n\
   strcpy(modifyMenuText, "Modify: !Owner/Group, !Permissions");
   strcpy(sortMenuText, "Sort list by - !Date & time, !Name, !Size");
 
-  globalMenu = addMenuItem(globalMenu, globalMenuSize, "colors", L"c!Olors,", 'o');
+  globalMenu = addMenuItem(globalMenu, globalMenuSize, "g_colors", L"c!Olors,", 'o');
   globalMenuSize++;
-  globalMenu = addMenuItem(globalMenu, globalMenuSize, "run", L"!Run command,", 'r');
+  globalMenu = addMenuItem(globalMenu, globalMenuSize, "g_run", L"!Run command,", 'r');
   globalMenuSize++;
-  globalMenu = addMenuItem(globalMenu, globalMenuSize, "edit", L"!Edit file,", 'e');
+  globalMenu = addMenuItem(globalMenu, globalMenuSize, "g_edit", L"!Edit file,", 'e');
   globalMenuSize++;
-  globalMenu = addMenuItem(globalMenu, globalMenuSize, "help", L"!Help,", 'h');
+  globalMenu = addMenuItem(globalMenu, globalMenuSize, "g_help", L"!Help,", 'h');
   globalMenuSize++;
-  globalMenu = addMenuItem(globalMenu, globalMenuSize, "mkdir", L"!Make dir,", 'm');
+  globalMenu = addMenuItem(globalMenu, globalMenuSize, "g_mkdir", L"!Make dir,", 'm');
   globalMenuSize++;
-  globalMenu = addMenuItem(globalMenu, globalMenuSize, "gquit", L"!Quit,", 'q');
+  globalMenu = addMenuItem(globalMenu, globalMenuSize, "g_quit", L"!Quit,", 'q');
   globalMenuSize++;
-  globalMenu = addMenuItem(globalMenu, globalMenuSize, "gshow", L"!Show dir", 's');
+  globalMenu = addMenuItem(globalMenu, globalMenuSize, "g_show", L"!Show dir", 's');
   globalMenuSize++;
 
   globalMenuLabel = genMenuDisplayLabel(globalMenu, globalMenuSize);
