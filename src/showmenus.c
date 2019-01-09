@@ -1257,7 +1257,8 @@ void global_menu_inputs()
       } else if (*pc == menuHotkeyLookup(globalMenu, "g_run", globalMenuSize)) {
         LaunchShell();
         if (historyref == 0){
-          printMenu(0, 0, globalMenuText);
+          wPrintMenu(0,0,globalMenuLabel);
+          // printMenu(0, 0, globalMenuText);
         } else {
           // display_dir(currentpwd, ob, topfileref, selected);
           refreshDirectory(sortmode, topfileref, selected, 1);
@@ -1272,7 +1273,8 @@ void global_menu_inputs()
         showManPage("show");
         refreshScreen();
         if (historyref == 0){
-          printMenu(0, 0, globalMenuText);
+          wPrintMenu(0,0,globalMenuLabel);
+          // printMenu(0, 0, globalMenuText);
         } else {
           //   display_dir(currentpwd, ob, topfileref, selected);
           directory_view_menu_inputs();

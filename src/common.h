@@ -9,6 +9,7 @@ typedef struct {
   int hotKey;
 } menuDef;
 
+int cmp_menu_ref(const void *lhs, const void *rhs);
 menuDef* addMenuItem(menuDef* dfMenu, int pos, char* refLabel, wchar_t* displayLabel, int hotKey);
 wchar_t * genMenuDisplayLabel(menuDef* dfMenu, int size, int comma);
 int menuHotkeyLookup(menuDef* dfMenu, char* refLabel, int size);

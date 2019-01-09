@@ -47,6 +47,16 @@ extern int * pc;
 
 extern char fileMenuText[256];
 
+int cmp_menu_ref(const void *lhs, const void *rhs)
+{
+
+  menuDef *dforderA = (menuDef *)lhs;
+  menuDef *dforderB = (menuDef *)rhs;
+
+  return strcoll(dforderA->refLabel, dforderB->refLabel);
+
+}
+
 menuDef* addMenuItem(menuDef* dfMenu, int pos, char* refLabel, wchar_t* displayLabel, int hotKey){
 
   if (pos == 0){
@@ -57,6 +67,9 @@ menuDef* addMenuItem(menuDef* dfMenu, int pos, char* refLabel, wchar_t* displayL
   sprintf(dfMenu[pos].refLabel, "%s", refLabel);
   swprintf(dfMenu[pos].displayLabel, 32, L"%ls", displayLabel);
   dfMenu[pos].hotKey = hotKey;
+
+  qsort(dfMenu, pos + 1, sizeof(menuDef), cmp_menu_ref);
+
   return dfMenu;
 }
 
