@@ -10,7 +10,8 @@ typedef struct {
 } menuDef;
 
 menuDef* addMenuItem(menuDef* dfMenu, int pos, char* refLabel, wchar_t* displayLabel, int hotKey);
-wchar_t * genMenuDisplayLabel(menuDef* dfMenu, int size);
+wchar_t * genMenuDisplayLabel(menuDef* dfMenu, int size, int comma);
+int menuHotkeyLookup(menuDef* dfMenu, char* refLabel, int size);
 void mk_dir(char *path);
 void setConfLocations();
 void printVersion(char* programName);

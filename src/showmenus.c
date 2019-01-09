@@ -1242,55 +1242,19 @@ void global_menu_inputs()
   while(1)
     {
       *pc = getch();
-      switch(*pc)
-        {
-        case 'o':
-          themeBuilder();
-          theme_menu_inputs();
-          if (historyref == 0){
-            clear();
-            global_menu_inputs();
-          } else {
-            refreshDirectory(sortmode, topfileref, selected, 0);
-            display_dir(currentpwd, ob, topfileref, selected);
-            printMenu(LINES-1, 0, functionMenuText); // Global menu inputs doesn't include this. Even though it isn't used.
-            global_menu_inputs();
-          }
-          break;
-        case 'm':
-          make_directory_input();
-          break;
-        case 'r':
-          LaunchShell();
-          if (historyref == 0){
-            printMenu(0, 0, globalMenuText);
-          } else {
-            // display_dir(currentpwd, ob, topfileref, selected);
-            refreshDirectory(sortmode, topfileref, selected, 1);
-            directory_view_menu_inputs();
-          }
-          break;
-        case 'e':
-          edit_file_input();
-          if (historyref == 0){
-            printMenu(0, 0, globalMenuText);
-          } else {
-            //   display_dir(currentpwd, ob, topfileref, selected);
-            refreshDirectory(sortmode, topfileref, selected, 1);
-            directory_view_menu_inputs();
-          }
-          break;
-        case 'h':
-          showManPage("show");
-          refreshScreen();
-          if (historyref == 0){
-            printMenu(0, 0, globalMenuText);
-          } else {
-            //   display_dir(currentpwd, ob, topfileref, selected);
-            directory_view_menu_inputs();
-          }
-          break;
-        case 'q':
+      if (*pc == menuHotkeyLookup(globalMenu, "g_colors", globalMenuSize)){
+        themeBuilder();
+        theme_menu_inputs();
+        if (historyref == 0){
+          clear();
+          global_menu_inputs();
+        } else {
+          refreshDirectory(sortmode, topfileref, selected, 0);
+          display_dir(currentpwd, ob, topfileref, selected);
+          // printMenu(LINES-1, 0, functionMenuText); // Global menu inputs doesn't include this. Even though it isn't used.
+          global_menu_inputs();
+        }
+      } else if (*pc == menuHotkeyLookup(globalMenu, "g_quit", globalMenuSize)) {
           if (historyref == 0){
             free(hs);
             exittoshell();
@@ -1299,15 +1263,73 @@ void global_menu_inputs()
             historyref = 0;
             global_menu();
           }
-          break;
-        case 's':
-          show_directory_input();
-          break;
-        case 27:
-          if (historyref != 0){
-            directory_view_menu_inputs();
-          }
-          break;
-        }
+      }
+      // switch(*pc)
+      //   {
+      //   case 'o':
+      //     themeBuilder();
+      //     theme_menu_inputs();
+      //     if (historyref == 0){
+      //       clear();
+      //       global_menu_inputs();
+      //     } else {
+      //       refreshDirectory(sortmode, topfileref, selected, 0);
+      //       display_dir(currentpwd, ob, topfileref, selected);
+      //       printMenu(LINES-1, 0, functionMenuText); // Global menu inputs doesn't include this. Even though it isn't used.
+      //       global_menu_inputs();
+      //     }
+      //     break;
+      //   case 'm':
+      //     make_directory_input();
+      //     break;
+      //   case 'r':
+      //     LaunchShell();
+      //     if (historyref == 0){
+      //       printMenu(0, 0, globalMenuText);
+      //     } else {
+      //       // display_dir(currentpwd, ob, topfileref, selected);
+      //       refreshDirectory(sortmode, topfileref, selected, 1);
+      //       directory_view_menu_inputs();
+      //     }
+      //     break;
+      //   case 'e':
+      //     edit_file_input();
+      //     if (historyref == 0){
+      //       printMenu(0, 0, globalMenuText);
+      //     } else {
+      //       //   display_dir(currentpwd, ob, topfileref, selected);
+      //       refreshDirectory(sortmode, topfileref, selected, 1);
+      //       directory_view_menu_inputs();
+      //     }
+      //     break;
+      //   case 'h':
+      //     showManPage("show");
+      //     refreshScreen();
+      //     if (historyref == 0){
+      //       printMenu(0, 0, globalMenuText);
+      //     } else {
+      //       //   display_dir(currentpwd, ob, topfileref, selected);
+      //       directory_view_menu_inputs();
+      //     }
+      //     break;
+      //   case 'q':
+      //     if (historyref == 0){
+      //       free(hs);
+      //       exittoshell();
+      //       refresh();
+      //     } else {
+      //       historyref = 0;
+      //       global_menu();
+      //     }
+      //     break;
+      //   case 's':
+      //     show_directory_input();
+      //     break;
+      //   case 27:
+      //     if (historyref != 0){
+      //       directory_view_menu_inputs();
+      //     }
+      //     break;
+      //   }
     }
 }

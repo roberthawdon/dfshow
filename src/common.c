@@ -60,30 +60,38 @@ menuDef* addMenuItem(menuDef* dfMenu, int pos, char* refLabel, wchar_t* displayL
   return dfMenu;
 }
 
-wchar_t * genMenuDisplayLabel(menuDef* dfMenu, int size){
+wchar_t * genMenuDisplayLabel(menuDef* dfMenu, int size, int comma){
   wchar_t * output;
   int i;
 
-  // endwin();
-  // printf("%i\n", dfMenu[0].hotKey);
-  // exit(0);
-
   output = malloc(sizeof(wchar_t) * 1);
-  // swprintf(output, 7, L"%i ", 1);
    for (i = 0; i < size ; i++){
      output = realloc(output, ((i + 1) * sizeof(dfMenu[i].displayLabel) + 1) * sizeof(wchar_t) );
    }
    for (i = 0; i < size ; i++){
      if ( i == 0 ){
-       // swprintf(output, sizeof(output), L"%ls ", dfMenu[i].displayLabel);
        wcscpy(output, dfMenu[i].displayLabel);
      } else {
-       // swprintf(output, sizeof(output), L"%ls%ls ", output, dfMenu[i].displayLabel);
-       wcscat(output, L" ");
+       if (comma){
+         wcscat(output, L", ");
+       } else {
+         wcscat(output, L" ");
+       }
        wcscat(output, dfMenu[i].displayLabel);
      }
    }
   return output;
+}
+
+int menuHotkeyLookup(menuDef* dfMenu, char* refLabel, int size){
+  int i;
+  int r = -1;
+  for (i = 0; i < size; i++){
+    if (!strcmp(dfMenu[i].refLabel, refLabel)){
+      r = dfMenu[i].hotKey;
+    }
+  }
+  return r;
 }
 
 void mk_dir(char *path)
