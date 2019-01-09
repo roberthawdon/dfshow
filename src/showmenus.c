@@ -96,6 +96,10 @@ extern char *objectWild;
 
 extern int exitCode;
 
+extern menuDef *globalMenu;
+extern int globalMenuSize;
+extern wchar_t *globalMenuLabel;
+
 //char testMenu[256];
 
 int sanitizeTopFileRef(int topfileref)
@@ -1228,7 +1232,8 @@ void directory_view_menu_inputs()
 }
 void global_menu_inputs()
 {
-  printMenu(0, 0, globalMenuText);
+  wPrintMenu(0,0,globalMenuLabel);
+  // printMenu(0, 0, globalMenuText);
   if (historyref == 0){
     viewMode = 4;
   } else {

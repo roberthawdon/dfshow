@@ -71,6 +71,10 @@ char *objectWild;
 
 results *ob;
 
+menuDef *globalMenu;
+int globalMenuSize = 0;
+wchar_t *globalMenuLabel;
+
 extern history *hs;
 extern int topfileref;
 extern int selected;
@@ -267,7 +271,7 @@ int global_menu()
 {
   clear();
 
-  printMenu(0, 0, globalMenuText);
+  // printMenu(0, 0, globalMenuText);
 
   refresh();
 
@@ -617,6 +621,15 @@ Valid arguments are:\n\
   strcpy(modifyMenuText, "Modify: !Owner/Group, !Permissions");
   strcpy(sortMenuText, "Sort list by - !Date & time, !Name, !Size");
 
+  globalMenuSize = addMenuItem(globalMenu, globalMenuSize, "colors", L"c!Olors,", 'o');
+  globalMenuSize = addMenuItem(globalMenu, globalMenuSize, "run", L"!Run command,", 'r');
+  globalMenuSize = addMenuItem(globalMenu, globalMenuSize, "edit", L"!Edit file,", 'e');
+  globalMenuSize = addMenuItem(globalMenu, globalMenuSize, "help", L"!Help,", 'h');
+  globalMenuSize = addMenuItem(globalMenu, globalMenuSize, "mkdir", L"!Make dir,", 'm');
+  globalMenuSize = addMenuItem(globalMenu, globalMenuSize, "gquit", L"!Quit,", 'q');
+  globalMenuSize = addMenuItem(globalMenu, globalMenuSize, "gshow", L"!Show,", 's');
+
+  globalMenuLabel = genMenuDisplayLabel(globalMenu, globalMenuSize);
   set_escdelay(10);
   //ESCDELAY = 10;
 
