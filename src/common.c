@@ -47,7 +47,7 @@ extern int * pc;
 
 extern char fileMenuText[256];
 
-int addMenuItem(menuDef* dfMenu, int pos, char* refLabel, wchar_t* displayLabel, int hotKey){
+menuDef* addMenuItem(menuDef* dfMenu, int pos, char* refLabel, wchar_t* displayLabel, int hotKey){
 
   if (pos == 0){
     dfMenu = malloc(sizeof(menuDef) + 1);
@@ -57,29 +57,32 @@ int addMenuItem(menuDef* dfMenu, int pos, char* refLabel, wchar_t* displayLabel,
   sprintf(dfMenu[pos].refLabel, "%s", refLabel);
   swprintf(dfMenu[pos].displayLabel, 32, L"%ls", displayLabel);
   dfMenu[pos].hotKey = hotKey;
-  return pos + 1;
+  return dfMenu;
 }
 
 wchar_t * genMenuDisplayLabel(menuDef* dfMenu, int size){
   wchar_t * output;
   int i;
 
-  endwin();
-  printf("%i\n", dfMenu[0].hotKey);
-  exit(0);
+  // endwin();
+  // printf("%i\n", dfMenu[0].hotKey);
+  // exit(0);
 
-  //output = malloc(sizeof(wchar_t) * 256);
-  //swprintf(output, 7, L"%i ", 1);
-  // for (i = 0; i < size - 1 ; i++){
-  //   output = realloc(output, ((i + 1) * sizeof(dfMenu[i].displayLabel) + 1) * sizeof(wchar_t) + 1);
-  //   if ( i == 0 ){
-  //     //swprintf(output, sizeof(output), L"%s ", dfMenu[i].displayLabel);
-  //   } else if (i == size - 1){
-  //     //swprintf(output, sizeof(output), L"%s%s\0", output, dfMenu[i].displayLabel);
-  //   } else {
-  //     //swprintf(output, sizeof(output), L"%s%s ", output, dfMenu[i].displayLabel);
-  //   }
-  // }
+  output = malloc(sizeof(wchar_t) * 1);
+  // swprintf(output, 7, L"%i ", 1);
+   for (i = 0; i < size ; i++){
+     output = realloc(output, ((i + 1) * sizeof(dfMenu[i].displayLabel) + 1) * sizeof(wchar_t) );
+   }
+   for (i = 0; i < size ; i++){
+     if ( i == 0 ){
+       // swprintf(output, sizeof(output), L"%ls ", dfMenu[i].displayLabel);
+       wcscpy(output, dfMenu[i].displayLabel);
+     } else {
+       // swprintf(output, sizeof(output), L"%ls%ls ", output, dfMenu[i].displayLabel);
+       wcscat(output, L" ");
+       wcscat(output, dfMenu[i].displayLabel);
+     }
+   }
   return output;
 }
 

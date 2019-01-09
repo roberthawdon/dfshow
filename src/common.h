@@ -9,7 +9,7 @@ typedef struct {
   int hotKey;
 } menuDef;
 
-int addMenuItem(menuDef* dfMenu, int pos, char* refLabel, wchar_t* displayLabel, int hotKey);
+menuDef* addMenuItem(menuDef* dfMenu, int pos, char* refLabel, wchar_t* displayLabel, int hotKey);
 wchar_t * genMenuDisplayLabel(menuDef* dfMenu, int size);
 void mk_dir(char *path);
 void setConfLocations();
