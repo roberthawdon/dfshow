@@ -1,3 +1,5 @@
+void generateDefaultMenus();
+void refreshMenuLabels();
 void modify_key_menu_inputs();
 void modify_owner_input();
 void modify_group_input();

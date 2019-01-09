@@ -57,18 +57,22 @@ int cmp_menu_ref(const void *lhs, const void *rhs)
 
 }
 
-menuDef* addMenuItem(menuDef* dfMenu, int pos, char* refLabel, wchar_t* displayLabel, int hotKey){
+menuDef* addMenuItem(menuDef* dfMenu, int *pos, char* refLabel, wchar_t* displayLabel, int hotKey){
 
-  if (pos == 0){
+  int menuPos = *pos;
+
+  if (menuPos == 0){
     dfMenu = malloc(sizeof(menuDef) + 1);
   } else {
-    dfMenu = realloc(dfMenu, (pos + 1) * sizeof(menuDef) + 1);
+    dfMenu = realloc(dfMenu, (menuPos + 1) * sizeof(menuDef) + 1);
   }
-  sprintf(dfMenu[pos].refLabel, "%s", refLabel);
-  swprintf(dfMenu[pos].displayLabel, 32, L"%ls", displayLabel);
-  dfMenu[pos].hotKey = hotKey;
+  sprintf(dfMenu[menuPos].refLabel, "%s", refLabel);
+  swprintf(dfMenu[menuPos].displayLabel, 32, L"%ls", displayLabel);
+  dfMenu[menuPos].hotKey = hotKey;
 
-  qsort(dfMenu, pos + 1, sizeof(menuDef), cmp_menu_ref);
+  qsort(dfMenu, menuPos + 1, sizeof(menuDef), cmp_menu_ref);
+
+  ++*pos;
 
   return dfMenu;
 }

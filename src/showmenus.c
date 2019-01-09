@@ -96,11 +96,43 @@ extern char *objectWild;
 
 extern int exitCode;
 
-extern menuDef *globalMenu;
-extern int globalMenuSize;
-extern wchar_t *globalMenuLabel;
+menuDef *globalMenu;
+int globalMenuSize = 0;
+wchar_t *globalMenuLabel;
+
+menuDef *fileMenu;
+int fileMenuSize = 0;
+wchar_t *fileMenuLabel;
 
 //char testMenu[256];
+
+void generateDefaultMenus(){
+  // Global Menu
+  globalMenu = addMenuItem(globalMenu, &globalMenuSize, "g_colors", L"c!Olors", 'o');
+  globalMenu = addMenuItem(globalMenu, &globalMenuSize, "g_run", L"!Run command", 'r');
+  globalMenu = addMenuItem(globalMenu, &globalMenuSize, "g_edit", L"!Edit file", 'e');
+  globalMenu = addMenuItem(globalMenu, &globalMenuSize, "g_help", L"!Help", 'h');
+  globalMenu = addMenuItem(globalMenu, &globalMenuSize, "g_mkdir", L"!Make dir", 'm');
+  globalMenu = addMenuItem(globalMenu, &globalMenuSize, "g_quit", L"!Quit", 'q');
+  globalMenu = addMenuItem(globalMenu, &globalMenuSize, "g_show", L"!Show dir", 's');
+
+  // File Menu
+  fileMenu = addMenuItem(fileMenu, &fileMenuSize, "f_copy", L"!Copy", 'c');
+  fileMenu = addMenuItem(fileMenu, &fileMenuSize, "f_delete", L"!Delete", 'd');
+  fileMenu = addMenuItem(fileMenu, &fileMenuSize, "f_edit", L"!Edit", 'e');
+  fileMenu = addMenuItem(fileMenu, &fileMenuSize, "f_hidden", L"!Hidden", 'h');
+  fileMenu = addMenuItem(fileMenu, &fileMenuSize, "f_modify", L"!Modify", 'm');
+  fileMenu = addMenuItem(fileMenu, &fileMenuSize, "f_quit", L"!Quit", 'q');
+  fileMenu = addMenuItem(fileMenu, &fileMenuSize, "f_rename", L"!Rename", 'r');
+  fileMenu = addMenuItem(fileMenu, &fileMenuSize, "f_show", L"!Show", 's');
+  fileMenu = addMenuItem(fileMenu, &fileMenuSize, "f_uhunt", L"h!Unt", 'u');
+  fileMenu = addMenuItem(fileMenu, &fileMenuSize, "f_xexec", L"e!Xec", 'x');
+}
+
+void refreshMenuLabels(){
+  globalMenuLabel = genMenuDisplayLabel(globalMenu, globalMenuSize, 1);
+  fileMenuLabel = genMenuDisplayLabel(fileMenu, fileMenuSize, 1);
+}
 
 int sanitizeTopFileRef(int topfileref)
 {
@@ -859,7 +891,7 @@ void directory_view_menu_inputs()
   char *updir;
   char *execArgs;
   viewMode = 0;
-  printMenu(0, 0, fileMenuText);
+  wPrintMenu(0, 0, fileMenuLabel);
   printMenu(LINES-1, 0, functionMenuText);
   while(1)
     {

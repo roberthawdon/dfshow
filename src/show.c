@@ -71,10 +71,6 @@ char *objectWild;
 
 results *ob;
 
-menuDef *globalMenu;
-int globalMenuSize = 0;
-wchar_t *globalMenuLabel;
-
 extern history *hs;
 extern int topfileref;
 extern int selected;
@@ -91,6 +87,9 @@ struct sigaction sa;
 
 extern int exitCode;
 extern int enableCtrlC;
+
+extern wchar_t *globalMenuLabel;
+extern wchar_t *fileMenuLabel;
 
 int setMarked(char* markedinput);
 int checkStyle(char* styleinput);
@@ -247,7 +246,7 @@ int directory_view(char * currentpwd)
 
   // directory_top_menu();
 
-  printMenu(0, 0, fileMenuText);
+  wPrintMenu(0, 0, fileMenuLabel);
 
   set_history(currentpwd, "", "", 0, 0);
   free(ob);
@@ -339,7 +338,7 @@ void refreshScreen()
   switch(viewMode)
     {
     case 0:
-      printMenu(0, 0, fileMenuText);
+      wPrintMenu(0, 0, fileMenuLabel);
       printMenu(LINES-1, 0, functionMenuText);
       resizeDisplayDir(ob);
       break;
@@ -616,29 +615,15 @@ Valid arguments are:\n\
 
 
   // Writing Menus
-  strcpy(fileMenuText, "!Copy, !Delete, !Edit, !Hidden, !Modify, !Quit, !Rename, !Show, h!Unt, e!Xec");
+  // strcpy(fileMenuText, "!Copy, !Delete, !Edit, !Hidden, !Modify, !Quit, !Rename, !Show, h!Unt, e!Xec");
   // strcpy(globalMenuText, "c!Olors, !Run command, !Edit file, !Help, !Make dir, !Quit, !Show dir");
   strcpy(functionMenuTextShort, "<F1>-Down <F2>-Up <F3>-Top <F4>-Bottom <F5>-Refresh <F6>-Mark/Unmark <F7>-All <F8>-None <F9>-Sort");
   strcpy(functionMenuTextLong, "<F1>-Down <F2>-Up <F3>-Top <F4>-Bottom <F5>-Refresh <F6>-Mark/Unmark <F7>-All <F8>-None <F9>-Sort <F10>-Block");
   strcpy(modifyMenuText, "Modify: !Owner/Group, !Permissions");
   strcpy(sortMenuText, "Sort list by - !Date & time, !Name, !Size");
 
-  globalMenu = addMenuItem(globalMenu, globalMenuSize, "g_colors", L"c!Olors", 'o');
-  globalMenuSize++;
-  globalMenu = addMenuItem(globalMenu, globalMenuSize, "g_run", L"!Run command", 'r');
-  globalMenuSize++;
-  globalMenu = addMenuItem(globalMenu, globalMenuSize, "g_edit", L"!Edit file", 'e');
-  globalMenuSize++;
-  globalMenu = addMenuItem(globalMenu, globalMenuSize, "g_help", L"!Help", 'h');
-  globalMenuSize++;
-  globalMenu = addMenuItem(globalMenu, globalMenuSize, "g_mkdir", L"!Make dir", 'm');
-  globalMenuSize++;
-  globalMenu = addMenuItem(globalMenu, globalMenuSize, "g_quit", L"!Quit", 'q');
-  globalMenuSize++;
-  globalMenu = addMenuItem(globalMenu, globalMenuSize, "g_show", L"!Show dir", 's');
-  globalMenuSize++;
-
-  globalMenuLabel = genMenuDisplayLabel(globalMenu, globalMenuSize, 1);
+  generateDefaultMenus();
+  refreshMenuLabels();
   set_escdelay(10);
   //ESCDELAY = 10;
 
