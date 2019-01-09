@@ -104,6 +104,10 @@ menuDef *fileMenu;
 int fileMenuSize = 0;
 wchar_t *fileMenuLabel;
 
+menuDef *functionMenu;
+int functionMenuSize = 0;
+wchar_t *functionMenuLabel;
+
 //char testMenu[256];
 
 void generateDefaultMenus(){
@@ -127,11 +131,24 @@ void generateDefaultMenus(){
   fileMenu = addMenuItem(fileMenu, &fileMenuSize, "f_show", L"!Show", 's');
   fileMenu = addMenuItem(fileMenu, &fileMenuSize, "f_uhunt", L"h!Unt", 'u');
   fileMenu = addMenuItem(fileMenu, &fileMenuSize, "f_xexec", L"e!Xec", 'x');
+
+  // Function Menu
+  functionMenu = addMenuItem(functionMenu, &functionMenuSize, "f_01", L"<F1>-Down", 265);
+  functionMenu = addMenuItem(functionMenu, &functionMenuSize, "f_02", L"<F2>-Up", 266);
+  functionMenu = addMenuItem(functionMenu, &functionMenuSize, "f_03", L"<F3>-Top", 267);
+  functionMenu = addMenuItem(functionMenu, &functionMenuSize, "f_04", L"<F4>-Bottom", 268);
+  functionMenu = addMenuItem(functionMenu, &functionMenuSize, "f_05", L"<F5>-Refresh", 269);
+  functionMenu = addMenuItem(functionMenu, &functionMenuSize, "f_06", L"<F6>-Mark/Unmark", 270);
+  functionMenu = addMenuItem(functionMenu, &functionMenuSize, "f_07", L"<F7>-All", 271);
+  functionMenu = addMenuItem(functionMenu, &functionMenuSize, "f_08", L"<F8>-None", 272);
+  functionMenu = addMenuItem(functionMenu, &functionMenuSize, "f_09", L"<F9>-Sort", 273);
+  functionMenu = addMenuItem(functionMenu, &functionMenuSize, "f_10", L"<F10>-Block", 274);
 }
 
 void refreshMenuLabels(){
   globalMenuLabel = genMenuDisplayLabel(globalMenu, globalMenuSize, 1);
   fileMenuLabel = genMenuDisplayLabel(fileMenu, fileMenuSize, 1);
+  functionMenuLabel = genMenuDisplayLabel(functionMenu, functionMenuSize, 0);
 }
 
 int sanitizeTopFileRef(int topfileref)
@@ -892,7 +909,8 @@ void directory_view_menu_inputs()
   char *execArgs;
   viewMode = 0;
   wPrintMenu(0, 0, fileMenuLabel);
-  printMenu(LINES-1, 0, functionMenuText);
+  // printMenu(LINES-1, 0, functionMenuText);
+  wPrintMenu(LINES-1, 0, functionMenuLabel);
   while(1)
     {
       //signal(SIGWINCH, refreshScreen );
@@ -1283,7 +1301,8 @@ void global_menu_inputs()
         } else {
           refreshDirectory(sortmode, topfileref, selected, 0);
           display_dir(currentpwd, ob, topfileref, selected);
-          printMenu(LINES-1, 0, functionMenuText); // Global menu inputs doesn't include this. Even though it isn't used.
+          wPrintMenu(LINES-1, 0, functionMenuLabel);
+          // printMenu(LINES-1, 0, functionMenuText); // Global menu inputs doesn't include this. Even though it isn't used.
           global_menu_inputs();
         }
       } else if (*pc == menuHotkeyLookup(globalMenu, "g_run", globalMenuSize)) {
@@ -1299,7 +1318,8 @@ void global_menu_inputs()
       } else if (*pc == menuHotkeyLookup(globalMenu, "g_edit", globalMenuSize)) {
         refreshDirectory(sortmode, topfileref, selected, 0);
         display_dir(currentpwd, ob, topfileref, selected);
-        printMenu(LINES-1, 0, functionMenuText); // Global menu inputs doesn't include this. Even though it isn't used.
+        wPrintMenu(LINES-1, 0, functionMenuLabel);
+        // printMenu(LINES-1, 0, functionMenuText); // Global menu inputs doesn't include this. Even though it isn't used.
         global_menu_inputs();
       } else if (*pc == menuHotkeyLookup(globalMenu, "g_help", globalMenuSize)) {
         showManPage("show");

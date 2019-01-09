@@ -90,6 +90,7 @@ extern int enableCtrlC;
 
 extern wchar_t *globalMenuLabel;
 extern wchar_t *fileMenuLabel;
+extern wchar_t *functionMenuLabel;
 
 int setMarked(char* markedinput);
 int checkStyle(char* styleinput);
@@ -256,7 +257,8 @@ int directory_view(char * currentpwd)
 
   // function_key_menu();
 
-  printMenu(LINES-1, 0, functionMenuText);
+  //printMenu(LINES-1, 0, functionMenuText);
+  wPrintMenu(LINES-1, 0, functionMenuLabel);
 
   refresh();
 
@@ -339,23 +341,27 @@ void refreshScreen()
     {
     case 0:
       wPrintMenu(0, 0, fileMenuLabel);
-      printMenu(LINES-1, 0, functionMenuText);
+      //printMenu(LINES-1, 0, functionMenuText);
+      wPrintMenu(LINES-1, 0, functionMenuLabel);
       resizeDisplayDir(ob);
       break;
     case 1:
       // printMenu(0, 0, globalMenuText);
       wPrintMenu(0,0,globalMenuLabel);
-      printMenu(LINES-1, 0, functionMenuText);
+      // printMenu(LINES-1, 0, functionMenuText);
+      wPrintMenu(LINES-1, 0, functionMenuLabel);
       resizeDisplayDir(ob);
       break;
     case 2:
       printMenu(0, 0, modifyMenuText);
-      printMenu(LINES-1, 0, functionMenuText);
+      wPrintMenu(LINES-1, 0, functionMenuLabel);
+      // printMenu(LINES-1, 0, functionMenuText);
       resizeDisplayDir(ob);
       break;
     case 3:
       printMenu(0, 0, sortMenuText);
-      printMenu(LINES-1, 0, functionMenuText);
+      wPrintMenu(LINES-1, 0, functionMenuLabel);
+      //printMenu(LINES-1, 0, functionMenuText);
       resizeDisplayDir(ob);
       break;
     case 4:
