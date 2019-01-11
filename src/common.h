@@ -7,6 +7,7 @@ typedef struct {
   char refLabel[16];
   wchar_t displayLabel[32];
   int hotKey;
+  int displayLabelSize;
 } menuDef;
 
 int cmp_menu_ref(const void *lhs, const void *rhs);

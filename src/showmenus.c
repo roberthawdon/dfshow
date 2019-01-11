@@ -151,6 +151,12 @@ void refreshMenuLabels(){
   functionMenuLabel = genMenuDisplayLabel(functionMenu, functionMenuSize, 0);
 }
 
+void unloadMenuLabels(){
+  free(globalMenuLabel);
+  free(fileMenuLabel);
+  free(functionMenuLabel);
+}
+
 int sanitizeTopFileRef(int topfileref)
 {
   if (((topfileref + displaysize) < totalfilecount + 1 ) && ((selected) > topfileref + 1) && (selected < (topfileref + displaysize))) {

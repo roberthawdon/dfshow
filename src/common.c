@@ -69,6 +69,7 @@ menuDef* addMenuItem(menuDef* dfMenu, int *pos, char* refLabel, wchar_t* display
   sprintf(dfMenu[menuPos].refLabel, "%s", refLabel);
   swprintf(dfMenu[menuPos].displayLabel, 32, L"%ls", displayLabel);
   dfMenu[menuPos].hotKey = hotKey;
+  dfMenu[menuPos].displayLabelSize = wcslen(displayLabel);
 
   qsort(dfMenu, menuPos + 1, sizeof(menuDef), cmp_menu_ref);
 
@@ -79,22 +80,28 @@ menuDef* addMenuItem(menuDef* dfMenu, int *pos, char* refLabel, wchar_t* display
 
 wchar_t * genMenuDisplayLabel(menuDef* dfMenu, int size, int comma){
   wchar_t * output;
+  int gapSize;
+  int currentLen = 0;
   int i;
 
   output = malloc(sizeof(wchar_t) * 1);
    for (i = 0; i < size ; i++){
-     output = realloc(output, ((i + 1) * sizeof(dfMenu[i].displayLabel) + 1) * sizeof(wchar_t) );
-   }
-   for (i = 0; i < size ; i++){
-     if ( i == 0 ){
-       wcscpy(output, dfMenu[i].displayLabel);
-     } else {
-       if (comma){
-         wcscat(output, L", ");
+     if (currentLen < COLS){
+       output = realloc(output, ((i + 1) * sizeof(dfMenu[i].displayLabel) + 1) * sizeof(wchar_t) );
+       if ( i == 0 ){
+         wcscpy(output, dfMenu[i].displayLabel);
+         currentLen = currentLen + dfMenu[i].displayLabelSize;
        } else {
-         wcscat(output, L" ");
+         if (comma){
+           wcscat(output, L", ");
+           gapSize = 2;
+         } else {
+           wcscat(output, L" ");
+           gapSize = 1;
+         }
+         wcscat(output, dfMenu[i].displayLabel);
+         currentLen = currentLen + dfMenu[i].displayLabelSize + gapSize;
        }
-       wcscat(output, dfMenu[i].displayLabel);
      }
    }
   return output;

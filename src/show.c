@@ -337,6 +337,8 @@ void refreshScreen()
   } else {
     strcpy(functionMenuText, functionMenuTextLong);
   }
+  unloadMenuLabels();
+  refreshMenuLabels();
   switch(viewMode)
     {
     case 0:
@@ -629,13 +631,13 @@ Valid arguments are:\n\
   strcpy(sortMenuText, "Sort list by - !Date & time, !Name, !Size");
 
   generateDefaultMenus();
-  refreshMenuLabels();
   set_escdelay(10);
   //ESCDELAY = 10;
 
   setlocale(LC_ALL, "");
 
   initscr();
+  refreshMenuLabels();
 
   // Decide which function menu needs initially printing
   if (COLS < 89){
