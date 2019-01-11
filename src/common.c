@@ -60,6 +60,8 @@ int cmp_menu_ref(const void *lhs, const void *rhs)
 menuDef* addMenuItem(menuDef* dfMenu, int *pos, char* refLabel, wchar_t* displayLabel, int hotKey){
 
   int menuPos = *pos;
+  int charCount = 0;
+  int i;
 
   if (menuPos == 0){
     dfMenu = malloc(sizeof(menuDef) + 1);
@@ -69,7 +71,17 @@ menuDef* addMenuItem(menuDef* dfMenu, int *pos, char* refLabel, wchar_t* display
   sprintf(dfMenu[menuPos].refLabel, "%s", refLabel);
   swprintf(dfMenu[menuPos].displayLabel, 32, L"%ls", displayLabel);
   dfMenu[menuPos].hotKey = hotKey;
-  dfMenu[menuPos].displayLabelSize = wcslen(displayLabel);
+
+  for (i = 0; i < wcslen(displayLabel); i++)
+    {
+      if ( displayLabel[i] == '!' || displayLabel[i] == '<' || displayLabel[i] == '>' || displayLabel[i] == '\\') {
+        i++;
+        charCount++;
+      } else {
+        charCount++;
+      }
+    }
+  dfMenu[menuPos].displayLabelSize = charCount;
 
   qsort(dfMenu, menuPos + 1, sizeof(menuDef), cmp_menu_ref);
 
@@ -86,23 +98,27 @@ wchar_t * genMenuDisplayLabel(menuDef* dfMenu, int size, int comma){
 
   output = malloc(sizeof(wchar_t) * 1);
    for (i = 0; i < size ; i++){
-     if (currentLen < COLS){
-       output = realloc(output, ((i + 1) * sizeof(dfMenu[i].displayLabel) + 1) * sizeof(wchar_t) );
-       if ( i == 0 ){
-         wcscpy(output, dfMenu[i].displayLabel);
-         currentLen = currentLen + dfMenu[i].displayLabelSize;
-       } else {
-         if (comma){
-           wcscat(output, L", ");
-           gapSize = 2;
-         } else {
-           wcscat(output, L" ");
-           gapSize = 1;
-         }
-         wcscat(output, dfMenu[i].displayLabel);
-         currentLen = currentLen + dfMenu[i].displayLabelSize + gapSize;
-       }
-     }
+    output = realloc(output, ((i + 1) * sizeof(dfMenu[i].displayLabel) + 1) * sizeof(wchar_t) );
+    if ( i == 0 ){
+      currentLen = currentLen + dfMenu[i].displayLabelSize;
+      if ( currentLen - 1 < COLS){
+        wcscpy(output, dfMenu[i].displayLabel);
+      }
+    } else {
+      if (comma){
+        gapSize = 2;
+      } else {
+        gapSize = 1;
+      }
+      currentLen = currentLen + dfMenu[i].displayLabelSize + gapSize;
+      if (currentLen - 1 < COLS){
+        if (comma){
+          wcscat(output, L",");
+        }
+        wcscat(output, L" ");
+        wcscat(output, dfMenu[i].displayLabel);
+      }
+    }
    }
   return output;
 }

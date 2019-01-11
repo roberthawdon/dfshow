@@ -108,6 +108,14 @@ menuDef *functionMenu;
 int functionMenuSize = 0;
 wchar_t *functionMenuLabel;
 
+menuDef *modifyMenu;
+int modifyMenuSize = 0;
+wchar_t *modifyMenuLabel;
+
+menuDef *sortMenu;
+int sortMenuSize = 0;
+wchar_t *sortMenuLabel;
+
 //char testMenu[256];
 
 void generateDefaultMenus(){
@@ -143,6 +151,15 @@ void generateDefaultMenus(){
   functionMenu = addMenuItem(functionMenu, &functionMenuSize, "f_08", L"<F8>-None", 272);
   functionMenu = addMenuItem(functionMenu, &functionMenuSize, "f_09", L"<F9>-Sort", 273);
   functionMenu = addMenuItem(functionMenu, &functionMenuSize, "f_10", L"<F10>-Block", 274);
+
+  // Modify Menu
+  modifyMenu = addMenuItem(modifyMenu, &modifyMenuSize, "m_owner", L"Modify: !Owner/Group", 'o');
+  modifyMenu = addMenuItem(modifyMenu, &modifyMenuSize, "m_perms", L"!Permissions", 'p');
+
+  // Sort Menu
+  sortMenu = addMenuItem(sortMenu, &sortMenuSize, "s_date", L"Sort list by - !Date & time", 'd');
+  sortMenu = addMenuItem(sortMenu, &sortMenuSize, "s_name", L"!Name", 'n');
+  sortMenu = addMenuItem(sortMenu, &sortMenuSize, "s_size", L"!Size", 's');
 }
 
 void refreshMenuLabels(){
