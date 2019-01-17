@@ -57,20 +57,25 @@ int cmp_menu_ref(const void *lhs, const void *rhs)
 
 }
 
-menuDef* addMenuItem(menuDef* dfMenu, int *pos, char* refLabel, wchar_t* displayLabel, int hotKey){
+void addMenuItem(menuDef **dfMenu, int *pos, char* refLabel, wchar_t* displayLabel, int hotKey){
 
   int menuPos = *pos;
   int charCount = 0;
   int i;
+  menuDef *tmp;
 
   if (menuPos == 0){
-    dfMenu = malloc(sizeof(menuDef) + 1);
+    tmp = malloc(sizeof(menuDef) * 2);
   } else {
-    dfMenu = realloc(dfMenu, (menuPos + 1) * sizeof(menuDef) + 1);
+    tmp = realloc(*dfMenu, (menuPos + 1) * sizeof(menuDef) + 1 );
   }
-  sprintf(dfMenu[menuPos].refLabel, "%s", refLabel);
-  swprintf(dfMenu[menuPos].displayLabel, 32, L"%ls", displayLabel);
-  dfMenu[menuPos].hotKey = hotKey;
+  if (tmp){
+    *dfMenu = tmp;
+  }
+
+  sprintf((*dfMenu)[menuPos].refLabel, "%s", refLabel);
+  swprintf((*dfMenu)[menuPos].displayLabel, 32, L"%ls", displayLabel);
+  (*dfMenu)[menuPos].hotKey = hotKey;
 
   for (i = 0; i < wcslen(displayLabel); i++)
     {
@@ -81,13 +86,12 @@ menuDef* addMenuItem(menuDef* dfMenu, int *pos, char* refLabel, wchar_t* display
         charCount++;
       }
     }
-  dfMenu[menuPos].displayLabelSize = charCount;
+  (*dfMenu)[menuPos].displayLabelSize = charCount;
 
-  qsort(dfMenu, menuPos + 1, sizeof(menuDef), cmp_menu_ref);
+  qsort((*dfMenu), menuPos + 1, sizeof(menuDef), cmp_menu_ref);
 
   ++*pos;
 
-  return dfMenu;
 }
 
 wchar_t * genMenuDisplayLabel(menuDef* dfMenu, int size, int comma){

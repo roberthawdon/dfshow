@@ -120,46 +120,46 @@ wchar_t *sortMenuLabel;
 
 void generateDefaultMenus(){
   // Global Menu
-  globalMenu = addMenuItem(globalMenu, &globalMenuSize, "g_colors", L"c!Olors", 'o');
-  globalMenu = addMenuItem(globalMenu, &globalMenuSize, "g_run", L"!Run command", 'r');
-  globalMenu = addMenuItem(globalMenu, &globalMenuSize, "g_edit", L"!Edit file", 'e');
-  globalMenu = addMenuItem(globalMenu, &globalMenuSize, "g_help", L"!Help", 'h');
-  globalMenu = addMenuItem(globalMenu, &globalMenuSize, "g_mkdir", L"!Make dir", 'm');
-  globalMenu = addMenuItem(globalMenu, &globalMenuSize, "g_quit", L"!Quit", 'q');
-  globalMenu = addMenuItem(globalMenu, &globalMenuSize, "g_show", L"!Show dir", 's');
+  addMenuItem(&globalMenu, &globalMenuSize, "g_colors", L"c!Olors", 'o');
+  addMenuItem(&globalMenu, &globalMenuSize, "g_run", L"!Run command", 'r');
+  addMenuItem(&globalMenu, &globalMenuSize, "g_edit", L"!Edit file", 'e');
+  addMenuItem(&globalMenu, &globalMenuSize, "g_help", L"!Help", 'h');
+  addMenuItem(&globalMenu, &globalMenuSize, "g_mkdir", L"!Make dir", 'm');
+  addMenuItem(&globalMenu, &globalMenuSize, "g_quit", L"!Quit", 'q');
+  addMenuItem(&globalMenu, &globalMenuSize, "g_show", L"!Show dir", 's');
 
   // File Menu
-  fileMenu = addMenuItem(fileMenu, &fileMenuSize, "f_copy", L"!Copy", 'c');
-  fileMenu = addMenuItem(fileMenu, &fileMenuSize, "f_delete", L"!Delete", 'd');
-  fileMenu = addMenuItem(fileMenu, &fileMenuSize, "f_edit", L"!Edit", 'e');
-  fileMenu = addMenuItem(fileMenu, &fileMenuSize, "f_hidden", L"!Hidden", 'h');
-  fileMenu = addMenuItem(fileMenu, &fileMenuSize, "f_modify", L"!Modify", 'm');
-  fileMenu = addMenuItem(fileMenu, &fileMenuSize, "f_quit", L"!Quit", 'q');
-  fileMenu = addMenuItem(fileMenu, &fileMenuSize, "f_rename", L"!Rename", 'r');
-  fileMenu = addMenuItem(fileMenu, &fileMenuSize, "f_show", L"!Show", 's');
-  fileMenu = addMenuItem(fileMenu, &fileMenuSize, "f_uhunt", L"h!Unt", 'u');
-  fileMenu = addMenuItem(fileMenu, &fileMenuSize, "f_xexec", L"e!Xec", 'x');
+  addMenuItem(&fileMenu, &fileMenuSize, "f_copy", L"!Copy", 'c');
+  addMenuItem(&fileMenu, &fileMenuSize, "f_delete", L"!Delete", 'd');
+  addMenuItem(&fileMenu, &fileMenuSize, "f_edit", L"!Edit", 'e');
+  addMenuItem(&fileMenu, &fileMenuSize, "f_hidden", L"!Hidden", 'h');
+  addMenuItem(&fileMenu, &fileMenuSize, "f_modify", L"!Modify", 'm');
+  addMenuItem(&fileMenu, &fileMenuSize, "f_quit", L"!Quit", 'q');
+  addMenuItem(&fileMenu, &fileMenuSize, "f_rename", L"!Rename", 'r');
+  addMenuItem(&fileMenu, &fileMenuSize, "f_show", L"!Show", 's');
+  addMenuItem(&fileMenu, &fileMenuSize, "f_uhunt", L"h!Unt", 'u');
+  addMenuItem(&fileMenu, &fileMenuSize, "f_xexec", L"e!Xec", 'x');
 
   // Function Menu
-  functionMenu = addMenuItem(functionMenu, &functionMenuSize, "f_01", L"<F1>-Down", 265);
-  functionMenu = addMenuItem(functionMenu, &functionMenuSize, "f_02", L"<F2>-Up", 266);
-  functionMenu = addMenuItem(functionMenu, &functionMenuSize, "f_03", L"<F3>-Top", 267);
-  functionMenu = addMenuItem(functionMenu, &functionMenuSize, "f_04", L"<F4>-Bottom", 268);
-  functionMenu = addMenuItem(functionMenu, &functionMenuSize, "f_05", L"<F5>-Refresh", 269);
-  functionMenu = addMenuItem(functionMenu, &functionMenuSize, "f_06", L"<F6>-Mark/Unmark", 270);
-  functionMenu = addMenuItem(functionMenu, &functionMenuSize, "f_07", L"<F7>-All", 271);
-  functionMenu = addMenuItem(functionMenu, &functionMenuSize, "f_08", L"<F8>-None", 272);
-  functionMenu = addMenuItem(functionMenu, &functionMenuSize, "f_09", L"<F9>-Sort", 273);
-  functionMenu = addMenuItem(functionMenu, &functionMenuSize, "f_10", L"<F10>-Block", 274);
+  addMenuItem(&functionMenu, &functionMenuSize, "f_01", L"<F1>-Down", 265);
+  addMenuItem(&functionMenu, &functionMenuSize, "f_02", L"<F2>-Up", 266);
+  addMenuItem(&functionMenu, &functionMenuSize, "f_03", L"<F3>-Top", 267);
+  addMenuItem(&functionMenu, &functionMenuSize, "f_04", L"<F4>-Bottom", 268);
+  addMenuItem(&functionMenu, &functionMenuSize, "f_05", L"<F5>-Refresh", 269);
+  addMenuItem(&functionMenu, &functionMenuSize, "f_06", L"<F6>-Mark/Unmark", 270);
+  addMenuItem(&functionMenu, &functionMenuSize, "f_07", L"<F7>-All", 271);
+  addMenuItem(&functionMenu, &functionMenuSize, "f_08", L"<F8>-None", 272);
+  addMenuItem(&functionMenu, &functionMenuSize, "f_09", L"<F9>-Sort", 273);
+  addMenuItem(&functionMenu, &functionMenuSize, "f_10", L"<F10>-Block", 274);
 
   // Modify Menu
-  modifyMenu = addMenuItem(modifyMenu, &modifyMenuSize, "m_owner", L"Modify: !Owner/Group", 'o');
-  modifyMenu = addMenuItem(modifyMenu, &modifyMenuSize, "m_perms", L"!Permissions", 'p');
+  addMenuItem(&modifyMenu, &modifyMenuSize, "m_owner", L"Modify: !Owner/Group", 'o');
+  addMenuItem(&modifyMenu, &modifyMenuSize, "m_perms", L"!Permissions", 'p');
 
   // Sort Menu
-  sortMenu = addMenuItem(sortMenu, &sortMenuSize, "s_date", L"Sort list by - !Date & time", 'd');
-  sortMenu = addMenuItem(sortMenu, &sortMenuSize, "s_name", L"!Name", 'n');
-  sortMenu = addMenuItem(sortMenu, &sortMenuSize, "s_size", L"!Size", 's');
+  addMenuItem(&sortMenu, &sortMenuSize, "s_date", L"Sort list by - !Date & time", 'd');
+  addMenuItem(&sortMenu, &sortMenuSize, "s_name", L"!Name", 'n');
+  addMenuItem(&sortMenu, &sortMenuSize, "s_size", L"!Size", 's');
 }
 
 void refreshMenuLabels(){
