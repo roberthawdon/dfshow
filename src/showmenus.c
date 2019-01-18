@@ -977,7 +977,6 @@ void directory_view_menu_inputs()
           SendToEditor(chpwd);
           refreshDirectory(sortmode, topfileref, selected, 1);
         }
-        break;
       } else if (*pc == menuHotkeyLookup(fileMenu, "f_hidden", fileMenuSize)){
         strcpy(currentfilename, ob[selected].name);
         if (showhidden == 0) {
