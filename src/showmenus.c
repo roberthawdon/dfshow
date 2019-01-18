@@ -931,11 +931,11 @@ void directory_view_menu_inputs()
   char *updir;
   char *execArgs;
   viewMode = 0;
-  wPrintMenu(0, 0, fileMenuLabel);
-  // printMenu(LINES-1, 0, functionMenuText);
-  wPrintMenu(LINES-1, 0, functionMenuLabel);
   while(1)
     {
+      wPrintMenu(0, 0, fileMenuLabel);
+      // printMenu(LINES-1, 0, functionMenuText);
+      wPrintMenu(LINES-1, 0, functionMenuLabel);
       //signal(SIGWINCH, refreshScreen );
       //sigaction(SIGWINCH, &sa, NULL);
       *pc = getch();
