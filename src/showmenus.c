@@ -80,14 +80,6 @@ extern int reverse;
 
 extern int invalidstart;
 
-extern char fileMenuText[256];
-extern char globalMenuText[256];
-extern char functionMenuText[256];
-extern char functionMenuTextShort[256];
-extern char functionMenuTextLong[256];
-extern char modifyMenuText[256];
-extern char sortMenuText[256];
-
 extern struct sigaction sa;
 
 extern char sortmode[5];
@@ -117,8 +109,6 @@ wchar_t *modifyMenuLabel;
 menuDef *sortMenu;
 int sortMenuSize = 0;
 wchar_t *sortMenuLabel;
-
-//char testMenu[256];
 
 void generateDefaultMenus(){
   // Global Menu
@@ -718,10 +708,11 @@ void delete_multi_file_confirm_input(results* ob)
 
 void sort_view_inputs()
 {
-  printMenu(0, 0, sortMenuText);
+  // printMenu(0, 0, sortMenuText);
   viewMode = 3;
   while(1)
     {
+      wPrintMenu(0,0,sortMenuLabel);
       *pc = getch();
       switch(*pc)
         {
@@ -998,8 +989,11 @@ void directory_view_menu_inputs()
         reorder_ob(ob, sortmode);
         selected = findResultByName(ob, currentfilename);
         refreshDirectory(sortmode, topfileref, selected, 0);
+      } else if (*pc == menuHotkeyLookup(fileMenu, "f_link", fileMenuSize)){
+        topLineMessage("TODO: Needs implementing");
       } else if (*pc == menuHotkeyLookup(fileMenu, "f_modify", fileMenuSize)){
-        printMenu(0, 0, modifyMenuText);
+        //printMenu(0, 0, modifyMenuText);
+        wPrintMenu(0,0,modifyMenuLabel);
         modify_key_menu_inputs();
       } else if (*pc == menuHotkeyLookup(fileMenu, "f_quit", fileMenuSize)){
           if (historyref > 1){

@@ -35,14 +35,6 @@
 
 char currentpwd[1024];
 
-char fileMenuText[256];
-char globalMenuText[256];
-char functionMenuText[256];
-char functionMenuTextShort[256];
-char functionMenuTextLong[256];
-char modifyMenuText[256];
-char sortMenuText[256];
-
 int viewMode = 0;
 
 char sortmode[5] = "name";
@@ -93,6 +85,8 @@ extern int enableCtrlC;
 extern wchar_t *globalMenuLabel;
 extern wchar_t *fileMenuLabel;
 extern wchar_t *functionMenuLabel;
+extern wchar_t *modifyMenuLabel;
+extern wchar_t *sortMenuLabel;
 
 int setMarked(char* markedinput);
 int checkStyle(char* styleinput);
@@ -334,42 +328,31 @@ void refreshScreen()
   refresh();
   initscr();
   //mvprintw(0,0,"%d:%d", LINES, COLS);
-  if (COLS < 89){
-    strcpy(functionMenuText, functionMenuTextShort);
-  } else {
-    strcpy(functionMenuText, functionMenuTextLong);
-  }
   unloadMenuLabels();
   refreshMenuLabels();
   switch(viewMode)
     {
     case 0:
       wPrintMenu(0, 0, fileMenuLabel);
-      //printMenu(LINES-1, 0, functionMenuText);
       wPrintMenu(LINES-1, 0, functionMenuLabel);
       resizeDisplayDir(ob);
       break;
     case 1:
-      // printMenu(0, 0, globalMenuText);
       wPrintMenu(0,0,globalMenuLabel);
-      // printMenu(LINES-1, 0, functionMenuText);
       wPrintMenu(LINES-1, 0, functionMenuLabel);
       resizeDisplayDir(ob);
       break;
     case 2:
-      printMenu(0, 0, modifyMenuText);
+      wPrintMenu(0, 0, modifyMenuLabel);
       wPrintMenu(LINES-1, 0, functionMenuLabel);
-      // printMenu(LINES-1, 0, functionMenuText);
       resizeDisplayDir(ob);
       break;
     case 3:
-      printMenu(0, 0, sortMenuText);
+      wPrintMenu(0, 0, sortMenuLabel);
       wPrintMenu(LINES-1, 0, functionMenuLabel);
-      //printMenu(LINES-1, 0, functionMenuText);
       resizeDisplayDir(ob);
       break;
     case 4:
-      // printMenu(0, 0, globalMenuText);
       wPrintMenu(0,0,globalMenuLabel);
       break;
     }
@@ -625,12 +608,6 @@ Valid arguments are:\n\
 
 
   // Writing Menus
-  // strcpy(fileMenuText, "!Copy, !Delete, !Edit, !Hidden, !Modify, !Quit, !Rename, !Show, h!Unt, e!Xec");
-  // strcpy(globalMenuText, "c!Olors, !Run command, !Edit file, !Help, !Make dir, !Quit, !Show dir");
-  strcpy(functionMenuTextShort, "<F1>-Down <F2>-Up <F3>-Top <F4>-Bottom <F5>-Refresh <F6>-Mark/Unmark <F7>-All <F8>-None <F9>-Sort");
-  strcpy(functionMenuTextLong, "<F1>-Down <F2>-Up <F3>-Top <F4>-Bottom <F5>-Refresh <F6>-Mark/Unmark <F7>-All <F8>-None <F9>-Sort <F10>-Block");
-  strcpy(modifyMenuText, "Modify: !Owner/Group, !Permissions");
-  strcpy(sortMenuText, "Sort list by - !Date & time, !Name, !Size");
 
   generateDefaultMenus();
   set_escdelay(10);
@@ -640,13 +617,6 @@ Valid arguments are:\n\
 
   initscr();
   refreshMenuLabels();
-
-  // Decide which function menu needs initially printing
-  if (COLS < 89){
-    strcpy(functionMenuText, functionMenuTextShort);
-  } else {
-    strcpy(functionMenuText, functionMenuTextLong);
-  }
 
   memset(&sa, 0, sizeof(struct sigaction));
   sa.sa_handler = sigwinchHandle;
