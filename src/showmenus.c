@@ -72,6 +72,8 @@ extern int showhidden;
 extern int markall;
 extern int viewMode;
 
+extern int plugins;
+
 extern int enterAsShow;
 
 extern int reverse;
@@ -133,7 +135,11 @@ void generateDefaultMenus(){
   addMenuItem(&fileMenu, &fileMenuSize, "f_delete", L"!Delete", 'd');
   addMenuItem(&fileMenu, &fileMenuSize, "f_edit", L"!Edit", 'e');
   addMenuItem(&fileMenu, &fileMenuSize, "f_hidden", L"!Hidden", 'h');
+  addMenuItem(&fileMenu, &fileMenuSize, "f_link", L"!Link", 'l');
   addMenuItem(&fileMenu, &fileMenuSize, "f_modify", L"!Modify", 'm');
+  if (plugins){
+    addMenuItem(&fileMenu, &fileMenuSize, "f_plugin", L"!Plugin", 'p');
+  }
   addMenuItem(&fileMenu, &fileMenuSize, "f_quit", L"!Quit", 'q');
   addMenuItem(&fileMenu, &fileMenuSize, "f_rename", L"!Rename", 'r');
   addMenuItem(&fileMenu, &fileMenuSize, "f_show", L"!Show", 's');

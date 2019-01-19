@@ -61,6 +61,8 @@ int markedinfo = 0;
 int markedauto = 0;
 int useEnvPager = 0;
 
+int plugins = 0; // Not yet implemented
+
 int enterAsShow = 0;
 
 int messageBreak = 0;
