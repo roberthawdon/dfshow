@@ -852,9 +852,9 @@ int SendToPager(char* object)
     strcat(page, esc);
     if (access(object, R_OK) == 0){
       clear();
-      endwin();
+      // endwin();
       e = system(page);
-      initscr();
+      // initscr();
       refreshScreen();
       return e;
     } else {
@@ -890,9 +890,9 @@ int SendToEditor(char* object)
     strcat(editor, esc);
     if (access(object, R_OK) == 0){
       clear();
-      endwin();
+      // endwin();
       e = system(editor);
-      initscr();
+      // initscr();
       refreshScreen();
       return e;
     } else {

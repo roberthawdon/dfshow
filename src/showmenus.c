@@ -166,6 +166,8 @@ void refreshMenuLabels(){
   globalMenuLabel = genMenuDisplayLabel(globalMenu, globalMenuSize, 1);
   fileMenuLabel = genMenuDisplayLabel(fileMenu, fileMenuSize, 1);
   functionMenuLabel = genMenuDisplayLabel(functionMenu, functionMenuSize, 0);
+  modifyMenuLabel = genMenuDisplayLabel(modifyMenu, modifyMenuSize, 1);
+  sortMenuLabel = genMenuDisplayLabel(sortMenu, sortMenuSize, 1);
 }
 
 void unloadMenuLabels(){
