@@ -1574,7 +1574,7 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
 
       displaypos = 0 - hpos;
 
-      endwin();
+      // endwin();
       // printf("LC: %i, TFR: %i, DC: %i\n", list_count, topfileref, displaycount);
 
       printEntry(displaypos, hlinklen, ownerlen, grouplen, authorlen, sizelen, majorlen, minorlen, datelen, namelen, printSelect, list_count, topfileref, ob);

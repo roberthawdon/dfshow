@@ -348,16 +348,20 @@ void copy_file_input(char *file)
       strcpy(newfile, rewrite);
       free(rewrite);
     }
-    if ( check_file(newfile) )
-      {
-        if ( replace_file_confirm_input(newfile) )
-          {
-            copy_file(file, newfile);
-            refreshDirectory(sortmode, 0, selected, 0);
-          }
-      } else {
-      copy_file(file, newfile);
-      refreshDirectory(sortmode, 0, selected, 0);
+    if ( check_dir(dirFromPath(newfile))){
+      if ( check_file(newfile) )
+        {
+          if ( replace_file_confirm_input(newfile) )
+            {
+              copy_file(file, newfile);
+              refreshDirectory(sortmode, 0, selected, 0);
+            }
+        } else {
+        copy_file(file, newfile);
+        refreshDirectory(sortmode, 0, selected, 0);
+      }
+    } else {
+      topLineMessage("Error: Directory Not Found.");
     }
   }
   directory_view_menu_inputs();

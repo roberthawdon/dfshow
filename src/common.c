@@ -303,6 +303,8 @@ void topLineMessage(const char *message){
       *pc = getch();
       switch(*pc)
         {
+        case -1:
+          break;
         default: // Where's the "any" key?
           return;
           break;
