@@ -19,3 +19,4 @@ stamp-*
 /docs/build/*
 *.stackdump
 *~
+valgrind*
