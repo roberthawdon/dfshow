@@ -28,6 +28,7 @@
 #include <sys/stat.h>
 #include <libconfig.h>
 #include <wchar.h>
+#include <signal.h>
 #include "colors.h"
 #include "config.h"
 #include "common.h"

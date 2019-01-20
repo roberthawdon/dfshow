@@ -88,6 +88,8 @@ extern int commandL, infoL, inputL, selectL, displayL, dangerL, dirL, slinkL, ex
 
 extern char *objectWild;
 
+extern int resized;
+
 extern int exitCode;
 
 menuDef *globalMenu;
@@ -313,7 +315,7 @@ int replace_file_confirm_input(char *filename)
   printMenu(0,0, message);
   while(1)
     {
-      *pc = getch();
+      *pc = getch10th();
       switch(*pc)
         {
         case 'y':
@@ -564,7 +566,7 @@ int huntCaseSelectInput()
   while(1)
     {
     huntCaseLoop:
-      *pc = getch();
+      *pc = getch10th();
       switch(*pc)
         {
         case 'y':
@@ -641,7 +643,7 @@ void delete_file_confirm_input(char *file)
   printMenu(0,0, "Delete file? (!Yes/!No)");
   while(1)
     {
-      *pc = getch();
+      *pc = getch10th();
       switch(*pc)
         {
         case 'y':
@@ -680,7 +682,7 @@ void delete_multi_file_confirm_input(results* ob)
             k = 1;
             while(k)
               {
-                *pc = getch();
+                *pc = getch10th();
                 switch(*pc)
                   {
                   case 'y':
@@ -713,7 +715,7 @@ void sort_view_inputs()
   while(1)
     {
       wPrintMenu(0,0,sortMenuLabel);
-      *pc = getch();
+      *pc = getch10th();
       switch(*pc)
         {
         case 27: // ESC Key
@@ -908,7 +910,7 @@ void modify_key_menu_inputs()
   viewMode = 2;
   while(1)
     {
-      *pc = getch();
+      *pc = getch10th();
       switch(*pc)
         {
         case 'o':
@@ -937,7 +939,7 @@ void directory_view_menu_inputs()
       wPrintMenu(LINES-1, 0, functionMenuLabel);
       //signal(SIGWINCH, refreshScreen );
       //sigaction(SIGWINCH, &sa, NULL);
-      *pc = getch();
+      *pc = getch10th();
       if (*pc == menuHotkeyLookup(fileMenu, "f_copy", fileMenuSize)){
         if ( CheckMarked(ob) ) {
           copy_multi_file_input(ob, currentpwd);
@@ -1281,7 +1283,7 @@ void global_menu_inputs()
   }
   while(1)
     {
-      *pc = getch();
+      *pc = getch10th();
       if (*pc == menuHotkeyLookup(globalMenu, "g_colors", globalMenuSize)){
         themeBuilder();
         theme_menu_inputs();
@@ -1306,11 +1308,14 @@ void global_menu_inputs()
           directory_view_menu_inputs();
         }
       } else if (*pc == menuHotkeyLookup(globalMenu, "g_edit", globalMenuSize)) {
-        refreshDirectory(sortmode, topfileref, selected, 0);
-        display_dir(currentpwd, ob, topfileref, selected);
-        wPrintMenu(LINES-1, 0, functionMenuLabel);
-        // printMenu(LINES-1, 0, functionMenuText); // Global menu inputs doesn't include this. Even though it isn't used.
-        global_menu_inputs();
+        edit_file_input();
+        if (historyref == 0){
+          wPrintMenu(0,0,globalMenuLabel);
+        } else {
+          //   display_dir(currentpwd, ob, topfileref, selected);
+          refreshDirectory(sortmode, topfileref, selected, 1);
+          directory_view_menu_inputs();
+        }
       } else if (*pc == menuHotkeyLookup(globalMenu, "g_help", globalMenuSize)) {
         showManPage("show");
         refreshScreen();

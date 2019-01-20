@@ -36,6 +36,7 @@
 char currentpwd[1024];
 
 int viewMode = 0;
+int resized = 0;
 
 char sortmode[5] = "name";
 char timestyle[9] = "locale";
@@ -358,8 +359,22 @@ void refreshScreen()
     }
 }
 
+int getch10th (void) {
+  int ch;
+  do {
+    if (resized) {
+      resized = 0;
+      refreshScreen();
+    }
+    halfdelay (1);
+    ch = getch();
+  } while (ch == ERR || ch == KEY_RESIZE);
+  return ch;
+}
+
 void sigwinchHandle(int sig){
-  refreshScreen();
+  resized = 1;
+  // refreshScreen();
 }
 
 void printHelp(char* programName){

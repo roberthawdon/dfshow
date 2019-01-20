@@ -18,6 +18,7 @@ enum
    GETOPT_SHOWRUNNING_CHAR = (CHAR_MIN - 13)
   };
 
+int getch10th (void);
 void readConfig(const char * confFile);
 int directory_view(char * currentpwd);
 char *getcwd(char *buf, size_t size);
