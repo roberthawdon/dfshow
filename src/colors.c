@@ -662,6 +662,8 @@ void setDefaultTheme(){
 
 void setColors(int pair)
 {
+  // endwin();
+  // printf("CP: %i\n", pair);
   attron(COLOR_PAIR(pair));
   if (lightColorPair[pair]){
     attron(A_BOLD);

@@ -130,6 +130,8 @@ extern int markedauto;
 extern int useEnvPager;
 extern int showProcesses;
 
+extern char sortmode[5];
+
 /* Formatting time in a similar fashion to `ls` */
 static char const *long_time_format[2] =
   {
@@ -476,7 +478,14 @@ void padstring(char *str, int len, char c)
 }
 
 char *genPadding(int num_of_spaces) {
-  char *dest = malloc (sizeof (char) * num_of_spaces + 1);
+  char *dest;
+  int i;
+  if (num_of_spaces < 1){
+    i = 1;
+  } else {
+    i = num_of_spaces;
+  }
+  dest = malloc (sizeof (char) * (i + 1));
   if (num_of_spaces > 0){
     sprintf(dest, "%*s", num_of_spaces, " ");
   } else {
@@ -533,53 +542,53 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   // Owner, Group, Author
   switch(ogavis){
   case 0:
-    ogaval = malloc (sizeof (char));
+    ogaval = malloc (sizeof (char) + 1);
     strcpy(ogaval,"");
     break;
   case 1:
     oglen = (strlen(ob[currentitem].owner));
-    ogaval = malloc (sizeof (char) * oglen + 2);
+    ogaval = malloc (sizeof (char) * (oglen + 2));
     sprintf(ogaval, "%s", ob[currentitem].owner);
     break;
   case 2:
     oglen = (strlen(ob[currentitem].group));
-    ogaval = malloc (sizeof (char) * oglen + 1);
+    ogaval = malloc (sizeof (char) * (oglen + 1));
     sprintf(ogaval, "%s", ob[currentitem].group);
     break;
   case 3:
     oggap = ownerlen - strlen(ob[currentitem].owner) + 1;
     oglen = (strlen(ob[currentitem].owner) + oggap + strlen(ob[currentitem].group));
-    ogaval = malloc (sizeof (char) * oglen + 1);
+    ogaval = malloc (sizeof (char) * (oglen + 1));
     sprintf(ogaval, "%s%s%s", ob[currentitem].owner, genPadding(oggap), ob[currentitem].group);
     break;
   case 4:
     oglen = (strlen(ob[currentitem].author));
-    ogaval = malloc (sizeof (char) * oglen + 1);
+    ogaval = malloc (sizeof (char) * (oglen + 1));
     sprintf(ogaval, "%s", ob[currentitem].author);
     break;
   case 5:
     oggap = ownerlen - strlen(ob[currentitem].owner) + 1;
     oglen = (strlen(ob[currentitem].owner) + oggap + strlen(ob[currentitem].author));
-    ogaval = malloc (sizeof (char) * oglen + 1);
+    ogaval = malloc (sizeof (char) * (oglen + 1));
     sprintf(ogaval, "%s%s%s", ob[currentitem].owner, genPadding(oggap), ob[currentitem].author);
     break;
   case 6:
     gagap = grouplen - strlen(ob[currentitem].group) + 1;
     oglen = (strlen(ob[currentitem].group) + gagap + strlen(ob[currentitem].author));
-    ogaval = malloc (sizeof (char) * oglen + 1);
+    ogaval = malloc (sizeof (char) * (oglen + 1));
     sprintf(ogaval, "%s%s%s", ob[currentitem].group, genPadding(gagap), ob[currentitem].author);
     break;
   case 7:
     oggap = ownerlen - strlen(ob[currentitem].owner) + 1;
     gagap = grouplen - strlen(ob[currentitem].group) + 1;
     oglen = (strlen(ob[currentitem].owner) + oggap + strlen(ob[currentitem].group) + gagap + strlen(ob[currentitem].author));
-    ogaval = malloc (sizeof (char) * oglen + 1);
+    ogaval = malloc (sizeof (char) * (oglen + 1));
     sprintf(ogaval, "%s%s%s%s%s", ob[currentitem].owner, genPadding(oggap), ob[currentitem].group, genPadding(gagap), ob[currentitem].author);
     break;
   default:
     oggap = ownerlen - strlen(ob[currentitem].owner) + 1;
     oglen = (strlen(ob[currentitem].owner) + oggap + strlen(ob[currentitem].group));
-    ogaval = malloc (sizeof (char) * oglen + 1);
+    ogaval = malloc (sizeof (char) * (oglen + 1));
     sprintf(ogaval, "%s%s%s", ob[currentitem].owner, genPadding(oggap), ob[currentitem].group);
     break;
   }
@@ -600,18 +609,20 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
     mmpad = sizelen + 1;
   }
 
-  s4 = genPadding(mmpad);
+  if (mmpad > 0 ){
+    s4 = genPadding(mmpad);
+  }
 
   if ((ob[currentitem].major > 0) || (ob[currentitem].minor > 0)){
     // If either of these are not 0, then we're dealing with a Character or Block device.
-    sizestring = malloc (sizeof (char) * sizelen + 5);
+    sizestring = malloc (sizeof (char) * (sizelen + 5));
     sprintf(sizestring, "%i,%s%i", ob[currentitem].major, s4, ob[currentitem].minor);
   } else {
     if (human){
       sizestring = malloc (sizeof (char) * 10);
       readableSize(ob[currentitem].size, sizestring, si);
     } else {
-      sizestring = malloc (sizeof (char) * sizelen + 1);
+      sizestring = malloc (sizeof (char) * (sizelen + 1));
       sprintf(sizestring, "%lu", ob[currentitem].size);
     }
   }
@@ -629,9 +640,15 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
     datepad = datelen - wcslen(ob[currentitem].datedisplay);
   }
 
-  s1 = genPadding(hlinkstart);
-  s2 = genPadding(sizepad);
-  s3 = genPadding(datepad);
+  if (hlinkstart > 0){
+    s1 = genPadding(hlinkstart);
+  }
+  if (sizepad > 0){
+    s2 = genPadding(sizepad);
+  }
+  if (datepad > 0){
+    s3 = genPadding(datepad);
+  }
 
   if ( *ob[currentitem].marked ){
     strcpy(marked, "*");
@@ -1291,7 +1308,7 @@ char *markedDisplay(results* ob)
     if (markedSize == 0){
       markedSizeString = malloc (sizeof (char) * 1);
     } else {
-      markedSizeString = malloc (sizeof (char) * log10(markedSize) + 1);
+      markedSizeString = malloc (sizeof (char) * (log10(markedSize) + 1));
     }
     sprintf(markedSizeString, "%lu", markedSize);
   }
@@ -1473,12 +1490,12 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
     if (sused == 0){
       susedString = malloc (sizeof (char) * 1);
     } else {
-      susedString = malloc (sizeof (char) * log10(sused) + 1);
+      susedString = malloc (sizeof (char) * (log10(sused) + 1));
     }
     if (savailable == 0){
       savailableString = malloc (sizeof (char) * 1);
     } else {
-      savailableString = malloc (sizeof (char) * log10(savailable) + 1);
+      savailableString = malloc (sizeof (char) * (log10(savailable) + 1));
     }
     sprintf(susedString, "%lu", sused);
     sprintf(savailableString, "%lu", savailable);
@@ -1539,23 +1556,34 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
     displaycount = displaysize;
   }
 
-  for(list_count = 0; list_count < displaycount; ){
-    // Setting highlight
-    if (list_count == selected) {
-      printSelect = 1;
+  if (displaycount < 0){
+    displaycount = 0;
+  }
+
+  for(list_count = 0; list_count < displaycount; list_count++ ){
+    if (list_count < totalfilecount){
+      // Setting highlight
+      if (list_count == selected) {
+        printSelect = 1;
+      } else {
+        printSelect = 0;
+      }
+
+      ownstart = hlinklen + 2;
+      hlinkstart = ownstart - 1 - *ob[list_count + topfileref].hlinklens;
+
+      displaypos = 0 - hpos;
+
+      // endwin();
+      // printf("LC: %i, TFR: %i, DC: %i\n", list_count, topfileref, displaycount);
+
+      printEntry(displaypos, hlinklen, ownerlen, grouplen, authorlen, sizelen, majorlen, minorlen, datelen, namelen, printSelect, list_count, topfileref, ob);
+
+      //list_count++;
     } else {
-      printSelect = 0;
+      break;
     }
-
-    ownstart = hlinklen + 2;
-    hlinkstart = ownstart - 1 - *ob[list_count + topfileref].hlinklens;
-
-    displaypos = 0 - hpos;
-
-    printEntry(displaypos, hlinklen, ownerlen, grouplen, authorlen, sizelen, majorlen, minorlen, datelen, namelen, printSelect, list_count, topfileref, ob);
-
-    list_count++;
-    }
+  }
 
   if (slinklen == 0){
     maxdisplaywidth = entryMetaLen + namelen;
@@ -1636,6 +1664,7 @@ void resizeDisplayDir(results* ob){
       topfileref = totalfilecount - (LINES - 5);
     }
   }
+  // refreshDirectory(sortmode, topfileref, selected, 0);
   display_dir(currentpwd, ob, topfileref, selected);
 }
 
