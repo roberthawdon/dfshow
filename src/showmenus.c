@@ -223,10 +223,12 @@ void refreshDirectory(char *sortmode, int origtopfileref, int origselected, int 
       strcpy(currentselectname, ob[origselected].name);
     }
   }
-  free(ob);
-  ob = get_dir(currentpwd);
-  clear_workspace();
-  reorder_ob(ob, sortmode);
+  if (destructive != -1){
+    free(ob);
+    ob = get_dir(currentpwd);
+    clear_workspace();
+    reorder_ob(ob, sortmode);
+  }
   if (destructive > 0){
     i = findResultByName(ob, currentselectname);
     if (i != 0){

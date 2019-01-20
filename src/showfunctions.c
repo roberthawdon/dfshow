@@ -1664,7 +1664,7 @@ void resizeDisplayDir(results* ob){
       topfileref = totalfilecount - (LINES - 5);
     }
   }
-  // refreshDirectory(sortmode, topfileref, selected, 0);
-  display_dir(currentpwd, ob, topfileref, selected);
+  refreshDirectory(sortmode, topfileref, selected, -1);
+  // display_dir(currentpwd, ob, topfileref, selected);
 }
 
