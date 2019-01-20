@@ -112,6 +112,10 @@ menuDef *sortMenu;
 int sortMenuSize = 0;
 wchar_t *sortMenuLabel;
 
+menuDef *linkMenu;
+int linkMenuSize = 0;
+wchar_t *linkMenuLabel;
+
 void modify_owner_input();
 
 void generateDefaultMenus(){
@@ -160,6 +164,11 @@ void generateDefaultMenus(){
   addMenuItem(&sortMenu, &sortMenuSize, "s_date", L"Sort list by - !Date & time", 'd');
   addMenuItem(&sortMenu, &sortMenuSize, "s_name", L"!Name", 'n');
   addMenuItem(&sortMenu, &sortMenuSize, "s_size", L"!Size", 's');
+
+  // Link Menu
+  addMenuItem(&linkMenu, &linkMenuSize, "l_hard", L"Link type - !Hard", 'h');
+  addMenuItem(&linkMenu, &linkMenuSize, "l_symbolic", L"!Symbolic (enter = S)", 's');
+
 }
 
 void refreshMenuLabels(){
@@ -168,6 +177,7 @@ void refreshMenuLabels(){
   functionMenuLabel = genMenuDisplayLabel(functionMenu, functionMenuSize, 0);
   modifyMenuLabel = genMenuDisplayLabel(modifyMenu, modifyMenuSize, 1);
   sortMenuLabel = genMenuDisplayLabel(sortMenu, sortMenuSize, 1);
+  linkMenuLabel = genMenuDisplayLabel(linkMenu, linkMenuSize, 1);
 }
 
 void unloadMenuLabels(){
@@ -925,9 +935,30 @@ void modify_permissions_input()
 
 }
 
+void link_key_menu_inputs()
+{
+  viewMode = 5;
+  wPrintMenu(0,0,linkMenuLabel);
+  while(1)
+    {
+      *pc = getch10th();
+      if (*pc == menuHotkeyLookup(linkMenu, "l_hard", linkMenuSize)){
+        topLineMessage("TODO: Needs implementing");
+        directory_view_menu_inputs();
+      } else if (*pc == menuHotkeyLookup(linkMenu, "l_symbolic", linkMenuSize) || *pc == 10){
+        topLineMessage("TODO: Needs implementing");
+        directory_view_menu_inputs();
+      } else if (*pc == 27){
+        // ESC Key
+        directory_view_menu_inputs();
+      }
+    }
+}
+
 void modify_key_menu_inputs()
 {
   viewMode = 2;
+  wPrintMenu(0,0,modifyMenuLabel);
   while(1)
     {
       *pc = getch10th();
@@ -1008,10 +1039,9 @@ void directory_view_menu_inputs()
         selected = findResultByName(ob, currentfilename);
         refreshDirectory(sortmode, topfileref, selected, 0);
       } else if (*pc == menuHotkeyLookup(fileMenu, "f_link", fileMenuSize)){
-        topLineMessage("TODO: Needs implementing");
+        link_key_menu_inputs();
       } else if (*pc == menuHotkeyLookup(fileMenu, "f_modify", fileMenuSize)){
         //printMenu(0, 0, modifyMenuText);
-        wPrintMenu(0,0,modifyMenuLabel);
         modify_key_menu_inputs();
       } else if (*pc == menuHotkeyLookup(fileMenu, "f_quit", fileMenuSize)){
           if (historyref > 1){

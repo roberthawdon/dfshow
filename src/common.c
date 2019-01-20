@@ -68,7 +68,7 @@ void addMenuItem(menuDef **dfMenu, int *pos, char* refLabel, wchar_t* displayLab
   if (menuPos == 0){
     tmp = malloc(sizeof(menuDef) * 2);
   } else {
-    tmp = realloc(*dfMenu, (menuPos + 1) * sizeof(menuDef) + 1 );
+    tmp = realloc(*dfMenu, (menuPos + 1) * (sizeof(menuDef) + 1) );
   }
   if (tmp){
     *dfMenu = tmp;

@@ -88,6 +88,7 @@ extern wchar_t *fileMenuLabel;
 extern wchar_t *functionMenuLabel;
 extern wchar_t *modifyMenuLabel;
 extern wchar_t *sortMenuLabel;
+extern wchar_t *linkMenuLabel;
 
 int setMarked(char* markedinput);
 int checkStyle(char* styleinput);
@@ -355,6 +356,11 @@ void refreshScreen()
       break;
     case 4:
       wPrintMenu(0,0,globalMenuLabel);
+      break;
+    case 5:
+      wPrintMenu(0, 0, linkMenuLabel);
+      wPrintMenu(LINES-1, 0, functionMenuLabel);
+      resizeDisplayDir(ob);
       break;
     }
 }
