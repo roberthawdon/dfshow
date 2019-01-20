@@ -112,6 +112,8 @@ menuDef *sortMenu;
 int sortMenuSize = 0;
 wchar_t *sortMenuLabel;
 
+void modify_owner_input();
+
 void generateDefaultMenus(){
   // Global Menu
   addMenuItem(&globalMenu, &globalMenuSize, "g_colors", L"c!Olors", 'o');
@@ -766,65 +768,70 @@ void modify_group_input()
   size_t bufsize;
   char errortxt[256];
   int i;
+  int status;
 
   move(0,0);
   clrtoeol();
   mvprintw(0, 0, "Set Group:");
   curs_set(TRUE);
   move(0,11);
-  readline(groupinput, 256, "");
+  status = readline(groupinput, 256, "");
   curs_set(FALSE);
 
-  bufsize = sysconf(_SC_GETPW_R_SIZE_MAX);
-  if (bufsize == -1)          /* Value was indeterminate */
-    {
-      bufsize = 16384;        /* Should be more than enough */
-    }
-
-  buf = malloc(bufsize);
-  if (buf == NULL) {
-    perror("malloc");
-    exit(EXIT_FAILURE);
-  }
-
-  s = getgrnam_r(groupinput, &grp, buf, bufsize, &gresult);
-  free(buf);
-  if (gresult == NULL){
-    if (s == 0){
-      sprintf(errmessage, "Invalid group: %s", groupinput);
-      topLineMessage(errmessage);
-    }
-  } else {
-    sprintf(gids, "%d", gresult->gr_gid);
-
-    if ( CheckMarked(ob) ){
-      for (i = 0; i < totalfilecount; i++)
-        {
-          if ( *ob[i].marked )
-            {
-              strcpy(ofile, currentpwd);
-              if (!check_last_char(ofile, "/")){
-                strcat(ofile, "/");
-              }
-              strcat(ofile, ob[i].name);
-              UpdateOwnerGroup(ofile, uids, gids);
-            }
-        }
-    } else {
-      strcpy(ofile, currentpwd);
-      if (!check_last_char(ofile, "/")){
-        strcat(ofile, "/");
+  if (status != -1){
+    bufsize = sysconf(_SC_GETPW_R_SIZE_MAX);
+    if (bufsize == -1)          /* Value was indeterminate */
+      {
+        bufsize = 16384;        /* Should be more than enough */
       }
-      strcat(ofile, ob[selected].name);
 
-      if (UpdateOwnerGroup(ofile, uids, gids) == -1) {
-        sprintf(errmessage, "Error: %s", strerror(errno));
+    buf = malloc(bufsize);
+    if (buf == NULL) {
+      perror("malloc");
+      exit(EXIT_FAILURE);
+    }
+
+    s = getgrnam_r(groupinput, &grp, buf, bufsize, &gresult);
+    free(buf);
+    if (gresult == NULL){
+      if (s == 0){
+        sprintf(errmessage, "Invalid group: %s", groupinput);
         topLineMessage(errmessage);
       }
-    }
-    refreshDirectory(sortmode, topfileref, selected, 0);
+    } else {
+      sprintf(gids, "%d", gresult->gr_gid);
 
-    directory_view_menu_inputs();
+      if ( CheckMarked(ob) ){
+        for (i = 0; i < totalfilecount; i++)
+          {
+            if ( *ob[i].marked )
+              {
+                strcpy(ofile, currentpwd);
+                if (!check_last_char(ofile, "/")){
+                  strcat(ofile, "/");
+                }
+                strcat(ofile, ob[i].name);
+                UpdateOwnerGroup(ofile, uids, gids);
+              }
+          }
+      } else {
+        strcpy(ofile, currentpwd);
+        if (!check_last_char(ofile, "/")){
+          strcat(ofile, "/");
+        }
+        strcat(ofile, ob[selected].name);
+
+        if (UpdateOwnerGroup(ofile, uids, gids) == -1) {
+          sprintf(errmessage, "Error: %s", strerror(errno));
+          topLineMessage(errmessage);
+        }
+      }
+      refreshDirectory(sortmode, topfileref, selected, 0);
+
+      directory_view_menu_inputs();
+    }
+  } else {
+    modify_owner_input();
   }
 }
 
@@ -833,43 +840,48 @@ void modify_owner_input()
   struct passwd pwd;
   struct passwd *presult;
   size_t bufsize;
+  int status;
 
   move(0,0);
   clrtoeol();
   mvprintw(0, 0, "Set Owner:");
   curs_set(TRUE);
   move(0,11);
-  readline(ownerinput, 256, "");
+  status = readline(ownerinput, 256, "");
   curs_set(FALSE);
 
-  bufsize = sysconf(_SC_GETPW_R_SIZE_MAX);
-  if (bufsize == -1)          /* Value was indeterminate */
-    {
-      bufsize = 16384;        /* Should be more than enough */
+  if (status != -1 ){
+    bufsize = sysconf(_SC_GETPW_R_SIZE_MAX);
+    if (bufsize == -1)          /* Value was indeterminate */
+      {
+        bufsize = 16384;        /* Should be more than enough */
+      }
+
+    buf = malloc(bufsize);
+    if (buf == NULL) {
+      perror("malloc");
+      exit(EXIT_FAILURE);
     }
 
-  buf = malloc(bufsize);
-  if (buf == NULL) {
-    perror("malloc");
-    exit(EXIT_FAILURE);
-  }
-
-  s = getpwnam_r(ownerinput, &pwd, buf, bufsize, &presult);
-  free(buf);
-  if (presult == NULL){
-    if (s == 0){
-      sprintf(errmessage, "Invalid user: %s", ownerinput);
-      topLineMessage(errmessage);
+    s = getpwnam_r(ownerinput, &pwd, buf, bufsize, &presult);
+    free(buf);
+    if (presult == NULL){
+      if (s == 0){
+        sprintf(errmessage, "Invalid user: %s", ownerinput);
+        topLineMessage(errmessage);
+      }
+    } else {
+      sprintf(uids, "%d", presult->pw_uid);
+      modify_group_input();
     }
   } else {
-    sprintf(uids, "%d", presult->pw_uid);
-    modify_group_input();
+    directory_view_menu_inputs();
   }
 }
 
 void modify_permissions_input()
 {
-  int newperm, i;
+  int newperm, i, status;
   char perms[4];
   char *ptr;
   char pfile[1024];
@@ -878,34 +890,36 @@ void modify_permissions_input()
   mvprintw(0, 0, "Modify Permissions:");
   curs_set(TRUE);
   move(0,20);
-  readline(perms, 5, "");
+  status = readline(perms, 5, "");
   curs_set(FALSE);
 
-  newperm = strtol(perms, &ptr, 8); // Convert string to Octal and then store it as an int. Yay, numbers.
+  if (status != -1 ){
+    newperm = strtol(perms, &ptr, 8); // Convert string to Octal and then store it as an int. Yay, numbers.
 
-  if ( CheckMarked(ob) ) {
-    //topLineMessage("Multi file permissions coming soon");
-    for (i = 0; i < totalfilecount; i++)
-      {
-        if ( *ob[i].marked )
-          {
-            strcpy(pfile, currentpwd);
-            if (!check_last_char(pfile, "/")){
-              strcat(pfile, "/");
+    if ( CheckMarked(ob) ) {
+      //topLineMessage("Multi file permissions coming soon");
+      for (i = 0; i < totalfilecount; i++)
+        {
+          if ( *ob[i].marked )
+            {
+              strcpy(pfile, currentpwd);
+              if (!check_last_char(pfile, "/")){
+                strcat(pfile, "/");
+              }
+              strcat(pfile, ob[i].name);
+              chmod(pfile, newperm);
             }
-            strcat(pfile, ob[i].name);
-            chmod(pfile, newperm);
-          }
+        }
+    } else {
+      strcpy(pfile, currentpwd);
+      if (!check_last_char(pfile, "/")){
+        strcat(pfile, "/");
       }
-  } else {
-    strcpy(pfile, currentpwd);
-    if (!check_last_char(pfile, "/")){
-      strcat(pfile, "/");
+      strcat(pfile, ob[selected].name);
+      chmod(pfile, newperm);
     }
-    strcat(pfile, ob[selected].name);
-    chmod(pfile, newperm);
+    refreshDirectory(sortmode, topfileref, selected, 0);
   }
-  refreshDirectory(sortmode, topfileref, selected, 0);
 
   directory_view_menu_inputs();
 
@@ -917,18 +931,14 @@ void modify_key_menu_inputs()
   while(1)
     {
       *pc = getch10th();
-      switch(*pc)
-        {
-        case 'o':
-          modify_owner_input();
-          break;
-        case 'p':
-          modify_permissions_input();
-          break;
-        case 27: // ESC Key
-          directory_view_menu_inputs();
-          break;
-        }
+      if (*pc == menuHotkeyLookup(modifyMenu, "m_owner", modifyMenuSize)){
+        modify_owner_input();
+      } else if (*pc == menuHotkeyLookup(modifyMenu, "m_perms", modifyMenuSize)){
+        modify_permissions_input();
+      } else if (*pc == 27){
+        // ESC Key
+        directory_view_menu_inputs();
+      }
     }
 }
 
