@@ -272,6 +272,7 @@ void printMenu(int line, int col, char *menustring)
 
 void wPrintLine(int line, int col, wchar_t *textString){
   int i;
+  move(line,col);
   clrtoeol();
   for ( i = 0; i < wcslen(textString) ; i++){
     mvprintw(line, col + i, "%lc", textString[i]);
