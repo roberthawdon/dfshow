@@ -127,6 +127,7 @@ void generateDefaultMenus(){
   addMenuItem(&globalMenu, &globalMenuSize, "g_mkdir", L"!Make dir", 'm');
   addMenuItem(&globalMenu, &globalMenuSize, "g_quit", L"!Quit", 'q');
   addMenuItem(&globalMenu, &globalMenuSize, "g_show", L"!Show dir", 's');
+  addMenuItem(&globalMenu, &globalMenuSize, "g_touch", L"!Touch file", 't');
 
   // File Menu
   addMenuItem(&fileMenu, &fileMenuSize, "f_copy", L"!Copy", 'c');
@@ -141,6 +142,7 @@ void generateDefaultMenus(){
   addMenuItem(&fileMenu, &fileMenuSize, "f_quit", L"!Quit", 'q');
   addMenuItem(&fileMenu, &fileMenuSize, "f_rename", L"!Rename", 'r');
   addMenuItem(&fileMenu, &fileMenuSize, "f_show", L"!Show", 's');
+  addMenuItem(&fileMenu, &fileMenuSize, "f_touch", L"!Touch", 't');
   addMenuItem(&fileMenu, &fileMenuSize, "f_uhunt", L"h!Unt", 'u');
   addMenuItem(&fileMenu, &fileMenuSize, "f_xexec", L"e!Xec", 'x');
 
@@ -1116,6 +1118,9 @@ void directory_view_menu_inputs()
               // display_dir(currentpwd, ob, topfileref, selected);
             }
           }
+      } else if (*pc == menuHotkeyLookup(fileMenu, "f_touch", fileMenuSize)){
+        topLineMessage("TODO: Needs implementing");
+        directory_view_menu_inputs();
       } else if (*pc == menuHotkeyLookup(fileMenu, "f_uhunt", fileMenuSize)){
         e = huntCaseSelectInput();
         if (e != -1){
@@ -1385,6 +1390,9 @@ void global_menu_inputs()
         }
       } else if (*pc == menuHotkeyLookup(globalMenu, "g_show", globalMenuSize)) {
         show_directory_input();
+      } else if (*pc == menuHotkeyLookup(globalMenu, "g_touch", globalMenuSize)) {
+        topLineMessage("TODO: Needs implementing");
+        wPrintMenu(0,0,globalMenuLabel);
       } else if (*pc == 27) {
         if (historyref != 0){
           directory_view_menu_inputs();
