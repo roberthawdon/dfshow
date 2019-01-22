@@ -623,9 +623,9 @@ void huntInput(int selected, int charcase)
   move(0,0);
   clrtoeol();
   mvprintw(0, 0, inputmessage);
-  curs_set(TRUE);
+  //curs_set(TRUE);
   move(0, strlen(inputmessage) + 1);
-  curs_set(FALSE);
+  //curs_set(FALSE);
   if (readline(regexinput, 1024, "") == -1) {
     abortinput = 1;
   } else {
@@ -937,6 +937,35 @@ void modify_permissions_input()
 
 }
 
+void hardlink_input(char *file)
+{
+  char inputmessage[32];
+  char target[1024];
+  strcpy(target, currentpwd);
+  if (!check_last_char(target, "/")){
+    strcat(target, "/");
+  }
+  strcpy(inputmessage, "Hard link to: ");
+  move(0,0);
+  clrtoeol();
+  mvprintw(0,0,inputmessage);
+  // curs_set(TRUE);
+  move(0, strlen(inputmessage) + 1);
+  if (readline(target, 1024, target) != -1){
+    if (check_dir(dirFromPath(target))){
+      if (check_file(target)){
+        topLineMessage("Error: File exists.");
+      } else {
+        link(file, target);
+        refreshDirectory(sortmode, 0, selected, 0);
+      }
+    } else {
+      topLineMessage("Error: Directory Not Found.");
+    }
+  }
+  directory_view_menu_inputs();
+}
+
 void link_key_menu_inputs()
 {
   viewMode = 5;
@@ -945,8 +974,18 @@ void link_key_menu_inputs()
     {
       *pc = getch10th();
       if (*pc == menuHotkeyLookup(linkMenu, "l_hard", linkMenuSize)){
-        topLineMessage("TODO: Needs implementing");
-        directory_view_menu_inputs();
+        // topLineMessage("TODO: Needs implementing");
+        strcpy(selfile, currentpwd);
+        if (!check_last_char(selfile, "/")){
+          strcat(selfile, "/");
+        }
+        strcat(selfile, ob[selected].name);
+        if (!check_dir(selfile)){
+          hardlink_input(selfile);
+        } else {
+          topLineMessage("Error: Selected object is a directory.");
+          directory_view_menu_inputs();
+        }
       } else if (*pc == menuHotkeyLookup(linkMenu, "l_symbolic", linkMenuSize) || *pc == 10){
         topLineMessage("TODO: Needs implementing");
         directory_view_menu_inputs();
