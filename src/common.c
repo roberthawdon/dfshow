@@ -108,6 +108,8 @@ wchar_t * genMenuDisplayLabel(menuDef* dfMenu, int size, int comma){
       currentLen = currentLen + dfMenu[i].displayLabelSize;
       if ( currentLen - 1 < COLS){
         wcscpy(output, dfMenu[i].displayLabel);
+      } else if ( currentLen +1 > COLS && i == 0){
+        wcscpy(output, L"");
       }
     } else {
       if (comma){
