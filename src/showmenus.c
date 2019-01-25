@@ -937,15 +937,29 @@ void modify_permissions_input()
 
 }
 
-void hardlink_input(char *file)
+int symLinkLocation()
+{
+  int result = 0;
+  // do some things
+  return(result);
+}
+
+void linktext_input(char *file, int symbolic)
 {
   char inputmessage[32];
+  char typeText[9];
   char target[1024];
+  int relative;
   strcpy(target, currentpwd);
   if (!check_last_char(target, "/")){
     strcat(target, "/");
   }
-  strcpy(inputmessage, "Hard link to: ");
+  if (symbolic){
+    strcpy(typeText, "Symbolic");
+  } else {
+    strcpy(typeText, "Hard");
+  }
+  sprintf(inputmessage, "%s link to: ", typeText);
   move(0,0);
   clrtoeol();
   mvprintw(0,0,inputmessage);
@@ -956,7 +970,16 @@ void hardlink_input(char *file)
       if (check_file(target)){
         topLineMessage("Error: File exists.");
       } else {
-        link(file, target);
+        if (symbolic){
+          relative = symLinkLocation();
+          if (relative){
+            // Do a thing
+          } else {
+            symlink(file, target);
+          }
+        } else {
+          link(file, target);
+        }
         refreshDirectory(sortmode, 0, selected, 0);
       }
     } else {
@@ -970,24 +993,25 @@ void link_key_menu_inputs()
 {
   viewMode = 5;
   wPrintMenu(0,0,linkMenuLabel);
+  strcpy(selfile, currentpwd);
+  if (!check_last_char(selfile, "/")){
+    strcat(selfile, "/");
+  }
+  strcat(selfile, ob[selected].name);
   while(1)
     {
       *pc = getch10th();
       if (*pc == menuHotkeyLookup(linkMenu, "l_hard", linkMenuSize)){
         // topLineMessage("TODO: Needs implementing");
-        strcpy(selfile, currentpwd);
-        if (!check_last_char(selfile, "/")){
-          strcat(selfile, "/");
-        }
-        strcat(selfile, ob[selected].name);
         if (!check_dir(selfile)){
-          hardlink_input(selfile);
+          linktext_input(selfile, 0);
         } else {
           topLineMessage("Error: Selected object is a directory.");
           directory_view_menu_inputs();
         }
       } else if (*pc == menuHotkeyLookup(linkMenu, "l_symbolic", linkMenuSize) || *pc == 10){
-        topLineMessage("TODO: Needs implementing");
+        // topLineMessage("TODO: Needs implementing");
+        linktext_input(selfile, 1);
         directory_view_menu_inputs();
       } else if (*pc == 27){
         // ESC Key
@@ -1080,7 +1104,11 @@ void directory_view_menu_inputs()
         selected = findResultByName(ob, currentfilename);
         refreshDirectory(sortmode, topfileref, selected, 0);
       } else if (*pc == menuHotkeyLookup(fileMenu, "f_link", fileMenuSize)){
-        link_key_menu_inputs();
+        if ( !CheckMarked(ob) ) {
+          link_key_menu_inputs();
+        } else {
+          topLineMessage("Error: Links can only be made against single files.");
+        }
       } else if (*pc == menuHotkeyLookup(fileMenu, "f_modify", fileMenuSize)){
         //printMenu(0, 0, modifyMenuText);
         modify_key_menu_inputs();

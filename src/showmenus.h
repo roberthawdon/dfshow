@@ -1,7 +1,8 @@
 void generateDefaultMenus();
 void refreshMenuLabels();
 void unloadMenuLabels();
-void hardlink_input(int selected);
+int symLinkLocation();
+void linktext_input(int selected, int symbolic);
 void link_key_menu_inputs();
 void modify_key_menu_inputs();
 void modify_owner_input();
