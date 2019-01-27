@@ -116,6 +116,10 @@ menuDef *linkMenu;
 int linkMenuSize = 0;
 wchar_t *linkMenuLabel;
 
+menuDef *linkLocationMenu;
+int linkLocationMenuSize = 0;
+wchar_t *linkLocationMenuLabel;
+
 void modify_owner_input();
 
 void generateDefaultMenus(){
@@ -159,7 +163,7 @@ void generateDefaultMenus(){
   addMenuItem(&functionMenu, &functionMenuSize, "f_10", L"<F10>-Block", 274);
 
   // Modify Menu
-  addMenuItem(&modifyMenu, &modifyMenuSize, "m_owner", L"Modify: !Owner/Group", 'o');
+  addMenuItem(&modifyMenu, &modifyMenuSize, "m_owner", L"Modify - !Owner/Group", 'o');
   addMenuItem(&modifyMenu, &modifyMenuSize, "m_perms", L"!Permissions", 'p');
 
   // Sort Menu
@@ -168,8 +172,12 @@ void generateDefaultMenus(){
   addMenuItem(&sortMenu, &sortMenuSize, "s_size", L"!Size", 's');
 
   // Link Menu
-  addMenuItem(&linkMenu, &linkMenuSize, "l_hard", L"Link type - !Hard", 'h');
+  addMenuItem(&linkMenu, &linkMenuSize, "l_hard", L"Link Type - !Hard", 'h');
   addMenuItem(&linkMenu, &linkMenuSize, "l_symbolic", L"!Symbolic (enter = S)", 's');
+
+  // Link Location Menu
+  addMenuItem(&linkLocationMenu, &linkLocationMenuSize, "l_absolute", L"Link Location - !Absolute", 'a');
+  addMenuItem(&linkLocationMenu, &linkLocationMenuSize, "l_relative", L"!Relative (enter = R)", 'r');
 
 }
 
@@ -180,6 +188,7 @@ void refreshMenuLabels(){
   modifyMenuLabel = genMenuDisplayLabel(modifyMenu, modifyMenuSize, 1);
   sortMenuLabel = genMenuDisplayLabel(sortMenu, sortMenuSize, 1);
   linkMenuLabel = genMenuDisplayLabel(linkMenu, linkMenuSize, 1);
+  linkLocationMenuLabel = genMenuDisplayLabel(linkLocationMenu, linkLocationMenuSize, 1);
 }
 
 void unloadMenuLabels(){
@@ -940,7 +949,23 @@ void modify_permissions_input()
 int symLinkLocation()
 {
   int result = 0;
-  // do some things
+  char message[1024];
+  wPrintMenu(0,0,linkLocationMenuLabel);
+  while(1)
+    {
+      *pc = getch10th();
+      if (*pc == menuHotkeyLookup(linkLocationMenu, "l_absolute", linkLocationMenuSize)){
+        result = 0;
+        break;
+      } else if (*pc == menuHotkeyLookup(linkLocationMenu, "l_relative", linkLocationMenuSize) || *pc == 10){
+        result = 1;
+        topLineMessage("TODO: Needs implementing");
+        break;
+      } else if (*pc == 27){
+        // ESC Key
+        directory_view_menu_inputs();
+      }
+    }
   return(result);
 }
 
