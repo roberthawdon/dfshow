@@ -402,6 +402,8 @@ int wReadLine(wchar_t *buffer, int buflen, wchar_t *oldbuf)
       } else {
         beep();
       }
+    } else if (c == 0) {
+      // Do nothing
     } else {
       beep();
     }
