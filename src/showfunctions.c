@@ -151,6 +151,11 @@ int checkRunningEnv(){
   return i;
 }
 
+char *getRelativePath(char *file, char *target)
+{
+  char *result;
+}
+
 int wildcard(const char *value, char *wcard) {
 
     int vsize = (int)strlen(value);

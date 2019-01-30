@@ -959,7 +959,6 @@ int symLinkLocation()
         break;
       } else if (*pc == menuHotkeyLookup(linkLocationMenu, "l_relative", linkLocationMenuSize) || *pc == 10){
         result = 1;
-        topLineMessage("TODO: Needs implementing");
         break;
       } else if (*pc == 27){
         // ESC Key
@@ -999,6 +998,7 @@ void linktext_input(char *file, int symbolic)
           relative = symLinkLocation();
           if (relative){
             // Do a thing
+            topLineMessage("TODO: Needs implementing");
           } else {
             symlink(file, target);
           }
