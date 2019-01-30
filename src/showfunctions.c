@@ -153,7 +153,24 @@ int checkRunningEnv(){
 
 char *getRelativePath(char *file, char *target)
 {
-  char *result;
+  char *result = malloc(sizeof(char) * 1);
+  char *work = malloc(sizeof(char) * 1);
+  int i, c;
+
+  c = strlen(file);
+  if (strlen(target) < c){
+    c = strlen(target);
+  }
+
+  // for (i = 0; i < c; i++){
+  //   work = realloc(work, (sizeof(char) * (1 + i)));
+  //   if
+  //   work[i] = 
+  // }
+
+  free(work);
+
+  return(result);
 }
 
 int wildcard(const char *value, char *wcard) {
