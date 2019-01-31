@@ -153,80 +153,148 @@ int checkRunningEnv(){
 
 char *getRelativePath(char *file, char *target)
 {
+  typedef struct {
+    char directories[256];
+  } path;
+
   char *result;
-  char *work = malloc(sizeof(char) * 1);
-  int i, c, workLen, resultLen, up;
-  // struct {
-  //   directories[256];
-  // }
+  // char *work = malloc(sizeof(char) * 1);
+  int i, j, e, c, workLen, resultLen, up;
+  path *fileStruct, *targetStruct;
+  int currentFileIndex, fileLen, targetLen, commonPath = 0;
 
   workLen = 0;
   up = 0;
 
-  // Get length of shortest string
+  fileStruct = malloc(sizeof(path) + 1);
+  targetStruct = malloc(sizeof(path) + 1);
+
+  // Store sections of file in structure
+  e = -1;
+  j = 0;
   c = strlen(file);
-  if (strlen(target) < c){
-    c = strlen(target);
-  }
 
-  // From the beginning, find identical characters.
-  for (i = 0; i < c; i++){
-    work = realloc(work, (sizeof(char) * (1 + i)));
-    if (file[i] == target[i]){
-        work[i] = file[i];
-      } else {
-        work[i] = '\0';
-        i = c;
-      }
-    workLen++;
-  }
-
-  // Make sure the last character is a '/', keep repeating until true.
-  i = workLen - 1;
-  while(i <= workLen && work[i] != '/'){
-    work[i] = '\0'; // This may be inefficient, but it should be fine for this purpose.
-    i--;
-    workLen = i;
-  }
-
-  // Building relative directory structure.
-  // Calculating how many directories we need to go up.
-  for (i = 0; i < strlen(file); i++){
+  for(i = 0; i < c; i++){
     if (file[i] == '/'){
-      up++;
+      fileStruct[e].directories[j] = '\0';
+      e++;
+      fileStruct = realloc(fileStruct, sizeof(path) * (1 + e));
+      j=0;
+    } else {
+      fileStruct[e].directories[j] = file[i];
+      j++;
     }
   }
-  for (i = 0; i < workLen; i++){
-    if (work[i] == '/'){
-      up--;
+  fileStruct[e].directories[j] = '\0';
+  fileLen = e + 1;
+  currentFileIndex = e;
+
+  // Store sections of target in structure
+  e = -1;
+  j = 0;
+  c = strlen(target);
+
+  for(i = 0; i < c; i++){
+    if (target[i] == '/'){
+      targetStruct[e].directories[j] = '\0';
+      e++;
+      targetStruct = realloc(targetStruct, sizeof(path) * (1 + e));
+      j=0;
+    } else {
+      targetStruct[e].directories[j] = target[i];
+      j++;
     }
   }
-  up--; // Remove one more
+  targetStruct[e].directories[j] = '\0';
+  targetLen = e + 1;
+
+  // Find the smallest of our structures
+  if (fileLen > targetLen){
+    c = targetLen;
+  } else {
+    c = fileLen;
+  }
+
+  // Count the common directories
+  for(i = 0; i < c; i++){
+    if (!strcmp(fileStruct[i].directories, targetStruct[i].directories)){
+      commonPath++;
+    }
+  }
+
+  up = currentFileIndex - commonPath;
 
   // Assigning memory for result
-  resultLen = ((strlen(target) - workLen) + (up * 3));
+  resultLen = (up * 3) + 1;
   result = malloc(sizeof(char) * resultLen);
 
-  c = 0;
-  // Writing the first part of result.
-  if (up > 0){
-    for (i = 0; i < up; i++){
-      strcat(result, "../");
-      c = c + strlen("../");
-    }
-  }
+  // // Get length of shortest string
+  // c = strlen(file);
+  // if (strlen(target) < c){
+  //   c = strlen(target);
+  // }
 
-  // Getting the unique part of the link to add to the end.
-  for (i = 0; i < strlen(target); i++){
-    if (i > workLen){
-      result[c] = target[i];
-      c++;
-    }
-  }
+  // // From the beginning, find identical characters.
+  // for (i = 0; i < c; i++){
+  //   work = realloc(work, (sizeof(char) * (1 + i)));
+  //   if (file[i] == target[i]){
+  //       work[i] = file[i];
+  //     } else {
+  //       work[i] = '\0';
+  //       i = c;
+  //     }
+  //   workLen++;
+  // }
+
+  // // Make sure the last character is a '/', keep repeating until true.
+  // i = workLen - 1;
+  // while(i <= workLen && work[i] != '/'){
+  //   work[i] = '\0'; // This may be inefficient, but it should be fine for this purpose.
+  //   i--;
+  //   workLen = i;
+  // }
+
+  // // Building relative directory structure.
+  // // Calculating how many directories we need to go up.
+  // for (i = 0; i < strlen(file); i++){
+  //   if (file[i] == '/'){
+  //     up++;
+  //   }
+  // }
+  // for (i = 0; i < workLen; i++){
+  //   if (work[i] == '/'){
+  //     up--;
+  //   }
+  // }
+  // up--; // Remove one more
+
+  // // Assigning memory for result
+  // resultLen = ((strlen(target) - workLen) + (up * 3));
+  // result = malloc(sizeof(char) * resultLen);
+
+  // c = 0;
+  // // Writing the first part of result.
+  // if (up > 0){
+  //   for (i = 0; i < up; i++){
+  //     strcat(result, "../");
+  //     c = c + strlen("../");
+  //   }
+  // }
+
+  // // Getting the unique part of the link to add to the end.
+  // for (i = 0; i < strlen(target); i++){
+  //   if (i > workLen){
+  //     result[c] = target[i];
+  //     c++;
+  //   }
+  // }
   result[resultLen - 1] = '\0';
 
 
-  free(work);
+  free(fileStruct);
+  free(targetStruct);
+
+  // free(work);
 
   return(result);
   // return(work);
