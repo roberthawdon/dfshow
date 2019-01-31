@@ -974,7 +974,7 @@ void linktext_input(char *file, int symbolic)
   char typeText[9];
   char target[1024];
   int relative;
-  char *relativeTarget;
+  char *relativeFile;
   char tempDebug[1024];
   strcpy(target, currentpwd);
   if (!check_last_char(target, "/")){
@@ -1000,10 +1000,11 @@ void linktext_input(char *file, int symbolic)
           relative = symLinkLocation();
           if (relative){
             // Do a thing
-            relativeTarget = getRelativePath(file, target);
+            relativeFile = getRelativePath(file, target);
             //topLineMessage("TODO: Needs implementing");
-            topLineMessage(relativeTarget);
-            free(relativeTarget);
+            topLineMessage(relativeFile);
+            //symlink(relativeFile, target);
+            free(relativeFile);
           } else {
             symlink(file, target);
           }

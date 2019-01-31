@@ -153,24 +153,83 @@ int checkRunningEnv(){
 
 char *getRelativePath(char *file, char *target)
 {
-  char *result = malloc(sizeof(char) * 1);
+  char *result;
   char *work = malloc(sizeof(char) * 1);
-  int i, c;
+  int i, c, workLen, resultLen, up;
+  // struct {
+  //   directories[256];
+  // }
 
+  workLen = 0;
+  up = 0;
+
+  // Get length of shortest string
   c = strlen(file);
   if (strlen(target) < c){
     c = strlen(target);
   }
 
-  // for (i = 0; i < c; i++){
-  //   work = realloc(work, (sizeof(char) * (1 + i)));
-  //   if
-  //   work[i] = 
-  // }
+  // From the beginning, find identical characters.
+  for (i = 0; i < c; i++){
+    work = realloc(work, (sizeof(char) * (1 + i)));
+    if (file[i] == target[i]){
+        work[i] = file[i];
+      } else {
+        work[i] = '\0';
+        i = c;
+      }
+    workLen++;
+  }
+
+  // Make sure the last character is a '/', keep repeating until true.
+  i = workLen - 1;
+  while(i <= workLen && work[i] != '/'){
+    work[i] = '\0'; // This may be inefficient, but it should be fine for this purpose.
+    i--;
+    workLen = i;
+  }
+
+  // Building relative directory structure.
+  // Calculating how many directories we need to go up.
+  for (i = 0; i < strlen(file); i++){
+    if (file[i] == '/'){
+      up++;
+    }
+  }
+  for (i = 0; i < workLen; i++){
+    if (work[i] == '/'){
+      up--;
+    }
+  }
+  up--; // Remove one more
+
+  // Assigning memory for result
+  resultLen = ((strlen(target) - workLen) + (up * 3));
+  result = malloc(sizeof(char) * resultLen);
+
+  c = 0;
+  // Writing the first part of result.
+  if (up > 0){
+    for (i = 0; i < up; i++){
+      strcat(result, "../");
+      c = c + strlen("../");
+    }
+  }
+
+  // Getting the unique part of the link to add to the end.
+  for (i = 0; i < strlen(target); i++){
+    if (i > workLen){
+      result[c] = target[i];
+      c++;
+    }
+  }
+  result[resultLen - 1] = '\0';
+
 
   free(work);
 
   return(result);
+  // return(work);
 }
 
 int wildcard(const char *value, char *wcard) {
