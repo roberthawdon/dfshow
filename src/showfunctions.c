@@ -69,6 +69,7 @@ int minorlen;
 int datelen;
 int namelen;
 int slinklen;
+int nameAndSLink = 0;
 
 int entryMetaLen, entryNameLen, entrySLinkLen = 0;
 
@@ -644,7 +645,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   wchar_t entryMeta[1024];
   wchar_t entryName[1024];
   wchar_t entrySLink[1024];
-  int maxlen = COLS - start;
+  int maxlen = COLS - start - 1;
 
   int currentitem = listref + topref;
   int ogminlen = strlen(headOG); // Length of "Owner & Group" heading
@@ -679,7 +680,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
 
   char slinkpoint[5];
 
-  strcpy(slinkpoint, " -> ");
+  strcpy(slinkpoint, " -> \0");
 
   // Owner, Group, Author
   switch(ogavis){
@@ -803,9 +804,9 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   swprintf(entryName, 1024, L"%s", ob[currentitem].name);
 
   if ( !strcmp(ob[currentitem].slink, "") ){
-    swprintf(entrySLink, 1024, L"");
+    swprintf(entrySLink, 1024, L"\0");
   } else {
-    swprintf(entrySLink, 1024, L"%s", ob[currentitem].slink);
+    swprintf(entrySLink, 1024, L"%s\0", ob[currentitem].slink);
   }
 
 
@@ -853,8 +854,8 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
       setColors(DISPLAY_PAIR);
     }
 
-    for ( i = 0; i < maxlen; i++) {
-      mvprintw(displaystart + listref, (entryMetaLen + entryNameLen + start) + i, "%lc", slinkpoint[i]);
+    for ( i = 0; i < strlen(slinkpoint); i++) {
+      mvprintw(displaystart + listref, (entryMetaLen + entryNameLen + start) + i, "%c", slinkpoint[i]);
     }
 
     if (filecolors && !selected){
@@ -1490,6 +1491,7 @@ results* get_dir(char *pwd)
   fetch:
 
   mmMode = 0;
+  nameAndSLink = 0;
   time ( &currenttime );
   savailable = GetAvailableSpace(pwd);
   sused = 0; // Resetting used value
@@ -1523,6 +1525,11 @@ results* get_dir(char *pwd)
           writeResultStruct(ob, res->d_name, buffer, count);
 
           sused = sused + buffer.st_size; // Adding the size values
+
+          // Finding the longest name and symlink pair
+          if ((strlen(ob[count].slink) + strlen(ob[count].name) + 4) > nameAndSLink){
+            nameAndSLink = strlen(ob[count].slink) + strlen(ob[count].name) + 4;
+          }
 
           count++;
         }
@@ -1730,7 +1737,8 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   if (slinklen == 0){
     maxdisplaywidth = entryMetaLen + namelen;
   } else {
-    maxdisplaywidth = entryMetaLen + namelen + slinklen + 4;
+    // maxdisplaywidth = entryMetaLen + namelen + slinklen + 4;
+    maxdisplaywidth = entryMetaLen + nameAndSLink;
   }
 
   //mvprintw(0, 66, "%d %d", historyref, sessionhistory);
