@@ -177,8 +177,17 @@ char *getRelativePath(char *file, char *target)
   for(i = 0; i < c; i++){
     if (file[i] == '/'){
       fileStruct[e].directories[j] = '\0';
-      e++;
-      fileStruct = realloc(fileStruct, sizeof(path) * (1 + e));
+      if(strcmp(fileStruct[e].directories, "..")){
+        // If element created is NOT ..
+        e++;
+        fileStruct = realloc(fileStruct, sizeof(path) * (1 + e));
+      } else {
+        // assmue .. and remove the element before
+        fileStruct[e] = fileStruct[e - 1];
+        fileStruct[e - 1] = fileStruct[e - 2];
+        e--;
+        fileStruct = realloc(fileStruct, sizeof(path) * (1 + e));
+      }
       j=0;
     } else {
       fileStruct[e].directories[j] = file[i];
@@ -197,8 +206,17 @@ char *getRelativePath(char *file, char *target)
   for(i = 0; i < c; i++){
     if (target[i] == '/'){
       targetStruct[e].directories[j] = '\0';
-      e++;
-      targetStruct = realloc(targetStruct, sizeof(path) * (1 + e));
+      if(strcmp(targetStruct[e].directories, "..")){
+        // If element created is NOT ..
+        e++;
+        targetStruct = realloc(targetStruct, sizeof(path) * (1 + e));
+      } else {
+        // assmue .. and remove the element before
+        targetStruct[e] = targetStruct[e - 1];
+        targetStruct[e - 1] = targetStruct[e - 2];
+        e--;
+        targetStruct = realloc(targetStruct, sizeof(path) * (1 + e));
+      }
       j=0;
     } else {
       targetStruct[e].directories[j] = target[i];
