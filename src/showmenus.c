@@ -1002,8 +1002,8 @@ void linktext_input(char *file, int symbolic)
             // Do a thing
             relativeFile = getRelativePath(file, target);
             //topLineMessage("TODO: Needs implementing");
-            topLineMessage(relativeFile);
-            //symlink(relativeFile, target);
+            // topLineMessage(relativeFile);
+            symlink(relativeFile, target);
             free(relativeFile);
           } else {
             symlink(file, target);

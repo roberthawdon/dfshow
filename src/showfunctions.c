@@ -157,11 +157,11 @@ char *getRelativePath(char *file, char *target)
     char directories[256];
   } path;
 
-  char *result;
+  char *result = malloc(sizeof(char) + 1);
   // char *work = malloc(sizeof(char) * 1);
   int i, j, e, c, workLen, resultLen, up;
   path *fileStruct, *targetStruct;
-  int currentFileIndex, fileLen, targetLen, commonPath = 0;
+  int currentFileIndex, currentTargetIndex, fileLen, targetLen, commonPath = 0;
 
   workLen = 0;
   up = 0;
@@ -207,6 +207,7 @@ char *getRelativePath(char *file, char *target)
   }
   targetStruct[e].directories[j] = '\0';
   targetLen = e + 1;
+  currentTargetIndex = e;
 
   // Find the smallest of our structures
   if (fileLen > targetLen){
@@ -222,82 +223,56 @@ char *getRelativePath(char *file, char *target)
     }
   }
 
-  up = currentFileIndex - commonPath;
+  // Start writing output
+  c = 0;
+  if ((fileLen - 1) > (targetLen -1)){
+    for(i=commonPath; i < fileLen; i++){
+      j = strlen(fileStruct[i].directories);
+      result = realloc(result, sizeof(char) * (strlen(result) + j + 1));
+      if (c == 0){
+        sprintf(result, "%s/", fileStruct[i].directories);
+      } else if (i == fileLen - 1){
+        sprintf(result, "%s%s", result, fileStruct[i].directories);
+      } else {
+        sprintf(result, "%s%s/", result, fileStruct[i].directories);
+      }
+      c++;
+    }
+  } else if ((fileLen - 1) < (targetLen - 1)){
+    //
+    up = currentTargetIndex - currentFileIndex;
+    result = realloc(result, sizeof(char) * (up * 3) + 1);
+    for (i = 0; i < up; i++){
+      if (c == 0){
+        sprintf(result, "%s/", "..");
+      } else {
+        sprintf(result, "%s%s/", result, "..");
+      }
+      c++;
+    }
+    for(i=(fileLen - up); i < fileLen; i++){
+      j = strlen(fileStruct[i].directories);
+      result = realloc(result, sizeof(char) * (strlen(result) + j + 1));
+      if (i == fileLen - 1){
+        sprintf(result, "%s%s", result, fileStruct[i].directories);
+      } else {
+        sprintf(result, "%s%s/", result, fileStruct[i].directories);
+      }
+    }
+  } else {
+    // Assume we're in the same directory at this point
+    j = strlen(fileStruct[currentFileIndex].directories);
+    result = realloc(result, sizeof(char) * (j + 1));
+    sprintf(result, "%s", fileStruct[currentFileIndex].directories);
+  }
 
-  // Assigning memory for result
-  resultLen = (up * 3) + 1;
-  result = malloc(sizeof(char) * resultLen);
-
-  // // Get length of shortest string
-  // c = strlen(file);
-  // if (strlen(target) < c){
-  //   c = strlen(target);
-  // }
-
-  // // From the beginning, find identical characters.
-  // for (i = 0; i < c; i++){
-  //   work = realloc(work, (sizeof(char) * (1 + i)));
-  //   if (file[i] == target[i]){
-  //       work[i] = file[i];
-  //     } else {
-  //       work[i] = '\0';
-  //       i = c;
-  //     }
-  //   workLen++;
-  // }
-
-  // // Make sure the last character is a '/', keep repeating until true.
-  // i = workLen - 1;
-  // while(i <= workLen && work[i] != '/'){
-  //   work[i] = '\0'; // This may be inefficient, but it should be fine for this purpose.
-  //   i--;
-  //   workLen = i;
-  // }
-
-  // // Building relative directory structure.
-  // // Calculating how many directories we need to go up.
-  // for (i = 0; i < strlen(file); i++){
-  //   if (file[i] == '/'){
-  //     up++;
-  //   }
-  // }
-  // for (i = 0; i < workLen; i++){
-  //   if (work[i] == '/'){
-  //     up--;
-  //   }
-  // }
-  // up--; // Remove one more
-
-  // // Assigning memory for result
-  // resultLen = ((strlen(target) - workLen) + (up * 3));
-  // result = malloc(sizeof(char) * resultLen);
-
-  // c = 0;
-  // // Writing the first part of result.
-  // if (up > 0){
-  //   for (i = 0; i < up; i++){
-  //     strcat(result, "../");
-  //     c = c + strlen("../");
-  //   }
-  // }
-
-  // // Getting the unique part of the link to add to the end.
-  // for (i = 0; i < strlen(target); i++){
-  //   if (i > workLen){
-  //     result[c] = target[i];
-  //     c++;
-  //   }
-  // }
   result[resultLen - 1] = '\0';
 
 
   free(fileStruct);
   free(targetStruct);
 
-  // free(work);
-
   return(result);
-  // return(work);
 }
 
 int wildcard(const char *value, char *wcard) {
