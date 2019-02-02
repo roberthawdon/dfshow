@@ -186,7 +186,7 @@ void generateDefaultMenus(){
   // Touch Menu
   addMenuItem(&touchMenu, &touchMenuSize, "t_accessed", L"Set Time - !Accessed", 'a');
   addMenuItem(&touchMenu, &touchMenuSize, "t_both", L"!Both", 'b');
-  addMenuItem(&touchMenu, &touchMenuSize, "t_modified", L"!Modified (enter = M)", 'm');
+  addMenuItem(&touchMenu, &touchMenuSize, "t_modified", L"!Modified (enter = B)", 'm');
 
 }
 
