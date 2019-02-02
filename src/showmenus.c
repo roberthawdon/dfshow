@@ -120,6 +120,10 @@ menuDef *linkLocationMenu;
 int linkLocationMenuSize = 0;
 wchar_t *linkLocationMenuLabel;
 
+menuDef *touchMenu;
+int touchMenuSize = 0;
+wchar_t *touchMenuLabel;
+
 void modify_owner_input();
 
 void generateDefaultMenus(){
@@ -179,6 +183,11 @@ void generateDefaultMenus(){
   addMenuItem(&linkLocationMenu, &linkLocationMenuSize, "l_absolute", L"Link Location - !Absolute", 'a');
   addMenuItem(&linkLocationMenu, &linkLocationMenuSize, "l_relative", L"!Relative (enter = R)", 'r');
 
+  // Touch Menu
+  addMenuItem(&touchMenu, &touchMenuSize, "t_accessed", L"Set Time - !Accessed", 'a');
+  addMenuItem(&touchMenu, &touchMenuSize, "t_both", L"!both", 'b');
+  addMenuItem(&touchMenu, &touchMenuSize, "t_modified", L"!Modified", 'm');
+
 }
 
 void refreshMenuLabels(){
@@ -189,12 +198,17 @@ void refreshMenuLabels(){
   sortMenuLabel = genMenuDisplayLabel(sortMenu, sortMenuSize, 1);
   linkMenuLabel = genMenuDisplayLabel(linkMenu, linkMenuSize, 1);
   linkLocationMenuLabel = genMenuDisplayLabel(linkLocationMenu, linkLocationMenuSize, 1);
+  touchMenuLabel = genMenuDisplayLabel(touchMenu, touchMenuSize, 1);
 }
 
 void unloadMenuLabels(){
   free(globalMenuLabel);
   free(fileMenuLabel);
   free(functionMenuLabel);
+  free(modifyMenuLabel);
+  free(sortMenuLabel);
+  free(linkLocationMenuLabel);
+  free(touchMenuLabel);
 }
 
 int sanitizeTopFileRef(int topfileref)
