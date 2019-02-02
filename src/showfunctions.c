@@ -783,13 +783,13 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
     datepad = datelen - wcslen(ob[currentitem].datedisplay);
   }
 
-  if (hlinkstart > 0){
+  if (hlinkstart > -1){
     s1 = genPadding(hlinkstart);
   }
-  if (sizepad > 0){
+  if (sizepad > -1){
     s2 = genPadding(sizepad);
   }
-  if (datepad > 0){
+  if (datepad > -1){
     s3 = genPadding(datepad);
   }
 

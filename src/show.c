@@ -396,6 +396,7 @@ Options shared with ls:\n\
   -B, --ignore-backups         do not list implied entries ending with ~\n\
       --color[=WHEN]           colorize the output, see the color section below\n\
   -f                           do not sort, enables -aU\n\
+      --full-time              display time as full-iso format\n\
   -g                           only show group\n\
   -G, --no-group               do not show group\n\
   -h, --human-readable         print sizes like 1K 234M 2G etc.\n\
@@ -483,6 +484,7 @@ int main(int argc, char *argv[])
          {"no-sf",          no_argument,       0, GETOPT_ENVPAGER_CHAR},
          {"show-on-enter",  no_argument,       0, GETOPT_SHOWONENTER_CHAR},
          {"running",        no_argument,       0, GETOPT_SHOWRUNNING_CHAR},
+         {"full-time",      no_argument,       0, GETOPT_FULLTIME_CHAR},
          {0, 0, 0, 0}
         };
       int option_index = 0;
@@ -552,6 +554,9 @@ Valid arguments are:\n\
         printf("Try '%s --help' for more information.\n", argv[0]);
         exit(2);
       }
+      break;
+    case GETOPT_FULLTIME_CHAR:
+      strcpy(timestyle, "full-iso");
       break;
     case 't':
       strcpy(sortmode, "date");
