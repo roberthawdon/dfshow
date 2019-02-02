@@ -185,8 +185,8 @@ void generateDefaultMenus(){
 
   // Touch Menu
   addMenuItem(&touchMenu, &touchMenuSize, "t_accessed", L"Set Time - !Accessed", 'a');
-  addMenuItem(&touchMenu, &touchMenuSize, "t_both", L"!both", 'b');
-  addMenuItem(&touchMenu, &touchMenuSize, "t_modified", L"!Modified", 'm');
+  addMenuItem(&touchMenu, &touchMenuSize, "t_both", L"!Both", 'b');
+  addMenuItem(&touchMenu, &touchMenuSize, "t_modified", L"!Modified (enter = M)", 'm');
 
 }
 
@@ -960,10 +960,33 @@ void modify_permissions_input()
 
 }
 
+int touchType()
+{
+  int result = 0;
+  wPrintMenu(0,0,touchMenuLabel);
+  while(1)
+    {
+      *pc = getch10th();
+      if (*pc == menuHotkeyLookup(touchMenu, "t_accessed", touchMenuSize)){
+        result = 1;
+        break;
+      } else if (*pc == menuHotkeyLookup(touchMenu, "t_both", touchMenuSize) || *pc == 10){
+        result = 0;
+        break;
+      } else if (*pc == menuHotkeyLookup(touchMenu, "t_modified", touchMenuSize)){
+        result = 2;
+        break;
+      } else if (*pc == 27){
+        // ESC Key
+        directory_view_menu_inputs();
+      }
+    }
+  return(result);
+}
+
 int symLinkLocation()
 {
   int result = 0;
-  char message[1024];
   wPrintMenu(0,0,linkLocationMenuLabel);
   while(1)
     {
@@ -1231,6 +1254,8 @@ void directory_view_menu_inputs()
             }
           }
       } else if (*pc == menuHotkeyLookup(fileMenu, "f_touch", fileMenuSize)){
+        e = touchType();
+        // Add what to do with result.
         topLineMessage("TODO: Needs implementing");
         directory_view_menu_inputs();
       } else if (*pc == menuHotkeyLookup(fileMenu, "f_uhunt", fileMenuSize)){

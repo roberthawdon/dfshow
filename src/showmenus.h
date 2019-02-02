@@ -1,6 +1,7 @@
 void generateDefaultMenus();
 void refreshMenuLabels();
 void unloadMenuLabels();
+int touchType();
 int symLinkLocation();
 void linktext_input(int selected, int symbolic);
 void link_key_menu_inputs();
