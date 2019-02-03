@@ -29,6 +29,7 @@
 #include <libgen.h>
 #include <signal.h>
 #include <regex.h>
+#include <time.h>
 #include "common.h"
 #include "showfunctions.h"
 #include "show.h"
@@ -564,7 +565,7 @@ void make_directory_input()
   move(0,0);
   clrtoeol();
   mvprintw(0, 0, "Make Directory - Enter pathname:");
-  curs_set(TRUE);
+  // curs_set(TRUE);
   move (0,33);
   if (!check_last_char(currentpwd, "/")){
     strcat(currentpwd, "/");
@@ -577,7 +578,39 @@ void make_directory_input()
       free(rewrite);
     }
     mk_dir(newdir);
-    curs_set(FALSE);
+    // curs_set(FALSE);
+    refreshDirectory(sortmode, 0, selected, 0);
+  }
+  directory_view_menu_inputs();
+}
+
+void touch_file_input()
+{
+  char menuTitle[32];
+  char touchFile[1024];
+  FILE* touchFileObject;
+  move(0,0);
+  clrtoeol();
+  strcpy(menuTitle, "Touch File - Enter pathname:");
+  mvprintw(0,0,menuTitle);
+  move (0, strlen(menuTitle) + 1);
+  if (!check_last_char(currentpwd, "/")){
+    strcat(currentpwd, "/");
+  }
+  if (readline(touchFile, 1024, currentpwd) != -1){
+    //TODO: Ask if we want to set a time.
+    if (strcmp(touchFile, currentpwd) && strcmp(touchFile, "")){
+      if (check_first_char(touchFile, "~")){
+        rewrite = str_replace(touchFile, "~", getenv("HOME"));
+        strcpy(touchFile, rewrite);
+        free(rewrite);
+      }
+    }
+    // Do something
+    if (check_object(touchFile) == 0){
+      touchFileObject = fopen(touchFile, "w");
+      fclose(touchFileObject);
+    }
     refreshDirectory(sortmode, 0, selected, 0);
   }
   directory_view_menu_inputs();
@@ -960,6 +993,28 @@ void modify_permissions_input()
 
 }
 
+time_t touchTimeInput(int type)
+{
+  char menuTitle[32];
+  char charTime[64];
+  time_t newTime;
+  if (type == 1){
+    strcpy(menuTitle, "Set Access Time:");
+  } else if (type == 2){
+    strcpy(menuTitle, "Set Modified Time:");
+  } else {
+    strcpy(menuTitle, "Set Time:");
+  }
+  move(0,0);
+  clrtoeol();
+  mvprintw(0,0,menuTitle);
+  move(0, strlen(menuTitle) + 1);
+  if (readline(charTime, 64, "") != -1){
+    // Do something
+  }
+  return(newTime);
+}
+
 int touchType()
 {
   int result = 0;
@@ -1256,6 +1311,7 @@ void directory_view_menu_inputs()
       } else if (*pc == menuHotkeyLookup(fileMenu, "f_touch", fileMenuSize)){
         e = touchType();
         // Add what to do with result.
+        touchTimeInput(e);
         topLineMessage("TODO: Needs implementing");
         directory_view_menu_inputs();
       } else if (*pc == menuHotkeyLookup(fileMenu, "f_uhunt", fileMenuSize)){
@@ -1528,8 +1584,9 @@ void global_menu_inputs()
       } else if (*pc == menuHotkeyLookup(globalMenu, "g_show", globalMenuSize)) {
         show_directory_input();
       } else if (*pc == menuHotkeyLookup(globalMenu, "g_touch", globalMenuSize)) {
-        topLineMessage("TODO: Needs implementing");
-        wPrintMenu(0,0,globalMenuLabel);
+        touch_file_input();
+        //topLineMessage("TODO: Needs implementing");
+        //wPrintMenu(0,0,globalMenuLabel);
       } else if (*pc == 27) {
         if (historyref != 0){
           directory_view_menu_inputs();
