@@ -125,6 +125,10 @@ menuDef *touchMenu;
 int touchMenuSize = 0;
 wchar_t *touchMenuLabel;
 
+menuDef *touchDateConfirmMenu;
+int touchDateConfirmMenuSize = 0;
+wchar_t *touchDateConfirmMenuLabel;
+
 void modify_owner_input();
 
 void generateDefaultMenus(){
@@ -189,6 +193,10 @@ void generateDefaultMenus(){
   addMenuItem(&touchMenu, &touchMenuSize, "t_both", L"!Both", 'b');
   addMenuItem(&touchMenu, &touchMenuSize, "t_modified", L"!Modified (enter = B)", 'm');
 
+  // Touch Set Date Confirm
+  addMenuItem(&touchDateConfirmMenu, &touchDateConfirmMenuSize, "t_1", L"Set Time? !Yes/", 'y');
+  addMenuItem(&touchDateConfirmMenu, &touchDateConfirmMenuSize, "t_2", L"!No (enter = n)", 'n');
+
 }
 
 void refreshMenuLabels(){
@@ -200,6 +208,7 @@ void refreshMenuLabels(){
   linkMenuLabel = genMenuDisplayLabel(linkMenu, linkMenuSize, 1);
   linkLocationMenuLabel = genMenuDisplayLabel(linkLocationMenu, linkLocationMenuSize, 1);
   touchMenuLabel = genMenuDisplayLabel(touchMenu, touchMenuSize, 1);
+  touchDateConfirmMenuLabel = genMenuDisplayLabel(touchDateConfirmMenu, touchDateConfirmMenuSize, 0);
 }
 
 void unloadMenuLabels(){
@@ -210,6 +219,7 @@ void unloadMenuLabels(){
   free(sortMenuLabel);
   free(linkLocationMenuLabel);
   free(touchMenuLabel);
+  free(touchDateConfirmMenuLabel);
 }
 
 int sanitizeTopFileRef(int topfileref)
@@ -584,11 +594,58 @@ void make_directory_input()
   directory_view_menu_inputs();
 }
 
+time_t touchTimeInput(int type)
+{
+  char menuTitle[32];
+  char charTime[64];
+  time_t newTime;
+  if (type == 1){
+    strcpy(menuTitle, "Set Access Time:");
+  } else if (type == 2){
+    strcpy(menuTitle, "Set Modified Time:");
+  } else {
+    strcpy(menuTitle, "Set Time:");
+  }
+  move(0,0);
+  clrtoeol();
+  mvprintw(0,0,menuTitle);
+  move(0, strlen(menuTitle) + 1);
+  if (readline(charTime, 64, "") != -1){
+    // Do something
+  }
+  return(newTime);
+}
+
+int touchType()
+{
+  int result = 0;
+  wPrintMenu(0,0,touchMenuLabel);
+  while(1)
+    {
+      *pc = getch10th();
+      if (*pc == menuHotkeyLookup(touchMenu, "t_accessed", touchMenuSize)){
+        result = 1;
+        break;
+      } else if (*pc == menuHotkeyLookup(touchMenu, "t_both", touchMenuSize) || *pc == 10){
+        result = 0;
+        break;
+      } else if (*pc == menuHotkeyLookup(touchMenu, "t_modified", touchMenuSize)){
+        result = 2;
+        break;
+      } else if (*pc == 27){
+        // ESC Key
+        directory_view_menu_inputs();
+      }
+    }
+  return(result);
+}
+
 void touch_file_input()
 {
   char menuTitle[32];
   char touchFile[1024];
   FILE* touchFileObject;
+  int setDateFlag = -1;
   move(0,0);
   clrtoeol();
   strcpy(menuTitle, "Touch File - Enter pathname:");
@@ -599,6 +656,15 @@ void touch_file_input()
   }
   if (readline(touchFile, 1024, currentpwd) != -1){
     //TODO: Ask if we want to set a time.
+    wPrintMenu(0,0,touchDateConfirmMenuLabel);
+    *pc = getch10th();
+    if (*pc == menuHotkeyLookup(touchDateConfirmMenu, "t_1", touchDateConfirmMenuSize)){
+      setDateFlag = touchType();
+      touchTimeInput(setDateFlag);
+      topLineMessage("TODO: Needs implementing");
+    } else {
+      // Skip
+    }
     if (strcmp(touchFile, currentpwd) && strcmp(touchFile, "")){
       if (check_first_char(touchFile, "~")){
         rewrite = str_replace(touchFile, "~", getenv("HOME"));
@@ -991,52 +1057,6 @@ void modify_permissions_input()
 
   directory_view_menu_inputs();
 
-}
-
-time_t touchTimeInput(int type)
-{
-  char menuTitle[32];
-  char charTime[64];
-  time_t newTime;
-  if (type == 1){
-    strcpy(menuTitle, "Set Access Time:");
-  } else if (type == 2){
-    strcpy(menuTitle, "Set Modified Time:");
-  } else {
-    strcpy(menuTitle, "Set Time:");
-  }
-  move(0,0);
-  clrtoeol();
-  mvprintw(0,0,menuTitle);
-  move(0, strlen(menuTitle) + 1);
-  if (readline(charTime, 64, "") != -1){
-    // Do something
-  }
-  return(newTime);
-}
-
-int touchType()
-{
-  int result = 0;
-  wPrintMenu(0,0,touchMenuLabel);
-  while(1)
-    {
-      *pc = getch10th();
-      if (*pc == menuHotkeyLookup(touchMenu, "t_accessed", touchMenuSize)){
-        result = 1;
-        break;
-      } else if (*pc == menuHotkeyLookup(touchMenu, "t_both", touchMenuSize) || *pc == 10){
-        result = 0;
-        break;
-      } else if (*pc == menuHotkeyLookup(touchMenu, "t_modified", touchMenuSize)){
-        result = 2;
-        break;
-      } else if (*pc == 27){
-        // ESC Key
-        directory_view_menu_inputs();
-      }
-    }
-  return(result);
 }
 
 int symLinkLocation()
