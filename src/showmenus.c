@@ -30,6 +30,7 @@
 #include <signal.h>
 #include <regex.h>
 #include <time.h>
+#include <utime.h>
 #include "common.h"
 #include "showfunctions.h"
 #include "show.h"
@@ -56,6 +57,9 @@ int blockstart = -1;
 int blockend = -1;
 
 int abortinput = 0;
+
+struct utimbuf touchDate;
+time_t touchTime;
 
 extern results* ob;
 extern history* hs;
@@ -598,7 +602,9 @@ time_t touchTimeInput(int type)
 {
   char menuTitle[32];
   char charTime[64];
+  struct tm tmp;
   time_t newTime;
+  int i;
   if (type == 1){
     strcpy(menuTitle, "Set Access Time:");
   } else if (type == 2){
@@ -612,6 +618,15 @@ time_t touchTimeInput(int type)
   move(0, strlen(menuTitle) + 1);
   if (readline(charTime, 64, "") != -1){
     // Do something
+    if ( strptime(charTime, "%Y-%m-%d %H:%M:%S", &tmp) != NULL ){
+      tmp.tm_isdst = -1;
+      newTime = mktime(&tmp);
+    } else if (!strcmp(charTime, "")){
+      time(&newTime);
+    } else {
+      topLineMessage("Error parsing time");
+      time(&newTime);
+    }
   }
   return(newTime);
 }
@@ -660,8 +675,8 @@ void touch_file_input()
     *pc = getch10th();
     if (*pc == menuHotkeyLookup(touchDateConfirmMenu, "t_1", touchDateConfirmMenuSize)){
       setDateFlag = touchType();
-      touchTimeInput(setDateFlag);
-      topLineMessage("TODO: Needs implementing");
+      touchTime = touchTimeInput(setDateFlag);
+      //topLineMessage("TODO: Needs implementing");
     } else {
       // Skip
     }
@@ -676,6 +691,18 @@ void touch_file_input()
     if (check_object(touchFile) == 0){
       touchFileObject = fopen(touchFile, "w");
       fclose(touchFileObject);
+      if (setDateFlag != -1){
+        if (setDateFlag == 0){
+          touchDate.actime = touchDate.modtime = touchTime;
+        } else if ( setDateFlag == 1 ){
+          touchDate.actime = touchTime;
+          (&touchDate.modtime);
+        } else if ( setDateFlag == 2 ){
+          time(&touchDate.actime);
+          touchDate.modtime = touchTime;
+        }
+        utime(touchFile, &touchDate);
+      }
     }
     refreshDirectory(sortmode, 0, selected, 0);
   }
@@ -1113,8 +1140,6 @@ void linktext_input(char *file, int symbolic)
           if (relative){
             // Do a thing
             relativeFile = getRelativePath(file, target);
-            //topLineMessage("TODO: Needs implementing");
-            // topLineMessage(relativeFile);
             symlink(relativeFile, target);
             free(relativeFile);
           } else {
@@ -1331,9 +1356,21 @@ void directory_view_menu_inputs()
       } else if (*pc == menuHotkeyLookup(fileMenu, "f_touch", fileMenuSize)){
         e = touchType();
         // Add what to do with result.
-        touchTimeInput(e);
-        topLineMessage("TODO: Needs implementing");
-        directory_view_menu_inputs();
+        // topLineMessage("TODO: Needs implementing");
+        if (e > -1){
+          touchTime = touchTimeInput(e);
+          if (e == 0){
+            touchDate.actime = touchDate.modtime = touchTime;
+          } else if ( e == 1 ){
+            touchDate.actime = touchTime;
+            touchDate.modtime = ob[selected].date;
+          } else if ( e == 2 ){
+            touchDate.actime = ob[selected].adate;
+            touchDate.modtime = touchTime;
+          }
+          utime(ob[selected].name, &touchDate);
+        }
+        refreshDirectory(sortmode, topfileref, selected, 0);
       } else if (*pc == menuHotkeyLookup(fileMenu, "f_uhunt", fileMenuSize)){
         e = huntCaseSelectInput();
         if (e != -1){
@@ -1612,72 +1649,5 @@ void global_menu_inputs()
           directory_view_menu_inputs();
         }
       }
-      // switch(*pc)
-      //   {
-      //   case 'o':
-      //     themeBuilder();
-      //     theme_menu_inputs();
-      //     if (historyref == 0){
-      //       clear();
-      //       global_menu_inputs();
-      //     } else {
-      //       refreshDirectory(sortmode, topfileref, selected, 0);
-      //       display_dir(currentpwd, ob, topfileref, selected);
-      //       printMenu(LINES-1, 0, functionMenuText); // Global menu inputs doesn't include this. Even though it isn't used.
-      //       global_menu_inputs();
-      //     }
-      //     break;
-      //   case 'm':
-      //     make_directory_input();
-      //     break;
-      //   case 'r':
-      //     LaunchShell();
-      //     if (historyref == 0){
-      //       printMenu(0, 0, globalMenuText);
-      //     } else {
-      //       // display_dir(currentpwd, ob, topfileref, selected);
-      //       refreshDirectory(sortmode, topfileref, selected, 1);
-      //       directory_view_menu_inputs();
-      //     }
-      //     break;
-      //   case 'e':
-      //     edit_file_input();
-      //     if (historyref == 0){
-      //       printMenu(0, 0, globalMenuText);
-      //     } else {
-      //       //   display_dir(currentpwd, ob, topfileref, selected);
-      //       refreshDirectory(sortmode, topfileref, selected, 1);
-      //       directory_view_menu_inputs();
-      //     }
-      //     break;
-      //   case 'h':
-      //     showManPage("show");
-      //     refreshScreen();
-      //     if (historyref == 0){
-      //       printMenu(0, 0, globalMenuText);
-      //     } else {
-      //       //   display_dir(currentpwd, ob, topfileref, selected);
-      //       directory_view_menu_inputs();
-      //     }
-      //     break;
-      //   case 'q':
-      //     if (historyref == 0){
-      //       free(hs);
-      //       exittoshell();
-      //       refresh();
-      //     } else {
-      //       historyref = 0;
-      //       global_menu();
-      //     }
-      //     break;
-      //   case 's':
-      //     show_directory_input();
-      //     break;
-      //   case 27:
-      //     if (historyref != 0){
-      //       directory_view_menu_inputs();
-      //     }
-      //     break;
-      //   }
     }
 }

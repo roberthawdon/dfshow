@@ -13,6 +13,7 @@ typedef struct {
   int major;
   int minor;
   time_t date;
+  time_t adate;
   wchar_t datedisplay[33];
   char name[512];
   char slink[1024];

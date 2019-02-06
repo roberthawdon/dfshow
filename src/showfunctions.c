@@ -530,6 +530,7 @@ void writeResultStruct(results* ob, const char * filename, struct stat buffer, i
   }
 
   ob[count].date = buffer.st_mtime;
+  ob[count].adate = buffer.st_atime;
 
   filedate = dateString(ob[count].date, timestyle);
   mbstowcs(ob[count].datedisplay, filedate, 33);
