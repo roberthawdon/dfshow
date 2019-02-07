@@ -602,8 +602,8 @@ time_t touchTimeInput(int type)
 {
   char menuTitle[32];
   char charTime[64];
-  struct tm tmp;
-  time_t newTime;
+  struct tm tmp, localTmp;
+  time_t newTime, tmpTime;
   int i;
   if (type == 1){
     strcpy(menuTitle, "Set Access Time:");
@@ -618,7 +618,17 @@ time_t touchTimeInput(int type)
   move(0, strlen(menuTitle) + 1);
   if (readline(charTime, 64, "") != -1){
     // Do something
-    if ( strptime(charTime, "%Y-%m-%d %H:%M:%S", &tmp) != NULL ){
+    time(&tmpTime);
+    gmtime_r(&tmpTime, &localTmp);
+    if (strptime(charTime, "%Y-%m-%d %H:%M:%S", &tmp) != NULL){
+      tmp.tm_isdst = -1;
+      newTime = mktime(&tmp);
+    } else if (strptime(charTime, "%H:%M:%S", &tmp) != NULL){
+      tmp.tm_year = localTmp.tm_year;
+      tmp.tm_mon = localTmp.tm_mon;
+      tmp.tm_mday = localTmp.tm_mday;
+      tmp.tm_wday = localTmp.tm_wday;
+      tmp.tm_yday = localTmp.tm_yday;
       tmp.tm_isdst = -1;
       newTime = mktime(&tmp);
     } else if (!strcmp(charTime, "")){
