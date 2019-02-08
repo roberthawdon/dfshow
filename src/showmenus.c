@@ -1141,6 +1141,20 @@ void linktext_input(char *file, int symbolic)
   // curs_set(TRUE);
   move(0, strlen(inputmessage) + 1);
   if (readline(target, 1024, target) != -1){
+
+    // Check for ~ that needs replacing with home directory
+    if (check_first_char(file, "~")){
+      rewrite = str_replace(file, "~", getenv("HOME"));
+      strcpy(file, rewrite);
+      free(rewrite);
+    }
+
+    if (check_first_char(target, "~")){
+      rewrite = str_replace(target, "~", getenv("HOME"));
+      strcpy(target, rewrite);
+      free(rewrite);
+    }
+
     if (check_dir(dirFromPath(target))){
       if (check_file(target)){
         topLineMessage("Error: File exists.");
