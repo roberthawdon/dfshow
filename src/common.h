@@ -12,6 +12,7 @@ typedef struct {
 
 int cmp_menu_ref(const void *lhs, const void *rhs);
 void addMenuItem(menuDef **dfMenu, int *pos, char* refLabel, wchar_t* displayLabel, int hotKey);
+void updateMenuItem(menuDef **dfMenu, int *menuSize, char* refLabel, wchar_t* displayLabel);
 wchar_t * genMenuDisplayLabel(menuDef* dfMenu, int size, int comma);
 int menuHotkeyLookup(menuDef* dfMenu, char* refLabel, int size);
 void mk_dir(char *path);

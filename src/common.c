@@ -58,6 +58,18 @@ int cmp_menu_ref(const void *lhs, const void *rhs)
 
 }
 
+void updateMenuItem(menuDef **dfMenu, int *menuSize, char* refLabel, wchar_t* displayLabel){
+  // To Do
+  int i;
+  for(i = 0; i < *menuSize; i++){
+    if (!strcmp(((*dfMenu)[i].refLabel), refLabel)){
+      swprintf((*dfMenu)[i].displayLabel, 32, L"%ls", displayLabel);
+      break;
+    }
+  }
+  return;
+}
+
 void addMenuItem(menuDef **dfMenu, int *pos, char* refLabel, wchar_t* displayLabel, int hotKey){
 
   int menuPos = *pos;

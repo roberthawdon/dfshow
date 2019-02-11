@@ -82,6 +82,8 @@ extern char homeConfLocation[128];
 
 extern char themeName[128];
 
+extern wchar_t *fileMenuLabel;
+
 void readConfig(const char * confFile)
 {
   config_t cfg;
@@ -140,10 +142,13 @@ void refreshScreen()
   refresh();
   initscr();
   displaysize = LINES - 2;
+  unloadMenuLabels();
+  refreshMenuLabels();
   if (viewmode == 0){
     mvprintw(0,0,"Show File - Enter pathname:");
   } else if (viewmode == 1){
-    printMenu(0, 0, fileMenuText);
+    // printMenu(0, 0, fileMenuText);
+    wPrintMenu(0, 0, fileMenuLabel);
     loadFile(fileName);
   } else if (viewmode == 2){
     printMenu(0,0,filePosText);
@@ -334,7 +339,7 @@ void file_view(char * currentfile)
   clear();
   setColors(COMMAND_PAIR);
 
-  printMenu(0, 0, fileMenuText);
+  // printMenu(0, 0, fileMenuText);
 
   displaysize = LINES - 2;
 
@@ -417,6 +422,7 @@ int main(int argc, char *argv[])
     }
   }
 
+  generateDefaultMenus();
   buildMenuText();
 
   set_escdelay(10);
@@ -429,6 +435,8 @@ int main(int argc, char *argv[])
   setlocale(LC_ALL, "");
 
   initscr();
+
+  refreshMenuLabels();
 
   memset(&sa, 0, sizeof(struct sigaction));
   sa.sa_handler = sigwinchHandle;

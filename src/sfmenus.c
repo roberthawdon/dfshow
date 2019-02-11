@@ -31,6 +31,10 @@ int * pc = &c;
 
 int abortinput = 0;
 
+menuDef *fileMenu;
+int fileMenuSize = 0;
+wchar_t *fileMenuLabel;
+
 extern char fileMenuText[74];
 extern char filePosText[58];
 extern char regexinput[1024];
@@ -51,6 +55,31 @@ extern char *line;
 
 extern long int *filePos;
 extern wchar_t *longline;
+
+void generateDefaultMenus(){
+  // File Menu
+  addMenuItem(&fileMenu, &fileMenuSize, "f_01", L"<F1>-Down", 265);
+  addMenuItem(&fileMenu, &fileMenuSize, "f_02", L"<F2>-Up", 266);
+  addMenuItem(&fileMenu, &fileMenuSize, "f_03", L"<F3>-Top", 267);
+  addMenuItem(&fileMenu, &fileMenuSize, "f_04", L"<F4>-Bottom", 268);
+  addMenuItem(&fileMenu, &fileMenuSize, "f_find", L"!Find", 'f');
+  addMenuItem(&fileMenu, &fileMenuSize, "f_help", L"!Help", 'h');
+  addMenuItem(&fileMenu, &fileMenuSize, "f_position", L"!Position", 'p');
+  addMenuItem(&fileMenu, &fileMenuSize, "f_quit", L"!Quit", 'q');
+  if (wrap){
+    addMenuItem(&fileMenu, &fileMenuSize, "f_wrap", L"!Wrap-off", 'w');
+  } else {
+    addMenuItem(&fileMenu, &fileMenuSize, "f_wrap", L"!Wrap-on", 'w');
+  }
+}
+
+void refreshMenuLabels(){
+  fileMenuLabel = genMenuDisplayLabel(fileMenu, fileMenuSize, 1);
+}
+
+void unloadMenuLabels(){
+  free(fileMenuLabel);
+}
 
 void show_file_find(int charcase)
 {
@@ -149,13 +178,14 @@ void show_file_position_input(int currentpos)
       }
     }
   }
-  printMenu(0, 0, fileMenuText);
+  // printMenu(0, 0, fileMenuText);
 }
 
 void show_file_inputs()
 {
   int e = 0;
-  printMenu(0, 0, fileMenuText);
+  //printMenu(0, 0, fileMenuText);
+  wPrintMenu(0, 0, fileMenuLabel);
   while(1)
     {
       *pc = getch();
@@ -168,7 +198,7 @@ void show_file_inputs()
           } else {
             abortinput = 0;
           }
-          printMenu(0, 0, fileMenuText);
+          // printMenu(0, 0, fileMenuText);
           break;
         case 'h':
           showManPage("sf");
@@ -191,13 +221,18 @@ void show_file_inputs()
           break;
         case 'w':
           if (wrap){
+            updateMenuItem(&fileMenu, &fileMenuSize, "f_wrap", L"!Wrap-on");
             wrap = 0;
           } else {
+            updateMenuItem(&fileMenu, &fileMenuSize, "f_wrap", L"!Wrap-off");
             leftcol = 1;
             wrap = 1;
           }
-          buildMenuText();
-          printMenu(0, 0, fileMenuText);
+          unloadMenuLabels();
+          refreshMenuLabels();
+          wPrintMenu(0,0,fileMenuLabel);
+          // buildMenuText();
+          // printMenu(0, 0, fileMenuText);
           updateView();
           break;
         case 258: // Down Arrow
