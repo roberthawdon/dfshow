@@ -1268,7 +1268,7 @@ void directory_view_menu_inputs()
             strcat(selfile, "/");
           }
           strcat(selfile, ob[selected].name);
-          if (!check_dir(selfile)){
+          if (!check_dir(selfile) || (strcmp(ob[selected].slink, ""))){
             delete_file_confirm_input(selfile);
           }
         }
