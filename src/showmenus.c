@@ -591,7 +591,11 @@ void make_directory_input()
       strcpy(newdir, rewrite);
       free(rewrite);
     }
-    mk_dir(newdir);
+    if (access(newdir, W_OK) == 0){
+      mk_dir(newdir);
+    } else {
+      topLineMessage("Error: Permission denied");
+    }
     // curs_set(FALSE);
     refreshDirectory(sortmode, 0, selected, 0);
   }
@@ -698,21 +702,25 @@ void touch_file_input()
       }
     }
     // Do something
-    if (check_object(touchFile) == 0){
-      touchFileObject = fopen(touchFile, "w");
-      fclose(touchFileObject);
-      if (setDateFlag != -1){
-        if (setDateFlag == 0){
-          touchDate.actime = touchDate.modtime = touchTime;
-        } else if ( setDateFlag == 1 ){
-          touchDate.actime = touchTime;
-          (&touchDate.modtime);
-        } else if ( setDateFlag == 2 ){
-          time(&touchDate.actime);
-          touchDate.modtime = touchTime;
+    if (access(touchFile, W_OK) == 0) {
+      if (check_object(touchFile) == 0){
+        touchFileObject = fopen(touchFile, "w");
+        fclose(touchFileObject);
+        if (setDateFlag != -1){
+          if (setDateFlag == 0){
+            touchDate.actime = touchDate.modtime = touchTime;
+          } else if ( setDateFlag == 1 ){
+            touchDate.actime = touchTime;
+            (&touchDate.modtime);
+          } else if ( setDateFlag == 2 ){
+            time(&touchDate.actime);
+            touchDate.modtime = touchTime;
+          }
+          utime(touchFile, &touchDate);
         }
-        utime(touchFile, &touchDate);
       }
+    } else {
+      topLineMessage("Error: Permission denied");
     }
     refreshDirectory(sortmode, 0, selected, 0);
   }
