@@ -56,6 +56,8 @@ int wrapmode = LINE_WRAP;
 
 char fileName[512];
 
+int resized = 0;
+
 extern FILE *file;
 
 extern int exitCode;
@@ -125,12 +127,6 @@ void readConfig(const char * confFile)
 
 void buildMenuText(){
   // Writing Menus
-  strcpy(fileMenuText, "<F1>-Down, <F2>-Up, <F3>-Top, <F4>-Bottom, !Find, !Help, !Position, !Quit");
-  if (wrap){
-    strcat(fileMenuText, ", !Wrap-off");
-  } else {
-    strcat(fileMenuText, ", !Wrap-on");
-  }
   // Fun fact, in DF-EDIT 2.3d, the following text input typoed "absolute" as "absolue", this typo also exists in the Windows version from 1997 (2.3d-76), however, the 1986 documentation correctly writes it as "absolute".
   strcpy(filePosText, "Position relative (<+num> || <-num>) or absolute (<num>):");
 }
@@ -178,7 +174,8 @@ int calculateTab(int pos)
 
 void sigwinchHandle(int sig)
 {
-  refreshScreen();
+  // refreshScreen();
+  resized = 1;
 }
 
 int findInFile(const char * currentfile, const char * search, int charcase)

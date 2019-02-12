@@ -10,6 +10,7 @@ typedef struct {
   int displayLabelSize;
 } menuDef;
 
+int getch10th (void);
 int cmp_menu_ref(const void *lhs, const void *rhs);
 void addMenuItem(menuDef **dfMenu, int *pos, char* refLabel, wchar_t* displayLabel, int hotKey);
 void updateMenuItem(menuDef **dfMenu, int *menuSize, char* refLabel, wchar_t* displayLabel);

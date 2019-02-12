@@ -365,19 +365,6 @@ void refreshScreen()
     }
 }
 
-int getch10th (void) {
-  int ch;
-  do {
-    if (resized) {
-      resized = 0;
-      refreshScreen();
-    }
-    halfdelay (1);
-    ch = getch();
-  } while (ch == ERR || ch == KEY_RESIZE);
-  return ch;
-}
-
 void sigwinchHandle(int sig){
   resized = 1;
   // refreshScreen();

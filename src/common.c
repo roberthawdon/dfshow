@@ -48,6 +48,23 @@ extern int * pc;
 
 extern char fileMenuText[256];
 
+extern int resized;
+
+void refreshScreen(); // This reference needs to exist to allow getch10th to be common.
+
+int getch10th (void) {
+  int ch;
+  do {
+    if (resized) {
+      resized = 0;
+      refreshScreen();
+    }
+    halfdelay (1);
+    ch = getch();
+  } while (ch == ERR || ch == KEY_RESIZE);
+  return ch;
+}
+
 int cmp_menu_ref(const void *lhs, const void *rhs)
 {
 

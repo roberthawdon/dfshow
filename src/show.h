@@ -19,7 +19,6 @@ enum
    GETOPT_FULLTIME_CHAR = (CHAR_MIN - 14)
   };
 
-int getch10th (void);
 void readConfig(const char * confFile);
 int directory_view(char * currentpwd);
 char *getcwd(char *buf, size_t size);

@@ -188,7 +188,7 @@ void show_file_inputs()
   wPrintMenu(0, 0, fileMenuLabel);
   while(1)
     {
-      *pc = getch();
+      *pc = getch10th();
       switch(*pc)
         {
         case 'f':
