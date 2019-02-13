@@ -611,12 +611,14 @@ char * read_line(FILE *fin) {
 void showManPage(const char * prog)
 {
   char mancmd[10];
+  int i;
+  WINDOW *man;
   sprintf(mancmd, "man %s", prog);
+  man = newwin(0,0,0,0);
   clear();
-  endwin();
-  // system("clear"); // Not exactly sure if I want this yet.
+  system("clear"); // Needed to ensure man pages display correctly
   system(mancmd);
-  initscr();
+  delwin(man);
 }
 
 int can_run_command(const char *cmd) {

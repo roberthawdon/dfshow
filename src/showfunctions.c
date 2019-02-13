@@ -922,13 +922,17 @@ void LaunchShell()
 void LaunchExecutable(const char* object, const char* args)
 {
   char command[1024];
+  WINDOW *commandWin;
   sprintf(command, "%s %s", object, args);
-  clear();
-  endwin();
+  //clear();
+  //endwin();
   // printf("%s\n", command);
   // exit(0);
+  commandWin = newwin(0,0,0,0);
+  system("clear"); // Just to be sure
   system(command);
-  initscr();
+  delwin(commandWin);
+  // initscr();
   refreshScreen();
 }
 
@@ -989,6 +993,7 @@ int SendToPager(char* object)
   int pset = 0;
   int e = 0;
   char *escObject = str_replace(object, "'", "'\"'\"'");
+  WINDOW *pager;
 
   if (can_run_command("sf")){
     setenv("DFS_THEME_OVERRIDE", "TRUE", 1);
@@ -1013,10 +1018,12 @@ int SendToPager(char* object)
     strcat(esc, "'");
     strcat(page, esc);
     if (access(object, R_OK) == 0){
-      clear();
+      // clear();
       // endwin();
+      pager = newwin(0,0,0,0);
       e = system(page);
       // initscr();
+      delwin(pager);
       refreshScreen();
       return e;
     } else {
@@ -1036,6 +1043,7 @@ int SendToEditor(char* object)
   int eset = 0;
   int e = 0;
   char *escObject = str_replace(object, "'", "'\"'\"'");
+  WINDOW *editorWin;
   if ( getenv("EDITOR")) {
     strcpy(editor, getenv("EDITOR"));
     eset = 1;
@@ -1051,10 +1059,12 @@ int SendToEditor(char* object)
     strcat(esc, "'");
     strcat(editor, esc);
     if (access(object, R_OK) == 0){
-      clear();
+      // clear();
       // endwin();
+      editorWin = newwin(0,0,0,0);
       e = system(editor);
       // initscr();
+      delwin(editorWin);
       refreshScreen();
       return e;
     } else {
