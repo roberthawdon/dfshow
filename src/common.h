@@ -16,6 +16,7 @@ void addMenuItem(menuDef **dfMenu, int *pos, char* refLabel, wchar_t* displayLab
 void updateMenuItem(menuDef **dfMenu, int *menuSize, char* refLabel, wchar_t* displayLabel);
 wchar_t * genMenuDisplayLabel(menuDef* dfMenu, int size, int comma);
 int menuHotkeyLookup(menuDef* dfMenu, char* refLabel, int size);
+int altHotkey(int key);
 void mk_dir(char *path);
 void setConfLocations();
 void printVersion(char* programName);

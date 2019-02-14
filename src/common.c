@@ -170,6 +170,19 @@ int menuHotkeyLookup(menuDef* dfMenu, char* refLabel, int size){
   return r;
 }
 
+int altHotkey(int key)
+{
+  int alt;
+  if ((key < 123) && (key > 96)){
+    alt = key - 32;
+  } else if ((key < 91) && (key > 64)){
+    alt = key + 32;
+  } else {
+    alt = -1;
+  }
+  return(alt);
+}
+
 void mk_dir(char *path)
 {
   struct stat st = {0};

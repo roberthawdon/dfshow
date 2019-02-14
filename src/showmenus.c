@@ -903,36 +903,28 @@ void sort_view_inputs()
     {
       wPrintMenu(0,0,sortMenuLabel);
       *pc = getch10th();
-      switch(*pc)
-        {
-        case 27: // ESC Key
-          directory_view_menu_inputs();
-          break;
-        case 'n':
-          strcpy(sortmode, "name");
-          reverse = 0;
-          break;
-        case 'd':
-          strcpy(sortmode, "date");
-          reverse = 0;
-          break;
-        case 's':
-          strcpy(sortmode, "size");
-          reverse = 0;
-          break;
-        case 'N':
-          strcpy(sortmode, "name");
-          reverse = 1;
-          break;
-        case 'D':
-          strcpy(sortmode, "date");
-          reverse = 1;
-          break;
-        case 'S':
-          strcpy(sortmode, "size");
-          reverse = 1;
-          break;
-        }
+      if (*pc == 27){
+        // ESC Key
+        directory_view_menu_inputs();
+      } else if (*pc == menuHotkeyLookup(sortMenu, "s_name", sortMenuSize)){
+        strcpy(sortmode, "name");
+        reverse = 0;
+      } else if (*pc == menuHotkeyLookup(sortMenu, "s_date", sortMenuSize)){
+        strcpy(sortmode, "date");
+        reverse = 0;
+      } else if (*pc == menuHotkeyLookup(sortMenu, "s_size", sortMenuSize)){
+        strcpy(sortmode, "size");
+        reverse = 0;
+      } else if (*pc == altHotkey(menuHotkeyLookup(sortMenu, "s_name", sortMenuSize))){
+        strcpy(sortmode, "name");
+        reverse = 1;
+      } else if (*pc == altHotkey(menuHotkeyLookup(sortMenu, "s_date", sortMenuSize))){
+        strcpy(sortmode, "date");
+        reverse = 1;
+      } else if (*pc == altHotkey(menuHotkeyLookup(sortMenu, "s_size", sortMenuSize))){
+        strcpy(sortmode, "size");
+        reverse = 1;
+      }
       refreshDirectory(sortmode, topfileref, selected, 0);
       directory_view_menu_inputs();
     }
