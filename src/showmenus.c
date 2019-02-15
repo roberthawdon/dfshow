@@ -1245,7 +1245,7 @@ void modify_key_menu_inputs()
 
 void directory_view_menu_inputs()
 {
-  int e = 0;
+  int e, i = 0;
   char *updir;
   char *execArgs;
   viewMode = 0;
@@ -1405,7 +1405,15 @@ void directory_view_menu_inputs()
             touchDate.actime = ob[selected].adate;
             touchDate.modtime = touchTime;
           }
-          utime(ob[selected].name, &touchDate);
+          if (CheckMarked(ob)){
+            for (i = 0; i < totalfilecount; i++){
+              if (*ob[i].marked){
+                utime(ob[i].name, &touchDate);
+              }
+            }
+          } else {
+            utime(ob[selected].name, &touchDate);
+          }
         }
         refreshDirectory(sortmode, topfileref, selected, 0);
       } else if (*pc == menuHotkeyLookup(fileMenu, "f_uhunt", fileMenuSize)){
