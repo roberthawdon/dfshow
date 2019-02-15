@@ -1,7 +1,7 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "SHOW" "1" "January 2019" "" ""
+.TH "SHOW" "1" "February 2019" "" ""
 .
 .SH "NAME"
 \fBshow\fR \- An interactive directory/file browser written for Unix\-like systems\.
@@ -34,6 +34,10 @@ Sets colorizing of files and directories\. Can be set to \fBalways\fR or \fBneve
 .TP
 \fB\-f\fR
 Does not sort the output, this is equivilent to running \fBshow\fR with \fB\-aU\fR\.
+.
+.TP
+\fB\-\-full\-time\fR
+Sets the Time/Date format to \fBfull\-iso\fR\.
 .
 .TP
 \fB\-g\fR
@@ -138,6 +142,10 @@ Invoke the system\'s text editor\.
 Toggle the visibility of hidden objects\.
 .
 .TP
+\fBLink\fR
+Create a link between files or directories\.
+.
+.TP
 \fBModify\fR
 Change the owner/group or permissions of files\.
 .
@@ -152,6 +160,10 @@ Rename/move file or marked files\.
 .TP
 \fBShow\fR
 Show file or directory\.
+.
+.TP
+\fBTouch\fR
+Change file timestamps\.
 .
 .TP
 \fBeXec\fR
@@ -211,6 +223,40 @@ To resolve this, set a variable to your preferred editor in your shell\'s user p
 This toggles the display of hidden files and directories\. This allows adjustment of the \fB\-a\fR option whilst in the application\. If the currently selected object is hidden by this toggle, the cursor is returned to the top of the directory\.
 .
 .TP
+\fBLink\fR
+Creates a link to the selected file\. The type of link is requested by the following prompt\.
+.
+.IP
+\fBLink Type \- Hard, Symbolic (enter = S)\fR
+.
+.IP
+Selecting "H" will bring up the following prompt\.
+.
+.IP
+\fBHard link to:\fR
+.
+.IP
+\fBshow\fR will then create a hard link to the selected file at the target specified\.
+.
+.IP
+Selecting "S" will bring up the following prompt\.
+.
+.IP
+\fBSymbolic link to:\fR
+.
+.IP
+After a location is specified, the following prompt is shown to ask how to link to the target file\.
+.
+.IP
+\fBLink Location \- Absolute, Relative (enter = R)\fR
+.
+.IP
+Selecting "A" will link to the file directly relevent to the root directory (/)\.
+.
+.IP
+Selecting "R" will instruct \fBshow\fR to link to the target file relative to the destination\.
+.
+.TP
 \fBModify\fR
 Modify the owner/group properties or changes the permissions of an object, or multiple objects\. When invoked, the following prompt is displayed\.
 .
@@ -266,17 +312,17 @@ To resolve this, set a variable to your preferred pager in your shell\'s user pr
 \fBexport PAGER=/usr/bin/less\fR
 .
 .TP
-\fBeXec\fR
-Will execute the selected file if it has the execute flag set and the current user running the \fBshow\fR process has permission to\. Arguments are requested by the following prompt\. Unlike other commands, an empty response will execute the file without arguments\. To abort at this prompt, the \fIESC\fR key must be used\.
+\fBTouch\fR
+Sets the timestamp of the selected file(s)\. When selected, the following prompt will be shown\.
 .
 .IP
-\fBArgs to pass to <file>:\fR
+\fBSet Time \- Accessed, Both, Modified (enter = B)\fR
 .
 .IP
-The following error is displayed if the file does not have an executable flag, or the user does not have sufficient privileges to run\.
+By default, \fBshow\fR will modify both the access and modified times\. When one of the options is selected, one of the following prompts are shown\.
 .
 .IP
-\fBError: Permission denied\fR
+\fBSet Access Time:\fR \fBSet Modifed Time:\fR \fBSet Time:\fR
 .
 .TP
 \fBhUnt\fR
@@ -293,6 +339,19 @@ Following this selection, one of the following prompts will be displayed\.
 .
 .IP
 \fBIgnore Case \- Enter string:\fR
+.
+.TP
+\fBeXec\fR
+Will execute the selected file if it has the execute flag set and the current user running the \fBshow\fR process has permission to\. Arguments are requested by the following prompt\. Unlike other commands, an empty response will execute the file without arguments\. To abort at this prompt, the \fIESC\fR key must be used\.
+.
+.IP
+\fBArgs to pass to <file>:\fR
+.
+.IP
+The following error is displayed if the file does not have an executable flag, or the user does not have sufficient privileges to run\.
+.
+.IP
+\fBError: Permission denied\fR
 .
 .SH "FUNCTIONS"
 In order to select objects to be used by the commands described in the previous section, the cursor must be moved to the line of the desired object\. The functions to move the cursor and the list of files in the display window are described here\. A list of the valid functions and their associated function keys is given list\.
@@ -458,7 +517,7 @@ Using \fISHIFT\fR whilst selecting an option performs that action in reverse ord
 When a file group display is terminated with the Quit command, one of the following commands can be used to display another group of files, invoke the editor for a fire, or terminate the application completely\. The first character of the command is used to invoke the desired function\. The command line is shown below\.
 .
 .P
-\fBcOlors, Run command, Edit file, Help, Make dir, Quit, Show dir\fR
+\fBcOlors, Edit file, Help, Make dir, Quit, Run command, Show dir, Touch file\fR
 .
 .P
 These commands are desctibed below\.
@@ -499,6 +558,22 @@ Invoke the application to display another directory\. The directory name is requ
 .
 .IP
 \fBShow Directory \- Enter pathname:\fR
+.
+.TP
+\fBTouch file\fR
+Updates the timestamp of a specified file requested by the following prompt\. If the file doesn\'t exist, it will be created\.
+.
+.IP
+\fBTouch File \- Enter pathname:\fR
+.
+.IP
+The following prompt is shown to ask if the time should be set to a specific date\.
+.
+.IP
+\fBSet Time? Yes/No (enter = N)\fR
+.
+.IP
+Selecting No will set the file\'s access and modification time to the current time\.
 .
 .SH "COLORS"
 The inbuilt Colors utility is used to customize the colors used in the applications\. It is accessed from the global menu of the \fBshow\fR utility\.
@@ -606,7 +681,7 @@ DF\-SHOW is designed to be run as a non privileged user, and obays restrictions 
 Written by Robert Ian Hawdon\.
 .
 .SH "COPYRIGHT"
-Copyright (C) 2018 License GPLv3+: GNU GPL version 3 or later \fIhttps://gnu\.org/licenses/gpl\.html\fR\.
+Copyright (C) 2019 License GPLv3+: GNU GPL version 3 or later \fIhttps://gnu\.org/licenses/gpl\.html\fR\.
 .
 .P
 This program comes with ABSOLUTELY NO WARRANTY\. This is free software, and you are welcome to redistribute it under certain conditions\.

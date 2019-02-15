@@ -36,6 +36,9 @@ The following options are shared with ``ls``:
   Does not sort the output, this is equivilent to running ``show``
   with ``-aU``.
 
+``--full-time``
+  Sets the Time/Date format to ``full-iso``.
+
 ``-g``
   Only displays the group of each object. Can be paird with
   ``--author``.
@@ -122,6 +125,9 @@ is a list of valid commands and a brief description of each.
 ``Hidden``
   Toggle the visibility of hidden objects.
 
+``Link``
+  Create a link between files or directories.
+
 ``Modify``
   Change the owner/group or permissions of files.
 
@@ -133,6 +139,9 @@ is a list of valid commands and a brief description of each.
 
 ``Show``
   Show file or directory.
+
+``Touch``
+  Change file timestamps.
 
 ``eXec``
   Runs files marked as executable.
@@ -197,6 +206,34 @@ the command has any additional propts, they are also described here.
   If the currently selected object is hidden by this toggle, the
   cursor is returned to the top of the directory.
 
+``Link``
+  Creates a link to the selected file. The type of link is requested
+  by the following prompt.
+
+  ``Link Type - Hard, Symbolic (enter = S)``
+
+  Selecting "H" will bring up the following prompt.
+
+  ``Hard link to:``
+
+  ``show`` will then create a hard link to the selected file at the target
+  specified.
+
+  Selecting "S" will bring up the following prompt.
+
+  ``Symbolic link to:``
+
+  After a location is specified, the following prompt is shown to ask how to
+  link to the target file.
+
+  ``Link Location - Absolute, Relative (enter = R)`` 
+
+  Selecting "A" will link to the file directly relevent to the root directory
+  (/).
+
+  Selecting "R" will instruct ``show`` to link to the target file relative to the
+  destination.
+
 ``Modify``
   Modify the owner/group properties or changes the permissions of an
   object, or multiple objects. When invoked, the following prompt is
@@ -254,20 +291,18 @@ the command has any additional propts, they are also described here.
 
   ``export PAGER=/usr/bin/less``
 
-``eXec``
-  Will execute the selected file if it has the execute flag set and
-  the current user running the ``show`` process has permission to.
-  Arguments are requested by the following prompt. Unlike other
-  commands, an empty response will execute the file without
-  arguments. To abort at this prompt, the *ESC* key must be used.
+``Touch``
+  Sets the timestamp of the selected file(s). When selected, the following
+  prompt will be shown.
 
-  ``Args to pass to <file>:``
+  ``Set Time - Accessed, Both, Modified (enter = B)``
 
-  The following error is displayed if the file does not have an
-  executable flag, or the user does not have sufficient privileges
-  to run.
+  By default, ``show`` will modify both the access and modified times. When one
+  of the options is selected, one of the following prompts are shown.
 
-  ``Error: Permission denied``
+  ``Set Access Time:``
+  ``Set Modifed Time:``
+  ``Set Time:``
 
 ``hUnt``
   Hunts the selected file, or marked files containing a regex
@@ -286,6 +321,21 @@ the command has any additional propts, they are also described here.
   ``Match Case - Enter string:``
 
   ``Ignore Case - Enter string:``
+
+``eXec``
+  Will execute the selected file if it has the execute flag set and
+  the current user running the ``show`` process has permission to.
+  Arguments are requested by the following prompt. Unlike other
+  commands, an empty response will execute the file without
+  arguments. To abort at this prompt, the *ESC* key must be used.
+
+  ``Args to pass to <file>:``
+
+  The following error is displayed if the file does not have an
+  executable flag, or the user does not have sufficient privileges
+  to run.
+
+  ``Error: Permission denied``
 
 Functions
 ---------
@@ -456,7 +506,7 @@ invoke the editor for a fire, or terminate the application
 completely. The first character of the command is used to invoke the
 desired function. The command line is shown below.
 
-``cOlors, Run command, Edit file, Help, Make dir, Quit, Show dir``
+``cOlors, Edit file, Help, Make dir, Quit, Run command, Show dir, Touch file``
 
 These commands are desctibed below.
 
@@ -495,6 +545,20 @@ These commands are desctibed below.
   used to abort this command.
 
   ``Show Directory - Enter pathname:``
+
+``Touch file``
+  Updates the timestamp of a specified file requested by the following prompt.
+  If the file doesn't exist, it will be created.
+
+  ``Touch File - Enter pathname:``
+
+  The following prompt is shown to ask if the time should be set to a specific
+  date.
+
+  ``Set Time? Yes/No (enter = N)``
+
+  Selecting No will set the file's access and modification time to the current
+  time.
 
 Colors
 ======
