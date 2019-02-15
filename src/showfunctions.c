@@ -161,11 +161,10 @@ char *getRelativePath(char *file, char *target)
   char *result = malloc(sizeof(char) + 1);
   char *rewrite;
   // char *work = malloc(sizeof(char) * 1);
-  int i, j, e, c, workLen, resultLen, up;
+  int i, j, e, c, resultLen, up;
   path *fileStruct, *targetStruct;
   int currentFileIndex, currentTargetIndex, fileLen, targetLen, commonPath = 0;
 
-  workLen = 0;
   up = 0;
 
   fileStruct = malloc(sizeof(path) + 1);
@@ -185,6 +184,9 @@ char *getRelativePath(char *file, char *target)
         fileStruct[e - 1] = fileStruct[e - 2];
         e--;
         fileStruct = realloc(fileStruct, sizeof(path) * (1 + e));
+      } else if (!strcmp(fileStruct[e].directories, ".")){
+        // strip single .
+        strcpy(fileStruct[e].directories, "\0");
       } else {
         // If element created is NOT ..
         e++;
@@ -197,6 +199,10 @@ char *getRelativePath(char *file, char *target)
     }
   }
   fileStruct[e].directories[j] = '\0';
+  if (!strcmp(fileStruct[e].directories, ".")){
+    strcpy(fileStruct[e].directories, "");
+    e--;
+  }
   fileLen = e + 1;
   currentFileIndex = e;
 
@@ -214,6 +220,9 @@ char *getRelativePath(char *file, char *target)
         targetStruct[e - 1] = targetStruct[e - 2];
         e--;
         targetStruct = realloc(targetStruct, sizeof(path) * (1 + e));
+      } else if (!strcmp(targetStruct[e].directories, ".")){
+        // strip single .
+        strcpy(targetStruct[e].directories, "\0");
       } else {
         // If element created is NOT ..
         e++;
@@ -226,6 +235,10 @@ char *getRelativePath(char *file, char *target)
     }
   }
   targetStruct[e].directories[j] = '\0';
+  if (!strcmp(targetStruct[e].directories, ".")){
+    strcpy(targetStruct[e].directories, "");
+    e--;
+  }
   targetLen = e + 1;
   currentTargetIndex = e;
 
@@ -246,6 +259,7 @@ char *getRelativePath(char *file, char *target)
   // Start writing output
   c = 0;
   if ((fileLen - 1) > (targetLen -1)){
+    // If we're up at least one directory
     for(i=commonPath; i < fileLen; i++){
       j = strlen(fileStruct[i].directories);
       result = realloc(result, sizeof(char) * (strlen(result) + j + 1));
@@ -259,7 +273,7 @@ char *getRelativePath(char *file, char *target)
       c++;
     }
   } else if ((fileLen - 1) < (targetLen - 1)){
-    //
+    // If we're down at least one directory (in a sub directory)
     up = currentTargetIndex - currentFileIndex;
     result = realloc(result, sizeof(char) * (up * 3) + 1);
     for (i = 0; i < up; i++){
