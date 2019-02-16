@@ -161,11 +161,12 @@ char *getRelativePath(char *file, char *target)
   char *result = malloc(sizeof(char) + 1);
   char *rewrite;
   // char *work = malloc(sizeof(char) * 1);
-  int i, j, e, c, resultLen, up;
+  int i, j, e, c, resultLen, targetUp, fileUp;
   path *fileStruct, *targetStruct;
   int currentFileIndex, currentTargetIndex, fileLen, targetLen, commonPath = 0;
 
-  up = 0;
+  //up = 0;
+  targetUp = fileUp = 0;
 
   fileStruct = malloc(sizeof(path) + 1);
   targetStruct = malloc(sizeof(path) + 1);
@@ -256,10 +257,29 @@ char *getRelativePath(char *file, char *target)
     }
   }
 
-  // Start writing output
   c = 0;
-  if ((fileLen - 1) > (targetLen -1)){
-    // If we're up at least one directory
+  targetUp = targetLen - commonPath - 1;
+  fileUp = fileLen - commonPath;
+  if (targetUp > 0){
+    result = realloc(result, sizeof(char) * (targetUp * 3) + 1);
+    for (i = 0; i < targetUp; i++){
+      if (c == 0){
+        sprintf(result, "%s/", "..");
+      } else {
+        sprintf(result, "%s%s/", result, "..");
+      }
+      c++;
+    }
+    for(i=(fileLen - fileUp); i < fileLen; i++){
+      j = strlen(fileStruct[i].directories);
+      result = realloc(result, sizeof(char) * (strlen(result) + j + 1));
+      if (i == fileLen - 1){
+        sprintf(result, "%s%s", result, fileStruct[i].directories);
+      } else {
+        sprintf(result, "%s%s/", result, fileStruct[i].directories);
+      }
+    }
+  } else if ((targetUp < 1) && (fileUp > 1)){
     for(i=commonPath; i < fileLen; i++){
       j = strlen(fileStruct[i].directories);
       result = realloc(result, sizeof(char) * (strlen(result) + j + 1));
@@ -272,33 +292,12 @@ char *getRelativePath(char *file, char *target)
       }
       c++;
     }
-  } else if ((fileLen - 1) < (targetLen - 1)){
-    // If we're down at least one directory (in a sub directory)
-    up = currentTargetIndex - currentFileIndex;
-    result = realloc(result, sizeof(char) * (up * 3) + 1);
-    for (i = 0; i < up; i++){
-      if (c == 0){
-        sprintf(result, "%s/", "..");
-      } else {
-        sprintf(result, "%s%s/", result, "..");
-      }
-      c++;
-    }
-    for(i=(fileLen - up); i < fileLen; i++){
-      j = strlen(fileStruct[i].directories);
-      result = realloc(result, sizeof(char) * (strlen(result) + j + 1));
-      if (i == fileLen - 1){
-        sprintf(result, "%s%s", result, fileStruct[i].directories);
-      } else {
-        sprintf(result, "%s%s/", result, fileStruct[i].directories);
-      }
-    }
   } else {
-    // Assume we're in the same directory at this point
-    j = strlen(fileStruct[currentFileIndex].directories);
-    result = realloc(result, sizeof(char) * (j + 1));
-    sprintf(result, "%s", fileStruct[currentFileIndex].directories);
-  }
+      // Assume we're in the same directory at this point
+      j = strlen(fileStruct[currentFileIndex].directories);
+      result = realloc(result, sizeof(char) * (j + 1));
+      sprintf(result, "%s", fileStruct[currentFileIndex].directories);
+    }
 
   result[resultLen - 1] = '\0';
 
