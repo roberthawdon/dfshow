@@ -725,7 +725,7 @@ void touch_file_input()
             touchDate.actime = touchDate.modtime = touchTime;
           } else if ( setDateFlag == 1 ){
             touchDate.actime = touchTime;
-            (&touchDate.modtime);
+            time(&touchDate.modtime);
           } else if ( setDateFlag == 2 ){
             time(&touchDate.actime);
             touchDate.modtime = touchTime;
