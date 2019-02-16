@@ -299,7 +299,7 @@ char *getRelativePath(char *file, char *target)
       sprintf(result, "%s", fileStruct[currentFileIndex].directories);
     }
 
-  result[resultLen - 1] = '\0';
+  // result[resultLen - 1] = '\0'; // This seems to cause no end of grief on FreeBSD and I can't even remember why it's here.
 
 
   free(fileStruct);
