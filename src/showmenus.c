@@ -652,9 +652,13 @@ time_t touchTimeInput(int type)
     } else if (!strcmp(charTime, "")){
       time(&newTime);
     } else {
+      abortinput = 1;
       topLineMessage("Error parsing time");
       time(&newTime);
     }
+  } else {
+    abortinput = 1;
+    time(&newTime);
   }
   return(newTime);
 }
@@ -1398,23 +1402,27 @@ void directory_view_menu_inputs()
         // topLineMessage("TODO: Needs implementing");
         if (e > -1){
           touchTime = touchTimeInput(e);
-          if (e == 0){
-            touchDate.actime = touchDate.modtime = touchTime;
-          } else if ( e == 1 ){
-            touchDate.actime = touchTime;
-            touchDate.modtime = ob[selected].date;
-          } else if ( e == 2 ){
-            touchDate.actime = ob[selected].adate;
-            touchDate.modtime = touchTime;
-          }
-          if (CheckMarked(ob)){
-            for (i = 0; i < totalfilecount; i++){
-              if (*ob[i].marked){
-                utime(ob[i].name, &touchDate);
+          if (abortinput == 0) {
+            if (e == 0){
+              touchDate.actime = touchDate.modtime = touchTime;
+            } else if ( e == 1 ){
+              touchDate.actime = touchTime;
+              touchDate.modtime = ob[selected].date;
+            } else if ( e == 2 ){
+              touchDate.actime = ob[selected].adate;
+              touchDate.modtime = touchTime;
+            }
+            if (CheckMarked(ob)){
+              for (i = 0; i < totalfilecount; i++){
+                if (*ob[i].marked){
+                  utime(ob[i].name, &touchDate);
+                }
               }
+            } else {
+              utime(ob[selected].name, &touchDate);
             }
           } else {
-            utime(ob[selected].name, &touchDate);
+            abortinput = 0;
           }
         }
         refreshDirectory(sortmode, topfileref, selected, 0);
