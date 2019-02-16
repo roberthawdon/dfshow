@@ -3,6 +3,20 @@
 #define HOME_CONF_DIR ".dfshow"
 #include <wchar.h>
 
+typedef struct {
+  char refLabel[16];
+  wchar_t displayLabel[32];
+  int hotKey;
+  int displayLabelSize;
+} menuDef;
+
+int getch10th (void);
+int cmp_menu_ref(const void *lhs, const void *rhs);
+void addMenuItem(menuDef **dfMenu, int *pos, char* refLabel, wchar_t* displayLabel, int hotKey);
+void updateMenuItem(menuDef **dfMenu, int *menuSize, char* refLabel, wchar_t* displayLabel);
+wchar_t * genMenuDisplayLabel(wchar_t* preMenu, menuDef* dfMenu, int size, wchar_t* postMenu, int comma);
+int menuHotkeyLookup(menuDef* dfMenu, char* refLabel, int size);
+int altHotkey(int key);
 void mk_dir(char *path);
 void setConfLocations();
 void printVersion(char* programName);

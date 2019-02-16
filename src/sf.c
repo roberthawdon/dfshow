@@ -56,6 +56,8 @@ int wrapmode = LINE_WRAP;
 
 char fileName[512];
 
+int resized = 0;
+
 extern FILE *file;
 
 extern int exitCode;
@@ -81,6 +83,8 @@ extern char globalConfLocation[128];
 extern char homeConfLocation[128];
 
 extern char themeName[128];
+
+extern wchar_t *fileMenuLabel;
 
 void readConfig(const char * confFile)
 {
@@ -123,12 +127,6 @@ void readConfig(const char * confFile)
 
 void buildMenuText(){
   // Writing Menus
-  strcpy(fileMenuText, "<F1>-Down, <F2>-Up, <F3>-Top, <F4>-Bottom, !Find, !Help, !Position, !Quit");
-  if (wrap){
-    strcat(fileMenuText, ", !Wrap-off");
-  } else {
-    strcat(fileMenuText, ", !Wrap-on");
-  }
   // Fun fact, in DF-EDIT 2.3d, the following text input typoed "absolute" as "absolue", this typo also exists in the Windows version from 1997 (2.3d-76), however, the 1986 documentation correctly writes it as "absolute".
   strcpy(filePosText, "Position relative (<+num> || <-num>) or absolute (<num>):");
 }
@@ -140,10 +138,13 @@ void refreshScreen()
   refresh();
   initscr();
   displaysize = LINES - 2;
+  unloadMenuLabels();
+  refreshMenuLabels();
   if (viewmode == 0){
     mvprintw(0,0,"Show File - Enter pathname:");
   } else if (viewmode == 1){
-    printMenu(0, 0, fileMenuText);
+    // printMenu(0, 0, fileMenuText);
+    wPrintMenu(0, 0, fileMenuLabel);
     loadFile(fileName);
   } else if (viewmode == 2){
     printMenu(0,0,filePosText);
@@ -173,7 +174,8 @@ int calculateTab(int pos)
 
 void sigwinchHandle(int sig)
 {
-  refreshScreen();
+  // refreshScreen();
+  resized = 1;
 }
 
 int findInFile(const char * currentfile, const char * search, int charcase)
@@ -334,7 +336,7 @@ void file_view(char * currentfile)
   clear();
   setColors(COMMAND_PAIR);
 
-  printMenu(0, 0, fileMenuText);
+  // printMenu(0, 0, fileMenuText);
 
   displaysize = LINES - 2;
 
@@ -417,6 +419,7 @@ int main(int argc, char *argv[])
     }
   }
 
+  generateDefaultMenus();
   buildMenuText();
 
   set_escdelay(10);
@@ -429,6 +432,8 @@ int main(int argc, char *argv[])
   setlocale(LC_ALL, "");
 
   initscr();
+
+  refreshMenuLabels();
 
   memset(&sa, 0, sizeof(struct sigaction));
   sa.sa_handler = sigwinchHandle;

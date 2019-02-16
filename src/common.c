@@ -28,6 +28,7 @@
 #include <sys/stat.h>
 #include <libconfig.h>
 #include <wchar.h>
+#include <signal.h>
 #include "colors.h"
 #include "config.h"
 #include "common.h"
@@ -46,6 +47,157 @@ char themeName[128] = "default";
 extern int * pc;
 
 extern char fileMenuText[256];
+
+extern int resized;
+
+void refreshScreen(); // This reference needs to exist to allow getch10th to be common.
+
+int getch10th (void) {
+  int ch;
+  do {
+    if (resized) {
+      resized = 0;
+      refreshScreen();
+    }
+    halfdelay (1);
+    ch = getch();
+  } while (ch == ERR || ch == KEY_RESIZE);
+  return ch;
+}
+
+int cmp_menu_ref(const void *lhs, const void *rhs)
+{
+
+  menuDef *dforderA = (menuDef *)lhs;
+  menuDef *dforderB = (menuDef *)rhs;
+
+  return strcoll(dforderA->refLabel, dforderB->refLabel);
+
+}
+
+void updateMenuItem(menuDef **dfMenu, int *menuSize, char* refLabel, wchar_t* displayLabel){
+  // To Do
+  int i;
+  for(i = 0; i < *menuSize; i++){
+    if (!strcmp(((*dfMenu)[i].refLabel), refLabel)){
+      swprintf((*dfMenu)[i].displayLabel, 32, L"%ls", displayLabel);
+      break;
+    }
+  }
+  return;
+}
+
+void addMenuItem(menuDef **dfMenu, int *pos, char* refLabel, wchar_t* displayLabel, int hotKey){
+
+  int menuPos = *pos;
+  int charCount = 0;
+  int i;
+  menuDef *tmp;
+
+  if (menuPos == 0){
+    tmp = malloc(sizeof(menuDef) * 2);
+  } else {
+    tmp = realloc(*dfMenu, (menuPos + 1) * (sizeof(menuDef) + 1) );
+  }
+  if (tmp){
+    *dfMenu = tmp;
+  }
+
+  sprintf((*dfMenu)[menuPos].refLabel, "%s", refLabel);
+  swprintf((*dfMenu)[menuPos].displayLabel, 32, L"%ls", displayLabel);
+  (*dfMenu)[menuPos].hotKey = hotKey;
+
+  for (i = 0; i < wcslen(displayLabel); i++)
+    {
+      if ( displayLabel[i] == '!' || displayLabel[i] == '<' || displayLabel[i] == '>' || displayLabel[i] == '\\') {
+        i++;
+        charCount++;
+      } else {
+        charCount++;
+      }
+    }
+  (*dfMenu)[menuPos].displayLabelSize = charCount;
+
+  qsort((*dfMenu), menuPos + 1, sizeof(menuDef), cmp_menu_ref);
+
+  ++*pos;
+
+}
+
+wchar_t * genMenuDisplayLabel(wchar_t* preMenu, menuDef* dfMenu, int size, wchar_t* postMenu, int comma){
+  wchar_t * output;
+  int gapSize;
+  int currentLen = 0;
+  int i;
+
+  output = malloc(sizeof(wchar_t) * ( wcslen(preMenu) + 2));
+  if (wcscmp(preMenu, L"")){
+    wcscpy(output, preMenu);
+    wcscat(output, L" ");
+  } else {
+    wcscpy(output, L"\0");
+  }
+  for (i = 0; i < size ; i++){
+    output = realloc(output, ((i + 1) * sizeof(dfMenu[i].displayLabel) + wcslen(output) + 1) * sizeof(wchar_t) );
+   if ( i == 0 ){
+     currentLen = currentLen + dfMenu[i].displayLabelSize;
+     if ( currentLen - 1 < COLS){
+       wcscat(output, dfMenu[i].displayLabel);
+     } else if ( currentLen +1 > COLS && i == 0){
+       wcscat(output, L"");
+     }
+   } else {
+     if (comma == 1){
+       gapSize = 2;
+     } else if (comma == -1) {
+       gapSize = 0;
+     } else {
+       gapSize = 1;
+     }
+     currentLen = currentLen + dfMenu[i].displayLabelSize + gapSize;
+     if (currentLen - 1 < COLS){
+       if (comma == 1){
+         wcscat(output, L", ");
+       } else if (comma == 0) {
+         wcscat(output, L" ");
+       }
+       wcscat(output, dfMenu[i].displayLabel);
+     }
+   }
+  }
+  output = realloc(output, (sizeof(wchar_t) * (wcslen(output) + wcslen(postMenu) + 2) ));
+  if (wcscmp(postMenu, L"")){
+    wcscat(output, L" ");
+    wcscat(output, postMenu);
+  } else {
+    wcscat(output, L"\0");
+  }
+  return output;
+}
+
+int menuHotkeyLookup(menuDef* dfMenu, char* refLabel, int size){
+  int i;
+  int r = -1;
+  for (i = 0; i < size; i++){
+    if (!strcmp(dfMenu[i].refLabel, refLabel)){
+      r = dfMenu[i].hotKey;
+    }
+  }
+  return r;
+}
+
+int altHotkey(int key)
+{
+  int alt;
+  if ((key < 123) && (key > 96)){
+    alt = key - 32;
+  } else if ((key < 91) && (key > 64)){
+    alt = key + 32;
+  } else {
+    alt = -1;
+  }
+  return(alt);
+}
 
 void mk_dir(char *path)
 {
@@ -180,6 +332,7 @@ void printMenu(int line, int col, char *menustring)
 
 void wPrintLine(int line, int col, wchar_t *textString){
   int i;
+  move(line,col);
   clrtoeol();
   for ( i = 0; i < wcslen(textString) ; i++){
     mvprintw(line, col + i, "%lc", textString[i]);
@@ -210,9 +363,9 @@ void topLineMessage(const char *message){
       *pc = getch();
       switch(*pc)
         {
+        case -1:
+          break;
         default: // Where's the "any" key?
-          printMenu(0, 0, fileMenuText);
-          //directory_view_menu_inputs();
           return;
           break;
         }
@@ -307,6 +460,8 @@ int wReadLine(wchar_t *buffer, int buflen, wchar_t *oldbuf)
       } else {
         beep();
       }
+    } else if (c == 0) {
+      // Do nothing
     } else {
       beep();
     }
@@ -485,12 +640,11 @@ char * read_line(FILE *fin) {
 void showManPage(const char * prog)
 {
   char mancmd[10];
+  int i;
   sprintf(mancmd, "man %s", prog);
   clear();
-  endwin();
-  // system("clear"); // Not exactly sure if I want this yet.
+  system("clear"); // Needed to ensure man pages display correctly
   system(mancmd);
-  initscr();
 }
 
 int can_run_command(const char *cmd) {

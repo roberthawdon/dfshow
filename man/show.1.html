@@ -98,6 +98,7 @@ The <code>.</code> and <code>..</code> objects are never hidden due to their nav
 <dt><code>-B</code>, <code>--ignore-backups</code></dt><dd><p>Hides files ending in <code>~</code>, often used as backup files.</p></dd>
 <dt><code>--color</code>[=<var>COLOR</var>]</dt><dd><p>Sets colorizing of files and directories. Can be set to <code>always</code> or <code>never</code>.</p></dd>
 <dt class="flush"><code>-f</code></dt><dd><p>Does not sort the output, this is equivilent to running <code>show</code> with <code>-aU</code>.</p></dd>
+<dt><code>--full-time</code></dt><dd><p>Sets the Time/Date format to <code>full-iso</code>.</p></dd>
 <dt class="flush"><code>-g</code></dt><dd><p>Only displays the group of each object. Can be paird with <code>--author</code>.</p></dd>
 <dt><code>-G</code>, <code>--no-group</code></dt><dd><p>Omits the group of each object in the output.</p></dd>
 <dt><code>-h</code>, <code>--human-readable</code></dt><dd><p>Displays the file sizes in a human readable format. For example, 1024 Bytes will be represented as 1M.</p></dd>
@@ -143,10 +144,12 @@ The <code>.</code> and <code>..</code> objects are never hidden due to their nav
 <dt class="flush"><code>Delete</code></dt><dd><p>Delete file or marked files.</p></dd>
 <dt class="flush"><code>Edit</code></dt><dd><p>Invoke the system's text editor.</p></dd>
 <dt class="flush"><code>Hidden</code></dt><dd><p>Toggle the visibility of hidden objects.</p></dd>
+<dt class="flush"><code>Link</code></dt><dd><p>Create a link between files or directories.</p></dd>
 <dt class="flush"><code>Modify</code></dt><dd><p>Change the owner/group or permissions of files.</p></dd>
 <dt class="flush"><code>Quit</code></dt><dd><p>Quit current directory.</p></dd>
 <dt class="flush"><code>Rename</code></dt><dd><p>Rename/move file or marked files.</p></dd>
 <dt class="flush"><code>Show</code></dt><dd><p>Show file or directory.</p></dd>
+<dt class="flush"><code>Touch</code></dt><dd><p>Change file timestamps.</p></dd>
 <dt class="flush"><code>eXec</code></dt><dd><p>Runs files marked as executable.</p></dd>
 <dt class="flush"><code>hUnt</code></dt><dd><p>Searches and marks files matching a string.</p></dd>
 </dl>
@@ -179,6 +182,27 @@ The <code>.</code> and <code>..</code> objects are never hidden due to their nav
 
 <p><code>export VISUAL=/usr/bin/vi</code></p></dd>
 <dt class="flush"><code>Hidden</code></dt><dd><p>This toggles the display of hidden files and directories. This allows adjustment of the <code>-a</code> option whilst in the application. If the currently selected object is hidden by this toggle, the cursor is returned to the top of the directory.</p></dd>
+<dt class="flush"><code>Link</code></dt><dd><p>Creates a link to the selected file. The type of link is requested by the following prompt.</p>
+
+<p><code>Link Type - Hard, Symbolic (enter = S)</code></p>
+
+<p>Selecting "H" will bring up the following prompt.</p>
+
+<p><code>Hard link to:</code></p>
+
+<p><code>show</code> will then create a hard link to the selected file at the target specified.</p>
+
+<p>Selecting "S" will bring up the following prompt.</p>
+
+<p><code>Symbolic link to:</code></p>
+
+<p>After a location is specified, the following prompt is shown to ask how to link to the target file.</p>
+
+<p><code>Link Location - Absolute, Relative (enter = R)</code></p>
+
+<p>Selecting "A" will link to the file directly relevent to the root directory (/).</p>
+
+<p>Selecting "R" will instruct <code>show</code> to link to the target file relative to the destination.</p></dd>
 <dt class="flush"><code>Modify</code></dt><dd><p>Modify the owner/group properties or changes the permissions of an object, or multiple objects. When invoked, the following prompt is displayed.</p>
 
 <p><code>Modify: Owner/Group, Permissions</code></p>
@@ -209,13 +233,17 @@ The <code>.</code> and <code>..</code> objects are never hidden due to their nav
 <p>To resolve this, set a variable to your preferred pager in your shell's user preference file.</p>
 
 <p><code>export PAGER=/usr/bin/less</code></p></dd>
-<dt class="flush"><code>eXec</code></dt><dd><p>Will execute the selected file if it has the execute flag set and the current user running the <code>show</code> process has permission to. Arguments are requested by the following prompt. Unlike other commands, an empty response will execute the file without arguments. To abort at this prompt, the <em>ESC</em> key must be used.</p>
+<dt class="flush"><code>Touch</code></dt><dd><p>Sets the timestamp of the selected file(s). When selected, the following prompt will be shown.</p>
 
-<p><code>Args to pass to &lt;file>:</code></p>
+<p><code>Set Time - Accessed, Both, Modified (enter = B)</code></p>
 
-<p>The following error is displayed if the file does not have an executable flag, or the user does not have sufficient privileges to run.</p>
+<p>By default, <code>show</code> will modify both the access and modified times. When one of the options is selected, one of the following prompts are shown.</p>
 
-<p><code>Error: Permission denied</code></p></dd>
+<p><code>Set Access Time:</code>
+<code>Set Modifed Time:</code>
+<code>Set Time:</code></p>
+
+<p>Set the desired time in one of the following formats: <code>YYYY-MM-DD HH:MM:SS</code>, <code>HH:MM:SS</code></p></dd>
 <dt class="flush"><code>hUnt</code></dt><dd><p>Hunts the selected file, or marked files containing a regex string. When used with a single file, the selected file will be marked if the string matches. When using multiple files, any files not matching the string will be unselected. Case sensitivity is requested by the following prompt, afterwards the user is asked to input the string to search. To abort at this prompt, the <em>ESC</em> key must be used.</p>
 
 <p><code>Case Sensitive, Yes/No/ESC (enter = no)</code></p>
@@ -225,6 +253,13 @@ The <code>.</code> and <code>..</code> objects are never hidden due to their nav
 <p><code>Match Case - Enter string:</code></p>
 
 <p><code>Ignore Case - Enter string:</code></p></dd>
+<dt class="flush"><code>eXec</code></dt><dd><p>Will execute the selected file if it has the execute flag set and the current user running the <code>show</code> process has permission to. Arguments are requested by the following prompt. Unlike other commands, an empty response will execute the file without arguments. To abort at this prompt, the <em>ESC</em> key must be used.</p>
+
+<p><code>Args to pass to &lt;file>:</code></p>
+
+<p>The following error is displayed if the file does not have an executable flag, or the user does not have sufficient privileges to run.</p>
+
+<p><code>Error: Permission denied</code></p></dd>
 </dl>
 
 
@@ -292,7 +327,7 @@ The <code>.</code> and <code>..</code> objects are never hidden due to their nav
 
 <p>When a file group display is terminated with the Quit command, one of the following commands can be used to display another group of files, invoke the editor for a fire, or terminate the application completely. The first character of the command is used to invoke the desired function. The command line is shown below.</p>
 
-<p>  <code>cOlors, Run command, Edit file, Help, Make dir, Quit, Show dir</code></p>
+<p>  <code>cOlors, Edit file, Help, Make dir, Quit, Run command, Show dir, Touch file</code></p>
 
 <p>These commands are desctibed below.</p>
 
@@ -310,6 +345,15 @@ The <code>.</code> and <code>..</code> objects are never hidden due to their nav
 <dt><code>Show dir</code></dt><dd><p>Invoke the application to display another directory. The directory name is requrested by the following prompt. An empty response is used to abort this command.</p>
 
 <p><code>Show Directory - Enter pathname:</code></p></dd>
+<dt><code>Touch file</code></dt><dd><p>Updates the timestamp of a specified file requested by the following prompt. If the file doesn't exist, it will be created.</p>
+
+<p><code>Touch File - Enter pathname:</code></p>
+
+<p>The following prompt is shown to ask if the time should be set to a specific date.</p>
+
+<p><code>Set Time? Yes/No (enter = N)</code></p>
+
+<p>Selecting No will set the file's access and modification time to the current time.</p></dd>
 </dl>
 
 
@@ -382,7 +426,7 @@ The <code>.</code> and <code>..</code> objects are never hidden due to their nav
 
 <h2 id="COPYRIGHT">COPYRIGHT</h2>
 
-<p>Copyright (C) 2018 License GPLv3+: GNU GPL version 3 or later <a href="https://gnu.org/licenses/gpl.html" data-bare-link="true">https://gnu.org/licenses/gpl.html</a>.</p>
+<p>Copyright (C) 2019 License GPLv3+: GNU GPL version 3 or later <a href="https://gnu.org/licenses/gpl.html" data-bare-link="true">https://gnu.org/licenses/gpl.html</a>.</p>
 
 <p>This program comes with ABSOLUTELY NO WARRANTY. This is free software, and you are welcome to redistribute it under certain conditions.</p>
 
@@ -395,7 +439,7 @@ The <code>.</code> and <code>..</code> objects are never hidden due to their nav
 
   <ol class='man-decor man-foot man foot'>
     <li class='tl'></li>
-    <li class='tc'>January 2019</li>
+    <li class='tc'>February 2019</li>
     <li class='tr'>show(1)</li>
   </ol>
 
