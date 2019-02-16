@@ -180,30 +180,30 @@ void generateDefaultMenus(){
   addMenuItem(&functionMenu, &functionMenuSize, "f_10", L"<F10>-Block", 274);
 
   // Modify Menu
-  addMenuItem(&modifyMenu, &modifyMenuSize, "m_owner", L"Modify - !Owner/Group", 'o');
+  addMenuItem(&modifyMenu, &modifyMenuSize, "m_owner", L"!Owner/Group", 'o');
   addMenuItem(&modifyMenu, &modifyMenuSize, "m_perms", L"!Permissions", 'p');
 
   // Sort Menu
-  addMenuItem(&sortMenu, &sortMenuSize, "s_date", L"Sort list by - !Date & time", 'd');
+  addMenuItem(&sortMenu, &sortMenuSize, "s_date", L"!Date & time", 'd');
   addMenuItem(&sortMenu, &sortMenuSize, "s_name", L"!Name", 'n');
   addMenuItem(&sortMenu, &sortMenuSize, "s_size", L"!Size", 's');
 
   // Link Menu
-  addMenuItem(&linkMenu, &linkMenuSize, "l_hard", L"Link Type - !Hard", 'h');
-  addMenuItem(&linkMenu, &linkMenuSize, "l_symbolic", L"!Symbolic (enter = S)", 's');
+  addMenuItem(&linkMenu, &linkMenuSize, "l_hard", L"!Hard", 'h');
+  addMenuItem(&linkMenu, &linkMenuSize, "l_symbolic", L"!Symbolic", 's');
 
   // Link Location Menu
-  addMenuItem(&linkLocationMenu, &linkLocationMenuSize, "l_absolute", L"Link Location - !Absolute", 'a');
-  addMenuItem(&linkLocationMenu, &linkLocationMenuSize, "l_relative", L"!Relative (enter = R)", 'r');
+  addMenuItem(&linkLocationMenu, &linkLocationMenuSize, "l_absolute", L"!Absolute", 'a');
+  addMenuItem(&linkLocationMenu, &linkLocationMenuSize, "l_relative", L"!Relative", 'r');
 
   // Touch Menu
-  addMenuItem(&touchMenu, &touchMenuSize, "t_accessed", L"Set Time - !Accessed", 'a');
+  addMenuItem(&touchMenu, &touchMenuSize, "t_accessed", L"!Accessed", 'a');
   addMenuItem(&touchMenu, &touchMenuSize, "t_both", L"!Both", 'b');
-  addMenuItem(&touchMenu, &touchMenuSize, "t_modified", L"!Modified (enter = B)", 'm');
+  addMenuItem(&touchMenu, &touchMenuSize, "t_modified", L"!Modified", 'm');
 
   // Touch Set Date Confirm
-  addMenuItem(&touchDateConfirmMenu, &touchDateConfirmMenuSize, "t_1", L"Set Time? !Yes/", 'y');
-  addMenuItem(&touchDateConfirmMenu, &touchDateConfirmMenuSize, "t_2", L"!No (enter = n)", 'n');
+  addMenuItem(&touchDateConfirmMenu, &touchDateConfirmMenuSize, "t_1", L"!Yes/", 'y');
+  addMenuItem(&touchDateConfirmMenu, &touchDateConfirmMenuSize, "t_2", L"!No", 'n');
 
   // Color Menu
   addMenuItem(&colorMenu, &colorMenuSize, "c_color", L"Color number", -1);
@@ -215,16 +215,16 @@ void generateDefaultMenus(){
 }
 
 void refreshMenuLabels(){
-  globalMenuLabel = genMenuDisplayLabel(globalMenu, globalMenuSize, 1);
-  fileMenuLabel = genMenuDisplayLabel(fileMenu, fileMenuSize, 1);
-  functionMenuLabel = genMenuDisplayLabel(functionMenu, functionMenuSize, 0);
-  modifyMenuLabel = genMenuDisplayLabel(modifyMenu, modifyMenuSize, 1);
-  sortMenuLabel = genMenuDisplayLabel(sortMenu, sortMenuSize, 1);
-  linkMenuLabel = genMenuDisplayLabel(linkMenu, linkMenuSize, 1);
-  linkLocationMenuLabel = genMenuDisplayLabel(linkLocationMenu, linkLocationMenuSize, 1);
-  touchMenuLabel = genMenuDisplayLabel(touchMenu, touchMenuSize, 1);
-  touchDateConfirmMenuLabel = genMenuDisplayLabel(touchDateConfirmMenu, touchDateConfirmMenuSize, 0);
-  colorMenuLabel = genMenuDisplayLabel(colorMenu, colorMenuSize, 1);
+  globalMenuLabel = genMenuDisplayLabel(L"", globalMenu, globalMenuSize, L"", 1);
+  fileMenuLabel = genMenuDisplayLabel(L"", fileMenu, fileMenuSize, L"", 1);
+  functionMenuLabel = genMenuDisplayLabel(L"", functionMenu, functionMenuSize, L"", 0);
+  modifyMenuLabel = genMenuDisplayLabel(L"Modify -", modifyMenu, modifyMenuSize, L"", 1);
+  sortMenuLabel = genMenuDisplayLabel(L"Sort list by -", sortMenu, sortMenuSize, L"", 1);
+  linkMenuLabel = genMenuDisplayLabel(L"Link Type -", linkMenu, linkMenuSize, L"(enter = S)", 1);
+  linkLocationMenuLabel = genMenuDisplayLabel(L"Link Location -", linkLocationMenu, linkLocationMenuSize, L"(enter = R)", 1);
+  touchMenuLabel = genMenuDisplayLabel(L"Set Time -", touchMenu, touchMenuSize, L"(enter = B)", 1);
+  touchDateConfirmMenuLabel = genMenuDisplayLabel(L"Set Time?", touchDateConfirmMenu, touchDateConfirmMenuSize, L"(enter = N)", -1);
+  colorMenuLabel = genMenuDisplayLabel(L"", colorMenu, colorMenuSize, L"", 1);
 }
 
 void unloadMenuLabels(){

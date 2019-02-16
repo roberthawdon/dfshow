@@ -78,13 +78,13 @@ void generateDefaultMenus(){
 
   // Case Menu
   addMenuItem(&caseMenu, &caseMenuSize, "c1_ignore", L"!Ignore-case", 'i');
-  addMenuItem(&caseMenu, &caseMenuSize, "c2_sensitive", L"!Case-sensitive (enter = I)", 'c');
+  addMenuItem(&caseMenu, &caseMenuSize, "c2_sensitive", L"!Case-sensitive", 'c');
 
 }
 
 void refreshMenuLabels(){
-  fileMenuLabel = genMenuDisplayLabel(fileMenu, fileMenuSize, 1);
-  caseMenuLabel = genMenuDisplayLabel(caseMenu, caseMenuSize, 0);
+  fileMenuLabel = genMenuDisplayLabel(L"", fileMenu, fileMenuSize, L"", 1);
+  caseMenuLabel = genMenuDisplayLabel(L"", caseMenu, caseMenuSize, L"(enter = I)", 0);
 }
 
 void unloadMenuLabels(){

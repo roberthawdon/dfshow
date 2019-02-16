@@ -124,38 +124,54 @@ void addMenuItem(menuDef **dfMenu, int *pos, char* refLabel, wchar_t* displayLab
 
 }
 
-wchar_t * genMenuDisplayLabel(menuDef* dfMenu, int size, int comma){
+wchar_t * genMenuDisplayLabel(wchar_t* preMenu, menuDef* dfMenu, int size, wchar_t* postMenu, int comma){
   wchar_t * output;
   int gapSize;
   int currentLen = 0;
   int i;
 
-  output = malloc(sizeof(wchar_t) * 1);
-   for (i = 0; i < size ; i++){
-    output = realloc(output, ((i + 1) * sizeof(dfMenu[i].displayLabel) + 1) * sizeof(wchar_t) );
-    if ( i == 0 ){
-      currentLen = currentLen + dfMenu[i].displayLabelSize;
-      if ( currentLen - 1 < COLS){
-        wcscpy(output, dfMenu[i].displayLabel);
-      } else if ( currentLen +1 > COLS && i == 0){
-        wcscpy(output, L"");
-      }
-    } else {
-      if (comma){
-        gapSize = 2;
-      } else {
-        gapSize = 1;
-      }
-      currentLen = currentLen + dfMenu[i].displayLabelSize + gapSize;
-      if (currentLen - 1 < COLS){
-        if (comma){
-          wcscat(output, L",");
-        }
-        wcscat(output, L" ");
-        wcscat(output, dfMenu[i].displayLabel);
-      }
-    }
+  output = malloc(sizeof(wchar_t) * ( wcslen(preMenu) + 2));
+  if (wcscmp(preMenu, L"")){
+    wcscpy(output, preMenu);
+    wcscat(output, L" ");
+  } else {
+    wcscpy(output, L"\0");
+  }
+  for (i = 0; i < size ; i++){
+    output = realloc(output, ((i + 1) * sizeof(dfMenu[i].displayLabel) + wcslen(output) + 1) * sizeof(wchar_t) );
+   if ( i == 0 ){
+     currentLen = currentLen + dfMenu[i].displayLabelSize;
+     if ( currentLen - 1 < COLS){
+       wcscat(output, dfMenu[i].displayLabel);
+     } else if ( currentLen +1 > COLS && i == 0){
+       wcscat(output, L"");
+     }
+   } else {
+     if (comma == 1){
+       gapSize = 2;
+     } else if (comma == -1) {
+       gapSize = 0;
+     } else {
+       gapSize = 1;
+     }
+     currentLen = currentLen + dfMenu[i].displayLabelSize + gapSize;
+     if (currentLen - 1 < COLS){
+       if (comma == 1){
+         wcscat(output, L", ");
+       } else if (comma == 0) {
+         wcscat(output, L" ");
+       }
+       wcscat(output, dfMenu[i].displayLabel);
+     }
    }
+  }
+  output = realloc(output, (sizeof(wchar_t) * (wcslen(output) + wcslen(postMenu) + 2) ));
+  if (wcscmp(postMenu, L"")){
+    wcscat(output, L" ");
+    wcscat(output, postMenu);
+  } else {
+    wcscat(output, L"\0");
+  }
   return output;
 }
 
