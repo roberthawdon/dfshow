@@ -31,6 +31,14 @@ int * pc = &c;
 
 int abortinput = 0;
 
+menuDef *fileMenu;
+int fileMenuSize = 0;
+wchar_t *fileMenuLabel;
+
+menuDef *caseMenu;
+int caseMenuSize = 0;
+wchar_t *caseMenuLabel;
+
 extern char fileMenuText[74];
 extern char filePosText[58];
 extern char regexinput[1024];
@@ -51,6 +59,38 @@ extern char *line;
 
 extern long int *filePos;
 extern wchar_t *longline;
+
+void generateDefaultMenus(){
+  // File Menu
+  addMenuItem(&fileMenu, &fileMenuSize, "f_01", L"<F1>-Down", 265);
+  addMenuItem(&fileMenu, &fileMenuSize, "f_02", L"<F2>-Up", 266);
+  addMenuItem(&fileMenu, &fileMenuSize, "f_03", L"<F3>-Top", 267);
+  addMenuItem(&fileMenu, &fileMenuSize, "f_04", L"<F4>-Bottom", 268);
+  addMenuItem(&fileMenu, &fileMenuSize, "f_find", L"!Find", 'f');
+  addMenuItem(&fileMenu, &fileMenuSize, "f_help", L"!Help", 'h');
+  addMenuItem(&fileMenu, &fileMenuSize, "f_position", L"!Position", 'p');
+  addMenuItem(&fileMenu, &fileMenuSize, "f_quit", L"!Quit", 'q');
+  if (wrap){
+    addMenuItem(&fileMenu, &fileMenuSize, "f_wrap", L"!Wrap-off", 'w');
+  } else {
+    addMenuItem(&fileMenu, &fileMenuSize, "f_wrap", L"!Wrap-on", 'w');
+  }
+
+  // Case Menu
+  addMenuItem(&caseMenu, &caseMenuSize, "c1_ignore", L"!Ignore-case", 'i');
+  addMenuItem(&caseMenu, &caseMenuSize, "c2_sensitive", L"!Case-sensitive", 'c');
+
+}
+
+void refreshMenuLabels(){
+  fileMenuLabel = genMenuDisplayLabel(L"", fileMenu, fileMenuSize, L"", 1);
+  caseMenuLabel = genMenuDisplayLabel(L"", caseMenu, caseMenuSize, L"(enter = I)", 0);
+}
+
+void unloadMenuLabels(){
+  free(fileMenuLabel);
+  free(caseMenuLabel);
+}
 
 void show_file_find(int charcase)
 {
@@ -92,30 +132,22 @@ int show_file_find_case_input()
   move(0,0);
   clrtoeol();
   // printMenu(0,0,"!Ignore-case !Case-sensitive !Regular-expression (enter = I)");
-  printMenu(0,0,"!Ignore-case !Case-sensitive (enter = I)");
+  // printMenu(0,0,"!Ignore-case !Case-sensitive (enter = I)");
+  wPrintMenu(0,0,caseMenuLabel);
   while(1)
     {
-    findCaseLoop:
-      *pc = getch();
-      switch(*pc)
-        {
-        case 10:
-        case 'i':
-          result = 0;
-          break;
-        case 'c':
-          result = 1;
-          break;
-        // case 'r':
-        //   result = 2;
-        //   break;
-        case 27:
-          result = -1;
-          break;
-        default:
-          goto findCaseLoop;
-        }
-      break;
+      *pc = getch10th();
+      if (*pc == menuHotkeyLookup(caseMenu, "c1_ignore", caseMenuSize) || *pc == 10){
+        result = 0;
+        break;
+      } else if (*pc == menuHotkeyLookup(caseMenu, "c2_sensitive", caseMenuSize)){
+        result = 1;
+        break;
+      } else if (*pc == 27){
+        // ESC
+        result = -1;
+        break;
+      }
     }
   return(result);
 }
@@ -149,119 +181,110 @@ void show_file_position_input(int currentpos)
       }
     }
   }
-  printMenu(0, 0, fileMenuText);
+  wPrintMenu(0, 0, fileMenuLabel);
 }
 
 void show_file_inputs()
 {
   int e = 0;
-  printMenu(0, 0, fileMenuText);
+  wPrintMenu(0, 0, fileMenuLabel);
   while(1)
     {
-      *pc = getch();
-      switch(*pc)
-        {
-        case 'f':
-          e = show_file_find_case_input();
-          if (e != -1){
-            show_file_find(e);
-          } else {
-            abortinput = 0;
-          }
-          printMenu(0, 0, fileMenuText);
-          break;
-        case 'h':
-          showManPage("sf");
-          refreshScreen();
-          break;
-        case 'p':
-          show_file_position_input(topline);
-          if (topline > totallines + 1){
-            topline = totallines + 1;
-          } else if (topline < 1){
-            topline = 1;
-          }
-          updateView();
-          break;
-        case 'q':
-          free(longline);
-          free(filePos);
-          fclose(stream);
-          exittoshell();
-          break;
-        case 'w':
-          if (wrap){
-            wrap = 0;
-          } else {
-            leftcol = 1;
-            wrap = 1;
-          }
-          buildMenuText();
-          printMenu(0, 0, fileMenuText);
-          updateView();
-          break;
-        case 258: // Down Arrow
-          if (topline < totallines + 1){
-            topline++;
-            //loadFile(fileName);
-            updateView();
-          }
-          break;
-        case 259: // Up Arrow
-          if (topline > 1){
-            topline--;
-            updateView();
-          }
-          break;
-        case 260: // Left Arrow
-          if ((leftcol > 1) && (wrap != 1)){
-            leftcol--;
-            updateView();
-          }
-          break;
-        case 261: // Right Arrow
-          if ((leftcol < longestlongline) && (wrap != 1)){
-            leftcol++;
-            updateView();
-          }
-          break;
-        case 338: // PgDn
-        case 265: // F1
-          topline = topline + displaysize;
-          if (topline > totallines + 1){
-            topline = totallines + 1;
-          }
-          updateView();
-          break;
-        case 339: // PgUp
-        case 266: // F2
-          topline = topline - displaysize;
-          if (topline < 1){
-            topline = 1;
-          }
-          updateView();
-          break;
-        case 267: // F3
-          topline = 1;
-          updateView();
-          break;
-        case 268: // F4
-          topline = totallines + 1; // Show EOF
-          updateView();
-          break;
-        case 262: // Home
-	  // Let's not disable this key when Wrapping is on, just in case.
-          leftcol = 1;
-          updateView();
-          break;
-        case 360: // End
-	  if (wrap != 1){
-            leftcol = longestlongline;
-            updateView();
-	  }
-          break;
+      *pc = getch10th();
+      if (*pc == menuHotkeyLookup(fileMenu,"f_find", fileMenuSize)){
+        e = show_file_find_case_input();
+        if (e != -1){
+          show_file_find(e);
+        } else {
+          abortinput = 0;
         }
-    }
+        wPrintMenu(0, 0, fileMenuLabel);
+      } else if (*pc == menuHotkeyLookup(fileMenu, "f_help", fileMenuSize)){
+        showManPage("sf");
+        wPrintMenu(0, 0, fileMenuLabel);
+        refreshScreen();
+      } else if (*pc == menuHotkeyLookup(fileMenu, "f_position", fileMenuSize)){
+        show_file_position_input(topline);
+        if (topline > totallines + 1){
+          topline = totallines + 1;
+        } else if (topline < 1){
+          topline = 1;
+        }
+        updateView();
+      } else if (*pc == menuHotkeyLookup(fileMenu, "f_quit", fileMenuSize)){
+        free(longline);
+        free(filePos);
+        fclose(stream);
+        exittoshell();
+      } else if (*pc == menuHotkeyLookup(fileMenu, "f_wrap", fileMenuSize)){
+        if (wrap){
+          updateMenuItem(&fileMenu, &fileMenuSize, "f_wrap", L"!Wrap-on");
+          wrap = 0;
+        } else {
+          updateMenuItem(&fileMenu, &fileMenuSize, "f_wrap", L"!Wrap-off");
+          leftcol = 1;
+          wrap = 1;
+        }
+        unloadMenuLabels();
+        refreshMenuLabels();
+        wPrintMenu(0,0,fileMenuLabel);
+        updateView();
+      } else if (*pc == menuHotkeyLookup(fileMenu, "f_01", fileMenuSize) || *pc == 338){
+        topline = topline + displaysize;
+        if (topline > totallines + 1){
+          topline = totallines + 1;
+        }
+        updateView();
+      } else if (*pc == menuHotkeyLookup(fileMenu, "f_02", fileMenuSize) || *pc == 339){
+        topline = topline - displaysize;
+        if (topline < 1){
+          topline = 1;
+        }
+        updateView();
+      } else if (*pc == menuHotkeyLookup(fileMenu, "f_03", fileMenuSize)){
+        topline = 1;
+        updateView();
+      } else if (*pc == menuHotkeyLookup(fileMenu, "f_04", fileMenuSize)){
+        topline = totallines + 1; // Show EOF
+        updateView();
+      } else if (*pc == 258){
+        // Down Arrow
+        if (topline < totallines + 1){
+          topline++;
+          //loadFile(fileName);
+          updateView();
+        }
+      } else if (*pc == 259){
+        // Up Arrow
+        if (topline > 1){
+          topline--;
+          updateView();
+        }
+      } else if (*pc == 260){
+        // Left Arrow
+        if ((leftcol > 1) && (wrap != 1)){
+          leftcol--;
+          updateView();
+        }
+      } else if (*pc == 261){
+        // Right Arrow
+        if ((leftcol < longestlongline) && (wrap != 1)){
+          leftcol++;
+          updateView();
+        }
+      } else if (*pc == 262){
+        // Home
+        // Let's not disable this key when Wrapping is on, just in case.
+        leftcol = 1;
+        updateView();
+      } else if (*pc == 360){
+        // End
+        if (wrap != 1){
+          leftcol = longestlongline;
+          updateView();
+        }
+      }
+   }
 }
 
 void show_file_file_input()

@@ -37,9 +37,11 @@ Features
 * **View files.** The ability to quickly peek into text files makes DF-SHOW a powerful tool for power users, this function uses the default pager defined in the user's system environment or the included ``sf`` application.
 * **Edit files.** Whilst DF-SHOW doesn't come with a text editor like DF-EDIT (for the reason there are many good, well established text editors already available), it can launch the user's default text editor for any given selected file.
 * **Copy files.** DF-SHOW can copy files to another destination.
+* **Create links.** Both Symbolic and Hard links can be created using DF-SHOW.
 * **Rename files.** Users' can move files to a different file name.
 * **Delete files.** DF-SHOW also removes files at the user's request.
 * **Create directories.** Users' are also able to create new directories from within the DF-SHOW interface.
+* **Touch files.** Timestamps on files can be changed, as well as the creation of new blank files.
 * **Update permissions.** Owners, groups, and permissions can be set within the application.
 * **Hunt within files.** Find files in a directory containing a string.
 * **Execute applications.** Files with execution permissions can be launched from withing DF-SHOW.
@@ -178,15 +180,15 @@ Screenshots
 
 **Show**
 
-.. image:: https://user-images.githubusercontent.com/4301139/46380921-243d6000-c69c-11e8-8365-1237219d01b9.png
+.. image:: https://user-images.githubusercontent.com/4301139/52901919-bd12e900-3201-11e9-9114-0ae23a6f9746.png
    :alt: Directory Viewer
 
 **SF - Show File**
 
-.. image:: https://user-images.githubusercontent.com/4301139/46380920-243d6000-c69c-11e8-8213-fde20b9f865b.png
+.. image:: https://user-images.githubusercontent.com/4301139/52901918-bc7a5280-3201-11e9-809b-94698ab29d1a.png
    :alt: Show File
 
 **Colors (Built into Show)**
 
-.. image:: https://user-images.githubusercontent.com/4301139/50188068-33858e80-0318-11e9-815d-782a11c8003c.png
+.. image:: https://user-images.githubusercontent.com/4301139/52901920-bd12e900-3201-11e9-93d5-1b1f77fde49e.png
    :alt: Colors

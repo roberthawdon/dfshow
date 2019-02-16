@@ -35,15 +35,8 @@
 
 char currentpwd[1024];
 
-char fileMenuText[256];
-char globalMenuText[256];
-char functionMenuText[256];
-char functionMenuTextShort[256];
-char functionMenuTextLong[256];
-char modifyMenuText[256];
-char sortMenuText[256];
-
 int viewMode = 0;
+int resized = 0;
 
 char sortmode[5] = "name";
 char timestyle[9] = "locale";
@@ -60,6 +53,8 @@ int filecolors = 0;
 int markedinfo = 0;
 int markedauto = 0;
 int useEnvPager = 0;
+
+int plugins = 0; // Not yet implemented
 
 int enterAsShow = 0;
 
@@ -87,6 +82,13 @@ struct sigaction sa;
 
 extern int exitCode;
 extern int enableCtrlC;
+
+extern wchar_t *globalMenuLabel;
+extern wchar_t *fileMenuLabel;
+extern wchar_t *functionMenuLabel;
+extern wchar_t *modifyMenuLabel;
+extern wchar_t *sortMenuLabel;
+extern wchar_t *linkMenuLabel;
 
 int setMarked(char* markedinput);
 int checkStyle(char* styleinput);
@@ -243,7 +245,7 @@ int directory_view(char * currentpwd)
 
   // directory_top_menu();
 
-  printMenu(0, 0, fileMenuText);
+  wPrintMenu(0, 0, fileMenuLabel);
 
   set_history(currentpwd, "", "", 0, 0);
   free(ob);
@@ -253,7 +255,8 @@ int directory_view(char * currentpwd)
 
   // function_key_menu();
 
-  printMenu(LINES-1, 0, functionMenuText);
+  //printMenu(LINES-1, 0, functionMenuText);
+  wPrintMenu(LINES-1, 0, functionMenuLabel);
 
   refresh();
 
@@ -267,7 +270,7 @@ int global_menu()
 {
   clear();
 
-  printMenu(0, 0, globalMenuText);
+  // printMenu(0, 0, globalMenuText);
 
   refresh();
 
@@ -327,41 +330,44 @@ void refreshScreen()
   refresh();
   initscr();
   //mvprintw(0,0,"%d:%d", LINES, COLS);
-  if (COLS < 89){
-    strcpy(functionMenuText, functionMenuTextShort);
-  } else {
-    strcpy(functionMenuText, functionMenuTextLong);
-  }
+  unloadMenuLabels();
+  refreshMenuLabels();
   switch(viewMode)
     {
     case 0:
-      printMenu(0, 0, fileMenuText);
-      printMenu(LINES-1, 0, functionMenuText);
+      wPrintMenu(0, 0, fileMenuLabel);
+      wPrintMenu(LINES-1, 0, functionMenuLabel);
       resizeDisplayDir(ob);
       break;
     case 1:
-      printMenu(0, 0, globalMenuText);
-      printMenu(LINES-1, 0, functionMenuText);
+      wPrintMenu(0,0,globalMenuLabel);
+      wPrintMenu(LINES-1, 0, functionMenuLabel);
       resizeDisplayDir(ob);
       break;
     case 2:
-      printMenu(0, 0, modifyMenuText);
-      printMenu(LINES-1, 0, functionMenuText);
+      wPrintMenu(0, 0, modifyMenuLabel);
+      wPrintMenu(LINES-1, 0, functionMenuLabel);
       resizeDisplayDir(ob);
       break;
     case 3:
-      printMenu(0, 0, sortMenuText);
-      printMenu(LINES-1, 0, functionMenuText);
+      wPrintMenu(0, 0, sortMenuLabel);
+      wPrintMenu(LINES-1, 0, functionMenuLabel);
       resizeDisplayDir(ob);
       break;
     case 4:
-      printMenu(0, 0, globalMenuText);
+      wPrintMenu(0,0,globalMenuLabel);
+      break;
+    case 5:
+      wPrintMenu(0, 0, linkMenuLabel);
+      wPrintMenu(LINES-1, 0, functionMenuLabel);
+      resizeDisplayDir(ob);
       break;
     }
 }
 
 void sigwinchHandle(int sig){
-  refreshScreen();
+  resized = 1;
+  // refreshScreen();
 }
 
 void printHelp(char* programName){
@@ -377,6 +383,7 @@ Options shared with ls:\n\
   -B, --ignore-backups         do not list implied entries ending with ~\n\
       --color[=WHEN]           colorize the output, see the color section below\n\
   -f                           do not sort, enables -aU\n\
+      --full-time              display time as full-iso format\n\
   -g                           only show group\n\
   -G, --no-group               do not show group\n\
   -h, --human-readable         print sizes like 1K 234M 2G etc.\n\
@@ -464,6 +471,7 @@ int main(int argc, char *argv[])
          {"no-sf",          no_argument,       0, GETOPT_ENVPAGER_CHAR},
          {"show-on-enter",  no_argument,       0, GETOPT_SHOWONENTER_CHAR},
          {"running",        no_argument,       0, GETOPT_SHOWRUNNING_CHAR},
+         {"full-time",      no_argument,       0, GETOPT_FULLTIME_CHAR},
          {0, 0, 0, 0}
         };
       int option_index = 0;
@@ -533,6 +541,9 @@ Valid arguments are:\n\
         printf("Try '%s --help' for more information.\n", argv[0]);
         exit(2);
       }
+      break;
+    case GETOPT_FULLTIME_CHAR:
+      strcpy(timestyle, "full-iso");
       break;
     case 't':
       strcpy(sortmode, "date");
@@ -610,26 +621,15 @@ Valid arguments are:\n\
 
 
   // Writing Menus
-  strcpy(fileMenuText, "!Copy, !Delete, !Edit, !Hidden, !Modify, !Quit, !Rename, !Show, h!Unt, e!Xec");
-  strcpy(globalMenuText, "c!Olors, !Run command, !Edit file, !Help, !Make dir, !Quit, !Show dir");
-  strcpy(functionMenuTextShort, "<F1>-Down <F2>-Up <F3>-Top <F4>-Bottom <F5>-Refresh <F6>-Mark/Unmark <F7>-All <F8>-None <F9>-Sort");
-  strcpy(functionMenuTextLong, "<F1>-Down <F2>-Up <F3>-Top <F4>-Bottom <F5>-Refresh <F6>-Mark/Unmark <F7>-All <F8>-None <F9>-Sort <F10>-Block");
-  strcpy(modifyMenuText, "Modify: !Owner/Group, !Permissions");
-  strcpy(sortMenuText, "Sort list by - !Date & time, !Name, !Size");
 
+  generateDefaultMenus();
   set_escdelay(10);
   //ESCDELAY = 10;
 
   setlocale(LC_ALL, "");
 
   initscr();
-
-  // Decide which function menu needs initially printing
-  if (COLS < 89){
-    strcpy(functionMenuText, functionMenuTextShort);
-  } else {
-    strcpy(functionMenuText, functionMenuTextLong);
-  }
+  refreshMenuLabels();
 
   memset(&sa, 0, sizeof(struct sigaction));
   sa.sa_handler = sigwinchHandle;

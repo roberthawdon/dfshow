@@ -69,6 +69,7 @@ int minorlen;
 int datelen;
 int namelen;
 int slinklen;
+int nameAndSLink = 0;
 
 int entryMetaLen, entryNameLen, entrySLinkLen = 0;
 
@@ -130,6 +131,8 @@ extern int markedauto;
 extern int useEnvPager;
 extern int showProcesses;
 
+extern char sortmode[5];
+
 /* Formatting time in a similar fashion to `ls` */
 static char const *long_time_format[2] =
   {
@@ -147,6 +150,162 @@ int checkRunningEnv(){
     i = atoi(getenv("DFS_RUNNING"));
   }
   return i;
+}
+
+char *getRelativePath(char *file, char *target)
+{
+  typedef struct {
+    char directories[256];
+  } path;
+
+  char *result = malloc(sizeof(char) + 1);
+  char *rewrite;
+  // char *work = malloc(sizeof(char) * 1);
+  int i, j, e, c, resultLen, targetUp, fileUp;
+  path *fileStruct, *targetStruct;
+  int currentFileIndex, currentTargetIndex, fileLen, targetLen, commonPath = 0;
+
+  //up = 0;
+  targetUp = fileUp = 0;
+
+  fileStruct = malloc(sizeof(path) + 1);
+  targetStruct = malloc(sizeof(path) + 1);
+
+  // Store sections of file in structure
+  e = -1;
+  j = 0;
+  c = strlen(file);
+
+  for(i = 0; i < c; i++){
+    if (file[i] == '/'){
+      fileStruct[e].directories[j] = '\0';
+      if(!strcmp(fileStruct[e].directories, "..")){
+        // assmue .. and remove the element before
+        fileStruct[e] = fileStruct[e - 1];
+        fileStruct[e - 1] = fileStruct[e - 2];
+        e--;
+        fileStruct = realloc(fileStruct, sizeof(path) * (1 + e));
+      } else if (!strcmp(fileStruct[e].directories, ".")){
+        // strip single .
+        strcpy(fileStruct[e].directories, "\0");
+      } else {
+        // If element created is NOT ..
+        e++;
+        fileStruct = realloc(fileStruct, sizeof(path) * (1 + e));
+      }
+      j=0;
+    } else {
+      fileStruct[e].directories[j] = file[i];
+      j++;
+    }
+  }
+  fileStruct[e].directories[j] = '\0';
+  if (!strcmp(fileStruct[e].directories, ".")){
+    strcpy(fileStruct[e].directories, "");
+    e--;
+  }
+  fileLen = e + 1;
+  currentFileIndex = e;
+
+  // Store sections of target in structure
+  e = -1;
+  j = 0;
+  c = strlen(target);
+
+  for(i = 0; i < c; i++){
+    if (target[i] == '/'){
+      targetStruct[e].directories[j] = '\0';
+      if(!strcmp(targetStruct[e].directories, "..")){
+        // assmue .. and remove the element before
+        targetStruct[e] = targetStruct[e - 1];
+        targetStruct[e - 1] = targetStruct[e - 2];
+        e--;
+        targetStruct = realloc(targetStruct, sizeof(path) * (1 + e));
+      } else if (!strcmp(targetStruct[e].directories, ".")){
+        // strip single .
+        strcpy(targetStruct[e].directories, "\0");
+      } else {
+        // If element created is NOT ..
+        e++;
+        targetStruct = realloc(targetStruct, sizeof(path) * (1 + e));
+      }
+      j=0;
+    } else {
+      targetStruct[e].directories[j] = target[i];
+      j++;
+    }
+  }
+  targetStruct[e].directories[j] = '\0';
+  if (!strcmp(targetStruct[e].directories, ".")){
+    strcpy(targetStruct[e].directories, "");
+    e--;
+  }
+  targetLen = e + 1;
+  currentTargetIndex = e;
+
+  // Find the smallest of our structures
+  if (fileLen > targetLen){
+    c = targetLen;
+  } else {
+    c = fileLen;
+  }
+
+  // Count the common directories
+  for(i = 0; i < c; i++){
+    if (!strcmp(fileStruct[i].directories, targetStruct[i].directories)){
+      commonPath++;
+    }
+  }
+
+  c = 0;
+  targetUp = targetLen - commonPath - 1;
+  fileUp = fileLen - commonPath;
+  if (targetUp > 0){
+    result = realloc(result, sizeof(char) * (targetUp * 3) + 1);
+    for (i = 0; i < targetUp; i++){
+      if (c == 0){
+        sprintf(result, "%s/", "..");
+      } else {
+        sprintf(result, "%s%s/", result, "..");
+      }
+      c++;
+    }
+    for(i=(fileLen - fileUp); i < fileLen; i++){
+      j = strlen(fileStruct[i].directories);
+      result = realloc(result, sizeof(char) * (strlen(result) + j + 1));
+      if (i == fileLen - 1){
+        sprintf(result, "%s%s", result, fileStruct[i].directories);
+      } else {
+        sprintf(result, "%s%s/", result, fileStruct[i].directories);
+      }
+    }
+  } else if ((targetUp < 1) && (fileUp > 1)){
+    for(i=commonPath; i < fileLen; i++){
+      j = strlen(fileStruct[i].directories);
+      result = realloc(result, sizeof(char) * (strlen(result) + j + 1));
+      if (c == 0){
+        sprintf(result, "%s/", fileStruct[i].directories);
+      } else if (i == fileLen - 1){
+        sprintf(result, "%s%s", result, fileStruct[i].directories);
+      } else {
+        sprintf(result, "%s%s/", result, fileStruct[i].directories);
+      }
+      c++;
+    }
+  } else {
+      // Assume we're in the same directory at this point
+      j = strlen(fileStruct[currentFileIndex].directories);
+      result = realloc(result, sizeof(char) * (j + 1));
+      sprintf(result, "%s", fileStruct[currentFileIndex].directories);
+    }
+
+  // result[resultLen - 1] = '\0'; // This seems to cause no end of grief on FreeBSD and I can't even remember why it's here.
+
+
+  free(fileStruct);
+  free(targetStruct);
+
+  return(result);
 }
 
 int wildcard(const char *value, char *wcard) {
@@ -385,6 +544,7 @@ void writeResultStruct(results* ob, const char * filename, struct stat buffer, i
   }
 
   ob[count].date = buffer.st_mtime;
+  ob[count].adate = buffer.st_atime;
 
   filedate = dateString(ob[count].date, timestyle);
   mbstowcs(ob[count].datedisplay, filedate, 33);
@@ -476,7 +636,14 @@ void padstring(char *str, int len, char c)
 }
 
 char *genPadding(int num_of_spaces) {
-  char *dest = malloc (sizeof (char) * num_of_spaces + 1);
+  char *dest;
+  int i;
+  if (num_of_spaces < 1){
+    i = 1;
+  } else {
+    i = num_of_spaces;
+  }
+  dest = malloc (sizeof (char) * (i + 1));
   if (num_of_spaces > 0){
     sprintf(dest, "%*s", num_of_spaces, " ");
   } else {
@@ -493,7 +660,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   wchar_t entryMeta[1024];
   wchar_t entryName[1024];
   wchar_t entrySLink[1024];
-  int maxlen = COLS - start;
+  int maxlen = COLS - start - 1;
 
   int currentitem = listref + topref;
   int ogminlen = strlen(headOG); // Length of "Owner & Group" heading
@@ -528,58 +695,58 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
 
   char slinkpoint[5];
 
-  strcpy(slinkpoint, " -> ");
+  strcpy(slinkpoint, " -> \0");
 
   // Owner, Group, Author
   switch(ogavis){
   case 0:
-    ogaval = malloc (sizeof (char));
+    ogaval = malloc (sizeof (char) + 1);
     strcpy(ogaval,"");
     break;
   case 1:
     oglen = (strlen(ob[currentitem].owner));
-    ogaval = malloc (sizeof (char) * oglen + 2);
+    ogaval = malloc (sizeof (char) * (oglen + 2));
     sprintf(ogaval, "%s", ob[currentitem].owner);
     break;
   case 2:
     oglen = (strlen(ob[currentitem].group));
-    ogaval = malloc (sizeof (char) * oglen + 1);
+    ogaval = malloc (sizeof (char) * (oglen + 1));
     sprintf(ogaval, "%s", ob[currentitem].group);
     break;
   case 3:
     oggap = ownerlen - strlen(ob[currentitem].owner) + 1;
     oglen = (strlen(ob[currentitem].owner) + oggap + strlen(ob[currentitem].group));
-    ogaval = malloc (sizeof (char) * oglen + 1);
+    ogaval = malloc (sizeof (char) * (oglen + 1));
     sprintf(ogaval, "%s%s%s", ob[currentitem].owner, genPadding(oggap), ob[currentitem].group);
     break;
   case 4:
     oglen = (strlen(ob[currentitem].author));
-    ogaval = malloc (sizeof (char) * oglen + 1);
+    ogaval = malloc (sizeof (char) * (oglen + 1));
     sprintf(ogaval, "%s", ob[currentitem].author);
     break;
   case 5:
     oggap = ownerlen - strlen(ob[currentitem].owner) + 1;
     oglen = (strlen(ob[currentitem].owner) + oggap + strlen(ob[currentitem].author));
-    ogaval = malloc (sizeof (char) * oglen + 1);
+    ogaval = malloc (sizeof (char) * (oglen + 1));
     sprintf(ogaval, "%s%s%s", ob[currentitem].owner, genPadding(oggap), ob[currentitem].author);
     break;
   case 6:
     gagap = grouplen - strlen(ob[currentitem].group) + 1;
     oglen = (strlen(ob[currentitem].group) + gagap + strlen(ob[currentitem].author));
-    ogaval = malloc (sizeof (char) * oglen + 1);
+    ogaval = malloc (sizeof (char) * (oglen + 1));
     sprintf(ogaval, "%s%s%s", ob[currentitem].group, genPadding(gagap), ob[currentitem].author);
     break;
   case 7:
     oggap = ownerlen - strlen(ob[currentitem].owner) + 1;
     gagap = grouplen - strlen(ob[currentitem].group) + 1;
     oglen = (strlen(ob[currentitem].owner) + oggap + strlen(ob[currentitem].group) + gagap + strlen(ob[currentitem].author));
-    ogaval = malloc (sizeof (char) * oglen + 1);
+    ogaval = malloc (sizeof (char) * (oglen + 1));
     sprintf(ogaval, "%s%s%s%s%s", ob[currentitem].owner, genPadding(oggap), ob[currentitem].group, genPadding(gagap), ob[currentitem].author);
     break;
   default:
     oggap = ownerlen - strlen(ob[currentitem].owner) + 1;
     oglen = (strlen(ob[currentitem].owner) + oggap + strlen(ob[currentitem].group));
-    ogaval = malloc (sizeof (char) * oglen + 1);
+    ogaval = malloc (sizeof (char) * (oglen + 1));
     sprintf(ogaval, "%s%s%s", ob[currentitem].owner, genPadding(oggap), ob[currentitem].group);
     break;
   }
@@ -600,18 +767,20 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
     mmpad = sizelen + 1;
   }
 
-  s4 = genPadding(mmpad);
+  if (mmpad > 0 ){
+    s4 = genPadding(mmpad);
+  }
 
   if ((ob[currentitem].major > 0) || (ob[currentitem].minor > 0)){
     // If either of these are not 0, then we're dealing with a Character or Block device.
-    sizestring = malloc (sizeof (char) * sizelen + 5);
+    sizestring = malloc (sizeof (char) * (sizelen + 5));
     sprintf(sizestring, "%i,%s%i", ob[currentitem].major, s4, ob[currentitem].minor);
   } else {
     if (human){
       sizestring = malloc (sizeof (char) * 10);
       readableSize(ob[currentitem].size, sizestring, si);
     } else {
-      sizestring = malloc (sizeof (char) * sizelen + 1);
+      sizestring = malloc (sizeof (char) * (sizelen + 1));
       sprintf(sizestring, "%lu", ob[currentitem].size);
     }
   }
@@ -629,9 +798,15 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
     datepad = datelen - wcslen(ob[currentitem].datedisplay);
   }
 
-  s1 = genPadding(hlinkstart);
-  s2 = genPadding(sizepad);
-  s3 = genPadding(datepad);
+  if (hlinkstart > -1){
+    s1 = genPadding(hlinkstart);
+  }
+  if (sizepad > -1){
+    s2 = genPadding(sizepad);
+  }
+  if (datepad > -1){
+    s3 = genPadding(datepad);
+  }
 
   if ( *ob[currentitem].marked ){
     strcpy(marked, "*");
@@ -644,9 +819,9 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   swprintf(entryName, 1024, L"%s", ob[currentitem].name);
 
   if ( !strcmp(ob[currentitem].slink, "") ){
-    swprintf(entrySLink, 1024, L"");
+    swprintf(entrySLink, 1024, L"\0");
   } else {
-    swprintf(entrySLink, 1024, L"%s", ob[currentitem].slink);
+    swprintf(entrySLink, 1024, L"%s\0", ob[currentitem].slink);
   }
 
 
@@ -694,8 +869,8 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
       setColors(DISPLAY_PAIR);
     }
 
-    for ( i = 0; i < maxlen; i++) {
-      mvprintw(displaystart + listref, (entryMetaLen + entryNameLen + start) + i, "%lc", slinkpoint[i]);
+    for ( i = 0; i < strlen(slinkpoint); i++) {
+      mvprintw(displaystart + listref, (entryMetaLen + entryNameLen + start) + i, "%c", slinkpoint[i]);
     }
 
     if (filecolors && !selected){
@@ -761,12 +936,13 @@ void LaunchExecutable(const char* object, const char* args)
 {
   char command[1024];
   sprintf(command, "%s %s", object, args);
-  clear();
-  endwin();
+  //clear();
+  //endwin();
   // printf("%s\n", command);
   // exit(0);
+  system("clear"); // Just to be sure
   system(command);
-  initscr();
+  // initscr();
   refreshScreen();
 }
 
@@ -851,10 +1027,10 @@ int SendToPager(char* object)
     strcat(esc, "'");
     strcat(page, esc);
     if (access(object, R_OK) == 0){
-      clear();
-      endwin();
+      // clear();
+      // endwin();
       e = system(page);
-      initscr();
+      // initscr();
       refreshScreen();
       return e;
     } else {
@@ -890,9 +1066,9 @@ int SendToEditor(char* object)
     strcat(editor, esc);
     if (access(object, R_OK) == 0){
       clear();
-      endwin();
+      // endwin();
       e = system(editor);
-      initscr();
+      // initscr();
       refreshScreen();
       return e;
     } else {
@@ -1291,7 +1467,7 @@ char *markedDisplay(results* ob)
     if (markedSize == 0){
       markedSizeString = malloc (sizeof (char) * 1);
     } else {
-      markedSizeString = malloc (sizeof (char) * log10(markedSize) + 1);
+      markedSizeString = malloc (sizeof (char) * (log10(markedSize) + 1));
     }
     sprintf(markedSizeString, "%lu", markedSize);
   }
@@ -1331,6 +1507,7 @@ results* get_dir(char *pwd)
   fetch:
 
   mmMode = 0;
+  nameAndSLink = 0;
   time ( &currenttime );
   savailable = GetAvailableSpace(pwd);
   sused = 0; // Resetting used value
@@ -1364,6 +1541,11 @@ results* get_dir(char *pwd)
           writeResultStruct(ob, res->d_name, buffer, count);
 
           sused = sused + buffer.st_size; // Adding the size values
+
+          // Finding the longest name and symlink pair
+          if ((strlen(ob[count].slink) + strlen(ob[count].name) + 4) > nameAndSLink){
+            nameAndSLink = strlen(ob[count].slink) + strlen(ob[count].name) + 4;
+          }
 
           count++;
         }
@@ -1473,12 +1655,12 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
     if (sused == 0){
       susedString = malloc (sizeof (char) * 1);
     } else {
-      susedString = malloc (sizeof (char) * log10(sused) + 1);
+      susedString = malloc (sizeof (char) * (log10(sused) + 1));
     }
     if (savailable == 0){
       savailableString = malloc (sizeof (char) * 1);
     } else {
-      savailableString = malloc (sizeof (char) * log10(savailable) + 1);
+      savailableString = malloc (sizeof (char) * (log10(savailable) + 1));
     }
     sprintf(susedString, "%lu", sused);
     sprintf(savailableString, "%lu", savailable);
@@ -1539,28 +1721,40 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
     displaycount = displaysize;
   }
 
-  for(list_count = 0; list_count < displaycount; ){
-    // Setting highlight
-    if (list_count == selected) {
-      printSelect = 1;
+  if (displaycount < 0){
+    displaycount = 0;
+  }
+
+  for(list_count = 0; list_count < displaycount; list_count++ ){
+    if (list_count < totalfilecount){
+      // Setting highlight
+      if (list_count == selected) {
+        printSelect = 1;
+      } else {
+        printSelect = 0;
+      }
+
+      ownstart = hlinklen + 2;
+      hlinkstart = ownstart - 1 - *ob[list_count + topfileref].hlinklens;
+
+      displaypos = 0 - hpos;
+
+      // endwin();
+      // printf("LC: %i, TFR: %i, DC: %i\n", list_count, topfileref, displaycount);
+
+      printEntry(displaypos, hlinklen, ownerlen, grouplen, authorlen, sizelen, majorlen, minorlen, datelen, namelen, printSelect, list_count, topfileref, ob);
+
+      //list_count++;
     } else {
-      printSelect = 0;
+      break;
     }
-
-    ownstart = hlinklen + 2;
-    hlinkstart = ownstart - 1 - *ob[list_count + topfileref].hlinklens;
-
-    displaypos = 0 - hpos;
-
-    printEntry(displaypos, hlinklen, ownerlen, grouplen, authorlen, sizelen, majorlen, minorlen, datelen, namelen, printSelect, list_count, topfileref, ob);
-
-    list_count++;
-    }
+  }
 
   if (slinklen == 0){
     maxdisplaywidth = entryMetaLen + namelen;
   } else {
-    maxdisplaywidth = entryMetaLen + namelen + slinklen + 4;
+    // maxdisplaywidth = entryMetaLen + namelen + slinklen + 4;
+    maxdisplaywidth = entryMetaLen + nameAndSLink;
   }
 
   //mvprintw(0, 66, "%d %d", historyref, sessionhistory);
@@ -1636,6 +1830,7 @@ void resizeDisplayDir(results* ob){
       topfileref = totalfilecount - (LINES - 5);
     }
   }
-  display_dir(currentpwd, ob, topfileref, selected);
+  refreshDirectory(sortmode, topfileref, selected, -1);
+  // display_dir(currentpwd, ob, topfileref, selected);
 }
 

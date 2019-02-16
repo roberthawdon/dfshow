@@ -48,6 +48,10 @@ extern int * pc;
 extern char globalConfLocation[128];
 extern char homeConfLocation[128];
 
+menuDef *colorMenu;
+int colorMenuSize = 0;
+wchar_t *colorMenuLabel;
+
 void processListThemes(const char * pathName)
 {
   DIR *dfDir;
@@ -470,139 +474,106 @@ void theme_menu_inputs()
 {
   while(1)
     {
-      *pc = getch();
-      switch(*pc)
-        {
-        case '!':
-          updateColorPair(-1, bgToggle);
-          refreshColors();
-          themeBuilder();
-          break;
-        case '?':
-          updateColorPair(-2, bgToggle);
-          refreshColors();
-          themeBuilder();
-          break;
-        case '0':
-          updateColorPair(COLOR_BLACK, bgToggle);
-          refreshColors();
-          themeBuilder();
-          break;
-        case '1':
-          updateColorPair(COLOR_RED, bgToggle);
-          refreshColors();
-          themeBuilder();
-          break;
-        case '2':
-          updateColorPair(COLOR_GREEN, bgToggle);
-          refreshColors();
-          themeBuilder();
-          break;
-        case '3':
-          updateColorPair(COLOR_YELLOW, bgToggle);
-          refreshColors();
-          themeBuilder();
-          break;
-        case '4':
-          updateColorPair(COLOR_BLUE, bgToggle);
-          refreshColors();
-          themeBuilder();
-          break;
-        case '5':
-          updateColorPair(COLOR_MAGENTA, bgToggle);
-          refreshColors();
-          themeBuilder();
-          break;
-        case '6':
-          updateColorPair(COLOR_CYAN, bgToggle);
-          refreshColors();
-          themeBuilder();
-          break;
-        case '7':
-          updateColorPair(COLOR_WHITE, bgToggle);
-          refreshColors();
-          themeBuilder();
-          break;
-        case '8':
-          updateColorPair(BRIGHT_BLACK, bgToggle);
-          refreshColors();
-          themeBuilder();
-          break;
-        case '9':
-          updateColorPair(BRIGHT_RED, bgToggle);
-          refreshColors();
-          themeBuilder();
-          break;
-        case 'a':
-          updateColorPair(BRIGHT_GREEN, bgToggle);
-          refreshColors();
-          themeBuilder();
-          break;
-        case 'b':
-          updateColorPair(BRIGHT_YELLOW, bgToggle);
-          refreshColors();
-          themeBuilder();
-          break;
-        case 'c':
-          updateColorPair(BRIGHT_BLUE, bgToggle);
-          refreshColors();
-          themeBuilder();
-          break;
-        case 'd':
-          updateColorPair(BRIGHT_MAGENTA, bgToggle);
-          refreshColors();
-          themeBuilder();
-          break;
-        case 'e':
-          updateColorPair(BRIGHT_CYAN, bgToggle);
-          refreshColors();
-          themeBuilder();
-          break;
-        case 'f':
-          updateColorPair(BRIGHT_WHITE, bgToggle);
-          refreshColors();
-          themeBuilder();
-          break;
-        case 'l':
-          loadTheme();
-          break;
-        case 'q':
-          curs_set(FALSE);
-          // exittoshell();
-          return;
-          break;
-        case 's':
-          saveTheme();
-          break;
-        case 't':
-          if (bgToggle == 0){
-            bgToggle = 1;
-          } else {
-            bgToggle = 0;
-          }
-          themeBuilder();
-          break;
-        case 10: // Enter - Falls through
-        case 258: // Down Arrow
-          if (colorThemePos < totalItemCount){
-            colorThemePos++;
-            themeBuilder();
-          }
-          break;
-        case 259: // Up Arrow
-          if (colorThemePos > 0) {
-            colorThemePos--;
-            themeBuilder();
-          }
-          break;
-        case 260: // Left Arrow
-          break;
-        case 261: // Right Arrow
-          break;
-          // default:
-          //     mvprintw(LINES-2, 1, "Character pressed is = %d Hopefully it can be printed as '%c'", c, c);
-          //     refresh();
+      *pc = getch10th();
+      if (*pc == '!'){
+        updateColorPair(-1, bgToggle);
+        refreshColors();
+        themeBuilder();
+      } else if (*pc == '?'){
+        updateColorPair(-2, bgToggle);
+        refreshColors();
+        themeBuilder();
+      } else if (*pc == '0'){
+        updateColorPair(COLOR_BLACK, bgToggle);
+        refreshColors();
+        themeBuilder();
+      } else if (*pc == '1'){
+        updateColorPair(COLOR_RED, bgToggle);
+        refreshColors();
+        themeBuilder();
+      } else if (*pc == '2'){
+        updateColorPair(COLOR_GREEN, bgToggle);
+        refreshColors();
+        themeBuilder();
+      } else if (*pc == '3'){
+        updateColorPair(COLOR_YELLOW, bgToggle);
+        refreshColors();
+        themeBuilder();
+      } else if (*pc == '4'){
+        updateColorPair(COLOR_BLUE, bgToggle);
+        refreshColors();
+        themeBuilder();
+      } else if (*pc == '5'){
+        updateColorPair(COLOR_MAGENTA, bgToggle);
+        refreshColors();
+        themeBuilder();
+      } else if (*pc == '6'){
+        updateColorPair(COLOR_CYAN, bgToggle);
+        refreshColors();
+        themeBuilder();
+      } else if (*pc == '7'){
+        updateColorPair(COLOR_WHITE, bgToggle);
+        refreshColors();
+        themeBuilder();
+      } else if (*pc == '8'){
+        updateColorPair(BRIGHT_BLACK, bgToggle);
+        refreshColors();
+        themeBuilder();
+      } else if (*pc == '9'){
+        updateColorPair(BRIGHT_RED, bgToggle);
+        refreshColors();
+        themeBuilder();
+      } else if (*pc == 'a'){
+        updateColorPair(BRIGHT_GREEN, bgToggle);
+        refreshColors();
+        themeBuilder();
+      } else if (*pc == 'b'){
+        updateColorPair(BRIGHT_YELLOW, bgToggle);
+        refreshColors();
+        themeBuilder();
+      } else if (*pc == 'c'){
+        updateColorPair(BRIGHT_BLUE, bgToggle);
+        refreshColors();
+        themeBuilder();
+      } else if (*pc == 'd'){
+        updateColorPair(BRIGHT_MAGENTA, bgToggle);
+        refreshColors();
+        themeBuilder();
+      } else if (*pc == 'e'){
+        updateColorPair(BRIGHT_CYAN, bgToggle);
+        refreshColors();
+        themeBuilder();
+      } else if (*pc == 'f'){
+        updateColorPair(BRIGHT_WHITE, bgToggle);
+        refreshColors();
+        themeBuilder();
+      } else if (*pc == menuHotkeyLookup(colorMenu, "c_load", colorMenuSize)){
+        loadTheme();
+      } else if (*pc == menuHotkeyLookup(colorMenu, "c_quit", colorMenuSize)){
+        curs_set(FALSE);
+        return;
+      } else if (*pc == menuHotkeyLookup(colorMenu, "c_save", colorMenuSize)){
+        saveTheme();
+      } else if (*pc == menuHotkeyLookup(colorMenu, "c_toggle", colorMenuSize)){
+        if (bgToggle == 0){
+          bgToggle = 1;
+        } else {
+          bgToggle = 0;
         }
+        themeBuilder();
+      } else if (*pc == 258 || *pc ==10){
+        if (colorThemePos < totalItemCount){
+          colorThemePos++;
+          themeBuilder();
+        }
+      } else if (*pc == 259){
+        if (colorThemePos > 0) {
+          colorThemePos--;
+          themeBuilder();
+        }
+      } else if (*pc == 260 || *pc == 261){
+        // Do Nothing
+      }
     }
 }
 
@@ -662,6 +633,8 @@ void setDefaultTheme(){
 
 void setColors(int pair)
 {
+  // endwin();
+  // printf("CP: %i\n", pair);
   attron(COLOR_PAIR(pair));
   if (lightColorPair[pair]){
     attron(A_BOLD);
@@ -678,7 +651,7 @@ void themeBuilder()
   } else {
     strcpy(fgbgLabel, "foreground");
   }
-  printMenu(0, 0, "Color number, !Load, !Quit, !Save, !Toggle");
+  wPrintMenu(0,0,colorMenuLabel);
 
   setColors(COMMAND_PAIR);
   mvprintw(2, 4, "Command lines");

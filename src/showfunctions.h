@@ -13,6 +13,7 @@ typedef struct {
   int major;
   int minor;
   time_t date;
+  time_t adate;
   wchar_t datedisplay[33];
   char name[512];
   char slink[1024];
@@ -28,6 +29,7 @@ typedef struct {
 } history;
 
 int checkRunningEnv();
+char *getRelativePath(char *file, char *target);
 int wildcard(const char *value, char *wcard);
 int findResultByName(results *ob, char *name);
 char *dateString(time_t date, char *style);
