@@ -604,10 +604,11 @@ void make_directory_input()
       strcpy(newdir, rewrite);
       free(rewrite);
     }
-    if (access(newdir, W_OK) == 0){
+    if (access(dirFromPath(newdir), W_OK) == 0){
       mk_dir(newdir);
     } else {
-      topLineMessage("Error: Permission denied");
+      sprintf(errmessage, "Error: %s", strerror(errno));
+      topLineMessage(errmessage);
     }
     // curs_set(FALSE);
     refreshDirectory(sortmode, 0, selected, 0);
@@ -715,7 +716,7 @@ void touch_file_input()
       }
     }
     // Do something
-    if (access(touchFile, W_OK) == 0) {
+    if (access(dirFromPath(touchFile), W_OK) == 0) {
       if (check_object(touchFile) == 0){
         touchFileObject = fopen(touchFile, "w");
         fclose(touchFileObject);
@@ -733,7 +734,8 @@ void touch_file_input()
         }
       }
     } else {
-      topLineMessage("Error: Permission denied");
+      sprintf(errmessage, "Error: %s", strerror(errno));
+      topLineMessage(errmessage);
     }
     refreshDirectory(sortmode, 0, selected, 0);
   }
