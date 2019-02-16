@@ -304,6 +304,9 @@ the command has any additional propts, they are also described here.
   ``Set Modifed Time:``
   ``Set Time:``
 
+  Set the desired time in one of the following formats:
+  ``YYYY-MM-DD HH:MM:SS``, ``HH:MM:SS``
+
 ``hUnt``
   Hunts the selected file, or marked files containing a regex
   string. When used with a single file, the selected file will be

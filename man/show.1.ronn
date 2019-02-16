@@ -240,6 +240,8 @@ Sets the timestamp of the selected file(s). When selected, the following prompt 
   `Set Modifed Time:`
   `Set Time:`
 
+  Set the desired time in one of the following formats: `YYYY-MM-DD HH:MM:SS`, `HH:MM:SS`
+
 * `hUnt`:
 Hunts the selected file, or marked files containing a regex string. When used with a single file, the selected file will be marked if the string matches. When using multiple files, any files not matching the string will be unselected. Case sensitivity is requested by the following prompt, afterwards the user is asked to input the string to search. To abort at this prompt, the _ESC_ key must be used.
 
