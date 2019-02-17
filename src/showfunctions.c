@@ -175,8 +175,8 @@ char *getRelativePath(char *file, char *target)
 
   for(i = 0; i < c; i++){
     if (file[i] == '/'){
-      // fileStruct[e].directories[j] = '\0';
       if (e > -1){
+        fileStruct[e].directories[j] = '\0';
         if(!strcmp(fileStruct[e].directories, "..")){
           // assmue .. and remove the element before
           fileStruct[e] = fileStruct[e - 1];
