@@ -52,6 +52,8 @@ extern int resized;
 
 void refreshScreen(); // This reference needs to exist to allow getch10th to be common.
 
+void unloadMenuLabels();
+
 int getch10th (void) {
   int ch;
   do {
@@ -218,6 +220,7 @@ void setConfLocations()
 int exittoshell()
 {
   clear();
+  unloadMenuLabels();
   endwin();
   exit(exitCode);
   return exitCode;
@@ -232,7 +235,7 @@ char * dirFromPath(const char* myStr){
     i--;
   }
 
-  outStr = malloc(sizeof (char) * i + 1);
+  outStr = malloc(sizeof (char) * (i + 2));
 
   if (i < 2){
     strcpy(outStr, "/");
@@ -324,7 +327,7 @@ void printMenu(int line, int col, char *menustring)
 {
   // Small wrapper to seemlessly forward calls to the wide char version
   wchar_t *wMenuString;
-  wMenuString = malloc(sizeof(wchar_t) * strlen(menustring) + 1);
+  wMenuString = malloc(sizeof(wchar_t) * (strlen(menustring) + 1));
   swprintf(wMenuString, strlen(menustring) + 1, L"%s", menustring);
   wPrintMenu(line, col, wMenuString);
   free(wMenuString);
@@ -345,7 +348,7 @@ void wPrintLine(int line, int col, wchar_t *textString){
 void printLine(int line, int col, char *textString){
   // Small wrapper to seemlessly forward calls to the wide char version
   wchar_t *wTextString;
-  wTextString = malloc( sizeof ( wchar_t ) * strlen(textString) + 1);
+  wTextString = malloc( sizeof ( wchar_t ) * (strlen(textString) + 1));
   swprintf(wTextString, strlen(textString) + 1, L"%s", textString);
   wPrintLine(line, col, wTextString);
   free(wTextString);
@@ -478,7 +481,7 @@ int readline(char *buffer, int buflen, char *oldbuf)
   wchar_t *wBuffer, *wOldBuf;
   int status;
   wBuffer = malloc(sizeof(wchar_t) * buflen);
-  wOldBuf = malloc(sizeof(wchar_t) * strlen(oldbuf) + 1);
+  wOldBuf = malloc(sizeof(wchar_t) * (strlen(oldbuf) + 1));
   swprintf(wOldBuf, strlen(oldbuf) + 1, L"%s", oldbuf);
   status = wReadLine(wBuffer, buflen, wOldBuf);
   sprintf(buffer, "%ls", wBuffer);
