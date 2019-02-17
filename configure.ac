@@ -1,4 +1,4 @@
-AC_INIT([dfshow], [0.6.0], [https://github.com/roberthawdon/dfshow/issues])
+AC_INIT([dfshow], [0.6.1], [https://github.com/roberthawdon/dfshow/issues])
 AC_GNU_SOURCE
 AM_INIT_AUTOMAKE([subdir-objects])
 AC_PROG_CC
