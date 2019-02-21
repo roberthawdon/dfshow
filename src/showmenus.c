@@ -1174,6 +1174,7 @@ void linktext_input(char *file, int symbolic)
       free(rewrite);
     }
 
+    //relSymlink:
     if (check_dir(dirFromPath(target))){
       if (check_file(target)){
         topLineMessage("Error: File exists.");
@@ -1195,6 +1196,8 @@ void linktext_input(char *file, int symbolic)
       }
     } else {
       topLineMessage("Error: Directory Not Found.");
+      //createParentDirs(target);
+      //goto relSymlink;
     }
   }
   directory_view_menu_inputs();

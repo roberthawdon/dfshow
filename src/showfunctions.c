@@ -211,9 +211,6 @@ char *getRelativePath(char *file, char *target)
 
   targetUp = fileUp = 0;
 
-  // fileStruct = malloc(sizeof(path));
-  // targetStruct = malloc(sizeof(path));
-
   // Store sections of file in structure
   e = splitPath(&fileStruct, file);
   fileLen = e + 1;
@@ -287,6 +284,27 @@ char *getRelativePath(char *file, char *target)
   free(targetStruct);
 
   return(result);
+}
+
+void createParentDirs(char *path){
+  pathDirs *targetPath;
+  char *tempPath = malloc(sizeof(char) + 1);
+  int e, i = 0;
+
+  e = splitPath(&targetPath, path);
+
+  strcpy(tempPath, "");
+  for (i = 0; i < e; i++){
+    tempPath = realloc(tempPath, sizeof(char) * (strlen(tempPath) + strlen(targetPath[i].directories) + 2));
+    sprintf(tempPath, "%s/%s", tempPath, targetPath[i].directories);
+    if (!check_dir(tempPath)){
+      mk_dir(tempPath);
+    }
+  }
+
+  free(targetPath);
+  free(tempPath);
+  return;
 }
 
 int wildcard(const char *value, char *wcard) {
