@@ -152,103 +152,75 @@ int checkRunningEnv(){
   return i;
 }
 
+int splitPath(pathDirs **dirStruct, char *path){
+  int e, i, j, c;
+  pathDirs *tmp;
+
+  tmp = malloc(sizeof(pathDirs));
+  if (tmp){
+    *dirStruct = tmp;
+  }
+
+  e = -1;
+  j = 0;
+  c = strlen(path);
+
+  for(i = 0; i < c; i++){
+    if (path[i] == '/'){
+      if (e > -1){
+        (*dirStruct)[e].directories[j] = '\0';
+        if(!strcmp((*dirStruct)[e].directories, "..")){
+          // assmue .. and remove the element before
+          (*dirStruct)[e] = (*dirStruct)[e - 1];
+          (*dirStruct)[e - 1] = (*dirStruct)[e - 2];
+          e--;
+          (*dirStruct) = realloc((*dirStruct), sizeof(pathDirs) * (2 + e));
+        } else if (!strcmp((*dirStruct)[e].directories, ".")){
+          // strip single .
+          strcpy((*dirStruct)[e].directories, "\0");
+        } else {
+          // If element created is NOT ..
+          e++;
+          (*dirStruct) = realloc((*dirStruct), sizeof(pathDirs) * (2 + e));
+        }
+      } else {
+        e++;
+        (*dirStruct) = realloc((*dirStruct), sizeof(pathDirs) * (2 + e));
+      }
+      j=0;
+    } else {
+      (*dirStruct)[e].directories[j] = path[i];
+      j++;
+    }
+  }
+  (*dirStruct)[e].directories[j] = '\0';
+  if (!strcmp((*dirStruct)[e].directories, ".")){
+    strcpy((*dirStruct)[e].directories, "");
+    e--;
+  }
+
+  return(e);
+}
+
 char *getRelativePath(char *file, char *target)
 {
-  typedef struct {
-    char directories[256];
-  } path;
-
   char *result = malloc(sizeof(char) + 1);
   int i, j, e, c, resultLen, targetUp, fileUp;
-  path *fileStruct, *targetStruct;
-  int currentFileIndex, currentTargetIndex, fileLen, targetLen, commonPath = 0;
+  pathDirs *fileStruct, *targetStruct;
+  int  fileLen, targetLen, commonPath = 0;
 
   targetUp = fileUp = 0;
 
-  fileStruct = malloc(sizeof(path));
-  targetStruct = malloc(sizeof(path));
+  // fileStruct = malloc(sizeof(path));
+  // targetStruct = malloc(sizeof(path));
 
   // Store sections of file in structure
-  e = -1;
-  j = 0;
-  c = strlen(file);
-
-  for(i = 0; i < c; i++){
-    if (file[i] == '/'){
-      if (e > -1){
-        fileStruct[e].directories[j] = '\0';
-        if(!strcmp(fileStruct[e].directories, "..")){
-          // assmue .. and remove the element before
-          fileStruct[e] = fileStruct[e - 1];
-          fileStruct[e - 1] = fileStruct[e - 2];
-          e--;
-          fileStruct = realloc(fileStruct, sizeof(path) * (2 + e));
-        } else if (!strcmp(fileStruct[e].directories, ".")){
-          // strip single .
-          strcpy(fileStruct[e].directories, "\0");
-        } else {
-          // If element created is NOT ..
-          e++;
-          fileStruct = realloc(fileStruct, sizeof(path) * (2 + e));
-        }
-      } else {
-        e++;
-        fileStruct = realloc(fileStruct, sizeof(path) * (2 + e));
-      }
-      j=0;
-    } else {
-      fileStruct[e].directories[j] = file[i];
-      j++;
-    }
-  }
-  fileStruct[e].directories[j] = '\0';
-  if (!strcmp(fileStruct[e].directories, ".")){
-    strcpy(fileStruct[e].directories, "");
-    e--;
-  }
+  e = splitPath(&fileStruct, file);
   fileLen = e + 1;
-  currentFileIndex = e;
 
   // Store sections of target in structure
-  e = -1;
-  j = 0;
-  c = strlen(target);
-
-  for(i = 0; i < c; i++){
-    if (target[i] == '/'){
-      if (e > -1){
-        targetStruct[e].directories[j] = '\0';
-        if(!strcmp(targetStruct[e].directories, "..")){
-          // assmue .. and remove the element before
-          targetStruct[e] = targetStruct[e - 1];
-          targetStruct[e - 1] = targetStruct[e - 2];
-          e--;
-          targetStruct = realloc(targetStruct, sizeof(path) * (2 + e));
-        } else if (!strcmp(targetStruct[e].directories, ".")){
-          // strip single .
-          strcpy(targetStruct[e].directories, "\0");
-        } else {
-          // If element created is NOT ..
-          e++;
-          targetStruct = realloc(targetStruct, sizeof(path) * (2 + e));
-        }
-      } else {
-        e++;
-        targetStruct = realloc(targetStruct, sizeof(path) * (2 + e));
-      }
-      j=0;
-    } else {
-      targetStruct[e].directories[j] = target[i];
-      j++;
-    }
-  }
-  targetStruct[e].directories[j] = '\0';
-  if (!strcmp(targetStruct[e].directories, ".")){
-    strcpy(targetStruct[e].directories, "");
-    e--;
-  }
+  e = splitPath(&targetStruct, target);
   targetLen = e + 1;
-  currentTargetIndex = e;
 
   // Find the smallest of our structures
   if (fileLen > targetLen){
@@ -303,9 +275,9 @@ char *getRelativePath(char *file, char *target)
     }
   } else {
     // Assume we're in the same directory at this point
-    j = strlen(fileStruct[currentFileIndex].directories);
+    j = strlen(fileStruct[fileLen - 1].directories);
     result = realloc(result, sizeof(char) * (j + 1));
-    sprintf(result, "%s", fileStruct[currentFileIndex].directories);
+    sprintf(result, "%s", fileStruct[fileLen - 1].directories);
   }
 
   // result[resultLen - 1] = '\0'; // This seems to cause no end of grief on FreeBSD and I can't even remember why it's here.
