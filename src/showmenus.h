@@ -4,6 +4,7 @@ void unloadMenuLabels();
 int touchType();
 time_t touchTimeInput(int type);
 int symLinkLocation();
+int createParentsInput(char *path);
 void linktext_input(int selected, int symbolic);
 void link_key_menu_inputs();
 void modify_key_menu_inputs();

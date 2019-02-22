@@ -763,6 +763,36 @@ char * execute_argument_input(const char *exec)
   return strout;
 }
 
+int createParentsInput(char *path)
+{
+  int result = 0;
+  int messageLen;
+  wchar_t *message = malloc(sizeof(wchar_t) * 1);
+
+  messageLen = (strlen(path) + 64);
+
+  message = realloc(message, sizeof(wchar_t) * (messageLen + 1));
+
+  swprintf(message, messageLen, L"Directory [<%s>] does not exist. Create it? !Yes/!No (enter = no)", path);
+  wPrintMenu(0,0, message);
+  while(1)
+    {
+      *pc = getch10th();
+      if (*pc == 'y'){
+        result = 1;
+        break;
+      } else if ((*pc == 'n') || (*pc == 10)){
+        result = 0;
+        break;
+      } else if (*pc == 27){
+        result = -1;
+        break;
+      }
+    }
+  free(message);
+  return(result);
+}
+
 int huntCaseSelectInput()
 {
   int result = 0;
@@ -1141,7 +1171,7 @@ void linktext_input(char *file, int symbolic)
   char inputmessage[32];
   char typeText[9];
   char target[1024];
-  int relative;
+  int relative, e;
   char *relativeFile;
   char tempDebug[1024];
   strcpy(target, currentpwd);
@@ -1174,7 +1204,7 @@ void linktext_input(char *file, int symbolic)
       free(rewrite);
     }
 
-    //relSymlink:
+    relSymlink:
     if (check_dir(dirFromPath(target))){
       if (check_file(target)){
         topLineMessage("Error: File exists.");
@@ -1195,9 +1225,13 @@ void linktext_input(char *file, int symbolic)
         refreshDirectory(sortmode, 0, selected, 0);
       }
     } else {
-      topLineMessage("Error: Directory Not Found.");
-      //createParentDirs(target);
-      //goto relSymlink;
+      e = createParentsInput(dirFromPath(target));
+      if (e == 1){
+        createParentDirs(target);
+        goto relSymlink;
+      } else {
+        topLineMessage("Error: Directory Not Found.");
+      }
     }
   }
   directory_view_menu_inputs();
