@@ -656,6 +656,7 @@ void rename_file_input(char *file)
 void make_directory_input()
 {
   char newdir[1024];
+  int e;
   move(0,0);
   clrtoeol();
   mvprintw(0, 0, "Make Directory - Enter pathname:");
@@ -671,8 +672,18 @@ void make_directory_input()
       strcpy(newdir, rewrite);
       free(rewrite);
     }
+  makeDir:
     if (access(dirFromPath(newdir), W_OK) == 0){
       mk_dir(newdir);
+    } else if (access(dirFromPath(newdir), W_OK) == -1) {
+      e = createParentsInput(dirFromPath(newdir));
+      if (e == 1){
+        createParentDirs(newdir);
+        goto makeDir;
+      } else {
+        sprintf(errmessage, "Error: %s", strerror(errno));
+        topLineMessage(errmessage);
+      }
     } else {
       sprintf(errmessage, "Error: %s", strerror(errno));
       topLineMessage(errmessage);
