@@ -273,6 +273,36 @@ int sanitizeTopFileRef(int topfileref)
   return topfileref;
 }
 
+int createParentsInput(char *path)
+{
+  int result = 0;
+  int messageLen;
+  wchar_t *message = malloc(sizeof(wchar_t) * 1);
+
+  messageLen = (strlen(path) + 64);
+
+  message = realloc(message, sizeof(wchar_t) * (messageLen + 1));
+
+  swprintf(message, messageLen, L"Directory [<%s>] does not exist. Create it? !Yes/!No (enter = no)", path);
+  wPrintMenu(0,0, message);
+  while(1)
+    {
+      *pc = getch10th();
+      if (*pc == 'y'){
+        result = 1;
+        break;
+      } else if ((*pc == 'n') || (*pc == 10)){
+        result = 0;
+        break;
+      } else if (*pc == 27){
+        result = -1;
+        break;
+      }
+    }
+  free(message);
+  return(result);
+}
+
 void refreshDirectory(char *sortmode, int origtopfileref, int origselected, int destructive)
 {
   char currentselectname[512];
@@ -399,6 +429,7 @@ void copy_file_input(char *file)
 {
   // YUCK, repetition, this needs sorting
   char newfile[1024];
+  int e;
   move(0,0);
   clrtoeol();
   mvprintw(0, 0, "Copy file to:");
@@ -413,6 +444,7 @@ void copy_file_input(char *file)
       strcpy(newfile, rewrite);
       free(rewrite);
     }
+  copyFile:
     if ( check_dir(dirFromPath(newfile))){
       if ( check_file(newfile) )
         {
@@ -426,7 +458,13 @@ void copy_file_input(char *file)
         refreshDirectory(sortmode, 0, selected, 0);
       }
     } else {
-      topLineMessage("Error: Directory Not Found.");
+      e = createParentsInput(dirFromPath(newfile));
+      if (e == 1){
+        createParentDirs(newfile);
+        goto copyFile;
+      } else {
+        topLineMessage("Error: Directory Not Found.");
+      }
     }
   }
   directory_view_menu_inputs();
@@ -434,7 +472,7 @@ void copy_file_input(char *file)
 
 void copy_multi_file_input(results* ob, char *input)
 {
-  int i;
+  int i, e;
 
   char dest[1024];
   char destfile[1024];
@@ -451,6 +489,7 @@ void copy_multi_file_input(results* ob, char *input)
       strcpy(dest, rewrite);
       free(rewrite);
     }
+  copyMultiFile:
     if ( check_dir(dest) ){
       for (i = 0; i < totalfilecount; i++)
         {
@@ -477,8 +516,16 @@ void copy_multi_file_input(results* ob, char *input)
               }
             }
         }
+      refreshDirectory(sortmode, 0, selected, 0);
     } else {
-      topLineMessage("Error: Directory Not Found.");
+      e = createParentsInput(dest);
+      if (e == 1){
+        createParentDirs(dest);
+        mk_dir(dest); // Needed as the final element is omitted by the above
+        goto copyMultiFile;
+      } else {
+        topLineMessage("Error: Directory Not Found.");
+      }
     }
   }
   directory_view_menu_inputs();
@@ -486,7 +533,7 @@ void copy_multi_file_input(results* ob, char *input)
 
 void rename_multi_file_input(results* ob, char *input)
 {
-  int i;
+  int i, e;
 
   char dest[1024];
   char destfile[1024];
@@ -503,6 +550,7 @@ void rename_multi_file_input(results* ob, char *input)
       strcpy(dest, rewrite);
       free(rewrite);
     }
+  renameMultiFile:
     if ( check_dir(dest) ){
       for (i = 0; i < totalfilecount; i++)
         {
@@ -530,7 +578,14 @@ void rename_multi_file_input(results* ob, char *input)
             }
         }
     } else {
-      topLineMessage("Error: Directory Not Found.");
+      e = createParentsInput(dest);
+      if (e == 1){
+        createParentDirs(dest);
+        mk_dir(dest); // Needed as the final element is omitted by the above
+        goto renameMultiFile;
+      } else {
+        topLineMessage("Error: Directory Not Found.");
+      }
     }
     refreshDirectory(sortmode, 0, selected, 1);
   }
@@ -556,6 +611,7 @@ void rename_file_input(char *file)
 {
   // YUCK, repetition, this needs sorting
   char dest[1024];
+  int e;
   move(0,0);
   clrtoeol();
   mvprintw(0, 0, "Rename file to:");
@@ -569,18 +625,29 @@ void rename_file_input(char *file)
       strcpy(dest, rewrite);
       free(rewrite);
     }
-    if ( check_file(dest) )
-      {
-        if ( replace_file_confirm_input(dest) )
-          {
-            RenameObject(file, dest);
-            strcpy(currentfilename, objectFromPath(dest));
-            refreshDirectory(sortmode, 0, selected, 2);
-          }
+  renameFile:
+    if ( check_dir(dirFromPath(dest))){
+      if ( check_file(dest) )
+        {
+          if ( replace_file_confirm_input(dest) )
+            {
+              RenameObject(file, dest);
+              strcpy(currentfilename, objectFromPath(dest));
+              refreshDirectory(sortmode, 0, selected, 2);
+            }
+        } else {
+        RenameObject(file, dest);
+        strcpy(currentfilename, objectFromPath(dest));
+        refreshDirectory(sortmode, 0, selected, 2);
+      }
+    } else {
+      e = createParentsInput(dirFromPath(dest));
+      if (e == 1){
+        createParentDirs(dest);
+        goto renameFile;
       } else {
-      RenameObject(file, dest);
-      strcpy(currentfilename, objectFromPath(dest));
-      refreshDirectory(sortmode, 0, selected, 2);
+        topLineMessage("Error: Directory Not Found.");
+      }
     }
   }
   directory_view_menu_inputs();
@@ -761,36 +828,6 @@ char * execute_argument_input(const char *exec)
   }
   curs_set(FALSE);
   return strout;
-}
-
-int createParentsInput(char *path)
-{
-  int result = 0;
-  int messageLen;
-  wchar_t *message = malloc(sizeof(wchar_t) * 1);
-
-  messageLen = (strlen(path) + 64);
-
-  message = realloc(message, sizeof(wchar_t) * (messageLen + 1));
-
-  swprintf(message, messageLen, L"Directory [<%s>] does not exist. Create it? !Yes/!No (enter = no)", path);
-  wPrintMenu(0,0, message);
-  while(1)
-    {
-      *pc = getch10th();
-      if (*pc == 'y'){
-        result = 1;
-        break;
-      } else if ((*pc == 'n') || (*pc == 10)){
-        result = 0;
-        break;
-      } else if (*pc == 27){
-        result = -1;
-        break;
-      }
-    }
-  free(message);
-  return(result);
 }
 
 int huntCaseSelectInput()
