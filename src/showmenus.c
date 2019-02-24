@@ -273,36 +273,6 @@ int sanitizeTopFileRef(int topfileref)
   return topfileref;
 }
 
-int createParentsInput(char *path)
-{
-  int result = 0;
-  int messageLen;
-  wchar_t *message = malloc(sizeof(wchar_t) * 1);
-
-  messageLen = (strlen(path) + 64);
-
-  message = realloc(message, sizeof(wchar_t) * (messageLen + 1));
-
-  swprintf(message, messageLen, L"Directory [<%s>] does not exist. Create it? !Yes/!No (enter = no)", path);
-  wPrintMenu(0,0, message);
-  while(1)
-    {
-      *pc = getch10th();
-      if (*pc == 'y'){
-        result = 1;
-        break;
-      } else if ((*pc == 'n') || (*pc == 10)){
-        result = 0;
-        break;
-      } else if (*pc == 27){
-        result = -1;
-        break;
-      }
-    }
-  free(message);
-  return(result);
-}
-
 void refreshDirectory(char *sortmode, int origtopfileref, int origselected, int destructive)
 {
   char currentselectname[512];
@@ -445,7 +415,7 @@ void copy_file_input(char *file)
       free(rewrite);
     }
   copyFile:
-    if ( check_dir(dirFromPath(newfile))){
+    if (access(dirFromPath(newfile), W_OK) == 0){
       if ( check_file(newfile) )
         {
           if ( replace_file_confirm_input(newfile) )
@@ -458,12 +428,18 @@ void copy_file_input(char *file)
         refreshDirectory(sortmode, 0, selected, 0);
       }
     } else {
-      e = createParentsInput(dirFromPath(newfile));
-      if (e == 1){
-        createParentDirs(newfile);
-        goto copyFile;
+      if (errno == ENOENT){
+        e = createParentsInput(dirFromPath(newfile));
+        if (e == 1){
+          createParentDirs(newfile);
+          goto copyFile;
+        } else {
+          sprintf(errmessage, "Error: %s", strerror(errno));
+          topLineMessage(errmessage);
+        }
       } else {
-        topLineMessage("Error: Directory Not Found.");
+        sprintf(errmessage, "Error: %s", strerror(errno));
+        topLineMessage(errmessage);
       }
     }
   }
@@ -626,7 +602,7 @@ void rename_file_input(char *file)
       free(rewrite);
     }
   renameFile:
-    if ( check_dir(dirFromPath(dest))){
+    if (access(dirFromPath(dest), W_OK) == 0){
       if ( check_file(dest) )
         {
           if ( replace_file_confirm_input(dest) )
@@ -641,14 +617,21 @@ void rename_file_input(char *file)
         refreshDirectory(sortmode, 0, selected, 2);
       }
     } else {
-      e = createParentsInput(dirFromPath(dest));
-      if (e == 1){
-        createParentDirs(dest);
-        goto renameFile;
+      if (errno == ENOENT){
+        e = createParentsInput(dirFromPath(dest));
+        if (e == 1){
+          createParentDirs(dest);
+          goto renameFile;
+        } else {
+          sprintf(errmessage, "Error: %s", strerror(errno));
+          topLineMessage(errmessage);
+        }
       } else {
-        topLineMessage("Error: Directory Not Found.");
+        sprintf(errmessage, "Error: %s", strerror(errno));
+        topLineMessage(errmessage);
       }
     }
+    refreshDirectory(sortmode, 0, selected, 0);
   }
   directory_view_menu_inputs();
 }
@@ -675,18 +658,20 @@ void make_directory_input()
   makeDir:
     if (access(dirFromPath(newdir), W_OK) == 0){
       mk_dir(newdir);
-    } else if (access(dirFromPath(newdir), W_OK) == -1) {
-      e = createParentsInput(dirFromPath(newdir));
-      if (e == 1){
-        createParentDirs(newdir);
-        goto makeDir;
+    } else {
+      if (errno == ENOENT){
+        e = createParentsInput(dirFromPath(newdir));
+        if (e == 1){
+          createParentDirs(newdir);
+          goto makeDir;
+        } else {
+          sprintf(errmessage, "Error: %s", strerror(errno));
+          topLineMessage(errmessage);
+        }
       } else {
         sprintf(errmessage, "Error: %s", strerror(errno));
         topLineMessage(errmessage);
       }
-    } else {
-      sprintf(errmessage, "Error: %s", strerror(errno));
-      topLineMessage(errmessage);
     }
     // curs_set(FALSE);
     refreshDirectory(sortmode, 0, selected, 0);
@@ -771,6 +756,7 @@ void touch_file_input()
   char touchFile[1024];
   FILE* touchFileObject;
   int setDateFlag = -1;
+  int e;
   move(0,0);
   clrtoeol();
   strcpy(menuTitle, "Touch File - Enter pathname:");
@@ -798,6 +784,7 @@ void touch_file_input()
       }
     }
     // Do something
+  touchFile:
     if (access(dirFromPath(touchFile), W_OK) == 0) {
       if (check_object(touchFile) == 0){
         touchFileObject = fopen(touchFile, "w");
@@ -816,8 +803,19 @@ void touch_file_input()
         }
       }
     } else {
-      sprintf(errmessage, "Error: %s", strerror(errno));
-      topLineMessage(errmessage);
+      if (errno == ENOENT){
+        e = createParentsInput(dirFromPath(touchFile));
+        if (e == 1){
+          createParentDirs(touchFile);
+          goto touchFile;
+        } else {
+          sprintf(errmessage, "Error: %s", strerror(errno));
+          topLineMessage(errmessage);
+        }
+      } else {
+        sprintf(errmessage, "Error: %s", strerror(errno));
+        topLineMessage(errmessage);
+      }
     }
     refreshDirectory(sortmode, 0, selected, 0);
   }
@@ -1252,8 +1250,8 @@ void linktext_input(char *file, int symbolic)
       free(rewrite);
     }
 
-    relSymlink:
-    if (check_dir(dirFromPath(target))){
+    makeSymlink:
+    if (access(dirFromPath(target), W_OK) == 0){
       if (check_file(target)){
         topLineMessage("Error: File exists.");
       } else {
@@ -1273,12 +1271,18 @@ void linktext_input(char *file, int symbolic)
         refreshDirectory(sortmode, 0, selected, 0);
       }
     } else {
-      e = createParentsInput(dirFromPath(target));
-      if (e == 1){
-        createParentDirs(target);
-        goto relSymlink;
+      if (errno == ENOENT){
+        e = createParentsInput(dirFromPath(target));
+        if (e == 1){
+          createParentDirs(target);
+          goto makeSymlink;
+        } else {
+          sprintf(errmessage, "Error: %s", strerror(errno));
+          topLineMessage(errmessage);
+        }
       } else {
-        topLineMessage("Error: Directory Not Found.");
+        sprintf(errmessage, "Error: %s", strerror(errno));
+        topLineMessage(errmessage);
       }
     }
   }

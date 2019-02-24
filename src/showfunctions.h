@@ -28,13 +28,7 @@ typedef struct {
   int selected;
 } history;
 
-typedef struct {
-  char directories[256];
-} pathDirs;
-
 int checkRunningEnv();
-int splitPath(pathDirs **dirStruct, char *path);
-void createParentDirs(char *path);
 char *getRelativePath(char *file, char *target);
 int wildcard(const char *value, char *wcard);
 int findResultByName(results *ob, char *name);

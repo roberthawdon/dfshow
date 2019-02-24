@@ -10,8 +10,15 @@ typedef struct {
   int displayLabelSize;
 } menuDef;
 
+typedef struct {
+  char directories[256];
+} pathDirs;
+
 int getch10th (void);
 int cmp_menu_ref(const void *lhs, const void *rhs);
+int splitPath(pathDirs **dirStruct, char *path);
+int createParentsInput(char *path);
+void createParentDirs(char *path);
 void addMenuItem(menuDef **dfMenu, int *pos, char* refLabel, wchar_t* displayLabel, int hotKey);
 void updateMenuItem(menuDef **dfMenu, int *menuSize, char* refLabel, wchar_t* displayLabel);
 wchar_t * genMenuDisplayLabel(wchar_t* preMenu, menuDef* dfMenu, int size, wchar_t* postMenu, int comma);

@@ -152,56 +152,6 @@ int checkRunningEnv(){
   return i;
 }
 
-int splitPath(pathDirs **dirStruct, char *path){
-  int e, i, j, c;
-  pathDirs *tmp;
-
-  tmp = malloc(sizeof(pathDirs));
-  if (tmp){
-    *dirStruct = tmp;
-  }
-
-  e = -1;
-  j = 0;
-  c = strlen(path);
-
-  for(i = 0; i < c; i++){
-    if (path[i] == '/'){
-      if (e > -1){
-        (*dirStruct)[e].directories[j] = '\0';
-        if(!strcmp((*dirStruct)[e].directories, "..")){
-          // assmue .. and remove the element before
-          (*dirStruct)[e] = (*dirStruct)[e - 1];
-          (*dirStruct)[e - 1] = (*dirStruct)[e - 2];
-          e--;
-          (*dirStruct) = realloc((*dirStruct), sizeof(pathDirs) * (2 + e));
-        } else if (!strcmp((*dirStruct)[e].directories, ".")){
-          // strip single .
-          strcpy((*dirStruct)[e].directories, "\0");
-        } else {
-          // If element created is NOT ..
-          e++;
-          (*dirStruct) = realloc((*dirStruct), sizeof(pathDirs) * (2 + e));
-        }
-      } else {
-        e++;
-        (*dirStruct) = realloc((*dirStruct), sizeof(pathDirs) * (2 + e));
-      }
-      j=0;
-    } else {
-      (*dirStruct)[e].directories[j] = path[i];
-      j++;
-    }
-  }
-  (*dirStruct)[e].directories[j] = '\0';
-  if (!strcmp((*dirStruct)[e].directories, ".")){
-    strcpy((*dirStruct)[e].directories, "");
-    e--;
-  }
-
-  return(e);
-}
-
 char *getRelativePath(char *file, char *target)
 {
   char *result = malloc(sizeof(char) + 1);
@@ -284,27 +234,6 @@ char *getRelativePath(char *file, char *target)
   free(targetStruct);
 
   return(result);
-}
-
-void createParentDirs(char *path){
-  pathDirs *targetPath;
-  char *tempPath = malloc(sizeof(char) + 1);
-  int e, i = 0;
-
-  e = splitPath(&targetPath, path);
-
-  strcpy(tempPath, "");
-  for (i = 0; i < e; i++){
-    tempPath = realloc(tempPath, sizeof(char) * (strlen(tempPath) + strlen(targetPath[i].directories) + 2));
-    sprintf(tempPath, "%s/%s", tempPath, targetPath[i].directories);
-    if (!check_dir(tempPath)){
-      mk_dir(tempPath);
-    }
-  }
-
-  free(targetPath);
-  free(tempPath);
-  return;
 }
 
 int wildcard(const char *value, char *wcard) {
