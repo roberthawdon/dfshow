@@ -939,6 +939,30 @@ void delete_file_confirm_input(char *file)
     }
 }
 
+void delete_directory_confirm_input(char *directory)
+{
+  int e;
+  printMenu(0,0, "Delete directory? (!Yes/!No)");
+  while(1)
+    {
+      *pc = getch10th();
+      switch(*pc)
+        {
+        case 'y':
+          e = rmdir(directory);
+          if (e != 0){
+            sprintf(errmessage, "Error: %s", strerror(errno));
+            topLineMessage(errmessage);
+          }
+          refreshDirectory(sortmode, topfileref, selected, 1);
+          // Not breaking here, intentionally dropping through to the default
+        default:
+          directory_view_menu_inputs();
+          break;
+        }
+    }
+}
+
 void delete_multi_file_confirm_input(results* ob)
 {
   int i, k;
@@ -1378,6 +1402,8 @@ void directory_view_menu_inputs()
           strcat(selfile, ob[selected].name);
           if (!check_dir(selfile) || (strcmp(ob[selected].slink, ""))){
             delete_file_confirm_input(selfile);
+          } else if (check_dir(selfile)){
+            delete_directory_confirm_input(selfile);
           }
         }
       } else if (*pc == menuHotkeyLookup(fileMenu, "f_edit", fileMenuSize)){

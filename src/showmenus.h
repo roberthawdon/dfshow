@@ -21,6 +21,7 @@ void edit_file_input();
 void make_directory_input();
 void touch_file_input();
 void delete_file_confirm_input(char *file);
+void delete_directory_confirm_input(char *directory);
 void delete_multi_file_confirm_input(results* ob);
 void copy_multi_file_input(results* ob, char *input);
 void copy_multi_file(results* ob, char *dest);
