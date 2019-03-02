@@ -277,36 +277,45 @@ void refreshDirectory(char *sortmode, int origtopfileref, int origselected, int 
 {
   char currentselectname[512];
   int i;
-  if (invalidstart) {
-    strcpy(currentselectname, "");
-    exitCode = 0;
-    invalidstart = 0;
-  } else {
-    if (destructive == 2){
-      strcpy(currentselectname, currentfilename);
+ handleMissingDir:
+  if (check_dir(currentpwd)){
+    if (invalidstart) {
+      strcpy(currentselectname, "");
+      exitCode = 0;
+      invalidstart = 0;
     } else {
-      strcpy(currentselectname, ob[origselected].name);
-    }
-  }
-  if (destructive != -1){
-    free(ob);
-    ob = get_dir(currentpwd);
-    clear_workspace();
-    reorder_ob(ob, sortmode);
-  }
-  if (destructive > 0){
-    i = findResultByName(ob, currentselectname);
-    if (i != 0){
-      selected = i;
-    } else {
-      if (selected > totalfilecount - 1){
-        selected = totalfilecount - 1;
+      if (destructive == 2){
+        strcpy(currentselectname, currentfilename);
       } else {
-        selected = origselected;
+        strcpy(currentselectname, ob[origselected].name);
       }
     }
+    if (destructive != -1){
+      free(ob);
+      ob = get_dir(currentpwd);
+      clear_workspace();
+      reorder_ob(ob, sortmode);
+    }
+    if (destructive > 0){
+      i = findResultByName(ob, currentselectname);
+      if (i != 0){
+        selected = i;
+      } else {
+        if (selected > totalfilecount - 1){
+          selected = totalfilecount - 1;
+        } else {
+          selected = origselected;
+        }
+      }
+    } else {
+      selected = findResultByName(ob, currentselectname);
+    }
   } else {
-    selected = findResultByName(ob, currentselectname);
+    strcpy(currentpwd, hs[historyref - 2].path);
+    objectWild = hs[historyref - 2].objectWild;
+    historyref--;
+    chdir(currentpwd);
+    goto handleMissingDir;
   }
   topfileref = sanitizeTopFileRef(origtopfileref);
   display_dir(currentpwd, ob, topfileref, selected);
