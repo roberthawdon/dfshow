@@ -123,7 +123,8 @@ To install DF-SHOW via Homebrew, run the following in your terminal:
 
 .. code-block:: bash
 
-  brew install roberthawdon/homebrew-dfshow/dfshow
+  brew tap roberthawdon/dfshow
+  brew install dfshow
 
 Building from Git
 -----------------
