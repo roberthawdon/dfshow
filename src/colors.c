@@ -24,6 +24,7 @@
 #include <unistd.h>
 #include <libconfig.h>
 #include <dirent.h>
+#include <errno.h>
 #include "common.h"
 #include "colors.h"
 
@@ -40,6 +41,8 @@ int bgToggle = 0;
 colorPairs colors[256];
 
 char fgbgLabel[11];
+
+char errmessage[256];
 
 extern int colormode;
 extern int c;
@@ -220,7 +223,7 @@ void refreshColors(){
 void saveTheme(){
   config_t cfg;
   config_setting_t *root, *setting, *group, *array;
-  int e, i;
+  int e, f, i;
   char filename[1024];
   char * rewrite;
   move(0,0);
@@ -249,7 +252,8 @@ void saveTheme(){
       setting = config_setting_add(array, NULL, CONFIG_TYPE_INT);
       config_setting_set_int(setting, colors[i].bold);
     }
-    if (check_dir(dirFromPath(filename))){
+  saveTheme:
+    if (access(dirFromPath(filename), W_OK) == 0){
       if (check_file(filename)){
         curs_set(FALSE);
         printMenu(0,0, "File exists. Replace? (!Yes/!No)");
@@ -274,11 +278,24 @@ void saveTheme(){
         setenv("DFS_THEME", objectFromPath(filename), 1);
       }
     } else {
-      curs_set(FALSE);
-      mk_dir(dirFromPath(filename));
-      config_write_file(&cfg, filename);
-      // topLineMessage("Error: Unable to write file");
-      curs_set(TRUE);
+      if (errno == ENOENT){
+        // curs_set(FALSE);
+        // mk_dir(dirFromPath(filename));
+        // config_write_file(&cfg, filename);
+        // // topLineMessage("Error: Unable to write file");
+        // curs_set(TRUE);
+        f = createParentsInput(dirFromPath(filename));
+        if (f == 1){
+          createParentDirs(filename);
+          goto saveTheme;
+        } else {
+          sprintf(errmessage, "Error: %s", strerror(errno));
+          topLineMessage(errmessage);
+        }
+      } else {
+        sprintf(errmessage, "Error: %s", strerror(errno));
+        topLineMessage(errmessage);
+      }
     }
     config_destroy(&cfg);
   }

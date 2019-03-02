@@ -277,36 +277,45 @@ void refreshDirectory(char *sortmode, int origtopfileref, int origselected, int 
 {
   char currentselectname[512];
   int i;
-  if (invalidstart) {
-    strcpy(currentselectname, "");
-    exitCode = 0;
-    invalidstart = 0;
-  } else {
-    if (destructive == 2){
-      strcpy(currentselectname, currentfilename);
+ handleMissingDir:
+  if (check_dir(currentpwd)){
+    if (invalidstart) {
+      strcpy(currentselectname, "");
+      exitCode = 0;
+      invalidstart = 0;
     } else {
-      strcpy(currentselectname, ob[origselected].name);
-    }
-  }
-  if (destructive != -1){
-    free(ob);
-    ob = get_dir(currentpwd);
-    clear_workspace();
-    reorder_ob(ob, sortmode);
-  }
-  if (destructive > 0){
-    i = findResultByName(ob, currentselectname);
-    if (i != 0){
-      selected = i;
-    } else {
-      if (selected > totalfilecount - 1){
-        selected = totalfilecount - 1;
+      if (destructive == 2){
+        strcpy(currentselectname, currentfilename);
       } else {
-        selected = origselected;
+        strcpy(currentselectname, ob[origselected].name);
       }
     }
+    if (destructive != -1){
+      free(ob);
+      ob = get_dir(currentpwd);
+      clear_workspace();
+      reorder_ob(ob, sortmode);
+    }
+    if (destructive > 0){
+      i = findResultByName(ob, currentselectname);
+      if (i != 0){
+        selected = i;
+      } else {
+        if (selected > totalfilecount - 1){
+          selected = totalfilecount - 1;
+        } else {
+          selected = origselected;
+        }
+      }
+    } else {
+      selected = findResultByName(ob, currentselectname);
+    }
   } else {
-    selected = findResultByName(ob, currentselectname);
+    strcpy(currentpwd, hs[historyref - 2].path);
+    objectWild = hs[historyref - 2].objectWild;
+    historyref--;
+    chdir(currentpwd);
+    goto handleMissingDir;
   }
   topfileref = sanitizeTopFileRef(origtopfileref);
   display_dir(currentpwd, ob, topfileref, selected);
@@ -399,6 +408,7 @@ void copy_file_input(char *file)
 {
   // YUCK, repetition, this needs sorting
   char newfile[1024];
+  int e;
   move(0,0);
   clrtoeol();
   mvprintw(0, 0, "Copy file to:");
@@ -413,7 +423,8 @@ void copy_file_input(char *file)
       strcpy(newfile, rewrite);
       free(rewrite);
     }
-    if ( check_dir(dirFromPath(newfile))){
+  copyFile:
+    if (access(dirFromPath(newfile), W_OK) == 0){
       if ( check_file(newfile) )
         {
           if ( replace_file_confirm_input(newfile) )
@@ -426,7 +437,19 @@ void copy_file_input(char *file)
         refreshDirectory(sortmode, 0, selected, 0);
       }
     } else {
-      topLineMessage("Error: Directory Not Found.");
+      if (errno == ENOENT){
+        e = createParentsInput(dirFromPath(newfile));
+        if (e == 1){
+          createParentDirs(newfile);
+          goto copyFile;
+        } else {
+          sprintf(errmessage, "Error: %s", strerror(errno));
+          topLineMessage(errmessage);
+        }
+      } else {
+        sprintf(errmessage, "Error: %s", strerror(errno));
+        topLineMessage(errmessage);
+      }
     }
   }
   directory_view_menu_inputs();
@@ -434,7 +457,7 @@ void copy_file_input(char *file)
 
 void copy_multi_file_input(results* ob, char *input)
 {
-  int i;
+  int i, e;
 
   char dest[1024];
   char destfile[1024];
@@ -451,6 +474,7 @@ void copy_multi_file_input(results* ob, char *input)
       strcpy(dest, rewrite);
       free(rewrite);
     }
+  copyMultiFile:
     if ( check_dir(dest) ){
       for (i = 0; i < totalfilecount; i++)
         {
@@ -477,8 +501,16 @@ void copy_multi_file_input(results* ob, char *input)
               }
             }
         }
+      refreshDirectory(sortmode, 0, selected, 0);
     } else {
-      topLineMessage("Error: Directory Not Found.");
+      e = createParentsInput(dest);
+      if (e == 1){
+        createParentDirs(dest);
+        mk_dir(dest); // Needed as the final element is omitted by the above
+        goto copyMultiFile;
+      } else {
+        topLineMessage("Error: Directory Not Found.");
+      }
     }
   }
   directory_view_menu_inputs();
@@ -486,7 +518,7 @@ void copy_multi_file_input(results* ob, char *input)
 
 void rename_multi_file_input(results* ob, char *input)
 {
-  int i;
+  int i, e;
 
   char dest[1024];
   char destfile[1024];
@@ -503,6 +535,7 @@ void rename_multi_file_input(results* ob, char *input)
       strcpy(dest, rewrite);
       free(rewrite);
     }
+  renameMultiFile:
     if ( check_dir(dest) ){
       for (i = 0; i < totalfilecount; i++)
         {
@@ -530,7 +563,14 @@ void rename_multi_file_input(results* ob, char *input)
             }
         }
     } else {
-      topLineMessage("Error: Directory Not Found.");
+      e = createParentsInput(dest);
+      if (e == 1){
+        createParentDirs(dest);
+        mk_dir(dest); // Needed as the final element is omitted by the above
+        goto renameMultiFile;
+      } else {
+        topLineMessage("Error: Directory Not Found.");
+      }
     }
     refreshDirectory(sortmode, 0, selected, 1);
   }
@@ -556,6 +596,7 @@ void rename_file_input(char *file)
 {
   // YUCK, repetition, this needs sorting
   char dest[1024];
+  int e;
   move(0,0);
   clrtoeol();
   mvprintw(0, 0, "Rename file to:");
@@ -569,19 +610,37 @@ void rename_file_input(char *file)
       strcpy(dest, rewrite);
       free(rewrite);
     }
-    if ( check_file(dest) )
-      {
-        if ( replace_file_confirm_input(dest) )
-          {
-            RenameObject(file, dest);
-            strcpy(currentfilename, objectFromPath(dest));
-            refreshDirectory(sortmode, 0, selected, 2);
-          }
+  renameFile:
+    if (access(dirFromPath(dest), W_OK) == 0){
+      if ( check_file(dest) )
+        {
+          if ( replace_file_confirm_input(dest) )
+            {
+              RenameObject(file, dest);
+              strcpy(currentfilename, objectFromPath(dest));
+              refreshDirectory(sortmode, 0, selected, 2);
+            }
+        } else {
+        RenameObject(file, dest);
+        strcpy(currentfilename, objectFromPath(dest));
+        refreshDirectory(sortmode, 0, selected, 2);
+      }
+    } else {
+      if (errno == ENOENT){
+        e = createParentsInput(dirFromPath(dest));
+        if (e == 1){
+          createParentDirs(dest);
+          goto renameFile;
+        } else {
+          sprintf(errmessage, "Error: %s", strerror(errno));
+          topLineMessage(errmessage);
+        }
       } else {
-      RenameObject(file, dest);
-      strcpy(currentfilename, objectFromPath(dest));
-      refreshDirectory(sortmode, 0, selected, 2);
+        sprintf(errmessage, "Error: %s", strerror(errno));
+        topLineMessage(errmessage);
+      }
     }
+    refreshDirectory(sortmode, 0, selected, 0);
   }
   directory_view_menu_inputs();
 }
@@ -589,6 +648,7 @@ void rename_file_input(char *file)
 void make_directory_input()
 {
   char newdir[1024];
+  int e;
   move(0,0);
   clrtoeol();
   mvprintw(0, 0, "Make Directory - Enter pathname:");
@@ -604,11 +664,23 @@ void make_directory_input()
       strcpy(newdir, rewrite);
       free(rewrite);
     }
+  makeDir:
     if (access(dirFromPath(newdir), W_OK) == 0){
       mk_dir(newdir);
     } else {
-      sprintf(errmessage, "Error: %s", strerror(errno));
-      topLineMessage(errmessage);
+      if (errno == ENOENT){
+        e = createParentsInput(dirFromPath(newdir));
+        if (e == 1){
+          createParentDirs(newdir);
+          goto makeDir;
+        } else {
+          sprintf(errmessage, "Error: %s", strerror(errno));
+          topLineMessage(errmessage);
+        }
+      } else {
+        sprintf(errmessage, "Error: %s", strerror(errno));
+        topLineMessage(errmessage);
+      }
     }
     // curs_set(FALSE);
     refreshDirectory(sortmode, 0, selected, 0);
@@ -693,6 +765,7 @@ void touch_file_input()
   char touchFile[1024];
   FILE* touchFileObject;
   int setDateFlag = -1;
+  int e;
   move(0,0);
   clrtoeol();
   strcpy(menuTitle, "Touch File - Enter pathname:");
@@ -720,6 +793,7 @@ void touch_file_input()
       }
     }
     // Do something
+  touchFile:
     if (access(dirFromPath(touchFile), W_OK) == 0) {
       if (check_object(touchFile) == 0){
         touchFileObject = fopen(touchFile, "w");
@@ -738,8 +812,19 @@ void touch_file_input()
         }
       }
     } else {
-      sprintf(errmessage, "Error: %s", strerror(errno));
-      topLineMessage(errmessage);
+      if (errno == ENOENT){
+        e = createParentsInput(dirFromPath(touchFile));
+        if (e == 1){
+          createParentDirs(touchFile);
+          goto touchFile;
+        } else {
+          sprintf(errmessage, "Error: %s", strerror(errno));
+          topLineMessage(errmessage);
+        }
+      } else {
+        sprintf(errmessage, "Error: %s", strerror(errno));
+        topLineMessage(errmessage);
+      }
     }
     refreshDirectory(sortmode, 0, selected, 0);
   }
@@ -854,6 +939,30 @@ void delete_file_confirm_input(char *file)
         {
         case 'y':
           delete_file(file);
+          refreshDirectory(sortmode, topfileref, selected, 1);
+          // Not breaking here, intentionally dropping through to the default
+        default:
+          directory_view_menu_inputs();
+          break;
+        }
+    }
+}
+
+void delete_directory_confirm_input(char *directory)
+{
+  int e;
+  printMenu(0,0, "Delete directory? (!Yes/!No)");
+  while(1)
+    {
+      *pc = getch10th();
+      switch(*pc)
+        {
+        case 'y':
+          e = rmdir(directory);
+          if (e != 0){
+            sprintf(errmessage, "Error: %s", strerror(errno));
+            topLineMessage(errmessage);
+          }
           refreshDirectory(sortmode, topfileref, selected, 1);
           // Not breaking here, intentionally dropping through to the default
         default:
@@ -1141,7 +1250,7 @@ void linktext_input(char *file, int symbolic)
   char inputmessage[32];
   char typeText[9];
   char target[1024];
-  int relative;
+  int relative, e;
   char *relativeFile;
   char tempDebug[1024];
   strcpy(target, currentpwd);
@@ -1174,7 +1283,8 @@ void linktext_input(char *file, int symbolic)
       free(rewrite);
     }
 
-    if (check_dir(dirFromPath(target))){
+    makeSymlink:
+    if (access(dirFromPath(target), W_OK) == 0){
       if (check_file(target)){
         topLineMessage("Error: File exists.");
       } else {
@@ -1194,7 +1304,19 @@ void linktext_input(char *file, int symbolic)
         refreshDirectory(sortmode, 0, selected, 0);
       }
     } else {
-      topLineMessage("Error: Directory Not Found.");
+      if (errno == ENOENT){
+        e = createParentsInput(dirFromPath(target));
+        if (e == 1){
+          createParentDirs(target);
+          goto makeSymlink;
+        } else {
+          sprintf(errmessage, "Error: %s", strerror(errno));
+          topLineMessage(errmessage);
+        }
+      } else {
+        sprintf(errmessage, "Error: %s", strerror(errno));
+        topLineMessage(errmessage);
+      }
     }
   }
   directory_view_menu_inputs();
@@ -1289,6 +1411,8 @@ void directory_view_menu_inputs()
           strcat(selfile, ob[selected].name);
           if (!check_dir(selfile) || (strcmp(ob[selected].slink, ""))){
             delete_file_confirm_input(selfile);
+          } else if (check_dir(selfile)){
+            delete_directory_confirm_input(selfile);
           }
         }
       } else if (*pc == menuHotkeyLookup(fileMenu, "f_edit", fileMenuSize)){
@@ -1324,6 +1448,7 @@ void directory_view_menu_inputs()
         //printMenu(0, 0, modifyMenuText);
         modify_key_menu_inputs();
       } else if (*pc == menuHotkeyLookup(fileMenu, "f_quit", fileMenuSize)){
+      handleMissingDir:
           if (historyref > 1){
             strcpy(chpwd, hs[historyref - 2].path);
             objectWild = hs[historyref - 2].objectWild;
@@ -1338,6 +1463,10 @@ void directory_view_menu_inputs()
               topfileref = sanitizeTopFileRef(hs[historyref].topfileref);
               clear_workspace();
               display_dir(currentpwd, ob, topfileref, selected);
+            } else {
+              // Skip removed directories
+              historyref--;
+              goto handleMissingDir;
             }
           } else {
             historyref = 0; // Reset historyref here. A hacky workaround due to the value occasionally dipping to minus numbers.
