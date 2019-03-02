@@ -1439,6 +1439,7 @@ void directory_view_menu_inputs()
         //printMenu(0, 0, modifyMenuText);
         modify_key_menu_inputs();
       } else if (*pc == menuHotkeyLookup(fileMenu, "f_quit", fileMenuSize)){
+      handleMissingDir:
           if (historyref > 1){
             strcpy(chpwd, hs[historyref - 2].path);
             objectWild = hs[historyref - 2].objectWild;
@@ -1453,6 +1454,10 @@ void directory_view_menu_inputs()
               topfileref = sanitizeTopFileRef(hs[historyref].topfileref);
               clear_workspace();
               display_dir(currentpwd, ob, topfileref, selected);
+            } else {
+              // Skip removed directories
+              historyref--;
+              goto handleMissingDir;
             }
           } else {
             historyref = 0; // Reset historyref here. A hacky workaround due to the value occasionally dipping to minus numbers.
