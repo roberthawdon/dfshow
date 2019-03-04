@@ -1,7 +1,7 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "SHOW" "1" "February 2019" "" ""
+.TH "SHOW" "1" "March 2019" "" ""
 .
 .SH "NAME"
 \fBshow\fR \- An interactive directory/file browser written for Unix\-like systems\.
@@ -355,6 +355,18 @@ The following error is displayed if the file does not have an executable flag, o
 .
 .IP
 \fBError: Permission denied\fR
+.
+.SS "Creating parent directories"
+A number of the commands above will display the following prompt to create parent directories if they are not present\.
+.
+.P
+\fBDirectory [/path/to/directory] does not exist\. Create it? Yes/No (enter = no)\fR
+.
+.P
+Selecting "Y" will instruct \fBshow\fR to create the missing parent directories required to complete the command\.
+.
+.P
+Selecting "N" will abort the command due to the required parent directories not being available\. An error message will be shown\.
 .
 .SH "FUNCTIONS"
 In order to select objects to be used by the commands described in the previous section, the cursor must be moved to the line of the desired object\. The functions to move the cursor and the list of files in the display window are described here\. A list of the valid functions and their associated function keys is given list\.

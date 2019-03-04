@@ -340,6 +340,21 @@ the command has any additional propts, they are also described here.
 
   ``Error: Permission denied``
 
+
+Creating parent directories
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A number of the commands above will display the following prompt to create
+parent directories if they are not present.
+
+  ``Directory [/path/to/directory] does not exist. Create it? Yes/No (enter = no)``
+
+  Selecting "Y" will instruct ``show`` to create the missing parent directories
+  required to complete the command.
+
+  Selecting "N" will abort the command due to the required parent directories
+  not being available. An error message will be shown.
+
 Functions
 ---------
 
