@@ -130,6 +130,7 @@ extern int markedinfo;
 extern int markedauto;
 extern int useEnvPager;
 extern int showProcesses;
+extern int exitCode;
 
 extern char sortmode[5];
 
@@ -1441,7 +1442,7 @@ results* get_dir(char *pwd)
   size_t file_count = 0;
   struct dirent *res;
   struct stat sb;
-  const char *path = pwd;
+  char *path = pwd;
   struct stat buffer;
   int         status;
   char direrror[1024];
@@ -1459,11 +1460,12 @@ results* get_dir(char *pwd)
 
   //if (stat(path, &sb) == 0 && S_ISDIR(sb.st_mode)){
   if (check_object(path) == 1){
+  reload:
     folder = opendir ( path );
 
     if (access ( path, F_OK ) != -1 ){
       if ( folder ){
-        while ( ( res = readdir ( folder ) ) ){
+        while ( ( res = readdir ( folder ) ) != NULL ){
           if ( showhidden == 0 && check_first_char(res->d_name, ".") && strcmp(res->d_name, ".") && strcmp(res->d_name, "..") ) {
             continue; // Skipping hidden files
           }
@@ -1497,6 +1499,21 @@ results* get_dir(char *pwd)
 
         totalfilecount = count;
         closedir ( folder );
+
+        if ( count == 0 ) {
+          // This is a hacky mitigation for drivefs returning 0 objects, it should prevent the crash of #82. However, it doesn't fix the inablity to load Google Drive Stream directories properly. The GNU version of 'ls' also has similar issues, so the bug is most likely in the underlying library rather than DF-SHOW itself.
+          sprintf(direrror, "Error: Directory Returned 0 Objects" );
+          topLineMessage(direrror);
+          historyref--;
+          if (historyref > 0){
+            strcpy(path, hs[historyref - 1].path);
+            chdir(path);
+            goto reload;
+          } else {
+            exitCode = 1;
+            exittoshell();
+          }
+        }
 
         // free(objectWild);
 

@@ -263,6 +263,16 @@ The <code>.</code> and <code>..</code> objects are never hidden due to their nav
 </dl>
 
 
+<h3 id="Creating-parent-directories">Creating parent directories</h3>
+
+<p>A number of the commands above will display the following prompt to create parent directories if they are not present.</p>
+
+<p>  <code>Directory [/path/to/directory] does not exist. Create it? Yes/No (enter = no)</code></p>
+
+<p>  Selecting "Y" will instruct <code>show</code> to create the missing parent directories required to complete the command.</p>
+
+<p>  Selecting "N" will abort the command due to the required parent directories not being available. An error message will be shown.</p>
+
 <h2 id="FUNCTIONS">FUNCTIONS</h2>
 
 <p>In order to select objects to be used by the commands described in the previous section, the cursor must be moved to the line of the desired object. The functions to move the cursor and the list of files in the display window are described here. A list of the valid functions and their associated function keys is given list.</p>
@@ -439,7 +449,7 @@ The <code>.</code> and <code>..</code> objects are never hidden due to their nav
 
   <ol class='man-decor man-foot man foot'>
     <li class='tl'></li>
-    <li class='tc'>February 2019</li>
+    <li class='tc'>March 2019</li>
     <li class='tr'>show(1)</li>
   </ol>
 

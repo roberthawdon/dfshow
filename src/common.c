@@ -536,6 +536,12 @@ int wReadLine(wchar_t *buffer, int buflen, wchar_t *oldbuf)
       } else {
         beep();
       }
+    } else if (c == 262) {
+      // Home Key
+      if (pos > 0) pos = 0; else beep();
+    } else if (c == 360) {
+      // End Key
+      if (pos < len) pos = len; else beep();
     } else if (c == 270) {
       // F6 Key
       // F6 deletes to the end of line. Recently discovered in DF-EDIT 2.3d hidden in program documentation (2018-08-18)
@@ -552,7 +558,7 @@ int wReadLine(wchar_t *buffer, int buflen, wchar_t *oldbuf)
       wcscpy(buffer, L""); //abort by blanking
       setColors(COMMAND_PAIR);
       break;
-    } else if ((c == KEY_UP) || (c == KEY_DOWN) || (c == KEY_IC) || (c == 262) || (c == 265) || (c == 266) || (c == 267) || (c == 268) || (c == 269) || (c == 270) || (c == 271) || (c == 272) || (c == 273) || (c == 274) || (c == 275) || (c == 276) || (c == 338) || (c == 339) || (c == 360)) {
+    } else if ((c == KEY_UP) || (c == KEY_DOWN) || (c == KEY_IC) || (c == 265) || (c == 266) || (c == 267) || (c == 268) || (c == 269) || (c == 270) || (c == 271) || (c == 272) || (c == 273) || (c == 274) || (c == 275) || (c == 276) || (c == 338) || (c == 339)) {
       // Ignore navigation and function keys.
       continue;
     } else if (iswprint(c)) {
