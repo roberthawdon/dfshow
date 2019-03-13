@@ -56,7 +56,7 @@
 # define st_author st_uid
 #endif
 
-char hlinkstr[5], sizestr[32], majorstr[5], minorstr[5];
+char hlinkstr[6], sizestr[32], majorstr[6], minorstr[6];
 char headAttrs[12], headOG[25], headSize[14], headDT[18], headName[13];
 
 int hlinklen;
