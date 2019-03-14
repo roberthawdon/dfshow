@@ -53,6 +53,7 @@ int filecolors = 0;
 int markedinfo = 0;
 int markedauto = 0;
 int useEnvPager = 0;
+int launchThemeEditor = 0;
 
 int plugins = 0; // Not yet implemented
 
@@ -411,7 +412,8 @@ Options specific to show:\n\
       --no-sf                  does not display files in sf\n\
       --show-on-enter          repurposes the Enter key to launch the show\n\
                                command\n\
-      --running                display number of parent show processes\n"), stdout);
+      --running                display number of parent show processes\n\
+      --edit-themes            launchs directly into the theme editor\n"), stdout);
   fputs (("\n\
 The THEME argument can be:\n"), stdout);
   listThemes();
@@ -472,6 +474,7 @@ int main(int argc, char *argv[])
          {"show-on-enter",  no_argument,       0, GETOPT_SHOWONENTER_CHAR},
          {"running",        no_argument,       0, GETOPT_SHOWRUNNING_CHAR},
          {"full-time",      no_argument,       0, GETOPT_FULLTIME_CHAR},
+         {"edit-themes",    no_argument,       0, GETOPT_THEMEEDIT_CHAR},
          {0, 0, 0, 0}
         };
       int option_index = 0;
@@ -607,6 +610,9 @@ Valid arguments are:\n\
         exit(0);
       }
       break;
+    case GETOPT_THEMEEDIT_CHAR:
+      launchThemeEditor = 1;
+      break;
     default:
       // abort();
       exit(2);
@@ -650,32 +656,37 @@ Valid arguments are:\n\
   keypad(stdscr, TRUE);
 
 
-
-  // Remaining arguments passed as working directory
-  if (optind < argc){
-    if (!check_first_char(argv[optind], "/")){
-      // If the path given doesn't start with a / then assume we're dealing with a relative path.
-      getcwd(currentpwd, sizeof(currentpwd));
-      sprintf(currentpwd, "%s/%s", currentpwd, argv[optind]);
-    } else {
-      strcpy(currentpwd, argv[optind]);
-    }
-    chdir(currentpwd);
+  if (launchThemeEditor == 1){
+    themeBuilder();
+    theme_menu_inputs();
+    exittoshell();
   } else {
-    getcwd(currentpwd, sizeof(currentpwd));
-  }
+    // Remaining arguments passed as working directory
+    if (optind < argc){
+      if (!check_first_char(argv[optind], "/")){
+        // If the path given doesn't start with a / then assume we're dealing with a relative path.
+        getcwd(currentpwd, sizeof(currentpwd));
+        sprintf(currentpwd, "%s/%s", currentpwd, argv[optind]);
+      } else {
+        strcpy(currentpwd, argv[optind]);
+      }
+      chdir(currentpwd);
+    } else {
+      getcwd(currentpwd, sizeof(currentpwd));
+    }
 
-  if (!check_dir(currentpwd)){
-    //strcpy(currentpwd, "/"); // If dir doesn't exist, default to root
-    invalidstart = 1;
-    exitCode = 1;
-    global_menu();
-  }
+    if (!check_dir(currentpwd)){
+      //strcpy(currentpwd, "/"); // If dir doesn't exist, default to root
+      invalidstart = 1;
+      exitCode = 1;
+      global_menu();
+    }
   testSlash:
-  if (check_last_char(currentpwd, "/") && strcmp(currentpwd, "/")){
-    currentpwd[strlen(currentpwd) - 1] = '\0';
-    goto testSlash;
+    if (check_last_char(currentpwd, "/") && strcmp(currentpwd, "/")){
+      currentpwd[strlen(currentpwd) - 1] = '\0';
+      goto testSlash;
+    }
+    directory_view(currentpwd);
   }
-  directory_view(currentpwd);
   return exitCode;
 }
