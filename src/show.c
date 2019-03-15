@@ -54,6 +54,7 @@ int markedinfo = 0;
 int markedauto = 0;
 int useEnvPager = 0;
 int launchThemeEditor = 0;
+int launchOptionsMenu = 0;
 
 int plugins = 0; // Not yet implemented
 
@@ -413,6 +414,7 @@ Options specific to show:\n\
       --show-on-enter          repurposes the Enter key to launch the show\n\
                                command\n\
       --running                display number of parent show processes\n\
+      --options-menu           launch options menu\n\
       --edit-themes            launchs directly into the theme editor\n"), stdout);
   fputs (("\n\
 The THEME argument can be:\n"), stdout);
@@ -475,6 +477,7 @@ int main(int argc, char *argv[])
          {"running",        no_argument,       0, GETOPT_SHOWRUNNING_CHAR},
          {"full-time",      no_argument,       0, GETOPT_FULLTIME_CHAR},
          {"edit-themes",    no_argument,       0, GETOPT_THEMEEDIT_CHAR},
+         {"options-menu",   no_argument,       0, GETOPT_OPTIONSMENU_CHAR},
          {0, 0, 0, 0}
         };
       int option_index = 0;
@@ -612,6 +615,9 @@ Valid arguments are:\n\
       break;
     case GETOPT_THEMEEDIT_CHAR:
       launchThemeEditor = 1;
+      break;
+    case GETOPT_OPTIONSMENU_CHAR:
+      launchOptionsMenu = 1;
       break;
     default:
       // abort();
