@@ -54,7 +54,7 @@ int markedinfo = 0;
 int markedauto = 0;
 int useEnvPager = 0;
 int launchThemeEditor = 0;
-int launchOptionsMenu = 0;
+int launchSettingsMenu = 0;
 
 int plugins = 0; // Not yet implemented
 
@@ -67,6 +67,12 @@ int showProcesses;
 char *objectWild;
 
 results *ob;
+
+extern menuDef *settingsMenu;
+extern int settingsMenuSize;
+extern wchar_t *settingsMenuLabel;
+
+extern int * pc;
 
 extern history *hs;
 extern int topfileref;
@@ -230,6 +236,37 @@ void readConfig(const char * confFile)
     }
   };
   config_destroy(&cfg);
+}
+
+void settingsMenuView(){
+  uid_t uid=getuid(), euid=geteuid();
+  int items = 0, pos = 0;
+  int x = 2;
+  int y = 3;
+  clear();
+  wPrintMenu(0,0,settingsMenuLabel);
+  // mvprintw(2, 10, "SHOW Settings Menu");
+
+  //mvprintw(items + 2, 3, "Value of hidden: %i", intSettingValue(&showhidden, -1));
+  printToggleSetting(x, y, L"Display file colors", &filecolors, &items);
+  printToggleSetting(x, y, L"Reverse sorting order", &reverse, &items);
+  printToggleSetting(x, y, L"Show hidden files", &showhidden, &items);
+  printToggleSetting(x, y, L"Show backup files", &showbackup, &items);
+  printToggleSetting(x, y, L"Use 3rd party pager over SF", &useEnvPager, &items);
+  if (uid == 0 || euid == 0){
+    printToggleSetting(x, y, L"Show danger lines as root", &danger, &items);
+  }
+  printToggleSetting(x, y, L"Use SI Units", &si, &items);
+  printToggleSetting(x, y, L"Human readable sizes", &human, &items);
+  printToggleSetting(x, y, L"Enter key acts like Show", &enterAsShow, &items);
+
+  while(1)
+    {
+      *pc = getch10th();
+      if (*pc == menuHotkeyLookup(settingsMenu, "s_quit", settingsMenuSize)){
+        return;
+      }
+    }
 }
 
 int directory_view(char * currentpwd)
@@ -414,7 +451,7 @@ Options specific to show:\n\
       --show-on-enter          repurposes the Enter key to launch the show\n\
                                command\n\
       --running                display number of parent show processes\n\
-      --options-menu           launch options menu\n\
+      --settings-menu          launch settings menu\n\
       --edit-themes            launchs directly into the theme editor\n"), stdout);
   fputs (("\n\
 The THEME argument can be:\n"), stdout);
@@ -477,7 +514,7 @@ int main(int argc, char *argv[])
          {"running",        no_argument,       0, GETOPT_SHOWRUNNING_CHAR},
          {"full-time",      no_argument,       0, GETOPT_FULLTIME_CHAR},
          {"edit-themes",    no_argument,       0, GETOPT_THEMEEDIT_CHAR},
-         {"options-menu",   no_argument,       0, GETOPT_OPTIONSMENU_CHAR},
+         {"settings-menu",   no_argument,       0, GETOPT_OPTIONSMENU_CHAR},
          {0, 0, 0, 0}
         };
       int option_index = 0;
@@ -617,7 +654,7 @@ Valid arguments are:\n\
       launchThemeEditor = 1;
       break;
     case GETOPT_OPTIONSMENU_CHAR:
-      launchOptionsMenu = 1;
+      launchSettingsMenu = 1;
       break;
     default:
       // abort();
@@ -665,6 +702,9 @@ Valid arguments are:\n\
   if (launchThemeEditor == 1){
     themeBuilder();
     theme_menu_inputs();
+    exittoshell();
+  } else if (launchSettingsMenu == 1) {
+    settingsMenuView();
     exittoshell();
   } else {
     // Remaining arguments passed as working directory

@@ -44,6 +44,10 @@ char homeConfLocation[128];
 
 char themeName[128] = "default";
 
+menuDef *settingsMenu;
+int settingsMenuSize = 0;
+wchar_t *settingsMenuLabel;
+
 extern int * pc;
 
 extern char fileMenuText[256];
@@ -800,3 +804,29 @@ void clear_workspace()
       line_count++;
     }
 }
+
+int intSettingValue(int *setting, int newValue){
+  if (newValue > -1){
+    *setting = newValue;
+  }
+  return *setting;
+}
+
+void printToggleSetting(int line, int col, wchar_t *settingLabel, int *setting, int *items)
+{
+  // wchar_t *output = malloc(sizeof(wchar_t) * (wcslen(settingLabel) + 5));
+
+  int linePos = line + *items;
+
+  if (intSettingValue(setting, -1) > 0){
+    mvprintw(linePos, col, "[*] %ls", settingLabel);
+  } else {
+    mvprintw(linePos, col, "[ ] %ls", settingLabel);
+  }
+
+  ++*items;
+
+  // free(output);
+}
+
+

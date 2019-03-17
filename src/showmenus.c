@@ -137,6 +137,10 @@ extern menuDef *colorMenu;
 extern int colorMenuSize;
 extern wchar_t *colorMenuLabel;
 
+extern menuDef *settingsMenu;
+extern int settingsMenuSize;
+extern wchar_t *settingsMenuLabel;
+
 void modify_owner_input();
 
 void generateDefaultMenus(){
@@ -212,6 +216,9 @@ void generateDefaultMenus(){
   addMenuItem(&colorMenu, &colorMenuSize, "c_save", L"!Save", 's');
   addMenuItem(&colorMenu, &colorMenuSize, "c_toggle", L"!Toggle", 't');
 
+  // Setings Menu
+  addMenuItem(&settingsMenu, &settingsMenuSize, "s_quit", L"!Quit", 'q');
+  addMenuItem(&settingsMenu, &settingsMenuSize, "s_save", L"!Save", 's');
 }
 
 void refreshMenuLabels(){
@@ -225,6 +232,7 @@ void refreshMenuLabels(){
   touchMenuLabel = genMenuDisplayLabel(L"Set Time -", touchMenu, touchMenuSize, L"(enter = B)", 1);
   touchDateConfirmMenuLabel = genMenuDisplayLabel(L"Set Time?", touchDateConfirmMenu, touchDateConfirmMenuSize, L"(enter = N)", -1);
   colorMenuLabel = genMenuDisplayLabel(L"", colorMenu, colorMenuSize, L"", 1);
+  settingsMenuLabel = genMenuDisplayLabel(L"SHOW Settings Menu -", settingsMenu, settingsMenuSize, L"", 1);
 }
 
 void unloadMenuLabels(){
@@ -237,6 +245,7 @@ void unloadMenuLabels(){
   free(touchMenuLabel);
   free(touchDateConfirmMenuLabel);
   free(colorMenuLabel);
+  free(settingsMenuLabel);
 }
 
 int sanitizeTopFileRef(int topfileref)
