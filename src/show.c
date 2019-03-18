@@ -248,23 +248,35 @@ void settingsMenuView(){
   // mvprintw(2, 10, "SHOW Settings Menu");
 
   //mvprintw(items + 2, 3, "Value of hidden: %i", intSettingValue(&showhidden, -1));
-  printToggleSetting(x, y, L"Display file colors", &filecolors, &items);
-  printToggleSetting(x, y, L"Reverse sorting order", &reverse, &items);
-  printToggleSetting(x, y, L"Show hidden files", &showhidden, &items);
-  printToggleSetting(x, y, L"Show backup files", &showbackup, &items);
-  printToggleSetting(x, y, L"Use 3rd party pager over SF", &useEnvPager, &items);
+  printToggleSetting(x, y, L"Display file colors", &filecolors, &items, 0);
+  printToggleSetting(x, y, L"Reverse sorting order", &reverse, &items, 0);
+  printToggleSetting(x, y, L"Show hidden files", &showhidden, &items, 0);
+  printToggleSetting(x, y, L"Hide backup files", &showbackup, &items, 1);
+  printToggleSetting(x, y, L"Use 3rd party pager over SF", &useEnvPager, &items, 0);
   if (uid == 0 || euid == 0){
-    printToggleSetting(x, y, L"Show danger lines as root", &danger, &items);
+    printToggleSetting(x, y, L"Hide danger lines as root", &danger, &items, 1);
   }
-  printToggleSetting(x, y, L"Use SI Units", &si, &items);
-  printToggleSetting(x, y, L"Human readable sizes", &human, &items);
-  printToggleSetting(x, y, L"Enter key acts like Show", &enterAsShow, &items);
+  printToggleSetting(x, y, L"Use SI Units", &si, &items, 0);
+  printToggleSetting(x, y, L"Human readable sizes", &human, &items, 0);
+  printToggleSetting(x, y, L"Enter key acts like Show", &enterAsShow, &items, 0);
+
+  curs_set(TRUE);
 
   while(1)
     {
+      move(x + pos, y + 1);
       *pc = getch10th();
       if (*pc == menuHotkeyLookup(settingsMenu, "s_quit", settingsMenuSize)){
+        curs_set(FALSE);
         return;
+      } else if (*pc == 258 || *pc == 10){
+        if (pos < (items -1 )){
+          pos++;
+        }
+      } else if (*pc == 259){
+        if (pos > 0){
+          pos--;
+        }
       }
     }
 }

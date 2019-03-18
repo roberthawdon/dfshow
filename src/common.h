@@ -49,5 +49,5 @@ void showManPage(const char * prog);
 int can_run_command(const char *cmd);
 void sigintHandle(int sig);
 int exittoshell();
-void printToggleSetting(int line, int col, wchar_t *settingLabel, int *setting, int *items);
+void printToggleSetting(int line, int col, wchar_t *settingLabel, int *setting, int *items, int invert);
 int intSettingValue(int *setting, int newValue);

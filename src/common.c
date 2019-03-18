@@ -812,13 +812,24 @@ int intSettingValue(int *setting, int newValue){
   return *setting;
 }
 
-void printToggleSetting(int line, int col, wchar_t *settingLabel, int *setting, int *items)
+void printToggleSetting(int line, int col, wchar_t *settingLabel, int *setting, int *items, int invert)
 {
   // wchar_t *output = malloc(sizeof(wchar_t) * (wcslen(settingLabel) + 5));
 
   int linePos = line + *items;
+  int settingWork;
 
-  if (intSettingValue(setting, -1) > 0){
+  if (invert == 1){
+    if (setting > 0){
+      settingWork = 0;
+    } else {
+      settingWork = 1;
+    }
+  } else {
+    settingWork = *setting;
+  }
+
+  if (settingWork > 0){
     mvprintw(linePos, col, "[*] %ls", settingLabel);
   } else {
     mvprintw(linePos, col, "[ ] %ls", settingLabel);
