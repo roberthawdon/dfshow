@@ -14,6 +14,12 @@ typedef struct {
   char directories[256];
 } pathDirs;
 
+typedef struct {
+  int type;
+  char refLabel[16];
+  wchar_t textLabel[32];
+} settingIndex;
+
 int getch10th (void);
 int cmp_menu_ref(const void *lhs, const void *rhs);
 int splitPath(pathDirs **dirStruct, char *path);
@@ -50,4 +56,5 @@ int can_run_command(const char *cmd);
 void sigintHandle(int sig);
 int exittoshell();
 void printToggleSetting(int line, int col, wchar_t *settingLabel, int *setting, int *items, int invert);
+void importSetting(settingIndex **settings, int *items, char *refLabel, wchar_t *textLabel, int type);
 int intSettingValue(int *setting, int newValue);

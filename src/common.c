@@ -805,6 +805,28 @@ void clear_workspace()
     }
 }
 
+void importSetting(settingIndex **settings, int *items, char *refLabel, wchar_t *textLabel, int type)
+{
+  settingIndex *tmp;
+  int currentItem = *items;
+
+  if (*items == 0){
+    tmp = malloc(sizeof(settingIndex) * 2);
+  } else {
+    tmp = realloc(*settings, (currentItem + 1) * (sizeof(settingIndex) + 1));
+  }
+
+  if (tmp){
+    *settings = tmp;
+  }
+
+  (*settings)[currentItem].type = type;
+  sprintf((*settings)[currentItem].refLabel, "%s", refLabel);
+  swprintf((*settings)[currentItem].textLabel, 32, L"%ls", textLabel);
+
+  ++*items;
+}
+
 int intSettingValue(int *setting, int newValue){
   if (newValue > -1){
     *setting = newValue;
@@ -835,7 +857,7 @@ void printToggleSetting(int line, int col, wchar_t *settingLabel, int *setting, 
     mvprintw(linePos, col, "[ ] %ls", settingLabel);
   }
 
-  ++*items;
+  // ++*items;
 
   // free(output);
 }
