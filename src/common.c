@@ -820,7 +820,7 @@ void printToggleSetting(int line, int col, wchar_t *settingLabel, int *setting, 
   int settingWork;
 
   if (invert == 1){
-    if (setting > 0){
+    if (*setting > 0){
       settingWork = 0;
     } else {
       settingWork = 1;
