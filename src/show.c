@@ -240,7 +240,7 @@ void readConfig(const char * confFile)
 
 void settingsMenuView(){
   uid_t uid=getuid(), euid=geteuid();
-  int items = 0, pos = 0;
+  int items = 0, pos = 0, count = 0;
   int x = 2;
   int y = 3;
   settingIndex *settingIndex;
@@ -248,17 +248,21 @@ void settingsMenuView(){
   wPrintMenu(0,0,settingsMenuLabel);
   // mvprintw(2, 10, "SHOW Settings Menu");
 
-  importSetting(&settingIndex, &items, "filecolors",  L"Display file colors", 0);
-  importSetting(&settingIndex, &items, "reverse",     L"Reverse sorting order", 0);
-  importSetting(&settingIndex, &items, "showhidden",  L"Show hidden files", 0);
-  importSetting(&settingIndex, &items, "showbackup",  L"Hide backup files", 0);
-  importSetting(&settingIndex, &items, "useEnvPager", L"Use 3rd party pager over SF", 0);
+  importSetting(&settingIndex, &items, "filecolors",  L"Display file colors", 0, filecolors, 0);
+  importSetting(&settingIndex, &items, "reverse",     L"Reverse sorting order", 0, reverse, 0);
+  importSetting(&settingIndex, &items, "showhidden",  L"Show hidden files", 0, showhidden, 0);
+  importSetting(&settingIndex, &items, "showbackup",  L"Hide backup files", 0, showbackup, 1);
+  importSetting(&settingIndex, &items, "useEnvPager", L"Use 3rd party pager over SF", 0, useEnvPager, 0);
   if (uid == 0 || euid == 0){
-    importSetting(&settingIndex, &items, "danger",      L"Hide gander lines as root", 0);
+    importSetting(&settingIndex, &items, "danger",      L"Hide danger lines as root", 0, danger, 1);
   }
-  importSetting(&settingIndex, &items, "si",          L"Use SI units", 0);
-  importSetting(&settingIndex, &items, "human",       L"Human readable sizes", 0);
-  importSetting(&settingIndex, &items, "enterAsShow", L"Enter key acts like Show", 0);
+  importSetting(&settingIndex, &items, "si",          L"Use SI units", 0, si, 0);
+  importSetting(&settingIndex, &items, "human",       L"Human readable sizes", 0, human, 0);
+  importSetting(&settingIndex, &items, "enterAsShow", L"Enter key acts like Show", 0, enterAsShow, 0);
+
+  for (count = 0; count < items; count++){
+    printSetting(2 + count, 3, &settingIndex, count, settingIndex[count].type, settingIndex[count].invert);
+  }
 
   //mvprintw(items + 2, 3, "Value of hidden: %i", intSettingValue(&showhidden, -1));
   // printToggleSetting(x, y, L"Display file colors", &filecolors, &items, 0);

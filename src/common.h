@@ -18,6 +18,8 @@ typedef struct {
   int type;
   char refLabel[16];
   wchar_t textLabel[32];
+  int invert;
+  int intSetting;
 } settingIndex;
 
 int getch10th (void);
@@ -56,5 +58,6 @@ int can_run_command(const char *cmd);
 void sigintHandle(int sig);
 int exittoshell();
 void printToggleSetting(int line, int col, wchar_t *settingLabel, int *setting, int *items, int invert);
-void importSetting(settingIndex **settings, int *items, char *refLabel, wchar_t *textLabel, int type);
+void importSetting(settingIndex **settings, int *items, char *refLabel, wchar_t *textLabel, int type, int intSetting, int invert);
 int intSettingValue(int *setting, int newValue);
+void printSetting(int line, int col, settingIndex **settings, int index, int type, int invert);

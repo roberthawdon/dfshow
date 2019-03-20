@@ -805,7 +805,7 @@ void clear_workspace()
     }
 }
 
-void importSetting(settingIndex **settings, int *items, char *refLabel, wchar_t *textLabel, int type)
+void importSetting(settingIndex **settings, int *items, char *refLabel, wchar_t *textLabel, int type, int intSetting, int invert)
 {
   settingIndex *tmp;
   int currentItem = *items;
@@ -823,6 +823,8 @@ void importSetting(settingIndex **settings, int *items, char *refLabel, wchar_t 
   (*settings)[currentItem].type = type;
   sprintf((*settings)[currentItem].refLabel, "%s", refLabel);
   swprintf((*settings)[currentItem].textLabel, 32, L"%ls", textLabel);
+  (*settings)[currentItem].intSetting = intSetting;
+  (*settings)[currentItem].invert = invert;
 
   ++*items;
 }
@@ -862,4 +864,25 @@ void printToggleSetting(int line, int col, wchar_t *settingLabel, int *setting, 
   // free(output);
 }
 
+void printSetting(int line, int col, settingIndex **settings, int index, int type, int invert)
+{
 
+  int settingWork;
+
+  if (type == 0 ){
+    if (invert == 1){
+      if ((*settings)[index].intSetting > 0){
+        settingWork = 0;
+      } else {
+        settingWork = 1;
+      }
+    } else {
+      settingWork = (*settings)[index].intSetting;
+    }
+    if (settingWork == 0){
+      mvprintw(line, col, "[ ] %ls", (*settings)[index].textLabel);
+    } else {
+      mvprintw(line, col, "[*] %ls", (*settings)[index].textLabel);
+    }
+  }
+}
