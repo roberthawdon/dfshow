@@ -218,6 +218,7 @@ void generateDefaultMenus(){
 
   // Setings Menu
   addMenuItem(&settingsMenu, &settingsMenuSize, "s_quit", L"!Quit", 'q');
+  addMenuItem(&settingsMenu, &settingsMenuSize, "s_revert", L"!Revert", 'r');
   addMenuItem(&settingsMenu, &settingsMenuSize, "s_save", L"!Save", 's');
 }
 
