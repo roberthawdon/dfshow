@@ -260,10 +260,6 @@ void settingsMenuView(){
   importSetting(&settingIndex, &items, "human",       L"Human readable sizes", 0, human, 0);
   importSetting(&settingIndex, &items, "enterAsShow", L"Enter key acts like Show", 0, enterAsShow, 0);
 
-  for (count = 0; count < items; count++){
-    printSetting(2 + count, 3, &settingIndex, count, settingIndex[count].type, settingIndex[count].invert);
-  }
-
   //mvprintw(items + 2, 3, "Value of hidden: %i", intSettingValue(&showhidden, -1));
   // printToggleSetting(x, y, L"Display file colors", &filecolors, &items, 0);
   // printToggleSetting(x, y, L"Reverse sorting order", &reverse, &items, 0);
@@ -281,6 +277,10 @@ void settingsMenuView(){
 
   while(1)
     {
+      for (count = 0; count < items; count++){
+        printSetting(2 + count, 3, &settingIndex, count, settingIndex[count].type, settingIndex[count].invert);
+      }
+
       move(x + pos, y + 1);
       *pc = getch10th();
       if (*pc == menuHotkeyLookup(settingsMenu, "s_quit", settingsMenuSize)){
@@ -289,6 +289,15 @@ void settingsMenuView(){
       } else if (*pc == 258 || *pc == 10){
         if (pos < (items -1 )){
           pos++;
+        }
+      } else if (*pc == 32){
+        // Adjust
+        if (settingIndex[pos].type == 0){
+          if (settingIndex[pos].intSetting > 0){
+            updateSetting(&settingIndex, pos, 0, 0);
+          } else {
+            updateSetting(&settingIndex, pos, 0, 1);
+          }
         }
       } else if (*pc == 259){
         if (pos > 0){
