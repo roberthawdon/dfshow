@@ -243,24 +243,25 @@ void settingsMenuView(){
   int x = 2;
   int y = 3;
   settingIndex *settingIndex;
+  type1SValue *markedValue, *sortmodeValue, *timestyleValue;
   clear();
   wPrintMenu(0,0,settingsMenuLabel);
   // mvprintw(2, 10, "SHOW Settings Menu");
 
-  importSetting(&settingIndex, &items, "filecolors",  L"Display file colors", 0, filecolors, 0);
-  importSetting(&settingIndex, &items, "marked",      L"Show marked file info", 1, 0, 0);
-  importSetting(&settingIndex, &items, "sortmode",    L"Sorting mode", 1, 0, 0);
-  importSetting(&settingIndex, &items, "reverse",     L"Reverse sorting order", 0, reverse, 0);
-  importSetting(&settingIndex, &items, "timestyle",   L"Time style", 1, 0, 0);
-  importSetting(&settingIndex, &items, "showhidden",  L"Show hidden files", 0, showhidden, 0);
-  importSetting(&settingIndex, &items, "showbackup",  L"Hide backup files", 0, showbackup, 1);
-  importSetting(&settingIndex, &items, "useEnvPager", L"Use 3rd party pager over SF", 0, useEnvPager, 0);
+  importSetting(&settingIndex, &items, "filecolors",  L"Display file colors", 0, filecolors, -1, 0);
+  importSetting(&settingIndex, &items, "marked",      L"Show marked file info", 1, markedinfo, 2, 0);
+  importSetting(&settingIndex, &items, "sortmode",    L"Sorting mode", 1, 0, 2, 0);
+  importSetting(&settingIndex, &items, "reverse",     L"Reverse sorting order", 0, reverse, -1, 0);
+  importSetting(&settingIndex, &items, "timestyle",   L"Time style", 1, 0, 3, 0);
+  importSetting(&settingIndex, &items, "showhidden",  L"Show hidden files", 0, showhidden, -1, 0);
+  importSetting(&settingIndex, &items, "showbackup",  L"Hide backup files", 0, showbackup, -1, 1);
+  importSetting(&settingIndex, &items, "useEnvPager", L"Use 3rd party pager over SF", 0, useEnvPager, -1, 0);
   if (uid == 0 || euid == 0){
-    importSetting(&settingIndex, &items, "danger",      L"Hide danger lines as root", 0, danger, 1);
+    importSetting(&settingIndex, &items, "danger",      L"Hide danger lines as root", 0, danger, -1, 1);
   }
-  importSetting(&settingIndex, &items, "si",          L"Use SI units", 0, si, 0);
-  importSetting(&settingIndex, &items, "human",       L"Human readable sizes", 0, human, 0);
-  importSetting(&settingIndex, &items, "enterAsShow", L"Enter key acts like Show", 0, enterAsShow, 0);
+  importSetting(&settingIndex, &items, "si",          L"Use SI units", 0, si, -1, 0);
+  importSetting(&settingIndex, &items, "human",       L"Human readable sizes", 0, human, -1, 0);
+  importSetting(&settingIndex, &items, "enterAsShow", L"Enter key acts like Show", 0, enterAsShow, -1, 0);
 
   curs_set(TRUE);
 

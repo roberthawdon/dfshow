@@ -20,7 +20,12 @@ typedef struct {
   wchar_t textLabel[32];
   int invert;
   int intSetting;
+  int maxValue;
 } settingIndex;
+
+typedef struct {
+  char value[16];
+} type1SValue;
 
 int getch10th (void);
 int cmp_menu_ref(const void *lhs, const void *rhs);
@@ -58,7 +63,7 @@ int can_run_command(const char *cmd);
 void sigintHandle(int sig);
 int exittoshell();
 void printToggleSetting(int line, int col, wchar_t *settingLabel, int *setting, int *items, int invert);
-void importSetting(settingIndex **settings, int *items, char *refLabel, wchar_t *textLabel, int type, int intSetting, int invert);
+void importSetting(settingIndex **settings, int *items, char *refLabel, wchar_t *textLabel, int type, int intSetting, int maxValue, int invert);
 void updateSetting(settingIndex **settings, int index, int type, int intSetting);
 int intSettingValue(int *setting, int newValue);
 void printSetting(int line, int col, settingIndex **settings, int index, int type, int invert);

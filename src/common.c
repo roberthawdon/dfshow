@@ -812,7 +812,7 @@ void updateSetting(settingIndex **settings, int index, int type, int intSetting)
   }
 }
 
-void importSetting(settingIndex **settings, int *items, char *refLabel, wchar_t *textLabel, int type, int intSetting, int invert)
+void importSetting(settingIndex **settings, int *items, char *refLabel, wchar_t *textLabel, int type, int intSetting, int maxValue, int invert)
 {
   settingIndex *tmp;
   int currentItem = *items;
