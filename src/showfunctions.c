@@ -127,7 +127,6 @@ extern int danger;
 extern int filecolors;
 extern char *objectWild;
 extern int markedinfo;
-extern int markedauto;
 extern int useEnvPager;
 extern int showProcesses;
 extern int exitCode;
@@ -1582,15 +1581,15 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   wchar_t pwdprint[1024];
   char *markedInfoLine, *padding0, *padding1, *padding2, *padding3;
 
-  if (markedauto) {
-    if (CheckMarked(ob) ){
-      markedinfo = 1;
-    } else {
-      markedinfo = 0;
-    }
-  }
+  // if (markedinfo == 2) {
+  //   if (CheckMarked(ob) ){
+  //     markedinfo = 1;
+  //   } else {
+  //     markedinfo = 0;
+  //   }
+  // }
 
-  if (markedinfo){
+  if (markedinfo == 1 || (markedinfo == 2 && CheckMarked(ob))){
     displaysize = LINES - 6;
     displaystart = 5;
   } else{
@@ -1768,7 +1767,7 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   wPrintLine(1, 2, pwdprint);
   printLine(2, 2, sizeHeader);
 
-  if (markedinfo){
+  if (markedinfo == 1 || (markedinfo == 2 && CheckMarked(ob))){
     markedInfoLine = markedDisplay(ob);
     printLine (3, 4, markedInfoLine);
     free(markedInfoLine);
@@ -1782,7 +1781,7 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
 
   headerpos = 4 - hpos;
 
-  if ( markedinfo ){
+  if (markedinfo == 1 || (markedinfo == 2 && CheckMarked(ob))){
     printLine (4, headerpos, headings);
   } else {
     printLine (3, headerpos, headings);

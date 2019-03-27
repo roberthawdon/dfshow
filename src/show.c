@@ -51,7 +51,6 @@ int danger = 0;
 int invalidstart = 0;
 int filecolors = 0;
 int markedinfo = 0;
-int markedauto = 0;
 int useEnvPager = 0;
 int launchThemeEditor = 0;
 int launchSettingsMenu = 0;
@@ -249,7 +248,10 @@ void settingsMenuView(){
   // mvprintw(2, 10, "SHOW Settings Menu");
 
   importSetting(&settingIndex, &items, "filecolors",  L"Display file colors", 0, filecolors, 0);
+  importSetting(&settingIndex, &items, "marked",      L"Show marked file info", 1, 0, 0);
+  importSetting(&settingIndex, &items, "sortmode",    L"Sorting mode", 1, 0, 0);
   importSetting(&settingIndex, &items, "reverse",     L"Reverse sorting order", 0, reverse, 0);
+  importSetting(&settingIndex, &items, "timestyle",   L"Time style", 1, 0, 0);
   importSetting(&settingIndex, &items, "showhidden",  L"Show hidden files", 0, showhidden, 0);
   importSetting(&settingIndex, &items, "showbackup",  L"Hide backup files", 0, showbackup, 1);
   importSetting(&settingIndex, &items, "useEnvPager", L"Use 3rd party pager over SF", 0, useEnvPager, 0);
@@ -259,19 +261,6 @@ void settingsMenuView(){
   importSetting(&settingIndex, &items, "si",          L"Use SI units", 0, si, 0);
   importSetting(&settingIndex, &items, "human",       L"Human readable sizes", 0, human, 0);
   importSetting(&settingIndex, &items, "enterAsShow", L"Enter key acts like Show", 0, enterAsShow, 0);
-
-  //mvprintw(items + 2, 3, "Value of hidden: %i", intSettingValue(&showhidden, -1));
-  // printToggleSetting(x, y, L"Display file colors", &filecolors, &items, 0);
-  // printToggleSetting(x, y, L"Reverse sorting order", &reverse, &items, 0);
-  // printToggleSetting(x, y, L"Show hidden files", &showhidden, &items, 0);
-  // printToggleSetting(x, y, L"Hide backup files", &showbackup, &items, 1);
-  // printToggleSetting(x, y, L"Use 3rd party pager over SF", &useEnvPager, &items, 0);
-  // if (uid == 0 || euid == 0){
-  //   printToggleSetting(x, y, L"Hide danger lines as root", &danger, &items, 1);
-  // }
-  // printToggleSetting(x, y, L"Use SI Units", &si, &items, 0);
-  // printToggleSetting(x, y, L"Human readable sizes", &human, &items, 0);
-  // printToggleSetting(x, y, L"Enter key acts like Show", &enterAsShow, &items, 0);
 
   curs_set(TRUE);
 
@@ -361,15 +350,12 @@ int setMarked(char* markedinput)
   int status = -1;
   if (!strcmp(markedinput, "always")){
     markedinfo = 1;
-    markedauto = 0;
     status = 0;
   } else if (!strcmp(markedinput, "never")){
     markedinfo = 0;
-    markedauto = 0;
     status = 0;
   } else if (!strcmp(markedinput, "auto")){
-    markedinfo = 0;
-    markedauto = 1;
+    markedinfo = 2;
     status = 0;
   }
   return(status);

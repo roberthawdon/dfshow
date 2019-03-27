@@ -860,11 +860,14 @@ void printToggleSetting(int line, int col, wchar_t *settingLabel, int *setting, 
     settingWork = *setting;
   }
 
+  setColors(HILITE_PAIR);
   if (settingWork > 0){
-    mvprintw(linePos, col, "[*] %ls", settingLabel);
+    mvprintw(linePos, col, "[*]");
   } else {
-    mvprintw(linePos, col, "[ ] %ls", settingLabel);
+    mvprintw(linePos, col, "[ ]");
   }
+  setColors(COMMAND_PAIR);
+  mvprintw(linePos, col + 4, "%ls", settingLabel);
 
   // ++*items;
 
@@ -886,10 +889,18 @@ void printSetting(int line, int col, settingIndex **settings, int index, int typ
     } else {
       settingWork = (*settings)[index].intSetting;
     }
+    setColors(HILITE_PAIR);
     if (settingWork == 0){
-      mvprintw(line, col, "[ ] %ls", (*settings)[index].textLabel);
+      mvprintw(line, col, "[ ]");
     } else {
-      mvprintw(line, col, "[*] %ls", (*settings)[index].textLabel);
+      mvprintw(line, col, "[*]");
     }
+    setColors(COMMAND_PAIR);
+    mvprintw(line, col + 4, "%ls", (*settings)[index].textLabel);
+  } else if (type == 1){
+    setColors(HILITE_PAIR);
+    mvprintw(line, col, "<->");
+    setColors(COMMAND_PAIR);
+    mvprintw(line, col + 4, "%ls:", (*settings)[index].textLabel);
   }
 }
