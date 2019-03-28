@@ -243,16 +243,30 @@ void settingsMenuView(){
   int x = 2;
   int y = 3;
   settingIndex *settingIndex;
-  type1SValue *markedValue, *sortmodeValue, *timestyleValue;
+  type1SValue *tmpValues, *noValue, *markedValue, *sortmodeValue, *timestyleValue;
+  int markedCount = 0, sortmodeCount = 0, timestyleCount = 0;
   clear();
   wPrintMenu(0,0,settingsMenuLabel);
   // mvprintw(2, 10, "SHOW Settings Menu");
 
+  addType1SValue(&markedValue, &markedCount, "never");
+  addType1SValue(&markedValue, &markedCount, "always");
+  addType1SValue(&markedValue, &markedCount, "auto");
+
+  addType1SValue(&sortmodeValue, &sortmodeCount, "name");
+  addType1SValue(&sortmodeValue, &sortmodeCount, "date");
+  addType1SValue(&sortmodeValue, &sortmodeCount, "size");
+
+  addType1SValue(&timestyleValue, &timestyleCount, "full-iso");
+  addType1SValue(&timestyleValue, &timestyleCount, "long-iso");
+  addType1SValue(&timestyleValue, &timestyleCount, "iso");
+  addType1SValue(&timestyleValue, &timestyleCount, "locale");
+
   importSetting(&settingIndex, &items, "filecolors",  L"Display file colors", 0, filecolors, -1, 0);
-  importSetting(&settingIndex, &items, "marked",      L"Show marked file info", 1, markedinfo, 2, 0);
-  importSetting(&settingIndex, &items, "sortmode",    L"Sorting mode", 1, 0, 2, 0);
+  importSetting(&settingIndex, &items, "marked",      L"Show marked file info", 1, markedinfo, markedCount, 0);
+  importSetting(&settingIndex, &items, "sortmode",    L"Sorting mode", 1, 0, sortmodeCount, 0);
   importSetting(&settingIndex, &items, "reverse",     L"Reverse sorting order", 0, reverse, -1, 0);
-  importSetting(&settingIndex, &items, "timestyle",   L"Time style", 1, 0, 3, 0);
+  importSetting(&settingIndex, &items, "timestyle",   L"Time style", 1, 3, timestyleCount, 0);
   importSetting(&settingIndex, &items, "showhidden",  L"Show hidden files", 0, showhidden, -1, 0);
   importSetting(&settingIndex, &items, "showbackup",  L"Hide backup files", 0, showbackup, -1, 1);
   importSetting(&settingIndex, &items, "useEnvPager", L"Use 3rd party pager over SF", 0, useEnvPager, -1, 0);
@@ -268,7 +282,16 @@ void settingsMenuView(){
   while(1)
     {
       for (count = 0; count < items; count++){
-        printSetting(2 + count, 3, &settingIndex, count, settingIndex[count].type, settingIndex[count].invert);
+        if (!strcmp(settingIndex[count].refLabel, "marked")){
+          tmpValues = markedValue;
+        } else if (!strcmp(settingIndex[count].refLabel, "sortmode")) {
+          tmpValues = sortmodeValue;
+        } else if (!strcmp(settingIndex[count].refLabel, "timestyle")) {
+          tmpValues = timestyleValue;
+        } else {
+          tmpValues = noValue;
+        }
+        printSetting(2 + count, 3, &settingIndex, &tmpValues, count, settingIndex[count].type, settingIndex[count].invert);
       }
 
       move(x + pos, y + 1);
@@ -280,13 +303,27 @@ void settingsMenuView(){
         if (pos < (items -1 )){
           pos++;
         }
-      } else if (*pc == 32){
+      } else if (*pc == 32 || *pc == 260 || *pc == 261){
         // Adjust
         if (settingIndex[pos].type == 0){
           if (settingIndex[pos].intSetting > 0){
             updateSetting(&settingIndex, pos, 0, 0);
           } else {
             updateSetting(&settingIndex, pos, 0, 1);
+          }
+        } else if (settingIndex[pos].type == 1){
+          if (*pc == 32 || *pc == 261){
+            if (settingIndex[pos].intSetting < (settingIndex[pos].maxValue) - 1){
+              updateSetting(&settingIndex, pos, 1, (settingIndex[pos].intSetting) + 1);
+            } else {
+              updateSetting(&settingIndex, pos, 1, 0);
+            }
+          } else {
+            if (settingIndex[pos].intSetting > 0){
+              updateSetting(&settingIndex, pos, 1, (settingIndex[pos].intSetting) - 1);
+            } else {
+              updateSetting(&settingIndex, pos, 1, (settingIndex[pos].maxValue - 1));
+            }
           }
         }
       } else if (*pc == 259){

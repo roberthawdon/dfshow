@@ -807,9 +807,28 @@ void clear_workspace()
 
 void updateSetting(settingIndex **settings, int index, int type, int intSetting)
 {
-  if (type == 0){
-    (*settings)[index].intSetting = intSetting;
+  (*settings)[index].intSetting = intSetting;
+}
+
+void addType1SValue(type1SValue **values, int *items, char *value)
+{
+  type1SValue *tmp;
+  int currentItem = *items;
+
+  if (*items == 0){
+    tmp = malloc(sizeof(settingIndex) * 2);
+  } else {
+    tmp = realloc(*values, (currentItem + 1) * (sizeof(settingIndex) + 1));
   }
+
+  if (tmp){
+    *values = tmp;
+  }
+
+  sprintf((*values)[currentItem].value, "%s", value);
+
+  ++*items;
+
 }
 
 void importSetting(settingIndex **settings, int *items, char *refLabel, wchar_t *textLabel, int type, int intSetting, int maxValue, int invert)
@@ -831,6 +850,7 @@ void importSetting(settingIndex **settings, int *items, char *refLabel, wchar_t 
   sprintf((*settings)[currentItem].refLabel, "%s", refLabel);
   swprintf((*settings)[currentItem].textLabel, 32, L"%ls", textLabel);
   (*settings)[currentItem].intSetting = intSetting;
+  (*settings)[currentItem].maxValue = maxValue;
   (*settings)[currentItem].invert = invert;
 
   ++*items;
@@ -874,10 +894,13 @@ void printToggleSetting(int line, int col, wchar_t *settingLabel, int *setting, 
   // free(output);
 }
 
-void printSetting(int line, int col, settingIndex **settings, int index, int type, int invert)
+void printSetting(int line, int col, settingIndex **settings, type1SValue **values, int index, int type, int invert)
 {
 
-  int settingWork;
+  int settingWork, i;
+  int labelLen = 0, valueLen = 0, itemAdjust = 0;
+
+  labelLen = wcslen((*settings)[index].textLabel) + 2;
 
   if (type == 0 ){
     if (invert == 1){
@@ -899,8 +922,23 @@ void printSetting(int line, int col, settingIndex **settings, int index, int typ
     mvprintw(line, col + 4, "%ls", (*settings)[index].textLabel);
   } else if (type == 1){
     setColors(HILITE_PAIR);
-    mvprintw(line, col, "<->");
+    if ((*settings)[index].maxValue > 0) {
+      mvprintw(line, col, "<->");
+    } else {
+      mvprintw(line, col, "<?>");
+    }
     setColors(COMMAND_PAIR);
     mvprintw(line, col + 4, "%ls:", (*settings)[index].textLabel);
+    for(i = 0; i < ((*settings)[index].maxValue); i++){
+      //Temp Test
+      valueLen = strlen((*values)[i].value) + 3;
+      if (i == (*settings)[index].intSetting){
+        setColors(HILITE_PAIR);
+      } else {
+        setColors(COMMAND_PAIR);
+      }
+      mvprintw(line, (col + 4 + labelLen + itemAdjust), "<%s>", (*values)[i].value);
+      itemAdjust = itemAdjust + valueLen;
+    }
   }
 }
