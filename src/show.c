@@ -245,6 +245,7 @@ void settingsMenuView(){
   settingIndex *settingIndex;
   type1SValue *tmpValues, *noValue, *markedValue, *sortmodeValue, *timestyleValue;
   int markedCount = 0, sortmodeCount = 0, timestyleCount = 0;
+  int sortmodeInt, timestyleInt;
   clear();
   wPrintMenu(0,0,settingsMenuLabel);
   // mvprintw(2, 10, "SHOW Settings Menu");
@@ -262,11 +263,14 @@ void settingsMenuView(){
   addType1SValue(&timestyleValue, &timestyleCount, "iso");
   addType1SValue(&timestyleValue, &timestyleCount, "locale");
 
+  sortmodeInt = textValueLookup(&sortmodeValue, &sortmodeCount, sortmode);
+  timestyleInt = textValueLookup(&timestyleValue, &timestyleCount, timestyle);
+
   importSetting(&settingIndex, &items, "filecolors",  L"Display file colors", 0, filecolors, -1, 0);
   importSetting(&settingIndex, &items, "marked",      L"Show marked file info", 1, markedinfo, markedCount, 0);
-  importSetting(&settingIndex, &items, "sortmode",    L"Sorting mode", 1, 0, sortmodeCount, 0);
+  importSetting(&settingIndex, &items, "sortmode",    L"Sorting mode", 1, sortmodeInt, sortmodeCount, 0);
   importSetting(&settingIndex, &items, "reverse",     L"Reverse sorting order", 0, reverse, -1, 0);
-  importSetting(&settingIndex, &items, "timestyle",   L"Time style", 1, 3, timestyleCount, 0);
+  importSetting(&settingIndex, &items, "timestyle",   L"Time style", 1, timestyleInt, timestyleCount, 0);
   importSetting(&settingIndex, &items, "showhidden",  L"Show hidden files", 0, showhidden, -1, 0);
   importSetting(&settingIndex, &items, "showbackup",  L"Hide backup files", 0, showbackup, -1, 1);
   importSetting(&settingIndex, &items, "useEnvPager", L"Use 3rd party pager over SF", 0, useEnvPager, -1, 0);

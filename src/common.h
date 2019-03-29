@@ -68,3 +68,4 @@ void importSetting(settingIndex **settings, int *items, char *refLabel, wchar_t 
 void updateSetting(settingIndex **settings, int index, int type, int intSetting);
 int intSettingValue(int *setting, int newValue);
 void printSetting(int line, int col, settingIndex **settings, type1SValue **values, int index, int type, int invert);
+int textValueLookup(type1SValue **values, int *items, char *value);

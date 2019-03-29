@@ -942,3 +942,16 @@ void printSetting(int line, int col, settingIndex **settings, type1SValue **valu
     }
   }
 }
+
+int textValueLookup(type1SValue **values, int *items, char *value)
+{
+  int i;
+
+  for (i = 0; i < *items; i++){
+    if (!strcmp((*values)[i].value, value)){
+      return i;
+    }
+  }
+
+  return -1;
+}
