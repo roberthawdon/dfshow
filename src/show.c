@@ -237,6 +237,17 @@ void readConfig(const char * confFile)
   config_destroy(&cfg);
 }
 
+void applySettings(settingIndex **settings, int items)
+{
+  int i;
+  // do stuff
+  for (i = 0; i < items; i++){
+    if (!strcmp((*settings)[i].refLabel, "human")){
+      human = (*settings)[i].intSetting;
+    }
+  }
+}
+
 void settingsMenuView(){
   uid_t uid=getuid(), euid=geteuid();
   int items, pos = 0, count = 0;
@@ -307,6 +318,7 @@ void settingsMenuView(){
       *pc = getch10th();
       if (*pc == menuHotkeyLookup(settingsMenu, "s_quit", settingsMenuSize)){
         curs_set(FALSE);
+        applySettings(&settingIndex, items);
         free(settingIndex);
         free(tmpValues);
         free(noValue);

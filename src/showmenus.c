@@ -146,7 +146,8 @@ void modify_owner_input();
 void generateDefaultMenus(){
   // Global Menu
   addMenuItem(&globalMenu, &globalMenuSize, "g_colors", L"c!Olors", 'o');
-  addMenuItem(&globalMenu, &globalMenuSize, "g_run", L"!Run command", 'r');
+  addMenuItem(&globalMenu, &globalMenuSize, "g_config", L"!Config", 'c');
+  addMenuItem(&globalMenu, &globalMenuSize, "g_run", L"!Run", 'r');
   addMenuItem(&globalMenu, &globalMenuSize, "g_edit", L"!Edit file", 'e');
   addMenuItem(&globalMenu, &globalMenuSize, "g_help", L"!Help", 'h');
   addMenuItem(&globalMenu, &globalMenuSize, "g_mkdir", L"!Make dir", 'm');
@@ -1790,6 +1791,17 @@ void global_menu_inputs()
           display_dir(currentpwd, ob, topfileref, selected);
           wPrintMenu(LINES-1, 0, functionMenuLabel);
           // printMenu(LINES-1, 0, functionMenuText); // Global menu inputs doesn't include this. Even though it isn't used.
+          global_menu_inputs();
+        }
+      } else if (*pc == menuHotkeyLookup(globalMenu, "g_config", globalMenuSize)) {
+        settingsMenuView();
+        if (historyref == 0){
+          clear();
+          global_menu_inputs();
+        } else {
+          refreshDirectory(sortmode, topfileref, selected, 0);
+          display_dir(currentpwd, ob, topfileref, selected);
+          wPrintMenu(LINES-1, 0, functionMenuLabel);
           global_menu_inputs();
         }
       } else if (*pc == menuHotkeyLookup(globalMenu, "g_run", globalMenuSize)) {
