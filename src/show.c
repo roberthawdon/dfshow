@@ -239,13 +239,18 @@ void readConfig(const char * confFile)
 
 void settingsMenuView(){
   uid_t uid=getuid(), euid=geteuid();
-  int items = 0, pos = 0, count = 0;
+  int items, pos = 0, count = 0;
   int x = 2;
   int y = 3;
   settingIndex *settingIndex;
   type1SValue *tmpValues, *noValue, *markedValue, *sortmodeValue, *timestyleValue;
-  int markedCount = 0, sortmodeCount = 0, timestyleCount = 0;
+  int markedCount, sortmodeCount, timestyleCount;
   int sortmodeInt, timestyleInt;
+
+ reloadSettings:
+
+  items = markedCount = sortmodeCount = timestyleCount = 0;
+
   clear();
   wPrintMenu(0,0,settingsMenuLabel);
   // mvprintw(2, 10, "SHOW Settings Menu");
@@ -302,7 +307,21 @@ void settingsMenuView(){
       *pc = getch10th();
       if (*pc == menuHotkeyLookup(settingsMenu, "s_quit", settingsMenuSize)){
         curs_set(FALSE);
+        free(settingIndex);
+        free(tmpValues);
+        free(noValue);
+        free(markedValue);
+        free(sortmodeValue);
+        free(timestyleValue);
         return;
+      } else if (*pc == menuHotkeyLookup(settingsMenu, "s_revert", settingsMenuSize)){
+        free(settingIndex);
+        free(tmpValues);
+        free(noValue);
+        free(markedValue);
+        free(sortmodeValue);
+        free(timestyleValue);
+        goto reloadSettings;
       } else if (*pc == 258 || *pc == 10){
         if (pos < (items -1 )){
           pos++;
