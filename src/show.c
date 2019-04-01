@@ -264,6 +264,10 @@ void applySettings(settingIndex **settings, int items)
       enterAsShow = (*settings)[i].intSetting;
     } else if (!strcmp((*settings)[i].refLabel, "marked")){
       markedinfo = (*settings)[i].intSetting;
+    } else if (!strcmp((*settings)[i].refLabel, "sortmode")){
+      strcpy(sortmode, (*settings)[i].charSetting);
+    } else if (!strcmp((*settings)[i].refLabel, "timestyle")){
+      strcpy(timestyle, (*settings)[i].charSetting);
     }
   }
 }
@@ -274,64 +278,79 @@ void settingsMenuView(){
   int x = 2;
   int y = 3;
   settingIndex *settingIndex;
-  type1SValue *tmpValues, *noValue, *markedValue, *sortmodeValue, *timestyleValue;
+  // type1SValue *tmpValues, *noValue, *markedValue, *sortmodeValue, *timestyleValue;
+  t1CharValues *charValues;
   int markedCount, sortmodeCount, timestyleCount;
+  int charValuesCount;
   int sortmodeInt, timestyleInt;
 
  reloadSettings:
 
-  items = markedCount = sortmodeCount = timestyleCount = 0;
+  items = charValuesCount = markedCount = sortmodeCount = timestyleCount = 0;
 
   clear();
   wPrintMenu(0,0,settingsMenuLabel);
   // mvprintw(2, 10, "SHOW Settings Menu");
 
-  addType1SValue(&markedValue, &markedCount, "never");
-  addType1SValue(&markedValue, &markedCount, "always");
-  addType1SValue(&markedValue, &markedCount, "auto");
+  // addType1SValue(&markedValue, &markedCount, "never");
+  // addType1SValue(&markedValue, &markedCount, "always");
+  // addType1SValue(&markedValue, &markedCount, "auto");
 
-  addType1SValue(&sortmodeValue, &sortmodeCount, "name");
-  addType1SValue(&sortmodeValue, &sortmodeCount, "date");
-  addType1SValue(&sortmodeValue, &sortmodeCount, "size");
+  // addType1SValue(&sortmodeValue, &sortmodeCount, "name");
+  // addType1SValue(&sortmodeValue, &sortmodeCount, "date");
+  // addType1SValue(&sortmodeValue, &sortmodeCount, "size");
 
-  addType1SValue(&timestyleValue, &timestyleCount, "full-iso");
-  addType1SValue(&timestyleValue, &timestyleCount, "long-iso");
-  addType1SValue(&timestyleValue, &timestyleCount, "iso");
-  addType1SValue(&timestyleValue, &timestyleCount, "locale");
+  // addType1SValue(&timestyleValue, &timestyleCount, "full-iso");
+  // addType1SValue(&timestyleValue, &timestyleCount, "long-iso");
+  // addType1SValue(&timestyleValue, &timestyleCount, "iso");
+  // addType1SValue(&timestyleValue, &timestyleCount, "locale");
 
-  sortmodeInt = textValueLookup(&sortmodeValue, &sortmodeCount, sortmode);
-  timestyleInt = textValueLookup(&timestyleValue, &timestyleCount, timestyle);
+  addT1CharValue(&charValues, &charValuesCount, &markedCount, "marked", "never");
+  addT1CharValue(&charValues, &charValuesCount, &markedCount, "marked", "always");
+  addT1CharValue(&charValues, &charValuesCount, &markedCount, "marked", "auto");
 
-  importSetting(&settingIndex, &items, "filecolors",  L"Display file colors", 0, filecolors, -1, 0);
-  importSetting(&settingIndex, &items, "marked",      L"Show marked file info", 1, markedinfo, markedCount, 0);
-  importSetting(&settingIndex, &items, "sortmode",    L"Sorting mode", 1, sortmodeInt, sortmodeCount, 0);
-  importSetting(&settingIndex, &items, "reverse",     L"Reverse sorting order", 0, reverse, -1, 0);
-  importSetting(&settingIndex, &items, "timestyle",   L"Time style", 1, timestyleInt, timestyleCount, 0);
-  importSetting(&settingIndex, &items, "showhidden",  L"Show hidden files", 0, showhidden, -1, 0);
-  importSetting(&settingIndex, &items, "showbackup",  L"Hide backup files", 0, showbackup, -1, 1);
-  importSetting(&settingIndex, &items, "useEnvPager", L"Use 3rd party pager over SF", 0, useEnvPager, -1, 0);
+  addT1CharValue(&charValues, &charValuesCount, &sortmodeCount, "sortmode", "name");
+  addT1CharValue(&charValues, &charValuesCount, &sortmodeCount, "sortmode", "date");
+  addT1CharValue(&charValues, &charValuesCount, &sortmodeCount, "sortmode", "size");
+
+  addT1CharValue(&charValues, &charValuesCount, &timestyleCount, "timestyle", "full-iso");
+  addT1CharValue(&charValues, &charValuesCount, &timestyleCount, "timestyle", "long-iso");
+  addT1CharValue(&charValues, &charValuesCount, &timestyleCount, "timestyle", "iso");
+  addT1CharValue(&charValues, &charValuesCount, &timestyleCount, "timestyle", "locale");
+
+  sortmodeInt = textValueLookup(&charValues, &charValuesCount, "sortmode", sortmode);
+  timestyleInt = textValueLookup(&charValues, &charValuesCount, "timestyle", timestyle);
+
+  importSetting(&settingIndex, &items, "filecolors",  L"Display file colors", 0, filecolors, -1, "", 0);
+  importSetting(&settingIndex, &items, "marked",      L"Show marked file info", 1, markedinfo, markedCount, "", 0);
+  importSetting(&settingIndex, &items, "sortmode",    L"Sorting mode", 1, sortmodeInt, sortmodeCount, "", 0);
+  importSetting(&settingIndex, &items, "reverse",     L"Reverse sorting order", 0, reverse, -1, "", 0);
+  importSetting(&settingIndex, &items, "timestyle",   L"Time style", 1, timestyleInt, timestyleCount, "", 0);
+  importSetting(&settingIndex, &items, "showhidden",  L"Show hidden files", 0, showhidden, -1, "", 0);
+  importSetting(&settingIndex, &items, "showbackup",  L"Hide backup files", 0, showbackup, -1, "", 1);
+  importSetting(&settingIndex, &items, "useEnvPager", L"Use 3rd party pager over SF", 0, useEnvPager, -1, "", 0);
   if (uid == 0 || euid == 0){
-    importSetting(&settingIndex, &items, "danger",      L"Hide danger lines as root", 0, danger, -1, 1);
+    importSetting(&settingIndex, &items, "danger",      L"Hide danger lines as root", 0, danger, -1, "", 1);
   }
-  importSetting(&settingIndex, &items, "si",          L"Use SI units", 0, si, -1, 0);
-  importSetting(&settingIndex, &items, "human",       L"Human readable sizes", 0, human, -1, 0);
-  importSetting(&settingIndex, &items, "enterAsShow", L"Enter key acts like Show", 0, enterAsShow, -1, 0);
+  importSetting(&settingIndex, &items, "si",          L"Use SI units", 0, si, -1, "", 0);
+  importSetting(&settingIndex, &items, "human",       L"Human readable sizes", 0, human, -1, "", 0);
+  importSetting(&settingIndex, &items, "enterAsShow", L"Enter key acts like Show", 0, enterAsShow, -1, "", 0);
 
   curs_set(TRUE);
 
   while(1)
     {
       for (count = 0; count < items; count++){
-        if (!strcmp(settingIndex[count].refLabel, "marked")){
-          tmpValues = markedValue;
-        } else if (!strcmp(settingIndex[count].refLabel, "sortmode")) {
-          tmpValues = sortmodeValue;
-        } else if (!strcmp(settingIndex[count].refLabel, "timestyle")) {
-          tmpValues = timestyleValue;
-        } else {
-          tmpValues = noValue;
-        }
-        printSetting(2 + count, 3, &settingIndex, &tmpValues, count, settingIndex[count].type, settingIndex[count].invert);
+        // if (!strcmp(settingIndex[count].refLabel, "marked")){
+        //   tmpValues = markedValue;
+        // } else if (!strcmp(settingIndex[count].refLabel, "sortmode")) {
+        //   tmpValues = sortmodeValue;
+        // } else if (!strcmp(settingIndex[count].refLabel, "timestyle")) {
+        //   tmpValues = timestyleValue;
+        // } else {
+        //   tmpValues = noValue;
+        // }
+        printSetting(2 + count, 3, &settingIndex, &charValues, count, charValuesCount, settingIndex[count].type, settingIndex[count].invert);
       }
 
       move(x + settingsPos, y + 1);
@@ -342,17 +361,17 @@ void settingsMenuView(){
         free(settingIndex);
         // free(tmpValues);
         // free(noValue);
-        free(markedValue);
-        free(sortmodeValue);
-        free(timestyleValue);
+        // free(markedValue);
+        // free(sortmodeValue);
+        // free(timestyleValue);
         return;
       } else if (*pc == menuHotkeyLookup(settingsMenu, "s_revert", settingsMenuSize)){
         free(settingIndex);
         // free(tmpValues);
         // free(noValue);
-        free(markedValue);
-        free(sortmodeValue);
-        free(timestyleValue);
+        // free(markedValue);
+        // free(sortmodeValue);
+        // free(timestyleValue);
         goto reloadSettings;
       } else if (*pc == 258 || *pc == 10){
         if (settingsPos < (items -1 )){

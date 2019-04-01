@@ -831,7 +831,41 @@ void addType1SValue(type1SValue **values, int *items, char *value)
 
 }
 
-void importSetting(settingIndex **settings, int *items, char *refLabel, wchar_t *textLabel, int type, int intSetting, int maxValue, int invert)
+void addT1CharValue(t1CharValues **values, int *totalItems, int *maxItem, char *refLabel, char *value)
+{
+  t1CharValues *tmp;
+  int i = *totalItems, j, k;
+
+  if (i == 0){
+    tmp = malloc(sizeof(t1CharValues) * 2);
+    j = -1;
+  } else {
+    tmp = realloc(*values, (i + 1) * (sizeof(t1CharValues) + 1));
+  }
+
+  if (tmp){
+    *values = tmp;
+  }
+
+  for (k = 0; k < i; k++){
+    if (strcmp((*values)[k].refLabel, refLabel)){
+      j = -1;
+    } else {
+      j = (*values)[k].index;
+    }
+  }
+
+  j++;
+  (*values)[i].index = j;
+  sprintf((*values)[i].refLabel, "%s", refLabel);
+  sprintf((*values)[i].value, "%s", value);
+
+  ++*totalItems;
+  ++*maxItem;
+
+}
+
+void importSetting(settingIndex **settings, int *items, char *refLabel, wchar_t *textLabel, int type, int intSetting, int maxValue, char *charSetting, int invert)
 {
   settingIndex *tmp;
   int currentItem = *items;
@@ -851,6 +885,7 @@ void importSetting(settingIndex **settings, int *items, char *refLabel, wchar_t 
   swprintf((*settings)[currentItem].textLabel, 32, L"%ls", textLabel);
   (*settings)[currentItem].intSetting = intSetting;
   (*settings)[currentItem].maxValue = maxValue;
+  sprintf((*settings)[currentItem].charSetting, "%s", charSetting);
   (*settings)[currentItem].invert = invert;
 
   ++*items;
@@ -894,13 +929,21 @@ void printToggleSetting(int line, int col, wchar_t *settingLabel, int *setting, 
   // free(output);
 }
 
-void printSetting(int line, int col, settingIndex **settings, type1SValue **values, int index, int type, int invert)
+void printSetting(int line, int col, settingIndex **settings, t1CharValues **values, int index, int charIndex, int type, int invert)
 {
 
-  int settingWork, i;
+  int settingWork, i, v;
   int labelLen = 0, valueLen = 0, itemAdjust = 0;
+  char refLabel[16];
 
   labelLen = wcslen((*settings)[index].textLabel) + 2;
+  sprintf(refLabel, (*settings)[index].refLabel);
+
+  for (i = 0; i < charIndex; i++){
+    if (!strcmp((*values)[i].refLabel, refLabel) && ((*values)[i].index) == 0){
+      v = i;
+    }
+  }
 
   if (type == 0 ){
     if (invert == 1){
@@ -931,25 +974,25 @@ void printSetting(int line, int col, settingIndex **settings, type1SValue **valu
     mvprintw(line, col + 4, "%ls:", (*settings)[index].textLabel);
     for(i = 0; i < ((*settings)[index].maxValue); i++){
       //Temp Test
-      valueLen = strlen((*values)[i].value) + 3;
+      valueLen = strlen((*values)[i + v].value) + 3;
       if (i == (*settings)[index].intSetting){
         setColors(HILITE_PAIR);
       } else {
         setColors(COMMAND_PAIR);
       }
-      mvprintw(line, (col + 4 + labelLen + itemAdjust), "<%s>", (*values)[i].value);
+      mvprintw(line, (col + 4 + labelLen + itemAdjust), "<%s>", (*values)[i + v].value);
       itemAdjust = itemAdjust + valueLen;
     }
   }
 }
 
-int textValueLookup(type1SValue **values, int *items, char *value)
+int textValueLookup(t1CharValues **values, int *items, char *refLabel, char *value)
 {
   int i;
 
   for (i = 0; i < *items; i++){
-    if (!strcmp((*values)[i].value, value)){
-      return i;
+    if (!strcmp((*values)[i].value, value) && !strcmp((*values)[i].refLabel, refLabel)){
+      return (*values)[i].index;
     }
   }
 

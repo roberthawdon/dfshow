@@ -21,11 +21,19 @@ typedef struct {
   int invert;
   int intSetting;
   int maxValue;
+  char charSetting[16];
 } settingIndex;
 
+// Old
 typedef struct {
   char value[16];
 } type1SValue;
+
+typedef struct {
+  int index;
+  char refLabel[16];
+  char value[16];
+} t1CharValues;
 
 int getch10th (void);
 int cmp_menu_ref(const void *lhs, const void *rhs);
@@ -64,8 +72,9 @@ void sigintHandle(int sig);
 int exittoshell();
 void printToggleSetting(int line, int col, wchar_t *settingLabel, int *setting, int *items, int invert);
 void addType1SValue(type1SValue **values, int *items, char *value);
-void importSetting(settingIndex **settings, int *items, char *refLabel, wchar_t *textLabel, int type, int intSetting, int maxValue, int invert);
+void addT1CharValue(t1CharValues **values, int *totalItems, int *maxItem, char *refLabel, char *value);
+void importSetting(settingIndex **settings, int *items, char *refLabel, wchar_t *textLabel, int type, int intSetting, int maxValue, char *charSetting, int invert);
 void updateSetting(settingIndex **settings, int index, int type, int intSetting);
 int intSettingValue(int *setting, int newValue);
-void printSetting(int line, int col, settingIndex **settings, type1SValue **values, int index, int type, int invert);
-int textValueLookup(type1SValue **values, int *items, char *value);
+void printSetting(int line, int col, settingIndex **settings, t1CharValues **values, int index, int charIndex, int type, int invert);
+int textValueLookup(t1CharValues **values, int *items, char *refLabel, char *value);
