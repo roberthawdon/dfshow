@@ -320,16 +320,16 @@ void settingsMenuView(){
         curs_set(FALSE);
         applySettings(&settingIndex, items);
         free(settingIndex);
-        free(tmpValues);
-        free(noValue);
+        // free(tmpValues);
+        // free(noValue);
         free(markedValue);
         free(sortmodeValue);
         free(timestyleValue);
         return;
       } else if (*pc == menuHotkeyLookup(settingsMenu, "s_revert", settingsMenuSize)){
         free(settingIndex);
-        free(tmpValues);
-        free(noValue);
+        // free(tmpValues);
+        // free(noValue);
         free(markedValue);
         free(sortmodeValue);
         free(timestyleValue);
