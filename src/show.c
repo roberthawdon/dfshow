@@ -55,6 +55,8 @@ int useEnvPager = 0;
 int launchThemeEditor = 0;
 int launchSettingsMenu = 0;
 
+int settingsPos = 0;
+
 int plugins = 0; // Not yet implemented
 
 int enterAsShow = 0;
@@ -242,15 +244,33 @@ void applySettings(settingIndex **settings, int items)
   int i;
   // do stuff
   for (i = 0; i < items; i++){
-    if (!strcmp((*settings)[i].refLabel, "human")){
+    if (!strcmp((*settings)[i].refLabel, "filecolors")){
+      filecolors = (*settings)[i].intSetting;
+    } else if (!strcmp((*settings)[i].refLabel, "reverse")){
+      reverse = (*settings)[i].intSetting;
+    } else if (!strcmp((*settings)[i].refLabel, "showhidden")){
+      showhidden = (*settings)[i].intSetting;
+    } else if (!strcmp((*settings)[i].refLabel, "showbackup")){
+      showbackup = (*settings)[i].intSetting;
+    } else if (!strcmp((*settings)[i].refLabel, "useEnvPager")){
+      useEnvPager = (*settings)[i].intSetting;
+    } else if (!strcmp((*settings)[i].refLabel, "danger")){
+      danger = (*settings)[i].intSetting;
+    } else if (!strcmp((*settings)[i].refLabel, "si")){
+      si = (*settings)[i].intSetting;
+    } else if (!strcmp((*settings)[i].refLabel, "human")){
       human = (*settings)[i].intSetting;
+    } else if (!strcmp((*settings)[i].refLabel, "enterAsShow")){
+      enterAsShow = (*settings)[i].intSetting;
+    } else if (!strcmp((*settings)[i].refLabel, "marked")){
+      markedinfo = (*settings)[i].intSetting;
     }
   }
 }
 
 void settingsMenuView(){
   uid_t uid=getuid(), euid=geteuid();
-  int items, pos = 0, count = 0;
+  int items, count = 0;
   int x = 2;
   int y = 3;
   settingIndex *settingIndex;
@@ -314,7 +334,7 @@ void settingsMenuView(){
         printSetting(2 + count, 3, &settingIndex, &tmpValues, count, settingIndex[count].type, settingIndex[count].invert);
       }
 
-      move(x + pos, y + 1);
+      move(x + settingsPos, y + 1);
       *pc = getch10th();
       if (*pc == menuHotkeyLookup(settingsMenu, "s_quit", settingsMenuSize)){
         curs_set(FALSE);
@@ -335,35 +355,35 @@ void settingsMenuView(){
         free(timestyleValue);
         goto reloadSettings;
       } else if (*pc == 258 || *pc == 10){
-        if (pos < (items -1 )){
-          pos++;
+        if (settingsPos < (items -1 )){
+          settingsPos++;
         }
       } else if (*pc == 32 || *pc == 260 || *pc == 261){
         // Adjust
-        if (settingIndex[pos].type == 0){
-          if (settingIndex[pos].intSetting > 0){
-            updateSetting(&settingIndex, pos, 0, 0);
+        if (settingIndex[settingsPos].type == 0){
+          if (settingIndex[settingsPos].intSetting > 0){
+            updateSetting(&settingIndex, settingsPos, 0, 0);
           } else {
-            updateSetting(&settingIndex, pos, 0, 1);
+            updateSetting(&settingIndex, settingsPos, 0, 1);
           }
-        } else if (settingIndex[pos].type == 1){
+        } else if (settingIndex[settingsPos].type == 1){
           if (*pc == 32 || *pc == 261){
-            if (settingIndex[pos].intSetting < (settingIndex[pos].maxValue) - 1){
-              updateSetting(&settingIndex, pos, 1, (settingIndex[pos].intSetting) + 1);
+            if (settingIndex[settingsPos].intSetting < (settingIndex[settingsPos].maxValue) - 1){
+              updateSetting(&settingIndex, settingsPos, 1, (settingIndex[settingsPos].intSetting) + 1);
             } else {
-              updateSetting(&settingIndex, pos, 1, 0);
+              updateSetting(&settingIndex, settingsPos, 1, 0);
             }
           } else {
-            if (settingIndex[pos].intSetting > 0){
-              updateSetting(&settingIndex, pos, 1, (settingIndex[pos].intSetting) - 1);
+            if (settingIndex[settingsPos].intSetting > 0){
+              updateSetting(&settingIndex, settingsPos, 1, (settingIndex[settingsPos].intSetting) - 1);
             } else {
-              updateSetting(&settingIndex, pos, 1, (settingIndex[pos].maxValue - 1));
+              updateSetting(&settingIndex, settingsPos, 1, (settingIndex[settingsPos].maxValue - 1));
             }
           }
         }
       } else if (*pc == 259){
-        if (pos > 0){
-          pos--;
+        if (settingsPos > 0){
+          settingsPos--;
         }
       }
     }
