@@ -239,9 +239,9 @@ void readConfig(const char * confFile)
   config_destroy(&cfg);
 }
 
-void applySettings(settingIndex **settings, int items)
+void applySettings(settingIndex **settings, t1CharValues **values, int items, int valuesCount)
 {
-  int i;
+  int i, j;
   // do stuff
   for (i = 0; i < items; i++){
     if (!strcmp((*settings)[i].refLabel, "filecolors")){
@@ -265,9 +265,17 @@ void applySettings(settingIndex **settings, int items)
     } else if (!strcmp((*settings)[i].refLabel, "marked")){
       markedinfo = (*settings)[i].intSetting;
     } else if (!strcmp((*settings)[i].refLabel, "sortmode")){
-      strcpy(sortmode, (*settings)[i].charSetting);
+      for (j = 0; j < valuesCount; j++){
+        if (!strcmp((*values)[j].refLabel, "sortmode") && ((*values)[j].index == (*settings)[i].intSetting)){
+          strcpy(sortmode, (*values)[j].value);
+        }
+      }
     } else if (!strcmp((*settings)[i].refLabel, "timestyle")){
-      strcpy(timestyle, (*settings)[i].charSetting);
+      for (j = 0; j < valuesCount; j++){
+        if (!strcmp((*values)[j].refLabel, "timestyle") && ((*values)[j].index == (*settings)[i].intSetting)){
+          strcpy(timestyle, (*values)[j].value);
+        }
+      }
     }
   }
 }
@@ -357,7 +365,7 @@ void settingsMenuView(){
       *pc = getch10th();
       if (*pc == menuHotkeyLookup(settingsMenu, "s_quit", settingsMenuSize)){
         curs_set(FALSE);
-        applySettings(&settingIndex, items);
+        applySettings(&settingIndex, &charValues, items, charValuesCount);
         free(settingIndex);
         // free(tmpValues);
         // free(noValue);
