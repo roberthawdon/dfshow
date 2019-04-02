@@ -937,7 +937,7 @@ void printSetting(int line, int col, settingIndex **settings, t1CharValues **val
   char refLabel[16];
 
   labelLen = wcslen((*settings)[index].textLabel) + 2;
-  sprintf(refLabel, (*settings)[index].refLabel);
+  sprintf(refLabel, "%s", (*settings)[index].refLabel);
 
   for (i = 0; i < charIndex; i++){
     if (!strcmp((*values)[i].refLabel, refLabel) && ((*values)[i].index) == 0){
