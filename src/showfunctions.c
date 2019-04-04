@@ -522,6 +522,10 @@ char *dateString(time_t date, char *style)
   } else if ( !strcmp(style, "iso") ) {
     long_time_format[0] = "%Y-%m-%d ";
     long_time_format[1] = "%m-%d %H:%M";
+  } else {
+    // Default back to locale
+    long_time_format[0] = "%b %e  %Y";
+    long_time_format[1] = "%b %e %H:%M";
   }
   strftime(outputString, 32, long_time_format[recent], localtime(&(date)));
   return (outputString);

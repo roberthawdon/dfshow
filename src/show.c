@@ -320,6 +320,7 @@ void settingsMenuView(){
   addT1CharValue(&charValues, &charValuesCount, &sortmodeCount, "sortmode", "name");
   addT1CharValue(&charValues, &charValuesCount, &sortmodeCount, "sortmode", "date");
   addT1CharValue(&charValues, &charValuesCount, &sortmodeCount, "sortmode", "size");
+  addT1CharValue(&charValues, &charValuesCount, &sortmodeCount, "sortmode", "unsorted");
 
   addT1CharValue(&charValues, &charValuesCount, &timestyleCount, "timestyle", "full-iso");
   addT1CharValue(&charValues, &charValuesCount, &timestyleCount, "timestyle", "long-iso");
