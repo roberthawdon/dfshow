@@ -844,6 +844,42 @@ void addT1CharValue(t1CharValues **values, int *totalItems, int *maxItem, char *
 
 }
 
+void addT2BinValue(t2BinValues **values, int *totalItems, int *maxItem, char *refLabel, char *settingLabel, int reset)
+{
+  t2BinValues *tmp;
+  int value;
+  int i = *totalItems, j;
+
+  if (i == 0){
+    tmp = malloc(sizeof(t2BinValues) * 2);
+    j = -1;
+  } else {
+    tmp = realloc(*values, (i + 1) * (sizeof(t2BinValues) + 1));
+  }
+
+  if (tmp){
+    *values = tmp;
+  }
+
+  if (reset == 1){
+    value = 1;
+    j = -1;
+  } else {
+    j = ((*values))[i].index;
+    value = ((*values))[i].value * 2;
+  }
+
+  j++;
+  ((*values))[i].index = j;
+  sprintf((*values)[i].refLabel, "%s", refLabel);
+  sprintf((*values)[i].settingLabel, "%s", settingLabel);
+  ((*values))[i].value = value;
+
+  ++*totalItems;
+  ++*maxItem;
+
+}
+
 void importSetting(settingIndex **settings, int *items, char *refLabel, wchar_t *textLabel, int type, int intSetting, int maxValue, char *charSetting, int invert)
 {
   settingIndex *tmp;
@@ -877,41 +913,10 @@ int intSettingValue(int *setting, int newValue){
   return *setting;
 }
 
-void printToggleSetting(int line, int col, wchar_t *settingLabel, int *setting, int *items, int invert)
-{
-  // wchar_t *output = malloc(sizeof(wchar_t) * (wcslen(settingLabel) + 5));
-
-  int linePos = line + *items;
-  int settingWork;
-
-  if (invert == 1){
-    if (*setting > 0){
-      settingWork = 0;
-    } else {
-      settingWork = 1;
-    }
-  } else {
-    settingWork = *setting;
-  }
-
-  setColors(HILITE_PAIR);
-  if (settingWork > 0){
-    mvprintw(linePos, col, "[*]");
-  } else {
-    mvprintw(linePos, col, "[ ]");
-  }
-  setColors(COMMAND_PAIR);
-  mvprintw(linePos, col + 4, "%ls", settingLabel);
-
-  // ++*items;
-
-  // free(output);
-}
-
-void printSetting(int line, int col, settingIndex **settings, t1CharValues **values, int index, int charIndex, int type, int invert)
+void printSetting(int line, int col, settingIndex **settings, t1CharValues **values, t2BinValues **bins, int index, int charIndex, int binIndex, int type, int invert)
 {
 
-  int settingWork, i, v;
+  int settingWork, b, c, i, v;
   int labelLen = 0, valueLen = 0, itemAdjust = 0;
   char refLabel[16];
 
@@ -921,6 +926,16 @@ void printSetting(int line, int col, settingIndex **settings, t1CharValues **val
   for (i = 0; i < charIndex; i++){
     if (!strcmp((*values)[i].refLabel, refLabel) && ((*values)[i].index) == 0){
       v = i;
+    } else {
+      v = 0;
+    }
+  }
+
+  for (c = 0; c < binIndex; c++){
+    if (!strcmp((*bins)[c].refLabel, refLabel) && ((*bins)[c].index) == 0){
+      b = c;
+    } else {
+      b = 0;
     }
   }
 
@@ -960,6 +975,20 @@ void printSetting(int line, int col, settingIndex **settings, t1CharValues **val
         setColors(COMMAND_PAIR);
       }
       mvprintw(line, (col + 4 + labelLen + itemAdjust), "<%s>", (*values)[i + v].value);
+      itemAdjust = itemAdjust + valueLen;
+    }
+  } else if (type == 2){
+    setColors(HILITE_PAIR);
+    if ((*settings)[index].maxValue > 0) {
+      mvprintw(line, col, "< >");
+    } else {
+      mvprintw(line, col, "<?>");
+    }
+    setColors(COMMAND_PAIR);
+    mvprintw(line, col + 4, "%ls:", (*settings)[index].textLabel);
+    for(i = 0; i < ((*settings)[index].maxValue); i++){
+      valueLen = strlen((*bins)[i + b].settingLabel) + 3;
+      mvprintw(line, (col + 4 + labelLen + itemAdjust), "<%s>", (*bins)[i + b].settingLabel);
       itemAdjust = itemAdjust + valueLen;
     }
   }

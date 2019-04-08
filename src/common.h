@@ -30,6 +30,13 @@ typedef struct {
   char value[16];
 } t1CharValues;
 
+typedef struct {
+  int index;
+  char refLabel[16];
+  char settingLabel[16];
+  int value;
+} t2BinValues;
+
 int getch10th (void);
 int cmp_menu_ref(const void *lhs, const void *rhs);
 int splitPath(pathDirs **dirStruct, char *path);
@@ -65,10 +72,10 @@ void showManPage(const char * prog);
 int can_run_command(const char *cmd);
 void sigintHandle(int sig);
 int exittoshell();
-void printToggleSetting(int line, int col, wchar_t *settingLabel, int *setting, int *items, int invert);
 void addT1CharValue(t1CharValues **values, int *totalItems, int *maxItem, char *refLabel, char *value);
+void addT2BinValue(t2BinValues **values, int *totalItems, int *maxItem, char *refLabel, char *settingLabel, int reset);
 void importSetting(settingIndex **settings, int *items, char *refLabel, wchar_t *textLabel, int type, int intSetting, int maxValue, char *charSetting, int invert);
 void updateSetting(settingIndex **settings, int index, int type, int intSetting);
 int intSettingValue(int *setting, int newValue);
-void printSetting(int line, int col, settingIndex **settings, t1CharValues **values, int index, int charIndex, int type, int invert);
+void printSetting(int line, int col, settingIndex **settings, t1CharValues **values, t2BinValues **bins, int index, int charIndex, int binIndex, int type, int invert);
 int textValueLookup(t1CharValues **values, int *items, char *refLabel, char *value);

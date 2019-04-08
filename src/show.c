@@ -288,30 +288,19 @@ void settingsMenuView(){
   settingIndex *settingIndex;
   // type1SValue *tmpValues, *noValue, *markedValue, *sortmodeValue, *timestyleValue;
   t1CharValues *charValues;
-  int markedCount, sortmodeCount, timestyleCount;
+  t2BinValues *binValues;
+  int markedCount, sortmodeCount, timestyleCount, ownerCount;
   int charValuesCount;
+  int binValuesCount;
   int sortmodeInt, timestyleInt;
 
  reloadSettings:
 
-  items = charValuesCount = markedCount = sortmodeCount = timestyleCount = 0;
+  items = charValuesCount = binValuesCount = markedCount = sortmodeCount = timestyleCount = ownerCount = 0;
 
   clear();
   wPrintMenu(0,0,settingsMenuLabel);
   // mvprintw(2, 10, "SHOW Settings Menu");
-
-  // addType1SValue(&markedValue, &markedCount, "never");
-  // addType1SValue(&markedValue, &markedCount, "always");
-  // addType1SValue(&markedValue, &markedCount, "auto");
-
-  // addType1SValue(&sortmodeValue, &sortmodeCount, "name");
-  // addType1SValue(&sortmodeValue, &sortmodeCount, "date");
-  // addType1SValue(&sortmodeValue, &sortmodeCount, "size");
-
-  // addType1SValue(&timestyleValue, &timestyleCount, "full-iso");
-  // addType1SValue(&timestyleValue, &timestyleCount, "long-iso");
-  // addType1SValue(&timestyleValue, &timestyleCount, "iso");
-  // addType1SValue(&timestyleValue, &timestyleCount, "locale");
 
   addT1CharValue(&charValues, &charValuesCount, &markedCount, "marked", "never");
   addT1CharValue(&charValues, &charValuesCount, &markedCount, "marked", "always");
@@ -326,6 +315,10 @@ void settingsMenuView(){
   addT1CharValue(&charValues, &charValuesCount, &timestyleCount, "timestyle", "long-iso");
   addT1CharValue(&charValues, &charValuesCount, &timestyleCount, "timestyle", "iso");
   addT1CharValue(&charValues, &charValuesCount, &timestyleCount, "timestyle", "locale");
+
+  addT2BinValue(&binValues, &binValuesCount, &ownerCount, "owner", "owner", 1);
+  addT2BinValue(&binValues, &binValuesCount, &ownerCount, "owner", "group", 0);
+  addT2BinValue(&binValues, &binValuesCount, &ownerCount, "owner", "author", 0);
 
   sortmodeInt = textValueLookup(&charValues, &charValuesCount, "sortmode", sortmode);
   timestyleInt = textValueLookup(&charValues, &charValuesCount, "timestyle", timestyle);
@@ -344,22 +337,14 @@ void settingsMenuView(){
   importSetting(&settingIndex, &items, "si",          L"Use SI units", 0, si, -1, "", 0);
   importSetting(&settingIndex, &items, "human",       L"Human readable sizes", 0, human, -1, "", 0);
   importSetting(&settingIndex, &items, "enterAsShow", L"Enter key acts like Show", 0, enterAsShow, -1, "", 0);
+  importSetting(&settingIndex, &items, "owner",       L"Owner Column", 2, ogavis, ownerCount, "", 0);
 
   curs_set(TRUE);
 
   while(1)
     {
       for (count = 0; count < items; count++){
-        // if (!strcmp(settingIndex[count].refLabel, "marked")){
-        //   tmpValues = markedValue;
-        // } else if (!strcmp(settingIndex[count].refLabel, "sortmode")) {
-        //   tmpValues = sortmodeValue;
-        // } else if (!strcmp(settingIndex[count].refLabel, "timestyle")) {
-        //   tmpValues = timestyleValue;
-        // } else {
-        //   tmpValues = noValue;
-        // }
-        printSetting(2 + count, 3, &settingIndex, &charValues, count, charValuesCount, settingIndex[count].type, settingIndex[count].invert);
+        printSetting(2 + count, 3, &settingIndex, &charValues, &binValues, count, charValuesCount, binValuesCount, settingIndex[count].type, settingIndex[count].invert);
       }
 
       move(x + settingsPos, y + 1);
@@ -368,19 +353,9 @@ void settingsMenuView(){
         curs_set(FALSE);
         applySettings(&settingIndex, &charValues, items, charValuesCount);
         free(settingIndex);
-        // free(tmpValues);
-        // free(noValue);
-        // free(markedValue);
-        // free(sortmodeValue);
-        // free(timestyleValue);
         return;
       } else if (*pc == menuHotkeyLookup(settingsMenu, "s_revert", settingsMenuSize)){
         free(settingIndex);
-        // free(tmpValues);
-        // free(noValue);
-        // free(markedValue);
-        // free(sortmodeValue);
-        // free(timestyleValue);
         goto reloadSettings;
       } else if (*pc == 258 || *pc == 10){
         if (settingsPos < (items -1 )){
