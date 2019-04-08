@@ -24,11 +24,6 @@ typedef struct {
   char charSetting[16];
 } settingIndex;
 
-// Old
-typedef struct {
-  char value[16];
-} type1SValue;
-
 typedef struct {
   int index;
   char refLabel[16];
@@ -71,7 +66,6 @@ int can_run_command(const char *cmd);
 void sigintHandle(int sig);
 int exittoshell();
 void printToggleSetting(int line, int col, wchar_t *settingLabel, int *setting, int *items, int invert);
-void addType1SValue(type1SValue **values, int *items, char *value);
 void addT1CharValue(t1CharValues **values, int *totalItems, int *maxItem, char *refLabel, char *value);
 void importSetting(settingIndex **settings, int *items, char *refLabel, wchar_t *textLabel, int type, int intSetting, int maxValue, char *charSetting, int invert);
 void updateSetting(settingIndex **settings, int index, int type, int intSetting);

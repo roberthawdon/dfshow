@@ -810,27 +810,6 @@ void updateSetting(settingIndex **settings, int index, int type, int intSetting)
   (*settings)[index].intSetting = intSetting;
 }
 
-void addType1SValue(type1SValue **values, int *items, char *value)
-{
-  type1SValue *tmp;
-  int currentItem = *items;
-
-  if (*items == 0){
-    tmp = malloc(sizeof(settingIndex) * 2);
-  } else {
-    tmp = realloc(*values, (currentItem + 1) * (sizeof(settingIndex) + 1));
-  }
-
-  if (tmp){
-    *values = tmp;
-  }
-
-  sprintf((*values)[currentItem].value, "%s", value);
-
-  ++*items;
-
-}
-
 void addT1CharValue(t1CharValues **values, int *totalItems, int *maxItem, char *refLabel, char *value)
 {
   t1CharValues *tmp;
