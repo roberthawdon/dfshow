@@ -929,16 +929,12 @@ void printSetting(int line, int col, settingIndex **settings, t1CharValues **val
   for (i = 0; i < charIndex; i++){
     if (!strcmp((*values)[i].refLabel, refLabel) && ((*values)[i].index) == 0){
       v = i;
-    } else {
-      v = 0;
     }
   }
 
   for (c = 0; c < binIndex; c++){
     if (!strcmp((*bins)[c].refLabel, refLabel) && ((*bins)[c].index) == 0){
       b = c;
-    } else {
-      b = 0;
     }
   }
 
