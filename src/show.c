@@ -55,7 +55,6 @@ int useEnvPager = 0;
 int launchThemeEditor = 0;
 int launchSettingsMenu = 0;
 
-int settingsPos = 0;
 
 int plugins = 0; // Not yet implemented
 
@@ -68,6 +67,9 @@ int showProcesses;
 char *objectWild;
 
 results *ob;
+
+extern int settingsPos;
+extern int settingsBinPos;
 
 extern menuDef *settingsMenu;
 extern int settingsMenuSize;
@@ -359,6 +361,7 @@ void settingsMenuView(){
         goto reloadSettings;
       } else if (*pc == 258 || *pc == 10){
         if (settingsPos < (items -1 )){
+          settingsBinPos = -1;
           settingsPos++;
         }
       } else if (*pc == 32 || *pc == 260 || *pc == 261){
@@ -383,9 +386,16 @@ void settingsMenuView(){
               updateSetting(&settingIndex, settingsPos, 1, (settingIndex[settingsPos].maxValue - 1));
             }
           }
+        } else if (settingIndex[settingsPos].type == 2){
+          if (*pc == 261 && (settingsBinPos < (settingIndex[settingsPos].maxValue -1))){
+            settingsBinPos++;
+          } else if (*pc == 260 && (settingsBinPos > -1)){
+            settingsBinPos--;
+          }
         }
       } else if (*pc == 259){
         if (settingsPos > 0){
+          settingsBinPos = -1;
           settingsPos--;
         }
       }

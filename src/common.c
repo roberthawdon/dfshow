@@ -44,6 +44,9 @@ char homeConfLocation[128];
 
 char themeName[128] = "default";
 
+int settingsPos = 0;
+int settingsBinPos = -1;
+
 menuDef *settingsMenu;
 int settingsMenuSize = 0;
 wchar_t *settingsMenuLabel;
@@ -988,7 +991,11 @@ void printSetting(int line, int col, settingIndex **settings, t1CharValues **val
     mvprintw(line, col + 4, "%ls:", (*settings)[index].textLabel);
     for(i = 0; i < ((*settings)[index].maxValue); i++){
       valueLen = strlen((*bins)[i + b].settingLabel) + 3;
+      if (settingsBinPos == (i + b) ){
+        attron(A_REVERSE);
+      }
       mvprintw(line, (col + 4 + labelLen + itemAdjust), "<%s>", (*bins)[i + b].settingLabel);
+      attroff(A_REVERSE);
       itemAdjust = itemAdjust + valueLen;
     }
   }
