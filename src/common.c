@@ -916,6 +916,15 @@ int intSettingValue(int *setting, int newValue){
   return *setting;
 }
 
+int adjustBinSetting(settingIndex **settings, t2BinValues **values)
+{
+  int output = (*settings)[settingsPos].intSetting;
+
+  // To be implemented after convert to binary function.
+
+  return output;
+}
+
 void printSetting(int line, int col, settingIndex **settings, t1CharValues **values, t2BinValues **bins, int index, int charIndex, int binIndex, int type, int invert)
 {
 

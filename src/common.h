@@ -74,6 +74,7 @@ void sigintHandle(int sig);
 int exittoshell();
 void addT1CharValue(t1CharValues **values, int *totalItems, int *maxItem, char *refLabel, char *value);
 void addT2BinValue(t2BinValues **values, int *totalItems, int *maxItem, char *refLabel, char *settingLabel, int reset);
+int adjustBinSetting(settingIndex **settings, t2BinValues **values);
 void importSetting(settingIndex **settings, int *items, char *refLabel, wchar_t *textLabel, int type, int intSetting, int maxValue, char *charSetting, int invert);
 void updateSetting(settingIndex **settings, int index, int type, int intSetting);
 int intSettingValue(int *setting, int newValue);
