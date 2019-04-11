@@ -29,6 +29,7 @@
 #include <libconfig.h>
 #include <wchar.h>
 #include <signal.h>
+#include <math.h>
 #include "colors.h"
 #include "config.h"
 #include "common.h"
@@ -865,18 +866,19 @@ void addT2BinValue(t2BinValues **values, int *totalItems, int *maxItem, char *re
   }
 
   if (reset == 1){
-    value = 1;
     j = -1;
   } else {
     j = ((*values))[i].index;
-    value = ((*values))[i].value * 2;
   }
+
+  value = pow(2, *maxItem);
 
   j++;
   ((*values))[i].index = j;
   sprintf((*values)[i].refLabel, "%s", refLabel);
   sprintf((*values)[i].settingLabel, "%s", settingLabel);
   ((*values))[i].value = value;
+  ((*values))[i].boolVal = 0;
 
   ++*totalItems;
   ++*maxItem;
@@ -914,6 +916,22 @@ int intSettingValue(int *setting, int newValue){
     *setting = newValue;
   }
   return *setting;
+}
+
+void populateBool(t2BinValues **values, char *refLabel, int setting, int maxValue)
+{
+  int count, i;
+
+  int maxSetting = pow(2, maxValue);
+
+  for (i = maxValue - 1; i > -1 ; i--){
+    if (!strcmp((*values)[i].refLabel, refLabel)){
+      if (setting - ((*values))[i].value > - 1){
+        ((*values))[i].boolVal = 1;
+        setting = setting - ((*values))[i].value;
+      }
+    }
+  }
 }
 
 int adjustBinSetting(settingIndex **settings, t2BinValues **values)
@@ -996,11 +1014,15 @@ void printSetting(int line, int col, settingIndex **settings, t1CharValues **val
     mvprintw(line, col + 4, "%ls:", (*settings)[index].textLabel);
     for(i = 0; i < ((*settings)[index].maxValue); i++){
       valueLen = strlen((*bins)[i + b].settingLabel) + 3;
+      if ((*bins)[i + b].boolVal == 1){
+        setColors(HILITE_PAIR);
+      }
       if (settingsBinPos == (i + b) ){
         attron(A_REVERSE);
       }
       mvprintw(line, (col + 4 + labelLen + itemAdjust), "<%s>", (*bins)[i + b].settingLabel);
       attroff(A_REVERSE);
+      setColors(COMMAND_PAIR);
       itemAdjust = itemAdjust + valueLen;
     }
   }

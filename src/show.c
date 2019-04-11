@@ -341,6 +341,8 @@ void settingsMenuView(){
   importSetting(&settingIndex, &items, "enterAsShow", L"Enter key acts like Show", 0, enterAsShow, -1, "", 0);
   importSetting(&settingIndex, &items, "owner",       L"Owner Column", 2, ogavis, ownerCount, "", 0);
 
+  populateBool(&binValues, "owner", ogavis, ownerCount);
+
   curs_set(TRUE);
 
   while(1)
