@@ -931,7 +931,7 @@ void populateBool(t2BinValues **values, char *refLabel, int setting, int maxValu
   }
 }
 
-void adjustBinSetting(t2BinValues **values, char *refLabel, int *setting, int maxValue)
+void adjustBinSetting(settingIndex **settings, t2BinValues **values, char *refLabel, int *setting, int maxValue)
 {
   int i;
 
@@ -939,10 +939,10 @@ void adjustBinSetting(t2BinValues **values, char *refLabel, int *setting, int ma
   for (i = 0; i < maxValue + 1; i++){
     if (!strcmp((*values)[i].refLabel, refLabel) && ((*values)[i].index == settingsBinPos)){
       if ((*values)[i].boolVal > 0){
-        *setting = *setting - (*values)[i].value;
+        (*settings)[settingsPos].intSetting = (*settings)[settingsPos].intSetting - (*values)[i].value;
         (*values)[i].boolVal = 0;
       } else {
-        *setting = *setting + (*values)[i].value;
+        (*settings)[settingsPos].intSetting = (*settings)[settingsPos].intSetting + (*values)[i].value;
         (*values)[i].boolVal = 1;
       }
     }

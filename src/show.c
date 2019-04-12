@@ -278,6 +278,8 @@ void applySettings(settingIndex **settings, t1CharValues **values, int items, in
           strcpy(timestyle, (*values)[j].value);
         }
       }
+    } else if (!strcmp((*settings)[i].refLabel, "owner")){
+      ogavis = (*settings)[i].intSetting;
     }
   }
 }
@@ -396,7 +398,7 @@ void settingsMenuView(){
           } else if (*pc == 32 && (settingsBinPos > -1)){
             // Not fond of this, but it should work
             if (!strcmp(settingIndex[settingsPos].refLabel, "owner")){
-              adjustBinSetting(&binValues, "owner", &ogavis, binValuesCount);
+              adjustBinSetting(&settingIndex, &binValues, "owner", &ogavis, binValuesCount);
             }
           }
         }
