@@ -672,7 +672,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
     gagap = grouplen - strlen(ob[currentitem].group) + 1;
     oglen = (strlen(ob[currentitem].group) + gagap + strlen(ob[currentitem].author));
     ogaval = malloc (sizeof (char) * (oglen + 1));
-    paddingG0 = genPadding(oggap);
+    paddingG0 = genPadding(gagap);
     sprintf(ogaval, "%s%s%s", ob[currentitem].group, paddingG0, ob[currentitem].author);
     break;
   case 7:
