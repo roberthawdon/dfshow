@@ -21,7 +21,6 @@ typedef struct {
   int invert;
   int intSetting;
   int maxValue;
-  char charSetting[16];
 } settingIndex;
 
 typedef struct {
@@ -76,8 +75,8 @@ int exittoshell();
 void addT1CharValue(t1CharValues **values, int *totalItems, int *maxItem, char *refLabel, char *value);
 void addT2BinValue(t2BinValues **values, int *totalItems, int *maxItem, char *refLabel, char *settingLabel, int reset);
 void populateBool(t2BinValues **values, char *refLabel, int setting, int maxValue);
-int adjustBinSetting(settingIndex **settings, t2BinValues **values);
-void importSetting(settingIndex **settings, int *items, char *refLabel, wchar_t *textLabel, int type, int intSetting, int maxValue, char *charSetting, int invert);
+void adjustBinSetting(t2BinValues **values, char *refLabel, int *setting, int maxValue);
+void importSetting(settingIndex **settings, int *items, char *refLabel, wchar_t *textLabel, int type, int intSetting, int maxValue, int invert);
 void updateSetting(settingIndex **settings, int index, int type, int intSetting);
 int intSettingValue(int *setting, int newValue);
 void printSetting(int line, int col, settingIndex **settings, t1CharValues **values, t2BinValues **bins, int index, int charIndex, int binIndex, int type, int invert);

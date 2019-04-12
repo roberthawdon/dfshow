@@ -868,7 +868,7 @@ void addT2BinValue(t2BinValues **values, int *totalItems, int *maxItem, char *re
   if (reset == 1){
     j = -1;
   } else {
-    j = ((*values))[i].index;
+    j = ((*values))[i - 1].index;
   }
 
   value = pow(2, *maxItem);
@@ -885,7 +885,7 @@ void addT2BinValue(t2BinValues **values, int *totalItems, int *maxItem, char *re
 
 }
 
-void importSetting(settingIndex **settings, int *items, char *refLabel, wchar_t *textLabel, int type, int intSetting, int maxValue, char *charSetting, int invert)
+void importSetting(settingIndex **settings, int *items, char *refLabel, wchar_t *textLabel, int type, int intSetting, int maxValue, int invert)
 {
   settingIndex *tmp;
   int currentItem = *items;
@@ -905,7 +905,6 @@ void importSetting(settingIndex **settings, int *items, char *refLabel, wchar_t 
   swprintf((*settings)[currentItem].textLabel, 32, L"%ls", textLabel);
   (*settings)[currentItem].intSetting = intSetting;
   (*settings)[currentItem].maxValue = maxValue;
-  sprintf((*settings)[currentItem].charSetting, "%s", charSetting);
   (*settings)[currentItem].invert = invert;
 
   ++*items;
@@ -920,9 +919,7 @@ int intSettingValue(int *setting, int newValue){
 
 void populateBool(t2BinValues **values, char *refLabel, int setting, int maxValue)
 {
-  int count, i;
-
-  int maxSetting = pow(2, maxValue);
+  int i;
 
   for (i = maxValue - 1; i > -1 ; i--){
     if (!strcmp((*values)[i].refLabel, refLabel)){
@@ -934,13 +931,22 @@ void populateBool(t2BinValues **values, char *refLabel, int setting, int maxValu
   }
 }
 
-int adjustBinSetting(settingIndex **settings, t2BinValues **values)
+void adjustBinSetting(t2BinValues **values, char *refLabel, int *setting, int maxValue)
 {
-  int output = (*settings)[settingsPos].intSetting;
+  int i;
 
-  // To be implemented after convert to binary function.
-
-  return output;
+  endwin();
+  for (i = 0; i < maxValue + 1; i++){
+    if (!strcmp((*values)[i].refLabel, refLabel) && ((*values)[i].index == settingsBinPos)){
+      if ((*values)[i].boolVal > 0){
+        *setting = *setting - (*values)[i].value;
+        (*values)[i].boolVal = 0;
+      } else {
+        *setting = *setting + (*values)[i].value;
+        (*values)[i].boolVal = 1;
+      }
+    }
+  }
 }
 
 void printSetting(int line, int col, settingIndex **settings, t1CharValues **values, t2BinValues **bins, int index, int charIndex, int binIndex, int type, int invert)

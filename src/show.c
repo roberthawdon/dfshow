@@ -325,23 +325,23 @@ void settingsMenuView(){
   sortmodeInt = textValueLookup(&charValues, &charValuesCount, "sortmode", sortmode);
   timestyleInt = textValueLookup(&charValues, &charValuesCount, "timestyle", timestyle);
 
-  importSetting(&settingIndex, &items, "filecolors",  L"Display file colors", 0, filecolors, -1, "", 0);
-  importSetting(&settingIndex, &items, "marked",      L"Show marked file info", 1, markedinfo, markedCount, "", 0);
-  importSetting(&settingIndex, &items, "sortmode",    L"Sorting mode", 1, sortmodeInt, sortmodeCount, "", 0);
-  importSetting(&settingIndex, &items, "reverse",     L"Reverse sorting order", 0, reverse, -1, "", 0);
-  importSetting(&settingIndex, &items, "timestyle",   L"Time style", 1, timestyleInt, timestyleCount, "", 0);
-  importSetting(&settingIndex, &items, "showhidden",  L"Show hidden files", 0, showhidden, -1, "", 0);
-  importSetting(&settingIndex, &items, "showbackup",  L"Hide backup files", 0, showbackup, -1, "", 1);
-  importSetting(&settingIndex, &items, "useEnvPager", L"Use 3rd party pager over SF", 0, useEnvPager, -1, "", 0);
+  importSetting(&settingIndex, &items, "filecolors",  L"Display file colors", 0, filecolors, -1, 0);
+  importSetting(&settingIndex, &items, "marked",      L"Show marked file info", 1, markedinfo, markedCount, 0);
+  importSetting(&settingIndex, &items, "sortmode",    L"Sorting mode", 1, sortmodeInt, sortmodeCount, 0);
+  importSetting(&settingIndex, &items, "reverse",     L"Reverse sorting order", 0, reverse, -1, 0);
+  importSetting(&settingIndex, &items, "timestyle",   L"Time style", 1, timestyleInt, timestyleCount, 0);
+  importSetting(&settingIndex, &items, "showhidden",  L"Show hidden files", 0, showhidden, -1, 0);
+  importSetting(&settingIndex, &items, "showbackup",  L"Hide backup files", 0, showbackup, -1, 1);
+  importSetting(&settingIndex, &items, "useEnvPager", L"Use 3rd party pager over SF", 0, useEnvPager, -1, 0);
   if (uid == 0 || euid == 0){
-    importSetting(&settingIndex, &items, "danger",      L"Hide danger lines as root", 0, danger, -1, "", 1);
+    importSetting(&settingIndex, &items, "danger",      L"Hide danger lines as root", 0, danger, -1, 1);
   }
-  importSetting(&settingIndex, &items, "si",          L"Use SI units", 0, si, -1, "", 0);
-  importSetting(&settingIndex, &items, "human",       L"Human readable sizes", 0, human, -1, "", 0);
-  importSetting(&settingIndex, &items, "enterAsShow", L"Enter key acts like Show", 0, enterAsShow, -1, "", 0);
-  importSetting(&settingIndex, &items, "owner",       L"Owner Column", 2, ogavis, ownerCount, "", 0);
+  importSetting(&settingIndex, &items, "si",          L"Use SI units", 0, si, -1, 0);
+  importSetting(&settingIndex, &items, "human",       L"Human readable sizes", 0, human, -1, 0);
+  importSetting(&settingIndex, &items, "enterAsShow", L"Enter key acts like Show", 0, enterAsShow, -1, 0);
+  importSetting(&settingIndex, &items, "owner",       L"Owner Column", 2, ogavis, ownerCount, 0);
 
-  populateBool(&binValues, "owner", ogavis, ownerCount);
+  populateBool(&binValues, "owner", ogavis, binValuesCount);
 
   curs_set(TRUE);
 
@@ -393,6 +393,11 @@ void settingsMenuView(){
             settingsBinPos++;
           } else if (*pc == 260 && (settingsBinPos > -1)){
             settingsBinPos--;
+          } else if (*pc == 32 && (settingsBinPos > -1)){
+            // Not fond of this, but it should work
+            if (!strcmp(settingIndex[settingsPos].refLabel, "owner")){
+              adjustBinSetting(&binValues, "owner", &ogavis, binValuesCount);
+            }
           }
         }
       } else if (*pc == 259){
