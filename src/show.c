@@ -241,10 +241,10 @@ void readConfig(const char * confFile)
   config_destroy(&cfg);
 }
 
-void saveConfig(const char * confFile, settingIndex **settings, int items)
+void saveConfig(const char * confFile, settingIndex **settings, t1CharValues **values, t2BinValues **bins, int items, int charIndex, int binIndex)
 {
   config_t cfg;
-  config_setting_t *root, *setting, *group, array;
+  config_setting_t *root, *setting, *group, *subgroup;
   int i, v;
 
   config_init(&cfg);
@@ -262,8 +262,8 @@ void saveConfig(const char * confFile, settingIndex **settings, int items)
   }
 
   for (i = 0; i < items; i++){
+    config_setting_remove(group, (*settings)[i].refLabel);
     if ((*settings)[i].type == 0){
-      config_setting_remove(group, (*settings)[i].refLabel);
       setting = config_setting_add(group, (*settings)[i].refLabel, CONFIG_TYPE_INT);
 
       if (!strcmp((*settings)[i].refLabel, "color")){
@@ -284,6 +284,28 @@ void saveConfig(const char * confFile, settingIndex **settings, int items)
         config_setting_set_int(setting, human);
       } else if (!strcmp((*settings)[i].refLabel, "show-on-enter")){
         config_setting_set_int(setting, enterAsShow);
+      }
+    } else if ((*settings)[i].type == 1){
+      //
+      setting = config_setting_add(group, (*settings)[i].refLabel, CONFIG_TYPE_STRING);
+      if (!strcmp((*settings)[i].refLabel, "marked")){
+        for(v = 0; v < charIndex; v++){
+          if (!strcmp((*values)[v].refLabel, "marked") && ((*settings)[i].intSetting == (*values)[v].index)){
+            config_setting_set_string(setting, (*values)[v].value);
+          }
+        }
+      } else if (!strcmp((*settings)[i].refLabel, "sortmode")){
+        config_setting_set_string(setting, sortmode);
+      } else if (!strcmp((*settings)[i].refLabel, "timestyle")){
+        config_setting_set_string(setting, timestyle);
+      }
+    } else if ((*settings)[i].type == 2){
+      if (!strcmp((*settings)[i].refLabel, "owner")){
+        subgroup = config_setting_add(group, "owner", CONFIG_TYPE_GROUP);
+        for (v = 0; v < binIndex; v++){
+          setting = config_setting_add(subgroup, (*bins)[v].settingLabel, CONFIG_TYPE_INT);
+          config_setting_set_int(setting, (*bins)[v].boolVal);
+        }
       }
     }
   }
@@ -417,7 +439,15 @@ void settingsMenuView(){
         goto reloadSettings;
       } else if (*pc == menuHotkeyLookup(settingsMenu, "s_save", settingsMenuSize)){
         applySettings(&settingIndex, &charValues, items, charValuesCount);
-        saveConfig(homeConfLocation, &settingIndex, items);
+        if (access(dirFromPath(homeConfLocation), W_OK) != 0) {
+          createParentDirs(homeConfLocation);
+        }
+        saveConfig(homeConfLocation, &settingIndex, &charValues, &binValues, items, charValuesCount, binValuesCount);
+        // Need to ensure saving actually worked
+        curs_set(FALSE);
+        topLineMessage("Settings saved.");
+        curs_set(TRUE);
+        wPrintMenu(0,0,settingsMenuLabel);
       } else if (*pc == 258 || *pc == 10){
         if (settingsPos < (items -1 )){
           settingsBinPos = -1;

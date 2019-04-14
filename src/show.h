@@ -22,7 +22,7 @@ enum
   };
 
 void readConfig(const char * confFile);
-void saveConfig(const char * confFile, settingIndex **settings, int items);
+void saveConfig(const char * confFile, settingIndex **settings, t1CharValues **values, t2BinValues **bins, int items, int charIndex, int binIndex);
 int directory_view(char * currentpwd);
 char *getcwd(char *buf, size_t size);
 int global_menu();
