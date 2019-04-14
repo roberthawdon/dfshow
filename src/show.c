@@ -241,28 +241,80 @@ void readConfig(const char * confFile)
   config_destroy(&cfg);
 }
 
+void saveConfig(const char * confFile, settingIndex **settings, int items)
+{
+  config_t cfg;
+  config_setting_t *root, *setting, *group, array;
+  int i, v;
+
+  config_init(&cfg);
+
+  //Might need to "if" this
+  config_read_file(&cfg, confFile);
+  root = config_root_setting(&cfg);
+
+  //config_setting_remove(root, PROGRAM_NAME);
+
+  group = config_setting_get_member(root, PROGRAM_NAME);
+
+  if (!group){
+    group = config_setting_add(root, PROGRAM_NAME, CONFIG_TYPE_GROUP);
+  }
+
+  for (i = 0; i < items; i++){
+    if ((*settings)[i].type == 0){
+      config_setting_remove(group, (*settings)[i].refLabel);
+      setting = config_setting_add(group, (*settings)[i].refLabel, CONFIG_TYPE_INT);
+
+      if (!strcmp((*settings)[i].refLabel, "color")){
+        config_setting_set_int(setting, filecolors);
+      } else if (!strcmp((*settings)[i].refLabel, "reverse")){
+        config_setting_set_int(setting, reverse);
+      } else if (!strcmp((*settings)[i].refLabel, "hidden")){
+        config_setting_set_int(setting, showhidden);
+      } else if (!strcmp((*settings)[i].refLabel, "ignore-backups")){
+        config_setting_set_int(setting, !showbackup);
+      } else if (!strcmp((*settings)[i].refLabel, "no-sf")){
+        config_setting_set_int(setting, useEnvPager);
+      } else if (!strcmp((*settings)[i].refLabel, "no-danger")){
+        config_setting_set_int(setting, !danger);
+      } else if (!strcmp((*settings)[i].refLabel, "si")){
+        config_setting_set_int(setting, si);
+      } else if (!strcmp((*settings)[i].refLabel, "human-readable")){
+        config_setting_set_int(setting, human);
+      } else if (!strcmp((*settings)[i].refLabel, "show-on-enter")){
+        config_setting_set_int(setting, enterAsShow);
+      }
+    }
+  }
+
+  config_write_file(&cfg, confFile);
+
+  config_destroy(&cfg);
+}
+
 void applySettings(settingIndex **settings, t1CharValues **values, int items, int valuesCount)
 {
   int i, j;
   // do stuff
   for (i = 0; i < items; i++){
-    if (!strcmp((*settings)[i].refLabel, "filecolors")){
+    if (!strcmp((*settings)[i].refLabel, "color")){
       filecolors = (*settings)[i].intSetting;
     } else if (!strcmp((*settings)[i].refLabel, "reverse")){
       reverse = (*settings)[i].intSetting;
-    } else if (!strcmp((*settings)[i].refLabel, "showhidden")){
+    } else if (!strcmp((*settings)[i].refLabel, "hidden")){
       showhidden = (*settings)[i].intSetting;
-    } else if (!strcmp((*settings)[i].refLabel, "showbackup")){
+    } else if (!strcmp((*settings)[i].refLabel, "ignore-backups")){
       showbackup = (*settings)[i].intSetting;
-    } else if (!strcmp((*settings)[i].refLabel, "useEnvPager")){
+    } else if (!strcmp((*settings)[i].refLabel, "no-sf")){
       useEnvPager = (*settings)[i].intSetting;
-    } else if (!strcmp((*settings)[i].refLabel, "danger")){
+    } else if (!strcmp((*settings)[i].refLabel, "no-danger")){
       danger = (*settings)[i].intSetting;
     } else if (!strcmp((*settings)[i].refLabel, "si")){
       si = (*settings)[i].intSetting;
-    } else if (!strcmp((*settings)[i].refLabel, "human")){
+    } else if (!strcmp((*settings)[i].refLabel, "human-readable")){
       human = (*settings)[i].intSetting;
-    } else if (!strcmp((*settings)[i].refLabel, "enterAsShow")){
+    } else if (!strcmp((*settings)[i].refLabel, "show-on-enter")){
       enterAsShow = (*settings)[i].intSetting;
     } else if (!strcmp((*settings)[i].refLabel, "marked")){
       markedinfo = (*settings)[i].intSetting;
@@ -327,21 +379,21 @@ void settingsMenuView(){
   sortmodeInt = textValueLookup(&charValues, &charValuesCount, "sortmode", sortmode);
   timestyleInt = textValueLookup(&charValues, &charValuesCount, "timestyle", timestyle);
 
-  importSetting(&settingIndex, &items, "filecolors",  L"Display file colors", 0, filecolors, -1, 0);
-  importSetting(&settingIndex, &items, "marked",      L"Show marked file info", 1, markedinfo, markedCount, 0);
-  importSetting(&settingIndex, &items, "sortmode",    L"Sorting mode", 1, sortmodeInt, sortmodeCount, 0);
-  importSetting(&settingIndex, &items, "reverse",     L"Reverse sorting order", 0, reverse, -1, 0);
-  importSetting(&settingIndex, &items, "timestyle",   L"Time style", 1, timestyleInt, timestyleCount, 0);
-  importSetting(&settingIndex, &items, "showhidden",  L"Show hidden files", 0, showhidden, -1, 0);
-  importSetting(&settingIndex, &items, "showbackup",  L"Hide backup files", 0, showbackup, -1, 1);
-  importSetting(&settingIndex, &items, "useEnvPager", L"Use 3rd party pager over SF", 0, useEnvPager, -1, 0);
+  importSetting(&settingIndex, &items, "color",          L"Display file colors", 0, filecolors, -1, 0);
+  importSetting(&settingIndex, &items, "marked",         L"Show marked file info", 1, markedinfo, markedCount, 0);
+  importSetting(&settingIndex, &items, "sortmode",       L"Sorting mode", 1, sortmodeInt, sortmodeCount, 0);
+  importSetting(&settingIndex, &items, "reverse",        L"Reverse sorting order", 0, reverse, -1, 0);
+  importSetting(&settingIndex, &items, "timestyle",      L"Time style", 1, timestyleInt, timestyleCount, 0);
+  importSetting(&settingIndex, &items, "hidden",         L"Show hidden files", 0, showhidden, -1, 0);
+  importSetting(&settingIndex, &items, "ignore-backups", L"Hide backup files", 0, showbackup, -1, 1);
+  importSetting(&settingIndex, &items, "no-sf",          L"Use 3rd party pager over SF", 0, useEnvPager, -1, 0);
   if (uid == 0 || euid == 0){
-    importSetting(&settingIndex, &items, "danger",      L"Hide danger lines as root", 0, danger, -1, 1);
+    importSetting(&settingIndex, &items, "no-danger",      L"Hide danger lines as root", 0, danger, -1, 1);
   }
-  importSetting(&settingIndex, &items, "si",          L"Use SI units", 0, si, -1, 0);
-  importSetting(&settingIndex, &items, "human",       L"Human readable sizes", 0, human, -1, 0);
-  importSetting(&settingIndex, &items, "enterAsShow", L"Enter key acts like Show", 0, enterAsShow, -1, 0);
-  importSetting(&settingIndex, &items, "owner",       L"Owner Column", 2, ogavis, ownerCount, 0);
+  importSetting(&settingIndex, &items, "si",             L"Use SI units", 0, si, -1, 0);
+  importSetting(&settingIndex, &items, "human-readable", L"Human readable sizes", 0, human, -1, 0);
+  importSetting(&settingIndex, &items, "show-on-enter",  L"Enter key acts like Show", 0, enterAsShow, -1, 0);
+  importSetting(&settingIndex, &items, "owner",          L"Owner Column", 2, ogavis, ownerCount, 0);
 
   populateBool(&binValues, "owner", ogavis, binValuesCount);
 
@@ -363,6 +415,9 @@ void settingsMenuView(){
       } else if (*pc == menuHotkeyLookup(settingsMenu, "s_revert", settingsMenuSize)){
         free(settingIndex);
         goto reloadSettings;
+      } else if (*pc == menuHotkeyLookup(settingsMenu, "s_save", settingsMenuSize)){
+        applySettings(&settingIndex, &charValues, items, charValuesCount);
+        saveConfig(homeConfLocation, &settingIndex, items);
       } else if (*pc == 258 || *pc == 10){
         if (settingsPos < (items -1 )){
           settingsBinPos = -1;
