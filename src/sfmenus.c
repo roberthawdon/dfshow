@@ -39,6 +39,10 @@ menuDef *caseMenu;
 int caseMenuSize = 0;
 wchar_t *caseMenuLabel;
 
+extern menuDef *settingsMenu;
+extern int settingsMenuSize;
+extern wchar_t *settingsMenuLabel;
+
 extern char fileMenuText[74];
 extern char filePosText[58];
 extern char regexinput[1024];
@@ -66,6 +70,7 @@ void generateDefaultMenus(){
   addMenuItem(&fileMenu, &fileMenuSize, "f_02", L"<F2>-Up", 266);
   addMenuItem(&fileMenu, &fileMenuSize, "f_03", L"<F3>-Top", 267);
   addMenuItem(&fileMenu, &fileMenuSize, "f_04", L"<F4>-Bottom", 268);
+  addMenuItem(&fileMenu, &fileMenuSize, "f_config", L"!Config", 'c');
   addMenuItem(&fileMenu, &fileMenuSize, "f_find", L"!Find", 'f');
   addMenuItem(&fileMenu, &fileMenuSize, "f_help", L"!Help", 'h');
   addMenuItem(&fileMenu, &fileMenuSize, "f_position", L"!Position", 'p');
@@ -80,16 +85,22 @@ void generateDefaultMenus(){
   addMenuItem(&caseMenu, &caseMenuSize, "c1_ignore", L"!Ignore-case", 'i');
   addMenuItem(&caseMenu, &caseMenuSize, "c2_sensitive", L"!Case-sensitive", 'c');
 
+  // Setings Menu
+  addMenuItem(&settingsMenu, &settingsMenuSize, "s_quit", L"!Quit", 'q');
+  addMenuItem(&settingsMenu, &settingsMenuSize, "s_revert", L"!Revert", 'r');
+  addMenuItem(&settingsMenu, &settingsMenuSize, "s_save", L"!Save", 's');
 }
 
 void refreshMenuLabels(){
-  fileMenuLabel = genMenuDisplayLabel(L"", fileMenu, fileMenuSize, L"", 1);
-  caseMenuLabel = genMenuDisplayLabel(L"", caseMenu, caseMenuSize, L"(enter = I)", 0);
+  fileMenuLabel     = genMenuDisplayLabel(L"", fileMenu, fileMenuSize, L"", 1);
+  caseMenuLabel     = genMenuDisplayLabel(L"", caseMenu, caseMenuSize, L"(enter = I)", 0);
+  settingsMenuLabel = genMenuDisplayLabel(L"SF Settings Menu -", settingsMenu, settingsMenuSize, L"", 1);
 }
 
 void unloadMenuLabels(){
   free(fileMenuLabel);
   free(caseMenuLabel);
+  free(settingsMenuLabel);
 }
 
 void show_file_find(int charcase)
@@ -211,6 +222,11 @@ void show_file_inputs()
           topline = 1;
         }
         updateView();
+      } else if (*pc == menuHotkeyLookup(fileMenu, "f_config", fileMenuSize)){
+        settingsMenuView();
+        wPrintMenu(0, 0, fileMenuLabel);
+        refreshScreen();
+        // updateView();
       } else if (*pc == menuHotkeyLookup(fileMenu, "f_quit", fileMenuSize)){
         free(longline);
         free(filePos);

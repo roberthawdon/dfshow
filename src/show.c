@@ -249,11 +249,8 @@ void saveConfig(const char * confFile, settingIndex **settings, t1CharValues **v
 
   config_init(&cfg);
 
-  //Might need to "if" this
   config_read_file(&cfg, confFile);
   root = config_root_setting(&cfg);
-
-  //config_setting_remove(root, PROGRAM_NAME);
 
   group = config_setting_get_member(root, PROGRAM_NAME);
 
@@ -318,7 +315,6 @@ void saveConfig(const char * confFile, settingIndex **settings, t1CharValues **v
 void applySettings(settingIndex **settings, t1CharValues **values, int items, int valuesCount)
 {
   int i, j;
-  // do stuff
   for (i = 0; i < items; i++){
     if (!strcmp((*settings)[i].refLabel, "color")){
       filecolors = (*settings)[i].intSetting;
@@ -364,7 +360,6 @@ void settingsMenuView(){
   int x = 2;
   int y = 3;
   settingIndex *settingIndex;
-  // type1SValue *tmpValues, *noValue, *markedValue, *sortmodeValue, *timestyleValue;
   t1CharValues *charValues;
   t2BinValues *binValues;
   int markedCount, sortmodeCount, timestyleCount, ownerCount;
@@ -741,7 +736,7 @@ int main(int argc, char *argv[])
          {"running",        no_argument,       0, GETOPT_SHOWRUNNING_CHAR},
          {"full-time",      no_argument,       0, GETOPT_FULLTIME_CHAR},
          {"edit-themes",    no_argument,       0, GETOPT_THEMEEDIT_CHAR},
-         {"settings-menu",   no_argument,       0, GETOPT_OPTIONSMENU_CHAR},
+         {"settings-menu",  no_argument,       0, GETOPT_OPTIONSMENU_CHAR},
          {0, 0, 0, 0}
         };
       int option_index = 0;
