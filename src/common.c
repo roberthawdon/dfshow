@@ -491,13 +491,14 @@ int wReadLine(wchar_t *buffer, int buflen, wchar_t *oldbuf)
   int old_curs = curs_set(1);
   int pos;
   int len;
+  int over = 0;
   int oldlen;
   int x, y;
+  int i;
   int status = 0;
   wint_t c;
 
   oldlen = wcslen(oldbuf);
-  setColors(INPUT_PAIR);
   // attron(COLOR_PAIR(INPUT_PAIR));
 
   pos = oldlen;
@@ -510,8 +511,25 @@ int wReadLine(wchar_t *buffer, int buflen, wchar_t *oldbuf)
   for (;;) {
 
     buffer[len] = ' ';
-    mvaddnwstr(y, x, buffer, len+1); // Prints buffer on screen
-    move(y, x+pos); //
+    // mvaddnwstr(y, x, buffer, len+1); // Prints buffer on screen
+    for (i = 0; i < len; i++){
+      setColors(INPUT_PAIR);
+      mvprintw(y, x + i, "%lc", buffer[i + over]); // Prints buffer on screen
+      setColors(COMMAND_PAIR);
+      mvprintw(y, x + i + 1, "%lc", ' '); // Ensuring the last cursor char is blanked
+    }
+    if (len < 1){
+      setColors(COMMAND_PAIR);
+      mvprintw(y, x, "%lc", ' '); // Blacking if there's nothing in the buffer
+    }
+    // mvprintw(LINES - 1, 0, "X = %i - Y = %i", x+pos, y);
+    if ((x + pos) < COLS){
+      move(y, x+pos); //
+      over = 0; // Just to be sure
+    } else {
+      move(y, COLS - 1);
+      over = (x+pos) - COLS;
+    }
     //c = getch();
     get_wch(&c);
 
