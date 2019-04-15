@@ -875,7 +875,8 @@ void LaunchShell()
   clear();
   endwin();
   // system("clear"); // Not exactly sure if I want this yet.
-  printf("\nUse 'exit' to return to Show.\n\n");
+  // printf("\nUse 'exit' to return to Show.\n\n");
+  write(STDOUT_FILENO, "\nUse 'exit' to return to Show.\n\n", 32);
   system(getenv("SHELL"));
   initscr();
   refreshScreen();
