@@ -32,7 +32,7 @@ int lightColorPair[256];
 // int commandL, infoL, inputL, selectL, displayL, dangerL, dirL, slinkL, exeL, suidL, sgidL, hiliteL = 0;
 
 int colorThemePos = 0;
-int totalItemCount = 7;
+int totalItemCount = 14;
 
 int selectedItem;
 
@@ -120,6 +120,27 @@ int itemLookup(int menuPos){
     break;
   case 7:
     selectedItem = HILITE_PAIR;
+    break;
+  case 8:
+    selectedItem = INPUT_PAIR;
+    break;
+  case 9:
+    selectedItem = DIR_PAIR;
+    break;
+  case 10:
+    selectedItem = SLINK_PAIR;
+    break;
+  case 11:
+    selectedItem = DEADLINK_PAIR;
+    break;
+  case 12:
+    selectedItem = EXE_PAIR;
+    break;
+  case 13:
+    selectedItem = SUID_PAIR;
+    break;
+  case 14:
+    selectedItem = SGID_PAIR;
     break;
   default:
     selectedItem = -1;
@@ -686,6 +707,20 @@ void themeBuilder()
   mvprintw(8, 4, "Selected block lines");
   setColors(HILITE_PAIR);
   mvprintw(9, 4, "Highlight");
+  setColors(INPUT_PAIR);
+  mvprintw(10, 4, "Text input");
+  setColors(DIR_PAIR);
+  mvprintw(11, 4, "Directories");
+  setColors(SLINK_PAIR);
+  mvprintw(12, 4, "Valid symbolic links");
+  setColors(DEADLINK_PAIR);
+  mvprintw(13, 4, "Invalid symbolic links");
+  setColors(EXE_PAIR);
+  mvprintw(14, 4, "Executable files");
+  setColors(SUID_PAIR);
+  mvprintw(15, 4, "Set-user identification");
+  setColors(SGID_PAIR);
+  mvprintw(16, 4, "Set-group identification");
 
   setColors(DEFAULT_COLOR_PAIR);
   mvprintw(2, 45, "!-Default      ");
