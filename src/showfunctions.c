@@ -101,6 +101,7 @@ int displaystart;
 int showhidden = 0;
 
 int markall = 0;
+int automark = 0;
 
 int mmMode = 0;
 
@@ -1330,8 +1331,7 @@ int CheckMarked(results* ob)
   for (i = 0; i < totalfilecount; i++)
     {
       if ( *ob[i].marked ){
-        result = 1;
-        break;
+        result++;
       }
     }
   return(result);
@@ -1586,15 +1586,13 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   wchar_t pwdprint[1024];
   char *markedInfoLine, *padding0, *padding1, *padding2, *padding3;
 
-  // if (markedinfo == 2) {
-  //   if (CheckMarked(ob) ){
-  //     markedinfo = 1;
-  //   } else {
-  //     markedinfo = 0;
-  //   }
-  // }
+  if (markedinfo == 2 && (CheckMarked(ob) > 0)){
+    automark = 1;
+  } else {
+    automark = 0;
+  }
 
-  if (markedinfo == 1 || (markedinfo == 2 && CheckMarked(ob))){
+  if (markedinfo == 1 || automark == 1){
     displaysize = LINES - 6;
     displaystart = 5;
   } else{
@@ -1604,6 +1602,9 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
       topfileref--;
     }
   }
+
+  topfileref = sanitizeTopFileRef(topfileref);
+
   selected = selected - topfileref;
 
   if (strcmp(objectWild, "")){
@@ -1772,7 +1773,7 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   wPrintLine(1, 2, pwdprint);
   printLine(2, 2, sizeHeader);
 
-  if (markedinfo == 1 || (markedinfo == 2 && CheckMarked(ob))){
+  if (markedinfo == 1 || (markedinfo == 2 && (CheckMarked(ob) > 0))){
     markedInfoLine = markedDisplay(ob);
     printLine (3, 4, markedInfoLine);
     free(markedInfoLine);
@@ -1786,7 +1787,7 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
 
   headerpos = 4 - hpos;
 
-  if (markedinfo == 1 || (markedinfo == 2 && CheckMarked(ob))){
+  if (markedinfo == 1 || (markedinfo == 2 && (CheckMarked(ob) > 0))){
     printLine (4, headerpos, headings);
   } else {
     printLine (3, headerpos, headings);

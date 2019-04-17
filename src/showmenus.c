@@ -76,6 +76,8 @@ extern int displaycount;
 extern int showhidden;
 extern int markall;
 extern int viewMode;
+extern int markedinfo;
+extern int automark;
 
 extern int plugins;
 
@@ -911,7 +913,7 @@ void huntInput(int selected, int charcase)
   if (readline(regexinput, 1024, "") == -1) {
     abortinput = 1;
   } else {
-    if (!CheckMarked(ob)){
+    if (CheckMarked(ob) < 1){
       strcpy(chpwd, currentpwd);
       if (!check_last_char(chpwd, "/")){
         strcat(chpwd, "/");
@@ -1111,7 +1113,7 @@ void modify_group_input()
     } else {
       sprintf(gids, "%d", gresult->gr_gid);
 
-      if ( CheckMarked(ob) ){
+      if ( (CheckMarked(ob) > 0) ){
         for (i = 0; i < totalfilecount; i++)
           {
             if ( *ob[i].marked )
@@ -1206,7 +1208,7 @@ void modify_permissions_input()
   if (status != -1 ){
     newperm = strtol(perms, &ptr, 8); // Convert string to Octal and then store it as an int. Yay, numbers.
 
-    if ( CheckMarked(ob) ) {
+    if ( (CheckMarked(ob) > 0) ) {
       //topLineMessage("Multi file permissions coming soon");
       for (i = 0; i < totalfilecount; i++)
         {
@@ -1397,7 +1399,7 @@ void directory_view_menu_inputs()
       //sigaction(SIGWINCH, &sa, NULL);
       *pc = getch10th();
       if (*pc == menuHotkeyLookup(fileMenu, "f_copy", fileMenuSize)){
-        if ( CheckMarked(ob) ) {
+        if ( (CheckMarked(ob) > 0) ) {
           copy_multi_file_input(ob, currentpwd);
         } else {
           strcpy(selfile, currentpwd);
@@ -1410,7 +1412,7 @@ void directory_view_menu_inputs()
           }
         }
       } else if (*pc == menuHotkeyLookup(fileMenu, "f_delete", fileMenuSize)){
-        if ( CheckMarked(ob) ) {
+        if ( (CheckMarked(ob) > 0) ) {
           delete_multi_file_confirm_input(ob);
           refreshDirectory(sortmode, topfileref, selected, 1);
           directory_view_menu_inputs();
@@ -1450,7 +1452,7 @@ void directory_view_menu_inputs()
         selected = findResultByName(ob, currentfilename);
         refreshDirectory(sortmode, topfileref, selected, 0);
       } else if (*pc == menuHotkeyLookup(fileMenu, "f_link", fileMenuSize)){
-        if ( !CheckMarked(ob) ) {
+        if ( !(CheckMarked(ob) > 0) ) {
           link_key_menu_inputs();
         } else {
           topLineMessage("Error: Links can only be made against single files.");
@@ -1484,7 +1486,7 @@ void directory_view_menu_inputs()
             global_menu();
           }
       } else if (*pc == menuHotkeyLookup(fileMenu, "f_rename", fileMenuSize)){
-        if ( CheckMarked(ob) ) {
+        if ( (CheckMarked(ob) > 0) ) {
           rename_multi_file_input(ob, currentpwd);
         } else {
           strcpy(selfile, currentpwd);
@@ -1552,7 +1554,7 @@ void directory_view_menu_inputs()
               touchDate.actime = ob[selected].adate;
               touchDate.modtime = touchTime;
             }
-            if (CheckMarked(ob)){
+            if ((CheckMarked(ob) > 0)){
               for (i = 0; i < totalfilecount; i++){
                 if (*ob[i].marked){
                   utime(ob[i].name, &touchDate);
@@ -1649,9 +1651,16 @@ void directory_view_menu_inputs()
             selected++;
             if (selected > ((topfileref + displaysize) - 1)){
               topfileref++;
-              clear_workspace();
+              if (markedinfo == 2 && automark == 0){
+                topfileref++;
+              }
+            }
+          } else {
+            if (markedinfo == 2 && automark == 0){
+              topfileref++;
             }
           }
+          clear_workspace();
           display_dir(currentpwd, ob, topfileref, selected);
         }
       } else if (*pc == menuHotkeyLookup(functionMenu, "f_07", functionMenuSize)){
@@ -1687,10 +1696,17 @@ void directory_view_menu_inputs()
                 selected++;
                 if (selected > ((topfileref + displaysize) - 1)){
                   topfileref++;
-                  clear_workspace();
+                  if (markedinfo == 2 && automark == 0){
+                    topfileref++;
+                  }
                 }
-                display_dir(currentpwd, ob, topfileref, selected);
+              } else {
+                if (markedinfo == 2 && automark == 0){
+                  topfileref++;
+                }
               }
+              clear_workspace();
+              display_dir(currentpwd, ob, topfileref, selected);
             } else {
               blockend = selected;
               if (blockstart > blockend){
