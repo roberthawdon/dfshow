@@ -406,8 +406,18 @@ int writePermsEntry(char * perms, mode_t mode){
 
   if ( (mode & S_IXOTH) && (mode & S_ISVTX) ){
     perms[9] = 't';
+    if (S_ISDIR(mode) && (mode & S_IWOTH)){
+      typecolor = STICKY_OW_PAIR;
+    } else if (S_ISDIR(mode) && !(mode & S_IWOTH)) {
+      typecolor = STICKY_PAIR;
+    }
   } else if (mode & S_ISVTX) {
     perms[9] = 'T';
+    if (S_ISDIR(mode) && (mode & S_IWOTH)){
+      typecolor = STICKY_OW_PAIR;
+    } else if (S_ISDIR(mode) && !(mode & S_IWOTH)) {
+      typecolor = STICKY_PAIR;
+    }
   } else if (mode & S_IXOTH){
     perms[9] = 'x';
     if (typecolor != DIR_PAIR && !sexec){

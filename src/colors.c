@@ -32,7 +32,7 @@ int lightColorPair[256];
 // int commandL, infoL, inputL, selectL, displayL, dangerL, dirL, slinkL, exeL, suidL, sgidL, hiliteL = 0;
 
 int colorThemePos = 0;
-int totalItemCount = 14;
+int totalItemCount = 16;
 
 int selectedItem;
 
@@ -142,6 +142,12 @@ int itemLookup(int menuPos){
   case 14:
     selectedItem = SGID_PAIR;
     break;
+  case 15:
+    selectedItem = STICKY_PAIR;
+    break;
+  case 16:
+    selectedItem = STICKY_OW_PAIR;
+    break;
   default:
     selectedItem = -1;
     break;
@@ -195,6 +201,12 @@ void setColorPairs(int pair, int foreground, int background, int bold){
     break;
   case 15:
     strcpy(colors[pair].name, "deadlink");
+    break;
+  case 16:
+    strcpy(colors[pair].name, "sticky");
+    break;
+  case 17:
+    strcpy(colors[pair].name, "sticky-ow");
     break;
   default:
     sprintf(colors[pair].name, "undef-%i", pair);
@@ -264,7 +276,7 @@ void saveTheme(){
     config_init(&cfg);
     root = config_root_setting(&cfg);
     group = config_setting_add(root, "theme", CONFIG_TYPE_GROUP);
-    for (i = 1; i < 16; i++){
+    for (i = 1; i < (totalItemCount + 2); i++){
       array = config_setting_add(group, colors[i].name, CONFIG_TYPE_ARRAY);
       setting = config_setting_add(array, NULL, CONFIG_TYPE_INT);
       config_setting_set_int(setting, colors[i].foreground);
@@ -278,22 +290,15 @@ void saveTheme(){
       if (check_file(filename)){
         curs_set(FALSE);
         printMenu(0,0, "File exists. Replace? (!Yes/!No)");
-        while(1)
-          {
-            *pc = getch();
-            switch(*pc)
-              {
-              case 'y':
-                config_write_file(&cfg, filename);
-                setenv("DFS_THEME", objectFromPath(filename), 1);
-                //No Break, drop through to default
-              default:
-                curs_set(TRUE);
-                themeBuilder();
-                break;
-              }
-            break;
-          }
+        *pc = getch10th();
+        if (*pc == 'y'){
+          config_write_file(&cfg, filename);
+          setenv("DFS_THEME", objectFromPath(filename), 1);
+        } else {
+          // Skip
+        }
+        curs_set(TRUE);
+        themeBuilder();
       } else {
         config_write_file(&cfg, filename);
         setenv("DFS_THEME", objectFromPath(filename), 1);
@@ -633,6 +638,8 @@ void setDefaultTheme(){
   setColorPairs(ERROR_PAIR, DEFAULT_COLOR, DEFAULT_COLOR, 1);
   setColorPairs(HEADING_PAIR, COLOR_GREEN, DEFAULT_COLOR, 0);
   setColorPairs(DEADLINK_PAIR, BRIGHT_RED, DEFAULT_COLOR, 0);
+  setColorPairs(STICKY_PAIR, COLOR_WHITE, COLOR_BLUE, 0);
+  setColorPairs(STICKY_OW_PAIR, COLOR_BLACK, COLOR_GREEN, 0);
 
   setColorPairs(COLORMENU_PAIR_0, COLOR_BLACK, COLOR_WHITE, 0);
   setColorPairs(COLORMENU_PAIR_1, COLOR_RED, DEFAULT_COLOR, 0);
@@ -712,15 +719,19 @@ void themeBuilder()
   setColors(DIR_PAIR);
   mvprintw(11, 4, "Directories");
   setColors(SLINK_PAIR);
-  mvprintw(12, 4, "Valid symbolic links");
+  mvprintw(12, 4, "Symbolic links");
   setColors(DEADLINK_PAIR);
-  mvprintw(13, 4, "Invalid symbolic links");
+  mvprintw(13, 4, "Orphened symbolic links");
   setColors(EXE_PAIR);
   mvprintw(14, 4, "Executable files");
   setColors(SUID_PAIR);
-  mvprintw(15, 4, "Set-user identification");
+  mvprintw(15, 4, "Set user identification");
   setColors(SGID_PAIR);
-  mvprintw(16, 4, "Set-group identification");
+  mvprintw(16, 4, "Set group identification");
+  setColors(STICKY_PAIR);
+  mvprintw(17, 4, "Sticky bit directory");
+  setColors(STICKY_OW_PAIR);
+  mvprintw(18, 4, "Sticky bit directory - other writeable");
 
   setColors(DEFAULT_COLOR_PAIR);
   mvprintw(2, 45, "!-Default      ");

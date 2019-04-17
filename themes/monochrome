@@ -14,5 +14,7 @@ theme :
   hilite = [ -1, -1, 1 ];
   error = [ -1, -1, 1 ];
   heading = [ -1, -1, 0 ];
-  deadlink = [ 0, 7, 0 ];
+  deadlink = [ 0, 8, 0 ];
+  sticky = [ 7, 8, 0 ];
+  sticky-ow = [ 0, 15, 0 ];
 };

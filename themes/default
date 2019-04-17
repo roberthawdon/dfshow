@@ -15,4 +15,6 @@ theme :
   error = [ -1, -1, 1 ];
   heading = [ 2, -1, 0 ];
   deadlink = [ 9, -1, 0 ];
+  sticky = [ 7, 4, 0 ];
+  sticky-ow = [ 0, 2, 0 ];
 };
