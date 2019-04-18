@@ -218,6 +218,7 @@ void generateDefaultMenus(){
   addMenuItem(&colorMenu, &colorMenuSize, "c_quit", L"!Quit", 'q');
   addMenuItem(&colorMenu, &colorMenuSize, "c_save", L"!Save", 's');
   addMenuItem(&colorMenu, &colorMenuSize, "c_toggle", L"!Toggle", 't');
+  addMenuItem(&colorMenu, &colorMenuSize, "c_use", L"!Use", 'u');
 
   // Setings Menu
   addMenuItem(&settingsMenu, &settingsMenuSize, "s_quit", L"!Quit", 'q');

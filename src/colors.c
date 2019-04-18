@@ -38,6 +38,8 @@ int selectedItem;
 
 int bgToggle = 0;
 
+int themeModified = 0;
+
 colorPairs colors[256];
 
 char fgbgLabel[11];
@@ -229,6 +231,34 @@ void setColorPairs(int pair, int foreground, int background, int bold){
   colors[pair].bold = bold;
 }
 
+int useTheme(const char * confFile)
+{
+  config_t cfg;
+  config_setting_t *root, *setting, *group;
+  int e;
+
+  config_init(&cfg);
+  config_read_file(&cfg, confFile);
+  root = config_root_setting(&cfg);
+
+  group = config_setting_get_member(root, "common");
+
+  if (!group){
+    group = config_setting_add(root, "common", CONFIG_TYPE_GROUP);
+  }
+
+  config_setting_remove(group, "theme");
+
+  setting = config_setting_add(group, "theme", CONFIG_TYPE_STRING);
+
+  config_setting_set_string(setting, getenv("DFS_THEME"));
+
+  e = config_write_file(&cfg, confFile);
+
+  return(e);
+
+}
+
 void refreshColors(){
   int i;
   int foreground, background, bold;
@@ -302,6 +332,7 @@ void saveTheme(){
       } else {
         config_write_file(&cfg, filename);
         setenv("DFS_THEME", objectFromPath(filename), 1);
+        themeModified = 0;
       }
     } else {
       if (errno == ENOENT){
@@ -334,24 +365,29 @@ int applyTheme(const char *filename){
   int groupLen, i, h;
   setenv("DFS_THEME", objectFromPath(filename), 1);
   config_init(&cfg);
-  config_read_file(&cfg, filename);
-  group = config_lookup(&cfg, "theme");
-  groupLen = config_setting_length(group);
-  for (i = 0; i < groupLen; i++){
-    array = config_setting_get_elem(group, i);
-    for (h = 0; h < 256; h++){
-      if (!strcmp(colors[h].name, config_setting_name(array))){
-        setting = config_setting_get_member(group, config_setting_name(array));
-        colors[h].foreground = config_setting_get_int_elem(setting, 0);
-        colors[h].background = config_setting_get_int_elem(setting, 1);
-        colors[h].bold = config_setting_get_int_elem(setting, 2);
+  if (config_read_file(&cfg, filename)){
+    group = config_lookup(&cfg, "theme");
+    groupLen = config_setting_length(group);
+    for (i = 0; i < groupLen; i++){
+      array = config_setting_get_elem(group, i);
+      for (h = 0; h < 256; h++){
+        if (!strcmp(colors[h].name, config_setting_name(array))){
+          setting = config_setting_get_member(group, config_setting_name(array));
+          colors[h].foreground = config_setting_get_int_elem(setting, 0);
+          colors[h].background = config_setting_get_int_elem(setting, 1);
+          colors[h].bold = config_setting_get_int_elem(setting, 2);
+        }
       }
-    }
 
+    }
+    config_destroy(&cfg);
+    refreshColors();
+    return(0);
+  } else {
+    topLineMessage("Error parsing theme file.");
+    return(1);
   }
-  config_destroy(&cfg);
-  refreshColors();
-  return(0);
+  return(1);
 }
 
 void loadTheme(){
@@ -374,6 +410,7 @@ void loadTheme(){
     }
     if (check_file(filename) ){
       setenv("DFS_THEME_OVERRIDE", "TRUE", 1);
+      themeModified = 0;
       applyTheme(filename);
     } else {
       curs_set(FALSE);
@@ -408,6 +445,7 @@ void loadAppTheme(const char *themeName)
 void updateColorPair(int code, int location){
   int colorCode = -1;
   int colorBold = 0;
+  themeModified = 1;
   switch(code){
   case 0:
     colorCode = COLOR_BLACK;
@@ -515,6 +553,7 @@ void updateColorPair(int code, int location){
 
 void theme_menu_inputs()
 {
+  char useThemeMessage[256];
   while(1)
     {
       *pc = getch10th();
@@ -602,6 +641,20 @@ void theme_menu_inputs()
           bgToggle = 1;
         } else {
           bgToggle = 0;
+        }
+        themeBuilder();
+      } else if (*pc == menuHotkeyLookup(colorMenu, "c_use", colorMenuSize)){
+        //
+        if (themeModified == 1){
+          curs_set(FALSE);
+          topLineMessage("Save theme before using as default.");
+        } else {
+          if (useTheme(homeConfLocation)){
+            sprintf(useThemeMessage, "Default theme has been set to [%s].", getenv("DFS_THEME"));
+            topLineMessage(useThemeMessage);
+          } else {
+            topLineMessage("An error occurred setting the default theme.");
+          }
         }
         themeBuilder();
       } else if (*pc == 258 || *pc ==10){

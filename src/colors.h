@@ -63,6 +63,7 @@ int applyTheme(const char *filename);
 void saveTheme();
 void loadTheme();
 void loadAppTheme(const char *themeName);
+int useTheme(const char * confFile);
 int itemLookup(int menuPos);
 void lowColorCheck();
 void theme_menu_inputs();
