@@ -414,6 +414,7 @@ void applySettings(settingIndex **settings, t1CharValues **values, int items, in
     }
   }
 }
+
 void settingsMenuView()
 {
   int items, count = 0;

@@ -225,6 +225,9 @@ void show_file_inputs()
       } else if (*pc == menuHotkeyLookup(fileMenu, "f_config", fileMenuSize)){
         settingsMenuView();
         wPrintMenu(0, 0, fileMenuLabel);
+        if(wrap){
+          leftcol = 1;
+        }
         refreshScreen();
         // updateView();
       } else if (*pc == menuHotkeyLookup(fileMenu, "f_quit", fileMenuSize)){
