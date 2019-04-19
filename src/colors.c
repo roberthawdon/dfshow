@@ -32,11 +32,13 @@ int lightColorPair[256];
 // int commandL, infoL, inputL, selectL, displayL, dangerL, dirL, slinkL, exeL, suidL, sgidL, hiliteL = 0;
 
 int colorThemePos = 0;
-int totalItemCount = 7;
+int totalItemCount = 16;
 
 int selectedItem;
 
 int bgToggle = 0;
+
+int themeModified = 0;
 
 colorPairs colors[256];
 
@@ -121,6 +123,33 @@ int itemLookup(int menuPos){
   case 7:
     selectedItem = HILITE_PAIR;
     break;
+  case 8:
+    selectedItem = INPUT_PAIR;
+    break;
+  case 9:
+    selectedItem = DIR_PAIR;
+    break;
+  case 10:
+    selectedItem = SLINK_PAIR;
+    break;
+  case 11:
+    selectedItem = DEADLINK_PAIR;
+    break;
+  case 12:
+    selectedItem = EXE_PAIR;
+    break;
+  case 13:
+    selectedItem = SUID_PAIR;
+    break;
+  case 14:
+    selectedItem = SGID_PAIR;
+    break;
+  case 15:
+    selectedItem = STICKY_PAIR;
+    break;
+  case 16:
+    selectedItem = STICKY_OW_PAIR;
+    break;
   default:
     selectedItem = -1;
     break;
@@ -175,6 +204,12 @@ void setColorPairs(int pair, int foreground, int background, int bold){
   case 15:
     strcpy(colors[pair].name, "deadlink");
     break;
+  case 16:
+    strcpy(colors[pair].name, "sticky");
+    break;
+  case 17:
+    strcpy(colors[pair].name, "sticky-ow");
+    break;
   default:
     sprintf(colors[pair].name, "undef-%i", pair);
     break;
@@ -194,6 +229,34 @@ void setColorPairs(int pair, int foreground, int background, int bold){
   colors[pair].foreground = foreground;
   colors[pair].background = background;
   colors[pair].bold = bold;
+}
+
+int useTheme(const char * confFile)
+{
+  config_t cfg;
+  config_setting_t *root, *setting, *group;
+  int e;
+
+  config_init(&cfg);
+  config_read_file(&cfg, confFile);
+  root = config_root_setting(&cfg);
+
+  group = config_setting_get_member(root, "common");
+
+  if (!group){
+    group = config_setting_add(root, "common", CONFIG_TYPE_GROUP);
+  }
+
+  config_setting_remove(group, "theme");
+
+  setting = config_setting_add(group, "theme", CONFIG_TYPE_STRING);
+
+  config_setting_set_string(setting, getenv("DFS_THEME"));
+
+  e = config_write_file(&cfg, confFile);
+
+  return(e);
+
 }
 
 void refreshColors(){
@@ -243,7 +306,7 @@ void saveTheme(){
     config_init(&cfg);
     root = config_root_setting(&cfg);
     group = config_setting_add(root, "theme", CONFIG_TYPE_GROUP);
-    for (i = 1; i < 16; i++){
+    for (i = 1; i < (totalItemCount + 2); i++){
       array = config_setting_add(group, colors[i].name, CONFIG_TYPE_ARRAY);
       setting = config_setting_add(array, NULL, CONFIG_TYPE_INT);
       config_setting_set_int(setting, colors[i].foreground);
@@ -257,25 +320,19 @@ void saveTheme(){
       if (check_file(filename)){
         curs_set(FALSE);
         printMenu(0,0, "File exists. Replace? (!Yes/!No)");
-        while(1)
-          {
-            *pc = getch();
-            switch(*pc)
-              {
-              case 'y':
-                config_write_file(&cfg, filename);
-                setenv("DFS_THEME", objectFromPath(filename), 1);
-                //No Break, drop through to default
-              default:
-                curs_set(TRUE);
-                themeBuilder();
-                break;
-              }
-            break;
-          }
+        *pc = getch10th();
+        if (*pc == 'y'){
+          config_write_file(&cfg, filename);
+          setenv("DFS_THEME", objectFromPath(filename), 1);
+        } else {
+          // Skip
+        }
+        curs_set(TRUE);
+        themeBuilder();
       } else {
         config_write_file(&cfg, filename);
         setenv("DFS_THEME", objectFromPath(filename), 1);
+        themeModified = 0;
       }
     } else {
       if (errno == ENOENT){
@@ -308,24 +365,29 @@ int applyTheme(const char *filename){
   int groupLen, i, h;
   setenv("DFS_THEME", objectFromPath(filename), 1);
   config_init(&cfg);
-  config_read_file(&cfg, filename);
-  group = config_lookup(&cfg, "theme");
-  groupLen = config_setting_length(group);
-  for (i = 0; i < groupLen; i++){
-    array = config_setting_get_elem(group, i);
-    for (h = 0; h < 256; h++){
-      if (!strcmp(colors[h].name, config_setting_name(array))){
-        setting = config_setting_get_member(group, config_setting_name(array));
-        colors[h].foreground = config_setting_get_int_elem(setting, 0);
-        colors[h].background = config_setting_get_int_elem(setting, 1);
-        colors[h].bold = config_setting_get_int_elem(setting, 2);
+  if (config_read_file(&cfg, filename)){
+    group = config_lookup(&cfg, "theme");
+    groupLen = config_setting_length(group);
+    for (i = 0; i < groupLen; i++){
+      array = config_setting_get_elem(group, i);
+      for (h = 0; h < 256; h++){
+        if (!strcmp(colors[h].name, config_setting_name(array))){
+          setting = config_setting_get_member(group, config_setting_name(array));
+          colors[h].foreground = config_setting_get_int_elem(setting, 0);
+          colors[h].background = config_setting_get_int_elem(setting, 1);
+          colors[h].bold = config_setting_get_int_elem(setting, 2);
+        }
       }
-    }
 
+    }
+    config_destroy(&cfg);
+    refreshColors();
+    return(0);
+  } else {
+    topLineMessage("Error parsing theme file.");
+    return(1);
   }
-  config_destroy(&cfg);
-  refreshColors();
-  return(0);
+  return(1);
 }
 
 void loadTheme(){
@@ -348,6 +410,7 @@ void loadTheme(){
     }
     if (check_file(filename) ){
       setenv("DFS_THEME_OVERRIDE", "TRUE", 1);
+      themeModified = 0;
       applyTheme(filename);
     } else {
       curs_set(FALSE);
@@ -376,12 +439,16 @@ void loadAppTheme(const char *themeName)
         }
       }
       free(rewrite);
-    }
+  } else {
+    // Assume default
+    setenv("DFS_THEME", "default", 1);
+  }
 }
 
 void updateColorPair(int code, int location){
   int colorCode = -1;
   int colorBold = 0;
+  themeModified = 1;
   switch(code){
   case 0:
     colorCode = COLOR_BLACK;
@@ -489,6 +556,7 @@ void updateColorPair(int code, int location){
 
 void theme_menu_inputs()
 {
+  char useThemeMessage[256];
   while(1)
     {
       *pc = getch10th();
@@ -578,6 +646,23 @@ void theme_menu_inputs()
           bgToggle = 0;
         }
         themeBuilder();
+      } else if (*pc == menuHotkeyLookup(colorMenu, "c_use", colorMenuSize)){
+        //
+        if (themeModified == 1){
+          curs_set(FALSE);
+          topLineMessage("Save theme before using as default.");
+        } else {
+          if (access(dirFromPath(homeConfLocation), W_OK) != 0) {
+            createParentDirs(homeConfLocation);
+          }
+          if (useTheme(homeConfLocation)){
+            sprintf(useThemeMessage, "Default theme has been set to [%s].", getenv("DFS_THEME"));
+            topLineMessage(useThemeMessage);
+          } else {
+            topLineMessage("An error occurred setting the default theme.");
+          }
+        }
+        themeBuilder();
       } else if (*pc == 258 || *pc ==10){
         if (colorThemePos < totalItemCount){
           colorThemePos++;
@@ -607,11 +692,13 @@ void setDefaultTheme(){
   setColorPairs(SLINK_PAIR, DEFAULT_COLOR, DEFAULT_COLOR, 1);
   setColorPairs(EXE_PAIR, BRIGHT_YELLOW, DEFAULT_COLOR, 0);
   setColorPairs(SUID_PAIR, DEFAULT_COLOR, COLOR_RED, 0);
-  setColorPairs(SGID_PAIR, BRIGHT_BLACK, COLOR_GREEN, 0);
+  setColorPairs(SGID_PAIR, COLOR_BLACK, COLOR_GREEN, 1);
   setColorPairs(HILITE_PAIR, DEFAULT_COLOR, DEFAULT_COLOR, 1);
   setColorPairs(ERROR_PAIR, DEFAULT_COLOR, DEFAULT_COLOR, 1);
   setColorPairs(HEADING_PAIR, COLOR_GREEN, DEFAULT_COLOR, 0);
   setColorPairs(DEADLINK_PAIR, BRIGHT_RED, DEFAULT_COLOR, 0);
+  setColorPairs(STICKY_PAIR, COLOR_WHITE, COLOR_BLUE, 0);
+  setColorPairs(STICKY_OW_PAIR, COLOR_BLACK, COLOR_GREEN, 0);
 
   setColorPairs(COLORMENU_PAIR_0, COLOR_BLACK, COLOR_WHITE, 0);
   setColorPairs(COLORMENU_PAIR_1, COLOR_RED, DEFAULT_COLOR, 0);
@@ -686,6 +773,24 @@ void themeBuilder()
   mvprintw(8, 4, "Selected block lines");
   setColors(HILITE_PAIR);
   mvprintw(9, 4, "Highlight");
+  setColors(INPUT_PAIR);
+  mvprintw(10, 4, "Text input");
+  setColors(DIR_PAIR);
+  mvprintw(11, 4, "Directories");
+  setColors(SLINK_PAIR);
+  mvprintw(12, 4, "Symbolic links");
+  setColors(DEADLINK_PAIR);
+  mvprintw(13, 4, "Orphened symbolic links");
+  setColors(EXE_PAIR);
+  mvprintw(14, 4, "Executable files");
+  setColors(SUID_PAIR);
+  mvprintw(15, 4, "Set user identification");
+  setColors(SGID_PAIR);
+  mvprintw(16, 4, "Set group identification");
+  setColors(STICKY_PAIR);
+  mvprintw(17, 4, "Sticky bit directory");
+  setColors(STICKY_OW_PAIR);
+  mvprintw(18, 4, "Sticky bit directory - other writable");
 
   setColors(DEFAULT_COLOR_PAIR);
   mvprintw(2, 45, "!-Default      ");

@@ -21,7 +21,7 @@ The identification line gives the line and column number of the top
 left character in the window. An example of the command line and
 information line is given below.
 
-``F1-Down, F2-Up, F3-Top, F4-Bottom, Find, Help, Position, Quit, Wrap-on``
+``F1-Down, F2-Up, F3-Top, F4-Bottom, Config, Find, Help, Position, Quit, Wrap-on``
 
 ``File = /home/robert/sf.txt  Top = 1:1``
 
@@ -35,6 +35,9 @@ Command line arguments
 
 ``--theme``\ =[THEME]: Color themes. Passsing this argument
   without an option will display available themes.
+
+``--settings-menu``
+Launch ``sf`` directly into the settings menu.
 
 ``--help``: Displays help message, then exits.
 
@@ -66,6 +69,11 @@ described below.
 ``F4``
   Bottom of File - Position the file window to the last line of the
   file.
+
+``Config``
+Launches ``sf``\ 's configuration menu. From here, all aspects of ``sf``
+can be configured, and settings saved so they will persist between sessions.
+Further information can be found in the `configuring sf <#configuring-sf>`__ section.
 
 ``Find``
   Searches for a string provided in the form of a Regex. Case
@@ -113,3 +121,32 @@ described below.
 
 ``End``
   Position the file window to the last column of the file.
+
+Configuring sf
+--------------
+``sf`` features an inbuilt configuration menu where the user can tweak
+the default settings. It is accessed using the Config command.
+
+The following screen is displayed.
+
+::
+
+   SF Settings Menu - Quit, Revert, Save
+
+      [ ] Enable text wrapping
+
+The menu is made up of toggle switches. When active, the switch will display
+``[*]``, when inactive ``[ ]`` is displayed. To toggle a value, press *SPACE*
+when the cursor is highlighed over a specific item.
+
+The following commands can be used within this menu.
+
+``Quit``
+Applies changes and either returns to the previous screen.
+
+``Revert``
+Reverts settings to their original value from when the settings menu was
+invoked.
+
+``Save``
+Saves settings for future sessions.

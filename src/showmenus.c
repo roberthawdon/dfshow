@@ -76,6 +76,8 @@ extern int displaycount;
 extern int showhidden;
 extern int markall;
 extern int viewMode;
+extern int markedinfo;
+extern int automark;
 
 extern int plugins;
 
@@ -137,12 +139,17 @@ extern menuDef *colorMenu;
 extern int colorMenuSize;
 extern wchar_t *colorMenuLabel;
 
+extern menuDef *settingsMenu;
+extern int settingsMenuSize;
+extern wchar_t *settingsMenuLabel;
+
 void modify_owner_input();
 
 void generateDefaultMenus(){
   // Global Menu
   addMenuItem(&globalMenu, &globalMenuSize, "g_colors", L"c!Olors", 'o');
-  addMenuItem(&globalMenu, &globalMenuSize, "g_run", L"!Run command", 'r');
+  addMenuItem(&globalMenu, &globalMenuSize, "g_config", L"!Config", 'c');
+  addMenuItem(&globalMenu, &globalMenuSize, "g_run", L"!Run", 'r');
   addMenuItem(&globalMenu, &globalMenuSize, "g_edit", L"!Edit file", 'e');
   addMenuItem(&globalMenu, &globalMenuSize, "g_help", L"!Help", 'h');
   addMenuItem(&globalMenu, &globalMenuSize, "g_mkdir", L"!Make dir", 'm');
@@ -211,7 +218,12 @@ void generateDefaultMenus(){
   addMenuItem(&colorMenu, &colorMenuSize, "c_quit", L"!Quit", 'q');
   addMenuItem(&colorMenu, &colorMenuSize, "c_save", L"!Save", 's');
   addMenuItem(&colorMenu, &colorMenuSize, "c_toggle", L"!Toggle", 't');
+  addMenuItem(&colorMenu, &colorMenuSize, "c_use", L"!Use", 'u');
 
+  // Setings Menu
+  addMenuItem(&settingsMenu, &settingsMenuSize, "s_quit", L"!Quit", 'q');
+  addMenuItem(&settingsMenu, &settingsMenuSize, "s_revert", L"!Revert", 'r');
+  addMenuItem(&settingsMenu, &settingsMenuSize, "s_save", L"!Save", 's');
 }
 
 void refreshMenuLabels(){
@@ -225,6 +237,7 @@ void refreshMenuLabels(){
   touchMenuLabel = genMenuDisplayLabel(L"Set Time -", touchMenu, touchMenuSize, L"(enter = B)", 1);
   touchDateConfirmMenuLabel = genMenuDisplayLabel(L"Set Time?", touchDateConfirmMenu, touchDateConfirmMenuSize, L"(enter = N)", -1);
   colorMenuLabel = genMenuDisplayLabel(L"", colorMenu, colorMenuSize, L"", 1);
+  settingsMenuLabel = genMenuDisplayLabel(L"SHOW Settings Menu -", settingsMenu, settingsMenuSize, L"", 1);
 }
 
 void unloadMenuLabels(){
@@ -237,6 +250,7 @@ void unloadMenuLabels(){
   free(touchMenuLabel);
   free(touchDateConfirmMenuLabel);
   free(colorMenuLabel);
+  free(settingsMenuLabel);
 }
 
 int sanitizeTopFileRef(int topfileref)
@@ -900,7 +914,7 @@ void huntInput(int selected, int charcase)
   if (readline(regexinput, 1024, "") == -1) {
     abortinput = 1;
   } else {
-    if (!CheckMarked(ob)){
+    if (CheckMarked(ob) < 1){
       strcpy(chpwd, currentpwd);
       if (!check_last_char(chpwd, "/")){
         strcat(chpwd, "/");
@@ -1100,7 +1114,7 @@ void modify_group_input()
     } else {
       sprintf(gids, "%d", gresult->gr_gid);
 
-      if ( CheckMarked(ob) ){
+      if ( (CheckMarked(ob) > 0) ){
         for (i = 0; i < totalfilecount; i++)
           {
             if ( *ob[i].marked )
@@ -1195,7 +1209,7 @@ void modify_permissions_input()
   if (status != -1 ){
     newperm = strtol(perms, &ptr, 8); // Convert string to Octal and then store it as an int. Yay, numbers.
 
-    if ( CheckMarked(ob) ) {
+    if ( (CheckMarked(ob) > 0) ) {
       //topLineMessage("Multi file permissions coming soon");
       for (i = 0; i < totalfilecount; i++)
         {
@@ -1386,7 +1400,7 @@ void directory_view_menu_inputs()
       //sigaction(SIGWINCH, &sa, NULL);
       *pc = getch10th();
       if (*pc == menuHotkeyLookup(fileMenu, "f_copy", fileMenuSize)){
-        if ( CheckMarked(ob) ) {
+        if ( (CheckMarked(ob) > 0) ) {
           copy_multi_file_input(ob, currentpwd);
         } else {
           strcpy(selfile, currentpwd);
@@ -1399,7 +1413,7 @@ void directory_view_menu_inputs()
           }
         }
       } else if (*pc == menuHotkeyLookup(fileMenu, "f_delete", fileMenuSize)){
-        if ( CheckMarked(ob) ) {
+        if ( (CheckMarked(ob) > 0) ) {
           delete_multi_file_confirm_input(ob);
           refreshDirectory(sortmode, topfileref, selected, 1);
           directory_view_menu_inputs();
@@ -1439,7 +1453,7 @@ void directory_view_menu_inputs()
         selected = findResultByName(ob, currentfilename);
         refreshDirectory(sortmode, topfileref, selected, 0);
       } else if (*pc == menuHotkeyLookup(fileMenu, "f_link", fileMenuSize)){
-        if ( !CheckMarked(ob) ) {
+        if ( !(CheckMarked(ob) > 0) ) {
           link_key_menu_inputs();
         } else {
           topLineMessage("Error: Links can only be made against single files.");
@@ -1473,7 +1487,7 @@ void directory_view_menu_inputs()
             global_menu();
           }
       } else if (*pc == menuHotkeyLookup(fileMenu, "f_rename", fileMenuSize)){
-        if ( CheckMarked(ob) ) {
+        if ( (CheckMarked(ob) > 0) ) {
           rename_multi_file_input(ob, currentpwd);
         } else {
           strcpy(selfile, currentpwd);
@@ -1541,7 +1555,7 @@ void directory_view_menu_inputs()
               touchDate.actime = ob[selected].adate;
               touchDate.modtime = touchTime;
             }
-            if (CheckMarked(ob)){
+            if ((CheckMarked(ob) > 0)){
               for (i = 0; i < totalfilecount; i++){
                 if (*ob[i].marked){
                   utime(ob[i].name, &touchDate);
@@ -1638,9 +1652,16 @@ void directory_view_menu_inputs()
             selected++;
             if (selected > ((topfileref + displaysize) - 1)){
               topfileref++;
-              clear_workspace();
+              if (markedinfo == 2 && automark == 0){
+                topfileref++;
+              }
+            }
+          } else {
+            if (markedinfo == 2 && automark == 0){
+              topfileref++;
             }
           }
+          clear_workspace();
           display_dir(currentpwd, ob, topfileref, selected);
         }
       } else if (*pc == menuHotkeyLookup(functionMenu, "f_07", functionMenuSize)){
@@ -1676,10 +1697,17 @@ void directory_view_menu_inputs()
                 selected++;
                 if (selected > ((topfileref + displaysize) - 1)){
                   topfileref++;
-                  clear_workspace();
+                  if (markedinfo == 2 && automark == 0){
+                    topfileref++;
+                  }
                 }
-                display_dir(currentpwd, ob, topfileref, selected);
+              } else {
+                if (markedinfo == 2 && automark == 0){
+                  topfileref++;
+                }
               }
+              clear_workspace();
+              display_dir(currentpwd, ob, topfileref, selected);
             } else {
               blockend = selected;
               if (blockstart > blockend){
@@ -1780,6 +1808,17 @@ void global_menu_inputs()
           display_dir(currentpwd, ob, topfileref, selected);
           wPrintMenu(LINES-1, 0, functionMenuLabel);
           // printMenu(LINES-1, 0, functionMenuText); // Global menu inputs doesn't include this. Even though it isn't used.
+          global_menu_inputs();
+        }
+      } else if (*pc == menuHotkeyLookup(globalMenu, "g_config", globalMenuSize)) {
+        settingsMenuView();
+        if (historyref == 0){
+          clear();
+          global_menu_inputs();
+        } else {
+          refreshDirectory(sortmode, topfileref, selected, 0);
+          display_dir(currentpwd, ob, topfileref, selected);
+          wPrintMenu(LINES-1, 0, functionMenuLabel);
           global_menu_inputs();
         }
       } else if (*pc == menuHotkeyLookup(globalMenu, "g_run", globalMenuSize)) {

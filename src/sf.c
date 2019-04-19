@@ -54,6 +54,8 @@ int tabsize = 8;
 int wrap = 0;
 int wrapmode = LINE_WRAP;
 
+int launchSettingsMenu = 0;
+
 char fileName[512];
 
 int resized = 0;
@@ -79,12 +81,21 @@ long int *filePos;
 
 struct sigaction sa;
 
+extern int * pc;
+
+extern int settingsPos;
+extern int settingsBinPos;
+
 extern char globalConfLocation[128];
 extern char homeConfLocation[128];
 
 extern char themeName[128];
 
 extern wchar_t *fileMenuLabel;
+
+extern menuDef *settingsMenu;
+extern int settingsMenuSize;
+extern wchar_t *settingsMenuLabel;
 
 void readConfig(const char * confFile)
 {
@@ -219,6 +230,7 @@ Options:\n\
   -w, --wrap                   turn line wrapping on\n\
       --theme=[THEME]          color themes, see the THEME section below for\n\
                                valid themes.\n\
+      --settings-menu          launch settings menu\n\
       --help                   displays help message, then exits\n\
       --version                displays version, then exits\n"), stdout);
   fputs (("\n\
@@ -355,6 +367,152 @@ void file_view(char * currentfile)
   return;
 }
 
+void saveConfig(const char * confFile, settingIndex **settings, t1CharValues **values, t2BinValues **bins, int items, int charIndex, int binIndex)
+{
+  config_t cfg;
+  config_setting_t *root, *setting, *group, *subgroup;
+  int i, v;
+
+  config_init(&cfg);
+
+  config_read_file(&cfg, confFile);
+  root = config_root_setting(&cfg);
+
+  group = config_setting_get_member(root, PROGRAM_NAME);
+
+  if (!group){
+    group = config_setting_add(root, PROGRAM_NAME, CONFIG_TYPE_GROUP);
+  }
+
+  for (i = 0; i < items; i++){
+    config_setting_remove(group, (*settings)[i].refLabel);
+    if ((*settings)[i].type == 0){
+      setting = config_setting_add(group, (*settings)[i].refLabel, CONFIG_TYPE_INT);
+
+      if (!strcmp((*settings)[i].refLabel, "wrap")){
+        config_setting_set_int(setting, wrap);
+      }
+    } else if ((*settings)[i].type == 1){
+      // None of those in SF (yet?)
+    } else if ((*settings)[i].type == 2){
+      // None of those in SF (yet?)
+    }
+  }
+
+  config_write_file(&cfg, confFile);
+
+  config_destroy(&cfg);
+
+}
+
+void applySettings(settingIndex **settings, t1CharValues **values, int items, int valuesCount)
+{
+  int i, j;
+  for (i = 0; i < items; i++){
+    if (!strcmp((*settings)[i].refLabel, "wrap")){
+      wrap = (*settings)[i].intSetting;
+    }
+  }
+}
+
+void settingsMenuView()
+{
+  int items, count = 0;
+  int x = 2;
+  int y = 3;
+  settingIndex *settingIndex;
+  t1CharValues *charValues;
+  t2BinValues *binValues;
+  int charValuesCount;
+  int binValuesCount;
+
+ reloadSettings:
+
+  items = charValuesCount = binValuesCount = 0;
+
+  clear();
+  wPrintMenu(0,0,settingsMenuLabel);
+
+  importSetting(&settingIndex, &items, "wrap", L"Enable text wrapping", 0, wrap, -1, 0);
+
+  while(1)
+    {
+      if (settingsBinPos < 0){
+        curs_set(TRUE);
+      } else {
+        curs_set(FALSE);
+      }
+      for (count = 0; count < items; count++){
+        printSetting(2 + count, 3, &settingIndex, &charValues, &binValues, count, charValuesCount, binValuesCount, settingIndex[count].type, settingIndex[count].invert);
+      }
+
+      move(x + settingsPos, y + 1);
+      *pc = getch10th();
+      if (*pc == menuHotkeyLookup(settingsMenu, "s_quit", settingsMenuSize)){
+        curs_set(FALSE);
+        applySettings(&settingIndex, &charValues, items, charValuesCount);
+        free(settingIndex);
+        return;
+      } else if (*pc == menuHotkeyLookup(settingsMenu, "s_revert", settingsMenuSize)){
+        free(settingIndex);
+        goto reloadSettings;
+      } else if (*pc == menuHotkeyLookup(settingsMenu, "s_save", settingsMenuSize)){
+        applySettings(&settingIndex, &charValues, items, charValuesCount);
+        if (access(dirFromPath(homeConfLocation), W_OK) != 0) {
+          createParentDirs(homeConfLocation);
+        }
+        saveConfig(homeConfLocation, &settingIndex, &charValues, &binValues, items, charValuesCount, binValuesCount);
+        // Future task: ensure saving actually worked
+        curs_set(FALSE);
+        topLineMessage("Settings saved.");
+        curs_set(TRUE);
+        wPrintMenu(0,0,settingsMenuLabel);
+      } else if (*pc == 258 || *pc == 10){
+        if (settingsPos < (items -1 )){
+          settingsBinPos = -1;
+          settingsPos++;
+        }
+      } else if (*pc == 32 || *pc == 260 || *pc == 261){
+        // Adjust
+        if (settingIndex[settingsPos].type == 0){
+          if (settingIndex[settingsPos].intSetting > 0){
+            updateSetting(&settingIndex, settingsPos, 0, 0);
+          } else {
+            updateSetting(&settingIndex, settingsPos, 0, 1);
+          }
+        } else if (settingIndex[settingsPos].type == 1){
+          if (*pc == 32 || *pc == 261){
+            if (settingIndex[settingsPos].intSetting < (settingIndex[settingsPos].maxValue) - 1){
+              updateSetting(&settingIndex, settingsPos, 1, (settingIndex[settingsPos].intSetting) + 1);
+            } else {
+              updateSetting(&settingIndex, settingsPos, 1, 0);
+            }
+          } else {
+            if (settingIndex[settingsPos].intSetting > 0){
+              updateSetting(&settingIndex, settingsPos, 1, (settingIndex[settingsPos].intSetting) - 1);
+            } else {
+              updateSetting(&settingIndex, settingsPos, 1, (settingIndex[settingsPos].maxValue - 1));
+            }
+          }
+        } else if (settingIndex[settingsPos].type == 2){
+          if (*pc == 261 && (settingsBinPos < (settingIndex[settingsPos].maxValue -1))){
+            settingsBinPos++;
+          } else if (*pc == 260 && (settingsBinPos > -1)){
+            settingsBinPos--;
+          } else if (*pc == 32 && (settingsBinPos > -1)){
+            // Not fond of this, but it should work
+          }
+        }
+      } else if (*pc == 259){
+        if (settingsPos > 0){
+          settingsBinPos = -1;
+          settingsPos--;
+        }
+      }
+    }
+}
+
+
 int main(int argc, char *argv[])
 {
   int c;
@@ -379,6 +537,7 @@ int main(int argc, char *argv[])
          {"help",           no_argument,       0, GETOPT_HELP_CHAR},
          {"version",        no_argument,       0, GETOPT_VERSION_CHAR},
          {"theme",          optional_argument, 0, GETOPT_THEME_CHAR},
+         {"settings-menu",  no_argument,       0, GETOPT_OPTIONSMENU_CHAR},
          {0, 0, 0, 0}
         };
       int option_index = 0;
@@ -412,6 +571,9 @@ int main(int argc, char *argv[])
         listThemes();
         exit(2);
       }
+      break;
+    case GETOPT_OPTIONSMENU_CHAR:
+      launchSettingsMenu = 1;
       break;
     default:
       // abort();
@@ -453,11 +615,15 @@ int main(int argc, char *argv[])
   curs_set(FALSE);
   keypad(stdscr, TRUE);
 
-  if (optind < argc){
-    strcpy(fileName, argv[optind]);
-    file_view(fileName);
+  if (launchSettingsMenu == 1) {
+    settingsMenuView();
   } else {
-    show_file_file_input();
+    if (optind < argc){
+      strcpy(fileName, argv[optind]);
+      file_view(fileName);
+    } else {
+      show_file_file_input();
+    }
   }
 
   exittoshell();

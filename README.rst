@@ -186,10 +186,10 @@ Screenshots
 
 **SF - Show File**
 
-.. image:: https://user-images.githubusercontent.com/4301139/52901918-bc7a5280-3201-11e9-809b-94698ab29d1a.png
+.. image:: https://user-images.githubusercontent.com/4301139/56430876-c121bc80-62bf-11e9-9ac3-d892d8f37acb.png
    :alt: Show File
 
 **Colors (Built into Show)**
 
-.. image:: https://user-images.githubusercontent.com/4301139/52901920-bd12e900-3201-11e9-93d5-1b1f77fde49e.png
+.. image:: https://user-images.githubusercontent.com/4301139/56430881-c2eb8000-62bf-11e9-978b-3fda6f8cb0f3.png
    :alt: Colors
