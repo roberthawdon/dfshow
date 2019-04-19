@@ -439,7 +439,10 @@ void loadAppTheme(const char *themeName)
         }
       }
       free(rewrite);
-    }
+  } else {
+    // Assume default
+    setenv("DFS_THEME", "default", 1);
+  }
 }
 
 void updateColorPair(int code, int location){
