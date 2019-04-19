@@ -101,6 +101,7 @@ int displaystart;
 int showhidden = 0;
 
 int markall = 0;
+int automark = 0;
 
 int mmMode = 0;
 
@@ -127,7 +128,6 @@ extern int danger;
 extern int filecolors;
 extern char *objectWild;
 extern int markedinfo;
-extern int markedauto;
 extern int useEnvPager;
 extern int showProcesses;
 extern int exitCode;
@@ -237,22 +237,21 @@ char *getRelativePath(char *file, char *target)
   return(result);
 }
 
-int wildcard(const char *value, char *wcard) {
+int wildcard(const char *value, char *wcard)
+{
 
     int vsize = (int)strlen(value);
     int wsize = (int)strlen(wcard);
     int match = 0;
+    int v = 0;
+    int w = 0;
+    int lookAhead = 0;
+    int searchMode = 0;
+    char search = '\0';
 
     if (vsize == 0 &&  wsize == 0) {
         match = 1;
-    }
-
-    else {
-        int v = 0;
-        int w = 0;
-        int lookAhead = 0;
-        int searchMode = 0;
-        char search = '\0';
+    } else {
 
 
         while (1) {
@@ -311,7 +310,11 @@ int wildcard(const char *value, char *wcard) {
                 }
                 else if ((wcard[w] == ONECHAR && value[v] == '\0') || (wcard[w] != value[v] && wcard[w] != ONECHAR)) {
                     match = 0;
-                    break;
+                    if (v == vsize){
+                      break;
+                    } else {
+                      w = 0;
+                    }
                 }
                 else {
                     match = 1;
@@ -406,8 +409,18 @@ int writePermsEntry(char * perms, mode_t mode){
 
   if ( (mode & S_IXOTH) && (mode & S_ISVTX) ){
     perms[9] = 't';
+    if (S_ISDIR(mode) && (mode & S_IWOTH)){
+      typecolor = STICKY_OW_PAIR;
+    } else if (S_ISDIR(mode) && !(mode & S_IWOTH)) {
+      typecolor = STICKY_PAIR;
+    }
   } else if (mode & S_ISVTX) {
     perms[9] = 'T';
+    if (S_ISDIR(mode) && (mode & S_IWOTH)){
+      typecolor = STICKY_OW_PAIR;
+    } else if (S_ISDIR(mode) && !(mode & S_IWOTH)) {
+      typecolor = STICKY_PAIR;
+    }
   } else if (mode & S_IXOTH){
     perms[9] = 'x';
     if (typecolor != DIR_PAIR && !sexec){
@@ -523,6 +536,10 @@ char *dateString(time_t date, char *style)
   } else if ( !strcmp(style, "iso") ) {
     long_time_format[0] = "%Y-%m-%d ";
     long_time_format[1] = "%m-%d %H:%M";
+  } else {
+    // Default back to locale
+    long_time_format[0] = "%b %e  %Y";
+    long_time_format[1] = "%b %e %H:%M";
   }
   strftime(outputString, 32, long_time_format[recent], localtime(&(date)));
   return (outputString);
@@ -669,7 +686,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
     gagap = grouplen - strlen(ob[currentitem].group) + 1;
     oglen = (strlen(ob[currentitem].group) + gagap + strlen(ob[currentitem].author));
     ogaval = malloc (sizeof (char) * (oglen + 1));
-    paddingG0 = genPadding(oggap);
+    paddingG0 = genPadding(gagap);
     sprintf(ogaval, "%s%s%s", ob[currentitem].group, paddingG0, ob[currentitem].author);
     break;
   case 7:
@@ -872,7 +889,8 @@ void LaunchShell()
   clear();
   endwin();
   // system("clear"); // Not exactly sure if I want this yet.
-  printf("\nUse 'exit' to return to Show.\n\n");
+  // printf("\nUse 'exit' to return to Show.\n\n");
+  write(STDOUT_FILENO, "\nUse 'exit' to return to Show.\n\n", 32);
   system(getenv("SHELL"));
   initscr();
   refreshScreen();
@@ -1326,8 +1344,7 @@ int CheckMarked(results* ob)
   for (i = 0; i < totalfilecount; i++)
     {
       if ( *ob[i].marked ){
-        result = 1;
-        break;
+        result++;
       }
     }
   return(result);
@@ -1582,15 +1599,13 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   wchar_t pwdprint[1024];
   char *markedInfoLine, *padding0, *padding1, *padding2, *padding3;
 
-  if (markedauto) {
-    if (CheckMarked(ob) ){
-      markedinfo = 1;
-    } else {
-      markedinfo = 0;
-    }
+  if (markedinfo == 2 && (CheckMarked(ob) > 0)){
+    automark = 1;
+  } else {
+    automark = 0;
   }
 
-  if (markedinfo){
+  if (markedinfo == 1 || automark == 1){
     displaysize = LINES - 6;
     displaystart = 5;
   } else{
@@ -1600,6 +1615,9 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
       topfileref--;
     }
   }
+
+  topfileref = sanitizeTopFileRef(topfileref);
+
   selected = selected - topfileref;
 
   if (strcmp(objectWild, "")){
@@ -1768,7 +1786,7 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   wPrintLine(1, 2, pwdprint);
   printLine(2, 2, sizeHeader);
 
-  if (markedinfo){
+  if (markedinfo == 1 || (markedinfo == 2 && (CheckMarked(ob) > 0))){
     markedInfoLine = markedDisplay(ob);
     printLine (3, 4, markedInfoLine);
     free(markedInfoLine);
@@ -1782,7 +1800,7 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
 
   headerpos = 4 - hpos;
 
-  if ( markedinfo ){
+  if (markedinfo == 1 || (markedinfo == 2 && (CheckMarked(ob) > 0))){
     printLine (4, headerpos, headings);
   } else {
     printLine (3, headerpos, headings);

@@ -1,0 +1,20 @@
+theme : 
+{
+  command = [ 1, 11, 0 ];
+  info = [ 15, 1, 0 ];
+  input = [ 1, 11, 0 ];
+  select = [ 11, 0, 0 ];
+  display = [ 0, 1, 0 ];
+  danger = [ 9, 1, 0 ];
+  dir = [ 13, 1, 0 ];
+  symlink = [ -1, 1, 1 ];
+  exec = [ 11, 1, 0 ];
+  suid = [ 11, 9, 0 ];
+  sgid = [ 1, 11, 0 ];
+  hilite = [ 9, 11, 0 ];
+  error = [ 11, 1, 0 ];
+  heading = [ 15, 1, 0 ];
+  deadlink = [ 9, 1, 0 ];
+  sticky = [ 7, 0, 0 ];
+  sticky-ow = [ 1, 15, 0 ];
+};

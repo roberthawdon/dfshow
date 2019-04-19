@@ -1,7 +1,7 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "SF" "1" "February 2019" "" ""
+.TH "SF" "1" "April 2019" "" ""
 .
 .SH "NAME"
 \fBsf\fR \- An interactive file viewer written for Unix\-like systems\.
@@ -19,6 +19,9 @@ DF\-SHOW: An interactive directory/file browser written for Unix\-like systems\.
 .
 .IP "\(bu" 4
 \fB\-\-theme\fR=[\fITHEME\fR]: Color themes\. Passsing this argument without an option will display available themes\.
+.
+.IP "\(bu" 4
+\fB\-\-settings\-menu\fR: Launch \fBsf\fR directly into the settings menu\.
 .
 .IP "\(bu" 4
 \fB\-\-help\fR: Displays help message, then exits\.
@@ -41,7 +44,7 @@ If the \fBsf\fR application is invoked without specifiing a file name, the follo
 The screen format is very simple with a command line at the top of the screen, a display window consisting of the middle rows of the screen, and a file identification line at the bottom of the window\. The identification line gives the line and column number of the top left character in the window\. An example of the command line and information line is given below\.
 .
 .P
-\fBF1\-Down, F2\-Up, F3\-Top, F4\-Bottom, Find, Help, Position, Quit, Wrap\-on\fR
+\fBF1\-Down, F2\-Up, F3\-Top, F4\-Bottom, Config, Find, Help, Position, Quit, Wrap\-on\fR
 .
 .P
 \fBFile = /home/robert/sf\.txt Top = 1:1\fR
@@ -67,6 +70,10 @@ Top of File \- Position the file window to the first line of the file\.
 .TP
 \fBF4\fR
 Bottom of File \- Position the file window to the last line of the file\.
+.
+.TP
+\fBConfig\fR
+Launches \fBsf\fR\'s configuration menu\. From here, all aspects of \fBsf\fR can be configured, and settings saved so they will persist between sessions\. Further information can be found in the \fICONFIGURING SF\fR section\.
 .
 .TP
 \fBFind\fR
@@ -113,6 +120,43 @@ Position the file window to the first column of the file\.
 .TP
 \fBEnd\fR
 Position the file window to the last column of the file\.
+.
+.SH "CONFIGURING SF"
+\fBsf\fR features an inbuilt configuration menu where the user can tweak the default settings\. It is accessed using the Config command\.
+.
+.P
+The following screen is displayed\.
+.
+.P
+\fBSF Settings Menu \- Quit, Revert, Save\fR
+.
+.IP "" 4
+.
+.nf
+
+  [ ] Enable text wrapping
+.
+.fi
+.
+.IP "" 0
+.
+.P
+The menu is made up of toggle switches\. When active, the switch will display \fB[*]\fR, when inactive \fB[ ]\fR is displayed\. To toggle a value, press \fISPACE\fR when the cursor is highlighed over a specific item\.
+.
+.P
+The following commands can be used within this menu\.
+.
+.TP
+\fBQuit\fR
+Applies changes and either returns to the previous screen\.
+.
+.TP
+\fBRevert\fR
+Reverts settings to their original value from when the settings menu was invoked\.
+.
+.TP
+\fBSave\fR
+Saves settings for future sessions\.
 .
 .SH "AUTHOR"
 Written by Robert Ian Hawdon\.

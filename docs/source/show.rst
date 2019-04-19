@@ -101,6 +101,12 @@ The following options are specific to ``show``:
   Checks for parent instances of ``show``, this is useful when using
   the Run Command option.
 
+``--settings-menu``
+  Launch ``show`` directly into the settings menu.
+
+``--edit-themes``
+  Launches ``show`` directly into the theme editor. (colors)
+
 Commands
 --------
 
@@ -524,7 +530,7 @@ invoke the editor for a fire, or terminate the application
 completely. The first character of the command is used to invoke the
 desired function. The command line is shown below.
 
-``cOlors, Edit file, Help, Make dir, Quit, Run command, Show dir, Touch file``
+``cOlors, Config, Edit file, Help, Make dir, Quit, Run, Show dir, Touch file``
 
 These commands are desctibed below.
 
@@ -534,9 +540,11 @@ These commands are desctibed below.
   Further information can be found in the `colors <#colors>`__
   section.
 
-``Run command``
-  Invoke your shell. The ``show`` application is still resident, so
-  the "exit" command will return to the application.
+``Config``
+  Launches `show`'s configuration menu. From here, all aspects of
+  ``show`` can be configured, and settings saved so they will persist
+  between sessions. Further information can be found in the
+  `configuring show <#configuring-show>`__ section.
 
 ``Edit file``
   Invoke the default text editor to edit the specified file. The
@@ -556,6 +564,10 @@ These commands are desctibed below.
 
 ``Quit``
   Terminate ``show``.
+
+``Run``
+  Invoke your shell. The ``show`` application is still resident, so
+  the "exit" command will return to the application.
 
 ``Show dir``
   Invoke the application to display another directory. The directory
@@ -578,6 +590,60 @@ These commands are desctibed below.
   Selecting No will set the file's access and modification time to the current
   time.
 
+Configuring show
+----------------
+
+``show`` features an inbuilt configuration menu where the user can tweak
+the default settings. It is accessed from the global menu.
+
+The following screen is displayed.
+
+::
+
+   SHOW Settings Menu - Quit, Revert, Save
+
+      [ ] Display file colors
+      <-> Show marked file info: <never> <always> <auto>
+      <-> Sorting mode: <name> <date> <size> <unsorted>
+      [ ] Reverse sorting order
+      <-> Time style: <locale> <iso> <long-iso> <full-iso>
+      [ ] Show hidden files
+      [ ] Hide backup files
+      [ ] Use 3rd party pager over SF
+      [ ] Use SI units
+      [ ] Human readable sizes
+      [ ] Enter key acts like Show
+      < > Owner Column: <owner> <group> <author>
+
+There are three types of configuration items, each denoted with a different
+symbol:
+
+``[ ]``
+Indicates a toggle switch, when active, the switch will display ``[*]``.
+To toggle a value, press *SPACE* when the cursor is highlighed over a specific item.
+
+``<->``
+Indicates a single value option, the active item will be highlighted. To change
+the value, use either the arrow keys, or *SPACE* to toggle through each available
+option.
+
+``< >``
+Indicates a multi value option, the active items will be highlighted. To change
+their values, use the arrow keys to highlight the desired option and press
+*SPACE* to toggle its activation status.
+
+The following commands can be used within this menu.
+
+``Quit``
+Applies changes and either returns to the previous screen.
+
+``Revert``
+Reverts settings to their original value from when the settings menu was
+invoked.
+
+``Save``
+Saves settings for future sessions.
+
 Colors
 ======
 
@@ -589,7 +655,7 @@ The following screen is displayed after launch.
 
 ::
 
-   Color number, Load, Quit, Save, Toggle
+   Color number, Load, Quit, Save, Toggle, Use
 
        Command lines                            !-Default
        Display lines                            ?-Default Bold
@@ -599,15 +665,15 @@ The following screen is displayed after launch.
        Danger lines                             3-Brown
        Selected block lines                     4-Blue
        Highlight                                5-Magenta
-                                                6-Cyan
-                                                7-Light Gray
-                                                8-Dark Gray
-                                                9-Light Red
-                                                A-Light Green
-                                                B-Yellow
-                                                C-Light Blue
-                                                D-Light Magenta
-                                                E-Light Cyan
+       Text input                               6-Cyan
+       Directories                              7-Light Gray
+       Symbolic links                           8-Dark Gray
+       Orphened symbolic links                  9-Light Red
+       Executable files                         A-Light Green
+       Set user identification                  B-Yellow
+       Set group identification                 C-Light Blue
+       Sticky bit directory                     D-Light Magenta
+       Sticky bit directory - other writable    E-Light Cyan
                                                 F-White
 
 
@@ -650,6 +716,21 @@ below.
 ``Highlight``
   The color of the command/function keys.
 
+``Text input``
+  The color of input text lines.
+
+The following color settings are used when ``--color`` arguement is used.
+They are used to differentiate object status:
+
+``Directories``
+``Symbolic links``
+``Orphened symbolic links``
+``Executable files``
+``Set user identification``
+``Set group identification``
+``Sticky bit directory``
+``Sticky bit directory - other writable``
+
 After each of the colors have been changed to the desired color, the
 theme must be saved with the ``Save`` command. All the commands are
 described below.
@@ -671,3 +752,7 @@ described below.
 
 ``Toggle``
   Switches between foreground and background selection.
+
+``Use``
+  Sets the theme as the default to persist between sessions. The current
+  theme needs to be saved before this command can be used.

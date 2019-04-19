@@ -13,6 +13,8 @@
 #define ERROR_PAIR     13
 #define HEADING_PAIR   14
 #define DEADLINK_PAIR  15
+#define STICKY_PAIR    16
+#define STICKY_OW_PAIR 17
 
 #define DEFAULT_COLOR  -1
 #define BRIGHT_BLACK    8
@@ -61,6 +63,7 @@ int applyTheme(const char *filename);
 void saveTheme();
 void loadTheme();
 void loadAppTheme(const char *themeName);
+int useTheme(const char * confFile);
 int itemLookup(int menuPos);
 void lowColorCheck();
 void theme_menu_inputs();

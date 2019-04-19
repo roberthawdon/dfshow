@@ -51,8 +51,10 @@ int danger = 0;
 int invalidstart = 0;
 int filecolors = 0;
 int markedinfo = 0;
-int markedauto = 0;
 int useEnvPager = 0;
+int launchThemeEditor = 0;
+int launchSettingsMenu = 0;
+
 
 int plugins = 0; // Not yet implemented
 
@@ -65,6 +67,15 @@ int showProcesses;
 char *objectWild;
 
 results *ob;
+
+extern int settingsPos;
+extern int settingsBinPos;
+
+extern menuDef *settingsMenu;
+extern int settingsMenuSize;
+extern wchar_t *settingsMenuLabel;
+
+extern int * pc;
 
 extern history *hs;
 extern int topfileref;
@@ -230,6 +241,259 @@ void readConfig(const char * confFile)
   config_destroy(&cfg);
 }
 
+void saveConfig(const char * confFile, settingIndex **settings, t1CharValues **values, t2BinValues **bins, int items, int charIndex, int binIndex)
+{
+  config_t cfg;
+  config_setting_t *root, *setting, *group, *subgroup;
+  int i, v;
+
+  config_init(&cfg);
+
+  config_read_file(&cfg, confFile);
+  root = config_root_setting(&cfg);
+
+  group = config_setting_get_member(root, PROGRAM_NAME);
+
+  if (!group){
+    group = config_setting_add(root, PROGRAM_NAME, CONFIG_TYPE_GROUP);
+  }
+
+  for (i = 0; i < items; i++){
+    config_setting_remove(group, (*settings)[i].refLabel);
+    if ((*settings)[i].type == 0){
+      setting = config_setting_add(group, (*settings)[i].refLabel, CONFIG_TYPE_INT);
+
+      if (!strcmp((*settings)[i].refLabel, "color")){
+        config_setting_set_int(setting, filecolors);
+      } else if (!strcmp((*settings)[i].refLabel, "reverse")){
+        config_setting_set_int(setting, reverse);
+      } else if (!strcmp((*settings)[i].refLabel, "hidden")){
+        config_setting_set_int(setting, showhidden);
+      } else if (!strcmp((*settings)[i].refLabel, "ignore-backups")){
+        config_setting_set_int(setting, !showbackup);
+      } else if (!strcmp((*settings)[i].refLabel, "no-sf")){
+        config_setting_set_int(setting, useEnvPager);
+      } else if (!strcmp((*settings)[i].refLabel, "no-danger")){
+        config_setting_set_int(setting, !danger);
+      } else if (!strcmp((*settings)[i].refLabel, "si")){
+        config_setting_set_int(setting, si);
+      } else if (!strcmp((*settings)[i].refLabel, "human-readable")){
+        config_setting_set_int(setting, human);
+      } else if (!strcmp((*settings)[i].refLabel, "show-on-enter")){
+        config_setting_set_int(setting, enterAsShow);
+      }
+    } else if ((*settings)[i].type == 1){
+      //
+      setting = config_setting_add(group, (*settings)[i].refLabel, CONFIG_TYPE_STRING);
+      if (!strcmp((*settings)[i].refLabel, "marked")){
+        for(v = 0; v < charIndex; v++){
+          if (!strcmp((*values)[v].refLabel, "marked") && ((*settings)[i].intSetting == (*values)[v].index)){
+            config_setting_set_string(setting, (*values)[v].value);
+          }
+        }
+      } else if (!strcmp((*settings)[i].refLabel, "sortmode")){
+        config_setting_set_string(setting, sortmode);
+      } else if (!strcmp((*settings)[i].refLabel, "timestyle")){
+        config_setting_set_string(setting, timestyle);
+      }
+    } else if ((*settings)[i].type == 2){
+      if (!strcmp((*settings)[i].refLabel, "owner")){
+        subgroup = config_setting_add(group, "owner", CONFIG_TYPE_GROUP);
+        for (v = 0; v < binIndex; v++){
+          setting = config_setting_add(subgroup, (*bins)[v].settingLabel, CONFIG_TYPE_INT);
+          config_setting_set_int(setting, (*bins)[v].boolVal);
+        }
+      }
+    }
+  }
+
+  config_write_file(&cfg, confFile);
+
+  config_destroy(&cfg);
+}
+
+void applySettings(settingIndex **settings, t1CharValues **values, int items, int valuesCount)
+{
+  int i, j;
+  for (i = 0; i < items; i++){
+    if (!strcmp((*settings)[i].refLabel, "color")){
+      filecolors = (*settings)[i].intSetting;
+    } else if (!strcmp((*settings)[i].refLabel, "reverse")){
+      reverse = (*settings)[i].intSetting;
+    } else if (!strcmp((*settings)[i].refLabel, "hidden")){
+      showhidden = (*settings)[i].intSetting;
+    } else if (!strcmp((*settings)[i].refLabel, "ignore-backups")){
+      showbackup = (*settings)[i].intSetting;
+    } else if (!strcmp((*settings)[i].refLabel, "no-sf")){
+      useEnvPager = (*settings)[i].intSetting;
+    } else if (!strcmp((*settings)[i].refLabel, "no-danger")){
+      danger = (*settings)[i].intSetting;
+    } else if (!strcmp((*settings)[i].refLabel, "si")){
+      si = (*settings)[i].intSetting;
+    } else if (!strcmp((*settings)[i].refLabel, "human-readable")){
+      human = (*settings)[i].intSetting;
+    } else if (!strcmp((*settings)[i].refLabel, "show-on-enter")){
+      enterAsShow = (*settings)[i].intSetting;
+    } else if (!strcmp((*settings)[i].refLabel, "marked")){
+      markedinfo = (*settings)[i].intSetting;
+    } else if (!strcmp((*settings)[i].refLabel, "sortmode")){
+      for (j = 0; j < valuesCount; j++){
+        if (!strcmp((*values)[j].refLabel, "sortmode") && ((*values)[j].index == (*settings)[i].intSetting)){
+          strcpy(sortmode, (*values)[j].value);
+        }
+      }
+    } else if (!strcmp((*settings)[i].refLabel, "timestyle")){
+      for (j = 0; j < valuesCount; j++){
+        if (!strcmp((*values)[j].refLabel, "timestyle") && ((*values)[j].index == (*settings)[i].intSetting)){
+          strcpy(timestyle, (*values)[j].value);
+        }
+      }
+    } else if (!strcmp((*settings)[i].refLabel, "owner")){
+      ogavis = (*settings)[i].intSetting;
+    }
+  }
+}
+
+void settingsMenuView(){
+  uid_t uid=getuid(), euid=geteuid();
+  int items, count = 0;
+  int x = 2;
+  int y = 3;
+  settingIndex *settingIndex;
+  t1CharValues *charValues;
+  t2BinValues *binValues;
+  int markedCount, sortmodeCount, timestyleCount, ownerCount;
+  int charValuesCount;
+  int binValuesCount;
+  int sortmodeInt, timestyleInt;
+
+ reloadSettings:
+
+  items = charValuesCount = binValuesCount = markedCount = sortmodeCount = timestyleCount = ownerCount = 0;
+
+  clear();
+  wPrintMenu(0,0,settingsMenuLabel);
+  // mvprintw(2, 10, "SHOW Settings Menu");
+
+  addT1CharValue(&charValues, &charValuesCount, &markedCount, "marked", "never");
+  addT1CharValue(&charValues, &charValuesCount, &markedCount, "marked", "always");
+  addT1CharValue(&charValues, &charValuesCount, &markedCount, "marked", "auto");
+
+  addT1CharValue(&charValues, &charValuesCount, &sortmodeCount, "sortmode", "name");
+  addT1CharValue(&charValues, &charValuesCount, &sortmodeCount, "sortmode", "date");
+  addT1CharValue(&charValues, &charValuesCount, &sortmodeCount, "sortmode", "size");
+  addT1CharValue(&charValues, &charValuesCount, &sortmodeCount, "sortmode", "unsorted");
+
+  addT1CharValue(&charValues, &charValuesCount, &timestyleCount, "timestyle", "locale");
+  addT1CharValue(&charValues, &charValuesCount, &timestyleCount, "timestyle", "iso");
+  addT1CharValue(&charValues, &charValuesCount, &timestyleCount, "timestyle", "long-iso");
+  addT1CharValue(&charValues, &charValuesCount, &timestyleCount, "timestyle", "full-iso");
+
+  addT2BinValue(&binValues, &binValuesCount, &ownerCount, "owner", "owner", 1);
+  addT2BinValue(&binValues, &binValuesCount, &ownerCount, "owner", "group", 0);
+  addT2BinValue(&binValues, &binValuesCount, &ownerCount, "owner", "author", 0);
+
+  sortmodeInt = textValueLookup(&charValues, &charValuesCount, "sortmode", sortmode);
+  timestyleInt = textValueLookup(&charValues, &charValuesCount, "timestyle", timestyle);
+
+  importSetting(&settingIndex, &items, "color",          L"Display file colors", 0, filecolors, -1, 0);
+  importSetting(&settingIndex, &items, "marked",         L"Show marked file info", 1, markedinfo, markedCount, 0);
+  importSetting(&settingIndex, &items, "sortmode",       L"Sorting mode", 1, sortmodeInt, sortmodeCount, 0);
+  importSetting(&settingIndex, &items, "reverse",        L"Reverse sorting order", 0, reverse, -1, 0);
+  importSetting(&settingIndex, &items, "timestyle",      L"Time style", 1, timestyleInt, timestyleCount, 0);
+  importSetting(&settingIndex, &items, "hidden",         L"Show hidden files", 0, showhidden, -1, 0);
+  importSetting(&settingIndex, &items, "ignore-backups", L"Hide backup files", 0, showbackup, -1, 1);
+  importSetting(&settingIndex, &items, "no-sf",          L"Use 3rd party pager over SF", 0, useEnvPager, -1, 0);
+  if (uid == 0 || euid == 0){
+    importSetting(&settingIndex, &items, "no-danger",      L"Hide danger lines as root", 0, danger, -1, 1);
+  }
+  importSetting(&settingIndex, &items, "si",             L"Use SI units", 0, si, -1, 0);
+  importSetting(&settingIndex, &items, "human-readable", L"Human readable sizes", 0, human, -1, 0);
+  importSetting(&settingIndex, &items, "show-on-enter",  L"Enter key acts like Show", 0, enterAsShow, -1, 0);
+  importSetting(&settingIndex, &items, "owner",          L"Owner Column", 2, ogavis, ownerCount, 0);
+
+  populateBool(&binValues, "owner", ogavis, binValuesCount);
+
+  while(1)
+    {
+      if (settingsBinPos < 0){
+        curs_set(TRUE);
+      } else {
+        curs_set(FALSE);
+      }
+      for (count = 0; count < items; count++){
+        printSetting(2 + count, 3, &settingIndex, &charValues, &binValues, count, charValuesCount, binValuesCount, settingIndex[count].type, settingIndex[count].invert);
+      }
+
+      move(x + settingsPos, y + 1);
+      *pc = getch10th();
+      if (*pc == menuHotkeyLookup(settingsMenu, "s_quit", settingsMenuSize)){
+        curs_set(FALSE);
+        applySettings(&settingIndex, &charValues, items, charValuesCount);
+        free(settingIndex);
+        return;
+      } else if (*pc == menuHotkeyLookup(settingsMenu, "s_revert", settingsMenuSize)){
+        free(settingIndex);
+        goto reloadSettings;
+      } else if (*pc == menuHotkeyLookup(settingsMenu, "s_save", settingsMenuSize)){
+        applySettings(&settingIndex, &charValues, items, charValuesCount);
+        if (access(dirFromPath(homeConfLocation), W_OK) != 0) {
+          createParentDirs(homeConfLocation);
+        }
+        saveConfig(homeConfLocation, &settingIndex, &charValues, &binValues, items, charValuesCount, binValuesCount);
+        // Future task: ensure saving actually worked
+        curs_set(FALSE);
+        topLineMessage("Settings saved.");
+        curs_set(TRUE);
+        wPrintMenu(0,0,settingsMenuLabel);
+      } else if (*pc == 258 || *pc == 10){
+        if (settingsPos < (items -1 )){
+          settingsBinPos = -1;
+          settingsPos++;
+        }
+      } else if (*pc == 32 || *pc == 260 || *pc == 261){
+        // Adjust
+        if (settingIndex[settingsPos].type == 0){
+          if (settingIndex[settingsPos].intSetting > 0){
+            updateSetting(&settingIndex, settingsPos, 0, 0);
+          } else {
+            updateSetting(&settingIndex, settingsPos, 0, 1);
+          }
+        } else if (settingIndex[settingsPos].type == 1){
+          if (*pc == 32 || *pc == 261){
+            if (settingIndex[settingsPos].intSetting < (settingIndex[settingsPos].maxValue) - 1){
+              updateSetting(&settingIndex, settingsPos, 1, (settingIndex[settingsPos].intSetting) + 1);
+            } else {
+              updateSetting(&settingIndex, settingsPos, 1, 0);
+            }
+          } else {
+            if (settingIndex[settingsPos].intSetting > 0){
+              updateSetting(&settingIndex, settingsPos, 1, (settingIndex[settingsPos].intSetting) - 1);
+            } else {
+              updateSetting(&settingIndex, settingsPos, 1, (settingIndex[settingsPos].maxValue - 1));
+            }
+          }
+        } else if (settingIndex[settingsPos].type == 2){
+          if (*pc == 261 && (settingsBinPos < (settingIndex[settingsPos].maxValue -1))){
+            settingsBinPos++;
+          } else if (*pc == 260 && (settingsBinPos > -1)){
+            settingsBinPos--;
+          } else if (*pc == 32 && (settingsBinPos > -1)){
+            // Not fond of this, but it should work
+            if (!strcmp(settingIndex[settingsPos].refLabel, "owner")){
+              adjustBinSetting(&settingIndex, &binValues, "owner", &ogavis, binValuesCount);
+            }
+          }
+        }
+      } else if (*pc == 259){
+        if (settingsPos > 0){
+          settingsBinPos = -1;
+          settingsPos--;
+        }
+      }
+    }
+}
+
 int directory_view(char * currentpwd)
 {
   objectWild = objectFromPath(currentpwd);
@@ -284,15 +548,12 @@ int setMarked(char* markedinput)
   int status = -1;
   if (!strcmp(markedinput, "always")){
     markedinfo = 1;
-    markedauto = 0;
     status = 0;
   } else if (!strcmp(markedinput, "never")){
     markedinfo = 0;
-    markedauto = 0;
     status = 0;
   } else if (!strcmp(markedinput, "auto")){
-    markedinfo = 0;
-    markedauto = 1;
+    markedinfo = 2;
     status = 0;
   }
   return(status);
@@ -411,7 +672,9 @@ Options specific to show:\n\
       --no-sf                  does not display files in sf\n\
       --show-on-enter          repurposes the Enter key to launch the show\n\
                                command\n\
-      --running                display number of parent show processes\n"), stdout);
+      --running                display number of parent show processes\n\
+      --settings-menu          launch settings menu\n\
+      --edit-themes            launchs directly into the theme editor\n"), stdout);
   fputs (("\n\
 The THEME argument can be:\n"), stdout);
   listThemes();
@@ -472,6 +735,8 @@ int main(int argc, char *argv[])
          {"show-on-enter",  no_argument,       0, GETOPT_SHOWONENTER_CHAR},
          {"running",        no_argument,       0, GETOPT_SHOWRUNNING_CHAR},
          {"full-time",      no_argument,       0, GETOPT_FULLTIME_CHAR},
+         {"edit-themes",    no_argument,       0, GETOPT_THEMEEDIT_CHAR},
+         {"settings-menu",  no_argument,       0, GETOPT_OPTIONSMENU_CHAR},
          {0, 0, 0, 0}
         };
       int option_index = 0;
@@ -607,6 +872,12 @@ Valid arguments are:\n\
         exit(0);
       }
       break;
+    case GETOPT_THEMEEDIT_CHAR:
+      launchThemeEditor = 1;
+      break;
+    case GETOPT_OPTIONSMENU_CHAR:
+      launchSettingsMenu = 1;
+      break;
     default:
       // abort();
       exit(2);
@@ -650,32 +921,40 @@ Valid arguments are:\n\
   keypad(stdscr, TRUE);
 
 
-
-  // Remaining arguments passed as working directory
-  if (optind < argc){
-    if (!check_first_char(argv[optind], "/")){
-      // If the path given doesn't start with a / then assume we're dealing with a relative path.
-      getcwd(currentpwd, sizeof(currentpwd));
-      sprintf(currentpwd, "%s/%s", currentpwd, argv[optind]);
-    } else {
-      strcpy(currentpwd, argv[optind]);
-    }
-    chdir(currentpwd);
+  if (launchThemeEditor == 1){
+    themeBuilder();
+    theme_menu_inputs();
+    exittoshell();
+  } else if (launchSettingsMenu == 1) {
+    settingsMenuView();
+    exittoshell();
   } else {
-    getcwd(currentpwd, sizeof(currentpwd));
-  }
+    // Remaining arguments passed as working directory
+    if (optind < argc){
+      if (!check_first_char(argv[optind], "/")){
+        // If the path given doesn't start with a / then assume we're dealing with a relative path.
+        getcwd(currentpwd, sizeof(currentpwd));
+        sprintf(currentpwd, "%s/%s", currentpwd, argv[optind]);
+      } else {
+        strcpy(currentpwd, argv[optind]);
+      }
+      chdir(currentpwd);
+    } else {
+      getcwd(currentpwd, sizeof(currentpwd));
+    }
 
-  if (!check_dir(currentpwd)){
-    //strcpy(currentpwd, "/"); // If dir doesn't exist, default to root
-    invalidstart = 1;
-    exitCode = 1;
-    global_menu();
-  }
+    if (!check_dir(currentpwd)){
+      //strcpy(currentpwd, "/"); // If dir doesn't exist, default to root
+      invalidstart = 1;
+      exitCode = 1;
+      global_menu();
+    }
   testSlash:
-  if (check_last_char(currentpwd, "/") && strcmp(currentpwd, "/")){
-    currentpwd[strlen(currentpwd) - 1] = '\0';
-    goto testSlash;
+    if (check_last_char(currentpwd, "/") && strcmp(currentpwd, "/")){
+      currentpwd[strlen(currentpwd) - 1] = '\0';
+      goto testSlash;
+    }
+    directory_view(currentpwd);
   }
-  directory_view(currentpwd);
   return exitCode;
 }

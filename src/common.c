@@ -29,6 +29,7 @@
 #include <libconfig.h>
 #include <wchar.h>
 #include <signal.h>
+#include <math.h>
 #include "colors.h"
 #include "config.h"
 #include "common.h"
@@ -43,6 +44,13 @@ char globalConfLocation[128];
 char homeConfLocation[128];
 
 char themeName[128] = "default";
+
+int settingsPos = 0;
+int settingsBinPos = -1;
+
+menuDef *settingsMenu;
+int settingsMenuSize = 0;
+wchar_t *settingsMenuLabel;
 
 extern int * pc;
 
@@ -483,13 +491,14 @@ int wReadLine(wchar_t *buffer, int buflen, wchar_t *oldbuf)
   int old_curs = curs_set(1);
   int pos;
   int len;
+  int over = 0;
   int oldlen;
   int x, y;
+  int i;
   int status = 0;
   wint_t c;
 
   oldlen = wcslen(oldbuf);
-  setColors(INPUT_PAIR);
   // attron(COLOR_PAIR(INPUT_PAIR));
 
   pos = oldlen;
@@ -502,8 +511,25 @@ int wReadLine(wchar_t *buffer, int buflen, wchar_t *oldbuf)
   for (;;) {
 
     buffer[len] = ' ';
-    mvaddnwstr(y, x, buffer, len+1); // Prints buffer on screen
-    move(y, x+pos); //
+    // mvaddnwstr(y, x, buffer, len+1); // Prints buffer on screen
+    for (i = 0; i < len; i++){
+      setColors(INPUT_PAIR);
+      mvprintw(y, x + i, "%lc", buffer[i + over]); // Prints buffer on screen
+      setColors(COMMAND_PAIR);
+      mvprintw(y, x + i + 1, "%lc", ' '); // Ensuring the last cursor char is blanked
+    }
+    if (len < 1){
+      setColors(COMMAND_PAIR);
+      mvprintw(y, x, "%lc", ' '); // Blacking if there's nothing in the buffer
+    }
+    // mvprintw(LINES - 1, 0, "X = %i - Y = %i", x+pos, y);
+    if ((x + pos) < COLS){
+      move(y, x+pos); //
+      over = 0; // Just to be sure
+    } else {
+      move(y, COLS - 1);
+      over = (x+pos) - COLS;
+    }
     //c = getch();
     get_wch(&c);
 
@@ -799,4 +825,241 @@ void clear_workspace()
       clrtoeol();
       line_count++;
     }
+}
+
+void updateSetting(settingIndex **settings, int index, int type, int intSetting)
+{
+  (*settings)[index].intSetting = intSetting;
+}
+
+void addT1CharValue(t1CharValues **values, int *totalItems, int *maxItem, char *refLabel, char *value)
+{
+  t1CharValues *tmp;
+  int i = *totalItems, j, k;
+
+  if (i == 0){
+    tmp = malloc(sizeof(t1CharValues) * 2);
+    j = -1;
+  } else {
+    tmp = realloc(*values, (i + 1) * (sizeof(t1CharValues) + 1));
+  }
+
+  if (tmp){
+    *values = tmp;
+  }
+
+  for (k = 0; k < i; k++){
+    if (strcmp((*values)[k].refLabel, refLabel)){
+      j = -1;
+    } else {
+      j = (*values)[k].index;
+    }
+  }
+
+  j++;
+  (*values)[i].index = j;
+  sprintf((*values)[i].refLabel, "%s", refLabel);
+  sprintf((*values)[i].value, "%s", value);
+
+  ++*totalItems;
+  ++*maxItem;
+
+}
+
+void addT2BinValue(t2BinValues **values, int *totalItems, int *maxItem, char *refLabel, char *settingLabel, int reset)
+{
+  t2BinValues *tmp;
+  int value;
+  int i = *totalItems, j;
+
+  if (i == 0){
+    tmp = malloc(sizeof(t2BinValues) * 2);
+    j = -1;
+  } else {
+    tmp = realloc(*values, (i + 1) * (sizeof(t2BinValues) + 1));
+  }
+
+  if (tmp){
+    *values = tmp;
+  }
+
+  if (reset == 1){
+    j = -1;
+  } else {
+    j = ((*values))[i - 1].index;
+  }
+
+  value = pow(2, *maxItem);
+
+  j++;
+  ((*values))[i].index = j;
+  sprintf((*values)[i].refLabel, "%s", refLabel);
+  sprintf((*values)[i].settingLabel, "%s", settingLabel);
+  ((*values))[i].value = value;
+  ((*values))[i].boolVal = 0;
+
+  ++*totalItems;
+  ++*maxItem;
+
+}
+
+void importSetting(settingIndex **settings, int *items, char *refLabel, wchar_t *textLabel, int type, int intSetting, int maxValue, int invert)
+{
+  settingIndex *tmp;
+  int currentItem = *items;
+
+  if (*items == 0){
+    tmp = malloc(sizeof(settingIndex) * 2);
+  } else {
+    tmp = realloc(*settings, (currentItem + 1) * (sizeof(settingIndex) + 1));
+  }
+
+  if (tmp){
+    *settings = tmp;
+  }
+
+  (*settings)[currentItem].type = type;
+  sprintf((*settings)[currentItem].refLabel, "%s", refLabel);
+  swprintf((*settings)[currentItem].textLabel, 32, L"%ls", textLabel);
+  (*settings)[currentItem].intSetting = intSetting;
+  (*settings)[currentItem].maxValue = maxValue;
+  (*settings)[currentItem].invert = invert;
+
+  ++*items;
+}
+
+int intSettingValue(int *setting, int newValue){
+  if (newValue > -1){
+    *setting = newValue;
+  }
+  return *setting;
+}
+
+void populateBool(t2BinValues **values, char *refLabel, int setting, int maxValue)
+{
+  int i;
+
+  for (i = maxValue - 1; i > -1 ; i--){
+    if (!strcmp((*values)[i].refLabel, refLabel)){
+      if (setting - ((*values))[i].value > - 1){
+        ((*values))[i].boolVal = 1;
+        setting = setting - ((*values))[i].value;
+      }
+    }
+  }
+}
+
+void adjustBinSetting(settingIndex **settings, t2BinValues **values, char *refLabel, int *setting, int maxValue)
+{
+  int i;
+
+  for (i = 0; i < maxValue + 1; i++){
+    if (!strcmp((*values)[i].refLabel, refLabel) && ((*values)[i].index == settingsBinPos)){
+      if ((*values)[i].boolVal > 0){
+        (*settings)[settingsPos].intSetting = (*settings)[settingsPos].intSetting - (*values)[i].value;
+        (*values)[i].boolVal = 0;
+      } else {
+        (*settings)[settingsPos].intSetting = (*settings)[settingsPos].intSetting + (*values)[i].value;
+        (*values)[i].boolVal = 1;
+      }
+    }
+  }
+}
+
+void printSetting(int line, int col, settingIndex **settings, t1CharValues **values, t2BinValues **bins, int index, int charIndex, int binIndex, int type, int invert)
+{
+
+  int settingWork, b, c, i, v;
+  int labelLen = 0, valueLen = 0, itemAdjust = 0;
+  char refLabel[16];
+
+  labelLen = wcslen((*settings)[index].textLabel) + 2;
+  sprintf(refLabel, "%s", (*settings)[index].refLabel);
+
+  for (i = 0; i < charIndex; i++){
+    if (!strcmp((*values)[i].refLabel, refLabel) && ((*values)[i].index) == 0){
+      v = i;
+    }
+  }
+
+  for (c = 0; c < binIndex; c++){
+    if (!strcmp((*bins)[c].refLabel, refLabel) && ((*bins)[c].index) == 0){
+      b = c;
+    }
+  }
+
+  if (type == 0 ){
+    if (invert == 1){
+      if ((*settings)[index].intSetting > 0){
+        settingWork = 0;
+      } else {
+        settingWork = 1;
+      }
+    } else {
+      settingWork = (*settings)[index].intSetting;
+    }
+    setColors(HILITE_PAIR);
+    if (settingWork == 0){
+      mvprintw(line, col, "[ ]");
+    } else {
+      mvprintw(line, col, "[*]");
+    }
+    setColors(COMMAND_PAIR);
+    mvprintw(line, col + 4, "%ls", (*settings)[index].textLabel);
+  } else if (type == 1){
+    setColors(HILITE_PAIR);
+    if ((*settings)[index].maxValue > 0) {
+      mvprintw(line, col, "<->");
+    } else {
+      mvprintw(line, col, "<?>");
+    }
+    setColors(COMMAND_PAIR);
+    mvprintw(line, col + 4, "%ls:", (*settings)[index].textLabel);
+    for(i = 0; i < ((*settings)[index].maxValue); i++){
+      //Temp Test
+      valueLen = strlen((*values)[i + v].value) + 3;
+      if (i == (*settings)[index].intSetting){
+        setColors(HILITE_PAIR);
+      } else {
+        setColors(COMMAND_PAIR);
+      }
+      mvprintw(line, (col + 4 + labelLen + itemAdjust), "<%s>", (*values)[i + v].value);
+      itemAdjust = itemAdjust + valueLen;
+    }
+  } else if (type == 2){
+    setColors(HILITE_PAIR);
+    if ((*settings)[index].maxValue > 0) {
+      mvprintw(line, col, "< >");
+    } else {
+      mvprintw(line, col, "<?>");
+    }
+    setColors(COMMAND_PAIR);
+    mvprintw(line, col + 4, "%ls:", (*settings)[index].textLabel);
+    for(i = 0; i < ((*settings)[index].maxValue); i++){
+      valueLen = strlen((*bins)[i + b].settingLabel) + 3;
+      if ((*bins)[i + b].boolVal == 1){
+        setColors(HILITE_PAIR);
+      }
+      if (settingsBinPos == (i + b) ){
+        attron(A_REVERSE);
+      }
+      mvprintw(line, (col + 4 + labelLen + itemAdjust), "<%s>", (*bins)[i + b].settingLabel);
+      attroff(A_REVERSE);
+      setColors(COMMAND_PAIR);
+      itemAdjust = itemAdjust + valueLen;
+    }
+  }
+}
+
+int textValueLookup(t1CharValues **values, int *items, char *refLabel, char *value)
+{
+  int i;
+
+  for (i = 0; i < *items; i++){
+    if (!strcmp((*values)[i].value, value) && !strcmp((*values)[i].refLabel, refLabel)){
+      return (*values)[i].index;
+    }
+  }
+
+  return -1;
 }
