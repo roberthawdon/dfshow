@@ -97,9 +97,9 @@ Building from Source
 Ensure you have the following dependencies installed:
 
 * Your system's build tools
-* gcc
-* ncurses development packages
-* libconfig development packages
+* A C compiler (``gcc`` or ``clang``)
+* ``ncurses`` development packages
+* ``libconfig`` development packages
 
 Download the project and prepare sources.
 

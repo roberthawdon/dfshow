@@ -123,7 +123,7 @@ Further information can be found in the `configuring sf <#configuring-sf>`__ sec
   Position the file window to the last column of the file.
 
 Configuring sf
-==============
+--------------
 ``sf`` features an inbuilt configuration menu where the user can tweak
 the default settings. It is accessed using the Config command.
 

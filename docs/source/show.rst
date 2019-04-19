@@ -590,6 +590,60 @@ These commands are desctibed below.
   Selecting No will set the file's access and modification time to the current
   time.
 
+Configuring show
+----------------
+
+``show`` features an inbuilt configuration menu where the user can tweak
+the default settings. It is accessed from the global menu.
+
+The following screen is displayed.
+
+::
+
+   SHOW Settings Menu - Quit, Revert, Save
+
+      [ ] Display file colors
+      <-> Show marked file info: <never> <always> <auto>
+      <-> Sorting mode: <name> <date> <size> <unsorted>
+      [ ] Reverse sorting order
+      <-> Time style: <locale> <iso> <long-iso> <full-iso>
+      [ ] Show hidden files
+      [ ] Hide backup files
+      [ ] Use 3rd party pager over SF
+      [ ] Use SI units
+      [ ] Human readable sizes
+      [ ] Enter key acts like Show
+      < > Owner Column: <owner> <group> <author>
+
+There are three types of configuration items, each denoted with a different
+symbol:
+
+``[ ]``
+Indicates a toggle switch, when active, the switch will display ``[*]``.
+To toggle a value, press *SPACE* when the cursor is highlighed over a specific item.
+
+``<->``
+Indicates a single value option, the active item will be highlighted. To change
+the value, use either the arrow keys, or *SPACE* to toggle through each available
+option.
+
+``< >``
+Indicates a multi value option, the active items will be highlighted. To change
+their values, use the arrow keys to highlight the desired option and press
+*SPACE* to toggle its activation status.
+
+The following commands can be used within this menu.
+
+``Quit``
+Applies changes and either returns to the previous screen.
+
+``Revert``
+Reverts settings to their original value from when the settings menu was
+invoked.
+
+``Save``
+Saves settings for future sessions.
+
 Colors
 ======
 
@@ -702,57 +756,3 @@ described below.
 ``Use``
   Sets the theme as the default to persist between sessions. The current
   theme needs to be saved before this command can be used.
-
-Configuring show
-================
-
-``show`` features an inbuilt configuration menu where the user can tweak
-the default settings. It is accessed from the global menu.
-
-The following screen is displayed.
-
-::
-
-   SHOW Settings Menu - Quit, Revert, Save
-
-      [ ] Display file colors
-      <-> Show marked file info: <never> <always> <auto>
-      <-> Sorting mode: <name> <date> <size> <unsorted>
-      [ ] Reverse sorting order
-      <-> Time style: <locale> <iso> <long-iso> <full-iso>
-      [ ] Show hidden files
-      [ ] Hide backup files
-      [ ] Use 3rd party pager over SF
-      [ ] Use SI units
-      [ ] Human readable sizes
-      [ ] Enter key acts like Show
-      < > Owner Column: <owner> <group> <author>
-
-There are three types of configuration items, each denoted with a different
-symbol:
-
-``[ ]``
-Indicates a toggle switch, when active, the switch will display ``[*]``.
-To toggle a value, press *SPACE* when the cursor is highlighed over a specific item.
-
-``<->``
-Indicates a single value option, the active item will be highlighted. To change
-the value, use either the arrow keys, or *SPACE* to toggle through each available
-option.
-
-``< >``
-Indicates a multi value option, the active items will be highlighted. To change
-their values, use the arrow keys to highlight the desired option and press
-SPACE to toggle its activation status.
-
-The following commands can be used within this menu.
-
-``Quit``
-Applies changes and either returns to the previous screen.
-
-``Revert``
-Reverts settings to their original value from when the settings menu was
-invoked.
-
-``Save``
-Saves settings for future sessions.
