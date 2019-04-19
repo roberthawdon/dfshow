@@ -649,6 +649,9 @@ void theme_menu_inputs()
           curs_set(FALSE);
           topLineMessage("Save theme before using as default.");
         } else {
+          if (access(dirFromPath(homeConfLocation), W_OK) != 0) {
+            createParentDirs(homeConfLocation);
+          }
           if (useTheme(homeConfLocation)){
             sprintf(useThemeMessage, "Default theme has been set to [%s].", getenv("DFS_THEME"));
             topLineMessage(useThemeMessage);
