@@ -62,6 +62,7 @@
     <a href="#FUNCTIONS">FUNCTIONS</a>
     <a href="#GLOBAL-COMMANDS">GLOBAL COMMANDS</a>
     <a href="#COLORS">COLORS</a>
+    <a href="#CONFIGURING-SHOW">CONFIGURING SHOW</a>
     <a href="#SECURITY-CONSIDERATIONS">SECURITY CONSIDERATIONS</a>
     <a href="#AUTHOR">AUTHOR</a>
     <a href="#COPYRIGHT">COPYRIGHT</a>
@@ -122,6 +123,8 @@ The <code>.</code> and <code>..</code> objects are never hidden due to their nav
 <dt class="flush"><code>--no-sf</code></dt><dd><p>Doesn't display files using <code>sf</code> (if installed) and defaults to the user's PAGER setting.</p></dd>
 <dt><code>--show-on-enter</code></dt><dd><p>Sets the enter key to launch the show command instead of moving the selection down by one.</p></dd>
 <dt><code>--running</code></dt><dd><p>Checks for parent instances of <code>show</code>, this is useful when using the Run Command option.</p></dd>
+<dt><code>--settings-menu</code></dt><dd><p>Launch <code>show</code> directly into the settings menu.</p></dd>
+<dt><code>--edit-themes</code></dt><dd><p>Launches <code>show</code> directly into the theme editor. (colors)</p></dd>
 </dl>
 
 
@@ -337,12 +340,13 @@ The <code>.</code> and <code>..</code> objects are never hidden due to their nav
 
 <p>When a file group display is terminated with the Quit command, one of the following commands can be used to display another group of files, invoke the editor for a fire, or terminate the application completely. The first character of the command is used to invoke the desired function. The command line is shown below.</p>
 
-<p>  <code>cOlors, Edit file, Help, Make dir, Quit, Run command, Show dir, Touch file</code></p>
+<p>  <code>cOlors, Config, Edit file, Help, Make dir, Quit, Run, Show dir, Touch file</code></p>
 
 <p>These commands are desctibed below.</p>
 
 <dl>
 <dt class="flush"><code>cOlors</code></dt><dd><p>Launches an inbuilt color configuration utility which cusomizes the colors for the various display areas in all the utilities. Further information can be found in the <a href="#COLORS" title="COLORS" data-bare-link="true">COLORS</a> section.</p></dd>
+<dt class="flush"><code>Config</code></dt><dd><p>Launches <code>show</code>'s configuration menu. From here, all aspects of <code>show</code> can be configured, and settings saved so they will persist between sessions. Further information can be found in the <a href="#CONFIGURING-SHOW" title="CONFIGURING SHOW" data-bare-link="true">CONFIGURING SHOW</a> section.</p></dd>
 <dt><code>Run command</code></dt><dd><p>Invoke your shell. The <code>show</code> application is still resident, so the "exit" command will return to the application.</p></dd>
 <dt><code>Edit file</code></dt><dd><p>Invoke the default text editor to edit the specified file. The file name is requested by the following prompt. An empty response is used to abort this command.</p>
 
@@ -373,7 +377,7 @@ The <code>.</code> and <code>..</code> objects are never hidden due to their nav
 
 <p>The following screen is displayed after launch.</p>
 
-<p>  <code>Color number, Load, Quit, Save, Toggle</code></p>
+<p>  <code>Color number, Load, Quit, Save, Toggle, Use</code></p>
 
 <pre><code>  Command lines                            !-Default
   Display lines                            ?-Default Bold
@@ -383,15 +387,15 @@ The <code>.</code> and <code>..</code> objects are never hidden due to their nav
   Danger lines                             3-Brown
   Selected block lines                     4-Blue
   Highlight                                5-Magenta
-                                           6-Cyan
-                                           7-Light Gray
-                                           8-Dark Gray
-                                           9-Light Red
-                                           A-Light Green
-                                           B-Yellow
-                                           C-Light Blue
-                                           D-Light Magenta
-                                           E-Light Cyan
+  Text input                               6-Cyan
+  Directories                              7-Light Gray
+  Symbolic links                           8-Dark Gray
+  Orphened symbolic links                  9-Light Red
+  Executable files                         A-Light Green
+  Set user identification                  B-Yellow
+  Set group identification                 C-Light Blue
+  Sticky bit directory                     D-Light Magenta
+  Sticky bit directory - other writeable   E-Light Cyan
                                            F-White
 
 
@@ -409,13 +413,28 @@ The <code>.</code> and <code>..</code> objects are never hidden due to their nav
 <dt><code>Danger lines</code></dt><dd><p>The color used to replace the informationa lines with a warning, such as when running as the root user.</p></dd>
 <dt><code>Selected block lines</code></dt><dd><p>The color of the selected block lines of the current file in the <code>show</code> utility.</p></dd>
 <dt><code>Highlight</code></dt><dd><p>The color of the command/function keys.</p></dd>
+<dt><code>Text input</code></dt><dd><p>The color of input text lines.</p></dd>
 </dl>
+
+
+<p>The following color settings are used when <code>--color</code> arguement is used. They are used to differentiate object status:</p>
+
+<ul>
+<li><code>Directories</code></li>
+<li><code>Symbolic links</code></li>
+<li><code>Orphened symbolic links</code></li>
+<li><code>Executable files</code></li>
+<li><code>Set user identification</code></li>
+<li><code>Set group identification</code></li>
+<li><code>Sticky bit directory</code></li>
+<li><code>Sticky bit directory - other writeable</code></li>
+</ul>
 
 
 <p>After each of the colors have been changed to the desired color, the theme must be saved with the <code>Save</code> command. All the commands are described below.</p>
 
 <dl>
-<dt class="flush"><code>Load</code></dt><dd><p>Loads a theme file so it can be modified or used. The following promt requests the data file name.</p>
+<dt class="flush"><code>Load</code></dt><dd><p>Loads a theme file so it can be modified or used. The following prompt requests the data file name.</p>
 
 <p><code>Load Colors - Enter file pathname:</code></p></dd>
 <dt class="flush"><code>Quit</code></dt><dd><p>Quit the color modification utility and return to <code>show</code>.</p></dd>
@@ -423,6 +442,47 @@ The <code>.</code> and <code>..</code> objects are never hidden due to their nav
 
 <p><code>Save Colors - Enter file pathname:</code></p></dd>
 <dt class="flush"><code>Toggle</code></dt><dd><p>Switches between foreground and background selection.</p></dd>
+<dt class="flush"><code>Use</code></dt><dd><p>Sets the theme as the default to persist between sessions. The current theme needs to be saved before this command can be used.</p></dd>
+</dl>
+
+
+<h2 id="CONFIGURING-SHOW">CONFIGURING SHOW</h2>
+
+<p><code>show</code> features an inbuilt configuration menu where the user can tweak the default settings. It is accessed from the global menu.</p>
+
+<p>The following screen is displayed.</p>
+
+<p>  <code>SHOW Settings Menu - Quit, Revert, Save</code></p>
+
+<pre><code>  [ ] Display file colors
+  &lt;-> Show marked file info: &lt;never> &lt;always> &lt;auto>
+  &lt;-> Sorting mode: &lt;name> &lt;date> &lt;size> &lt;unsorted>
+  [ ] Reverse sorting order
+  &lt;-> Time style: &lt;locale> &lt;iso> &lt;long-iso> &lt;full-iso>
+  [ ] Show hidden files
+  [ ] Hide backup files
+  [ ] Use 3rd party pager over SF
+  [ ] Use SI units
+  [ ] Human readable sizes
+  [ ] Enter key acts like Show
+  &lt; > Owner Column: &lt;owner> &lt;group> &lt;author>
+</code></pre>
+
+<p>There are three types of configuration items, each denoted with a different symbol:</p>
+
+<dl>
+<dt class="flush"><code>[ ]</code></dt><dd><p>Indicates a toggle switch, when active, the switch will display <code>[*]</code>. To toggle a value, press SPACE when the cursor is highlighed over a spesific item.</p></dd>
+<dt class="flush"><code>&lt;-></code></dt><dd><p>Indicates a single value option, the active item will be highlighted. To change the value, use either the arrow keys, or SPACE to toggle through each avaialbe option.</p></dd>
+<dt class="flush"><code>&lt; ></code></dt><dd><p>Indicates a multi value option, the active items will be highlighted. To change their values, use the arrow keys to highlight the desired option and press SPACE to toggle its activation status.</p></dd>
+</dl>
+
+
+<p>The following commands can be used within this menu.</p>
+
+<dl>
+<dt class="flush"><code>Quit</code></dt><dd><p>Applies changes and either returns to the previous screen.</p></dd>
+<dt class="flush"><code>Revert</code></dt><dd><p>Reverts settings to their original value from when the settings menu was invoked.</p></dd>
+<dt class="flush"><code>Save</code></dt><dd><p>Saves settings for future sessions.</p></dd>
 </dl>
 
 
@@ -449,7 +509,7 @@ The <code>.</code> and <code>..</code> objects are never hidden due to their nav
 
   <ol class='man-decor man-foot man foot'>
     <li class='tl'></li>
-    <li class='tc'>March 2019</li>
+    <li class='tc'>April 2019</li>
     <li class='tr'>show(1)</li>
   </ol>
 
