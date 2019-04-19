@@ -237,22 +237,21 @@ char *getRelativePath(char *file, char *target)
   return(result);
 }
 
-int wildcard(const char *value, char *wcard) {
+int wildcard(const char *value, char *wcard)
+{
 
     int vsize = (int)strlen(value);
     int wsize = (int)strlen(wcard);
     int match = 0;
+    int v = 0;
+    int w = 0;
+    int lookAhead = 0;
+    int searchMode = 0;
+    char search = '\0';
 
     if (vsize == 0 &&  wsize == 0) {
         match = 1;
-    }
-
-    else {
-        int v = 0;
-        int w = 0;
-        int lookAhead = 0;
-        int searchMode = 0;
-        char search = '\0';
+    } else {
 
 
         while (1) {
@@ -311,7 +310,11 @@ int wildcard(const char *value, char *wcard) {
                 }
                 else if ((wcard[w] == ONECHAR && value[v] == '\0') || (wcard[w] != value[v] && wcard[w] != ONECHAR)) {
                     match = 0;
-                    break;
+                    if (v == vsize){
+                      break;
+                    } else {
+                      w = 0;
+                    }
                 }
                 else {
                     match = 1;
