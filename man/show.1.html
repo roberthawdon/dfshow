@@ -347,7 +347,6 @@ The <code>.</code> and <code>..</code> objects are never hidden due to their nav
 <dl>
 <dt class="flush"><code>cOlors</code></dt><dd><p>Launches an inbuilt color configuration utility which cusomizes the colors for the various display areas in all the utilities. Further information can be found in the <a href="#COLORS" title="COLORS" data-bare-link="true">COLORS</a> section.</p></dd>
 <dt class="flush"><code>Config</code></dt><dd><p>Launches <code>show</code>'s configuration menu. From here, all aspects of <code>show</code> can be configured, and settings saved so they will persist between sessions. Further information can be found in the <a href="#CONFIGURING-SHOW" title="CONFIGURING SHOW" data-bare-link="true">CONFIGURING SHOW</a> section.</p></dd>
-<dt><code>Run command</code></dt><dd><p>Invoke your shell. The <code>show</code> application is still resident, so the "exit" command will return to the application.</p></dd>
 <dt><code>Edit file</code></dt><dd><p>Invoke the default text editor to edit the specified file. The file name is requested by the following prompt. An empty response is used to abort this command.</p>
 
 <p><code>Edit File - Enter pathname:</code></p></dd>
@@ -356,6 +355,7 @@ The <code>.</code> and <code>..</code> objects are never hidden due to their nav
 
 <p><code>Make Directory - Enter pathname:</code></p></dd>
 <dt class="flush"><code>Quit</code></dt><dd><p>Terminate <code>show</code>.</p></dd>
+<dt class="flush"><code>Run</code></dt><dd><p>Invoke your shell. The <code>show</code> application is still resident, so the "exit" command will return to the application.</p></dd>
 <dt><code>Show dir</code></dt><dd><p>Invoke the application to display another directory. The directory name is requrested by the following prompt. An empty response is used to abort this command.</p>
 
 <p><code>Show Directory - Enter pathname:</code></p></dd>
@@ -395,7 +395,7 @@ The <code>.</code> and <code>..</code> objects are never hidden due to their nav
   Set user identification                  B-Yellow
   Set group identification                 C-Light Blue
   Sticky bit directory                     D-Light Magenta
-  Sticky bit directory - other writeable   E-Light Cyan
+  Sticky bit directory - other writable    E-Light Cyan
                                            F-White
 
 
@@ -427,7 +427,7 @@ The <code>.</code> and <code>..</code> objects are never hidden due to their nav
 <li><code>Set user identification</code></li>
 <li><code>Set group identification</code></li>
 <li><code>Sticky bit directory</code></li>
-<li><code>Sticky bit directory - other writeable</code></li>
+<li><code>Sticky bit directory - other writable</code></li>
 </ul>
 
 
@@ -471,9 +471,9 @@ The <code>.</code> and <code>..</code> objects are never hidden due to their nav
 <p>There are three types of configuration items, each denoted with a different symbol:</p>
 
 <dl>
-<dt class="flush"><code>[ ]</code></dt><dd><p>Indicates a toggle switch, when active, the switch will display <code>[*]</code>. To toggle a value, press SPACE when the cursor is highlighed over a spesific item.</p></dd>
-<dt class="flush"><code>&lt;-></code></dt><dd><p>Indicates a single value option, the active item will be highlighted. To change the value, use either the arrow keys, or SPACE to toggle through each avaialbe option.</p></dd>
-<dt class="flush"><code>&lt; ></code></dt><dd><p>Indicates a multi value option, the active items will be highlighted. To change their values, use the arrow keys to highlight the desired option and press SPACE to toggle its activation status.</p></dd>
+<dt class="flush"><code>[ ]</code></dt><dd><p>Indicates a toggle switch, when active, the switch will display <code>[*]</code>. To toggle a value, press <em>SPACE</em> when the cursor is highlighed over a specific item.</p></dd>
+<dt class="flush"><code>&lt;-></code></dt><dd><p>Indicates a single value option, the active item will be highlighted. To change the value, use either the arrow keys, or <em>SPACE</em> to toggle through each available option.</p></dd>
+<dt class="flush"><code>&lt; ></code></dt><dd><p>Indicates a multi value option, the active items will be highlighted. To change their values, use the arrow keys to highlight the desired option and press <em>SPACE</em> to toggle its activation status.</p></dd>
 </dl>
 
 

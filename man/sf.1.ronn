@@ -102,7 +102,7 @@ The following screen is displayed.
 
       [ ] Enable text wrapping
 
-The menu is made up of toggle switches. When active, the switch will display `[*]`, when inactive `[ ]` is displayed. To toggle a value, press SPACE when the cursor is highlighed over a spesific item.
+The menu is made up of toggle switches. When active, the switch will display `[*]`, when inactive `[ ]` is displayed. To toggle a value, press _SPACE_ when the cursor is highlighed over a specific item.
 
 The following commands can be used within this menu.
 

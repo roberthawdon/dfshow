@@ -409,9 +409,6 @@ Launches an inbuilt color configuration utility which cusomizes the colors for t
 * `Config`:
 Launches `show`'s configuration menu. From here, all aspects of `show` can be configured, and settings saved so they will persist between sessions. Further information can be found in the [CONFIGURING SHOW][] section.
 
-* `Run command`:
-Invoke your shell. The `show` application is still resident, so the "exit" command will return to the application.
-
 * `Edit file`:
 Invoke the default text editor to edit the specified file. The file name is requested by the following prompt. An empty response is used to abort this command.
 
@@ -427,6 +424,9 @@ Make a new directory. The directory name is requested by the following prompt. A
   
 * `Quit`:
 Terminate `show`.
+
+* `Run`:
+Invoke your shell. The `show` application is still resident, so the "exit" command will return to the application.
 
 * `Show dir`:
 Invoke the application to display another directory. The directory name is requrested by the following prompt. An empty response is used to abort this command.
@@ -468,7 +468,7 @@ The following screen is displayed after launch.
       Set user identification                  B-Yellow
       Set group identification                 C-Light Blue
       Sticky bit directory                     D-Light Magenta
-      Sticky bit directory - other writeable   E-Light Cyan
+      Sticky bit directory - other writable    E-Light Cyan
                                                F-White
 
 
@@ -512,7 +512,7 @@ The following color settings are used when `--color` arguement is used. They are
 * `Set user identification`
 * `Set group identification`
 * `Sticky bit directory`
-* `Sticky bit directory - other writeable`
+* `Sticky bit directory - other writable`
 
 After each of the colors have been changed to the desired color, the theme must be saved with the `Save` command. All the commands are described below.
 
@@ -559,13 +559,13 @@ The following screen is displayed.
 There are three types of configuration items, each denoted with a different symbol:
 
 * `[ ]`:
-Indicates a toggle switch, when active, the switch will display `[*]`. To toggle a value, press SPACE when the cursor is highlighed over a spesific item.
+Indicates a toggle switch, when active, the switch will display `[*]`. To toggle a value, press _SPACE_ when the cursor is highlighed over a specific item.
 
 * `<->`:
-Indicates a single value option, the active item will be highlighted. To change the value, use either the arrow keys, or SPACE to toggle through each avaialbe option.
+Indicates a single value option, the active item will be highlighted. To change the value, use either the arrow keys, or _SPACE_ to toggle through each available option.
 
 * `< >`:
-Indicates a multi value option, the active items will be highlighted. To change their values, use the arrow keys to highlight the desired option and press SPACE to toggle its activation status.
+Indicates a multi value option, the active items will be highlighted. To change their values, use the arrow keys to highlight the desired option and press _SPACE_ to toggle its activation status.
 
 The following commands can be used within this menu.
 

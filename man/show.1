@@ -554,10 +554,6 @@ Launches an inbuilt color configuration utility which cusomizes the colors for t
 Launches \fBshow\fR\'s configuration menu\. From here, all aspects of \fBshow\fR can be configured, and settings saved so they will persist between sessions\. Further information can be found in the \fICONFIGURING SHOW\fR section\.
 .
 .TP
-\fBRun command\fR
-Invoke your shell\. The \fBshow\fR application is still resident, so the "exit" command will return to the application\.
-.
-.TP
 \fBEdit file\fR
 Invoke the default text editor to edit the specified file\. The file name is requested by the following prompt\. An empty response is used to abort this command\.
 .
@@ -578,6 +574,10 @@ Make a new directory\. The directory name is requested by the following prompt\.
 .TP
 \fBQuit\fR
 Terminate \fBshow\fR\.
+.
+.TP
+\fBRun\fR
+Invoke your shell\. The \fBshow\fR application is still resident, so the "exit" command will return to the application\.
 .
 .TP
 \fBShow dir\fR
@@ -631,7 +631,7 @@ The following screen is displayed after launch\.
   Set user identification                  B\-Yellow
   Set group identification                 C\-Light Blue
   Sticky bit directory                     D\-Light Magenta
-  Sticky bit directory \- other writeable   E\-Light Cyan
+  Sticky bit directory \- other writable    E\-Light Cyan
                                            F\-White
 
 
@@ -705,7 +705,7 @@ The following color settings are used when \fB\-\-color\fR arguement is used\. T
 \fBSticky bit directory\fR
 .
 .IP "\(bu" 4
-\fBSticky bit directory \- other writeable\fR
+\fBSticky bit directory \- other writable\fR
 .
 .IP "" 0
 .
@@ -773,15 +773,15 @@ There are three types of configuration items, each denoted with a different symb
 .
 .TP
 \fB[ ]\fR
-Indicates a toggle switch, when active, the switch will display \fB[*]\fR\. To toggle a value, press SPACE when the cursor is highlighed over a spesific item\.
+Indicates a toggle switch, when active, the switch will display \fB[*]\fR\. To toggle a value, press \fISPACE\fR when the cursor is highlighed over a specific item\.
 .
 .TP
 \fB<\->\fR
-Indicates a single value option, the active item will be highlighted\. To change the value, use either the arrow keys, or SPACE to toggle through each avaialbe option\.
+Indicates a single value option, the active item will be highlighted\. To change the value, use either the arrow keys, or \fISPACE\fR to toggle through each available option\.
 .
 .TP
 \fB< >\fR
-Indicates a multi value option, the active items will be highlighted\. To change their values, use the arrow keys to highlight the desired option and press SPACE to toggle its activation status\.
+Indicates a multi value option, the active items will be highlighted\. To change their values, use the arrow keys to highlight the desired option and press \fISPACE\fR to toggle its activation status\.
 .
 .P
 The following commands can be used within this menu\.
