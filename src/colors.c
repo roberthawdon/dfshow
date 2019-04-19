@@ -790,7 +790,7 @@ void themeBuilder()
   setColors(STICKY_PAIR);
   mvprintw(17, 4, "Sticky bit directory");
   setColors(STICKY_OW_PAIR);
-  mvprintw(18, 4, "Sticky bit directory - other writeable");
+  mvprintw(18, 4, "Sticky bit directory - other writable");
 
   setColors(DEFAULT_COLOR_PAIR);
   mvprintw(2, 45, "!-Default      ");
