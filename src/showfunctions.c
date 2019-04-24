@@ -998,11 +998,11 @@ int SendToPager(char* object)
     } else {
       topLineMessage("Error: Permission denied");
     }
-    free(page);
     free(pagerCommand);
   } else {
     topLineMessage("Please export a PAGER environment variable to define the utility program name.");
   }
+  free(page);
   return 0;
 }
 
