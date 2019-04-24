@@ -898,21 +898,17 @@ void LaunchShell()
 
 void LaunchExecutable(const char* object, const char* args)
 {
-  char command[1024];
+  char *command = malloc(sizeof(char) * (strlen(object) + strlen(args) + 2));
   sprintf(command, "%s %s", object, args);
-  //clear();
-  //endwin();
-  // printf("%s\n", command);
-  // exit(0);
   system("clear"); // Just to be sure
   system(command);
-  // initscr();
+  free(command);
   refreshScreen();
 }
 
 void copy_file(char *source_input, char *target_input)
 {
-  char targetmod[1024];
+  char *targetmod = malloc(sizeof(char) * (strlen(target_input) + 1));
   FILE *source = NULL;
   FILE *target = NULL;
   char ch = '\0';
@@ -926,8 +922,10 @@ void copy_file(char *source_input, char *target_input)
 
   if ( check_dir(targetmod) ){
     if ( !check_last_char(targetmod, "/")){
+      targetmod = realloc(targetmod, sizeof(char) * (strlen(targetmod) + 2));
       strcat(targetmod, "/");
     }
+    targetmod = realloc(targetmod, sizeof(char) * (strlen(basename(source_input)) + 1));
     strcat(targetmod, basename(source_input));
   }
   target = fopen(targetmod, "wb");
@@ -951,6 +949,7 @@ void copy_file(char *source_input, char *target_input)
   //   fputc(ch, target);
   // }
 
+  free(targetmod);
   fclose(source);
   fclose(target);
 }
@@ -962,15 +961,16 @@ void delete_file(char *source_input)
 
 int SendToPager(char* object)
 {
-  char page[1024];
-  char esc[1024];
+  char *page = malloc(sizeof(char) + 1);
+  char *pagerCommand;
   int pset = 0;
   int e = 0;
   char *escObject = str_replace(object, "'", "'\"'\"'");
 
   if (can_run_command("sf")){
     setenv("DFS_THEME_OVERRIDE", "TRUE", 1);
-    strcpy(page, "sf");
+    page = realloc(page, (sizeof(char) * 3));
+    sprintf(page, "sf");
     pset = 1;
   } else {
     useEnvPager = 1;
@@ -978,28 +978,28 @@ int SendToPager(char* object)
 
   if (useEnvPager){
     if ( getenv("PAGER")) {
-      strcpy(page, getenv("PAGER"));
+      page = realloc(page, (sizeof(char) * (strlen(getenv("PAGER") + 1))));
+      sprintf(page, "%s", getenv("PAGER"));
       pset = 1;
     }
   }
 
   if ( pset ) {
-    strcat(page, " ");
-    strcpy(esc, "'");
-    strcat(esc, escObject);
+    pagerCommand = malloc(sizeof(char) * (strlen(page) + strlen(escObject) + 4));
+    sprintf(pagerCommand, "%s '%s'", page, escObject);
     free(escObject);
-    strcat(esc, "'");
-    strcat(page, esc);
     if (access(object, R_OK) == 0){
       // clear();
       // endwin();
-      e = system(page);
+      e = system(pagerCommand);
       // initscr();
       refreshScreen();
       return e;
     } else {
       topLineMessage("Error: Permission denied");
     }
+    free(page);
+    free(pagerCommand);
   } else {
     topLineMessage("Please export a PAGER environment variable to define the utility program name.");
   }
