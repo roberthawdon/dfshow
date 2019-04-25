@@ -961,7 +961,7 @@ void delete_file(char *source_input)
 
 int SendToPager(char* object)
 {
-  char *page = malloc(sizeof(char) + 1);
+  char *page = malloc(sizeof(char) * 2);
   char *pagerCommand;
   int pset = 0;
   int e = 0;
@@ -978,7 +978,7 @@ int SendToPager(char* object)
 
   if (useEnvPager){
     if ( getenv("PAGER")) {
-      page = realloc(page, (sizeof(char) * (strlen(getenv("PAGER") + 1))));
+      page = realloc(page, (sizeof(char) * (strlen(getenv("PAGER")) + 1)));
       sprintf(page, "%s", getenv("PAGER"));
       pset = 1;
     }
@@ -1009,18 +1009,18 @@ int SendToPager(char* object)
 int SendToEditor(char* object)
 
 {
-  char *editor = malloc(sizeof(char) + 1);
+  char *editor = malloc(sizeof(char) * 2);
   char *editorCommand;
   int eset = 0;
   int e = 0;
   char *escObject = str_replace(object, "'", "'\"'\"'");
 
   if ( getenv("EDITOR")) {
-    editor = realloc(editor, (sizeof(char) * (strlen(getenv("EDITOR") + 1))));
+    editor = realloc(editor, (sizeof(char) * (strlen(getenv("EDITOR")) + 1 )));
     sprintf(editor, "%s", getenv("EDITOR"));
     eset = 1;
   } else if ( getenv("VISUAL")) {
-    editor = realloc(editor, (sizeof(char) * (strlen(getenv("VISUAL") + 1))));
+    editor = realloc(editor, (sizeof(char) * (strlen(getenv("VISUAL")) + 1 )));
     sprintf(editor, "%s", getenv("VISUAL"));
     eset = 1;
   }
