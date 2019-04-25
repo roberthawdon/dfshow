@@ -1009,38 +1009,40 @@ int SendToPager(char* object)
 int SendToEditor(char* object)
 
 {
-  char editor[1024];
-  char esc[1024];
+  char *editor = malloc(sizeof(char) + 1);
+  char *editorCommand;
   int eset = 0;
   int e = 0;
   char *escObject = str_replace(object, "'", "'\"'\"'");
+
   if ( getenv("EDITOR")) {
-    strcpy(editor, getenv("EDITOR"));
+    editor = realloc(editor, (sizeof(char) * (strlen(getenv("EDITOR") + 1))));
+    sprintf(editor, "%s", getenv("EDITOR"));
     eset = 1;
   } else if ( getenv("VISUAL")) {
-    strcpy(editor, getenv("VISUAL"));
+    editor = realloc(editor, (sizeof(char) * (strlen(getenv("VISUAL") + 1))));
+    sprintf(editor, "%s", getenv("VISUAL"));
     eset = 1;
   }
   if ( eset ){
-    strcat(editor, " ");
-    strcpy(esc, "'");
-    strcat(esc, escObject);
+    editorCommand = malloc(sizeof(char) * (strlen(editor) + strlen(escObject) + 4));
+    sprintf(editorCommand, "%s '%s'", editor, escObject);
     free(escObject);
-    strcat(esc, "'");
-    strcat(editor, esc);
     if (access(object, R_OK) == 0){
       clear();
       // endwin();
-      e = system(editor);
+      e = system(editorCommand);
       // initscr();
       refreshScreen();
       return e;
     } else {
       topLineMessage("Error: Permission denied");
     }
+    free(editorCommand);
   } else {
     topLineMessage("Please export a VISUAL environment variable to define the utility program name.");
   }
+  free(editor);
   return 0;
 }
 
