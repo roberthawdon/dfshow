@@ -1564,7 +1564,7 @@ results* get_dir(char *pwd)
     // sprintf(direrror, "The location %s cannot be opened or is not a directory\n", path);
     dirErrorSize = snprintf(NULL, 0, "The location %s cannot be opened or is not a directory", path);
     dirError = realloc(dirError, sizeof(char) * dirErrorSize);
-    sprintf("The location %s cannot be opened or is not a directory", path);
+    sprintf(dirError, "The location %s cannot be opened or is not a directory", path);
     topLineMessage(dirError);
   }
   hlinklen = seglength(ob, "hlink", count);
