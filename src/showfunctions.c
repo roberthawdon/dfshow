@@ -1459,12 +1459,14 @@ results* get_dir(char *pwd)
   //sused = GetUsedSpace(pwd); // Original DF-EDIT added the sizes to show what was used in that directory, rather than the whole disk.
   size_t count = 0;
   size_t file_count = 0;
+  size_t dirErrorSize = 0;
   struct dirent *res;
   struct stat sb;
   char *path = pwd;
   struct stat buffer;
   int         status;
-  char direrror[1024];
+  char *dirError = malloc(sizeof(char) + 1);
+  // char direrror[1024];
   // char filename[256];
 
   results *ob = malloc(sizeof(results)); // Allocating a tiny amount of memory. We'll expand this on each file found.
@@ -1521,8 +1523,10 @@ results* get_dir(char *pwd)
 
         if ( count == 0 ) {
           // This is a hacky mitigation for drivefs returning 0 objects, it should prevent the crash of #82. However, it doesn't fix the inablity to load Google Drive Stream directories properly. The GNU version of 'ls' also has similar issues, so the bug is most likely in the underlying library rather than DF-SHOW itself.
-          sprintf(direrror, "Error: Directory Returned 0 Objects" );
-          topLineMessage(direrror);
+          dirErrorSize = 36;
+          dirError = realloc(dirError, sizeof(char) * dirErrorSize);
+          sprintf(dirError, "Error: Directory Returned 0 Objects" );
+          topLineMessage(dirError);
           historyref--;
           if (historyref > 0){
             strcpy(path, hs[historyref - 1].path);
@@ -1538,8 +1542,11 @@ results* get_dir(char *pwd)
 
         // return ob;
       }else{
-        sprintf(direrror, "Could not open the directory" );
-        topLineMessage(direrror);
+        // May want to use error no. here.
+        dirErrorSize = 29;
+        dirError = realloc(dirError, sizeof(char) * dirErrorSize);
+        sprintf(dirError, "Could not open the directory" );
+        topLineMessage(dirError);
         historyref--;
         // return ob;
       }
@@ -1554,8 +1561,11 @@ results* get_dir(char *pwd)
 
   } else {
     // This should never be called.
-    sprintf(direrror, "The location %s cannot be opened or is not a directory\n", path);
-    topLineMessage(direrror);
+    // sprintf(direrror, "The location %s cannot be opened or is not a directory\n", path);
+    dirErrorSize = snprintf(NULL, 0, "The location %s cannot be opened or is not a directory", path);
+    dirError = realloc(dirError, sizeof(char) * dirErrorSize);
+    sprintf("The location %s cannot be opened or is not a directory", path);
+    topLineMessage(dirError);
   }
   hlinklen = seglength(ob, "hlink", count);
   ownerlen = seglength(ob, "owner", count);
@@ -1568,6 +1578,7 @@ results* get_dir(char *pwd)
   namelen = seglength(ob, "name", count);
   slinklen = seglength(ob, "slink", count);
 
+  free(dirError);
   free(res);
   return ob;
 }
