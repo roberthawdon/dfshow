@@ -1609,7 +1609,8 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   int i, s1, s2, s3;
   int headerpos, displaypos;
   char *susedString, *savailableString;
-  wchar_t pwdprint[1024];
+  wchar_t *pwdPrint = malloc(sizeof(wchar_t) + 1);
+  size_t pwdPrintSize;
   char *markedInfoLine, *padding0, *padding1, *padding2, *padding3;
 
   if (markedinfo == 2 && (CheckMarked(ob) > 0)){
@@ -1633,10 +1634,14 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
 
   selected = selected - topfileref;
 
+  pwdPrintSize = (strlen(pwd) + strlen(objectWild) + 2);
+
+  pwdPrint = realloc(pwdPrint, (sizeof(wchar_t) * pwdPrintSize));
+
   if (strcmp(objectWild, "")){
-    swprintf(pwdprint, 1024, L"%s/%s", pwd, objectWild);
+    swprintf(pwdPrint, pwdPrintSize, L"%s/%s", pwd, objectWild);
   } else {
-    swprintf(pwdprint, 1024, L"%s", pwd);
+    swprintf(pwdPrint, pwdPrintSize, L"%s", pwd);
   }
 
   if (human) {
@@ -1796,7 +1801,10 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
     setColors(INFO_PAIR);
   }
   // attroff(A_BOLD); // Required to ensure the last selected item doesn't bold the header
-  wPrintLine(1, 2, pwdprint);
+  wPrintLine(1, 2, pwdPrint);
+
+  free(pwdPrint);
+
   printLine(2, 2, sizeHeader);
 
   if (markedinfo == 1 || (markedinfo == 2 && (CheckMarked(ob) > 0))){
