@@ -1310,8 +1310,8 @@ int UpdateOwnerGroup(const char* object, const char* pwdstr, const char* grpstr)
 
 int RenameObject(char* source, char* dest)
 {
-  char sourceDevId[256];
-  char destDevId[256];
+  // char sourceDevId[256];
+  // char destDevId[256];
   char *destPath;
   struct stat sourcebuffer;
   struct stat destbuffer;
@@ -1325,10 +1325,11 @@ int RenameObject(char* source, char* dest)
     lstat(source, &sourcebuffer);
     lstat(destPath, &destbuffer);
 
-    sprintf(sourceDevId, "%d", sourcebuffer.st_dev);
-    sprintf(destDevId, "%d", destbuffer.st_dev);
+    // sprintf(sourceDevId, "%d", sourcebuffer.st_dev);
+    // sprintf(destDevId, "%d", destbuffer.st_dev);
 
-    if (!strcmp(sourceDevId, destDevId)) {
+    // if (!strcmp(sourceDevId, destDevId)) {
+    if (sourcebuffer.st_dev == destbuffer.st_dev) {
       // Destination is on the same filesystem.
       //mvprintw(0,66,"PASS: %s:%s %s", sourceDevId, destDevId, dest); // test pass
       e = rename(source, dest);
