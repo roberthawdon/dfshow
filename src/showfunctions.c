@@ -603,9 +603,9 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   int i;
 
   char marked[2];
-  wchar_t entryMeta[1024];
-  wchar_t entryName[1024];
-  wchar_t entrySLink[1024];
+  wchar_t *entryMeta  = malloc(sizeof(wchar_t) + 1);
+  wchar_t *entryName  = malloc(sizeof(wchar_t) + 1);
+  wchar_t *entrySLink = malloc(sizeof(wchar_t) + 1);
   int maxlen = COLS - start - 1;
 
   int currentitem = listref + topref;
@@ -773,20 +773,31 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
     strcpy(marked, " ");
   }
 
-  swprintf(entryMeta, 1024, L"  %s %s%s%i %s%s%s %ls%s ", marked, ob[currentitem].perm, s1, *ob[currentitem].hlink, ogaval, s2, sizestring, ob[currentitem].datedisplay, s3);
+  entryMetaLen = 1 + (snprintf(NULL, 0, "  %s %s%s%i %s%s%s %ls%s ", marked, ob[currentitem].perm, s1, *ob[currentitem].hlink, ogaval, s2, sizestring, ob[currentitem].datedisplay, s3));
 
-  swprintf(entryName, 1024, L"%s", ob[currentitem].name);
+  entryMeta = realloc(entryMeta, sizeof(wchar_t) * entryMetaLen);
+
+  swprintf(entryMeta, entryMetaLen, L"  %s %s%s%i %s%s%s %ls%s ", marked, ob[currentitem].perm, s1, *ob[currentitem].hlink, ogaval, s2, sizestring, ob[currentitem].datedisplay, s3);
+
+  entryNameLen = 1 + (snprintf(NULL, 0, "%s", ob[currentitem].name));
+
+  entryName = realloc(entryName, sizeof(wchar_t) * entryNameLen);
+
+  swprintf(entryName, entryNameLen, L"%s", ob[currentitem].name);
 
   if ( !strcmp(ob[currentitem].slink, "") ){
-    swprintf(entrySLink, 1024, L"\0");
+    entrySLinkLen = 1;
+    swprintf(entrySLink, entrySLinkLen, L"\0");
   } else {
-    swprintf(entrySLink, 1024, L"%s\0", ob[currentitem].slink);
+    entrySLinkLen = 1 + (snprintf(NULL, 0, "%s", ob[currentitem].slink));
+    entrySLink = realloc(entrySLink, sizeof(wchar_t) * entrySLinkLen);
+    swprintf(entrySLink, entrySLinkLen, L"%s\0", ob[currentitem].slink);
   }
 
 
-  entryMetaLen = wcslen(entryMeta);
-  entryNameLen = wcslen(entryName);
-  entrySLinkLen = wcslen(entrySLink);
+  // entryMetaLen = wcslen(entryMeta);
+  // entryNameLen = wcslen(entryName);
+  // entrySLinkLen = wcslen(entrySLink);
   // mvprintw(4 + listref, start, "%s", entry);
 
   // Setting highlight
@@ -878,6 +889,9 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   free(s3);
   free(s4);
   free(sizestring);
+  free(entryMeta);
+  free(entryName);
+  free(entrySLink);
   free(ogaval);
 }
 
