@@ -1802,7 +1802,7 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
 
   sizeHeaderLen = snprintf(NULL, 0, "%i Objects   %s Used %s Available", count, susedString, savailableString);
 
-  sizeHeader = realloc(sizeHeader, sizeof(char) * sizeHeaderLen);
+  sizeHeader = realloc(sizeHeader, sizeof(char) * (sizeHeaderLen + 1));
 
   sprintf(sizeHeader, "%i Objects   %s Used %s Available", count, susedString, savailableString);
 
@@ -1813,7 +1813,7 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
 
   headingsLen = snprintf(NULL, 0, "%s%s%s%s%s%s%s%s%s%s", headAttrs, padding0, headOG, padding1, padding2, headSize, " ", headDT, padding3, headName);
 
-  headings = realloc(headings, sizeof(char) * headingsLen);
+  headings = realloc(headings, sizeof(char) * (headingsLen + 1));
 
   sprintf(headings, "%s%s%s%s%s%s%s%s%s%s", headAttrs, padding0, headOG, padding1, padding2, headSize, " ", headDT, padding3, headName);
 
