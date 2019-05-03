@@ -773,25 +773,25 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
     strcpy(marked, " ");
   }
 
-  entryMetaLen = 1 + (snprintf(NULL, 0, "  %s %s%s%i %s%s%s %ls%s ", marked, ob[currentitem].perm, s1, *ob[currentitem].hlink, ogaval, s2, sizestring, ob[currentitem].datedisplay, s3));
+  entryMetaLen = snprintf(NULL, 0, "  %s %s%s%i %s%s%s %ls%s ", marked, ob[currentitem].perm, s1, *ob[currentitem].hlink, ogaval, s2, sizestring, ob[currentitem].datedisplay, s3);
 
-  entryMeta = realloc(entryMeta, sizeof(wchar_t) * entryMetaLen);
+  entryMeta = realloc(entryMeta, sizeof(wchar_t) * (entryMetaLen + 1));
 
-  swprintf(entryMeta, entryMetaLen, L"  %s %s%s%i %s%s%s %ls%s ", marked, ob[currentitem].perm, s1, *ob[currentitem].hlink, ogaval, s2, sizestring, ob[currentitem].datedisplay, s3);
+  swprintf(entryMeta, (entryMetaLen + 1), L"  %s %s%s%i %s%s%s %ls%s ", marked, ob[currentitem].perm, s1, *ob[currentitem].hlink, ogaval, s2, sizestring, ob[currentitem].datedisplay, s3);
 
-  entryNameLen = 1 + (snprintf(NULL, 0, "%s", ob[currentitem].name));
+  entryNameLen = snprintf(NULL, 0, "%s", ob[currentitem].name);
 
-  entryName = realloc(entryName, sizeof(wchar_t) * entryNameLen);
+  entryName = realloc(entryName, sizeof(wchar_t) * (entryNameLen + 1));
 
-  swprintf(entryName, entryNameLen, L"%s", ob[currentitem].name);
+  swprintf(entryName, (entryNameLen + 1), L"%s", ob[currentitem].name);
 
   if ( !strcmp(ob[currentitem].slink, "") ){
     entrySLinkLen = 1;
-    swprintf(entrySLink, entrySLinkLen, L"\0");
+    swprintf(entrySLink, entrySLinkLen, L"");
   } else {
-    entrySLinkLen = 1 + (snprintf(NULL, 0, "%s", ob[currentitem].slink));
-    entrySLink = realloc(entrySLink, sizeof(wchar_t) * entrySLinkLen);
-    swprintf(entrySLink, entrySLinkLen, L"%s\0", ob[currentitem].slink);
+    entrySLinkLen = snprintf(NULL, 0, "%s", ob[currentitem].slink);
+    entrySLink = realloc(entrySLink, sizeof(wchar_t) * (entrySLinkLen + 1));
+    swprintf(entrySLink, (entrySLinkLen + 1), L"%s\0", ob[currentitem].slink);
   }
 
 
@@ -1619,7 +1619,11 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   size_t list_count = 0;
   int count = totalfilecount;
   int printSelect = 0;
-  char sizeHeader[256], headings[256];
+  //char sizeHeader[256], headings[256];
+  char *sizeHeader = malloc(sizeof(char) + 1);
+  char *headings = malloc(sizeof(char) + 1);
+  size_t sizeHeaderLen;
+  size_t headingsLen;
   int i, s1, s2, s3;
   int headerpos, displaypos;
   char *susedString, *savailableString;
@@ -1795,12 +1799,20 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
     s3 = 1;
   }
 
+  sizeHeaderLen = snprintf(NULL, 0, "%i Objects   %s Used %s Available", count, susedString, savailableString);
+
+  sizeHeader = realloc(sizeHeader, sizeof(char) * sizeHeaderLen);
+
   sprintf(sizeHeader, "%i Objects   %s Used %s Available", count, susedString, savailableString);
 
   padding0 = genPadding(hlinklen + 1);
   padding1 = genPadding(s1);
   padding2 = genPadding(s2);
   padding3 = genPadding(s3);
+
+  headingsLen = snprintf(NULL, 0, "%s%s%s%s%s%s%s%s%s%s", headAttrs, padding0, headOG, padding1, padding2, headSize, " ", headDT, padding3, headName);
+
+  headings = realloc(headings, sizeof(char) * headingsLen);
 
   sprintf(headings, "%s%s%s%s%s%s%s%s%s%s", headAttrs, padding0, headOG, padding1, padding2, headSize, " ", headDT, padding3, headName);
 
@@ -1843,6 +1855,8 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   setColors(COMMAND_PAIR);
   free(susedString);
   free(savailableString);
+  free(sizeHeader);
+  free(headings);
 }
 
 void resizeDisplayDir(results* ob){
