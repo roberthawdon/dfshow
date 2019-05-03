@@ -41,7 +41,7 @@ Sets the Time/Date format to \fBfull\-iso\fR\.
 .
 .TP
 \fB\-g\fR
-Only displays the group of each object\. Can be paird with \fB\-\-author\fR\.
+Only displays the group of each object\. Can be paired with \fB\-\-author\fR\.
 .
 .TP
 \fB\-G\fR, \fB\-\-no\-group\fR
@@ -57,7 +57,7 @@ As above, but uses powers of 1000\. (1000 = 1m)
 .
 .TP
 \fB\-r\fR, \fB\-\-reverse\fR
-Reverse the order of sorting\. Can be paird with \fB\-S\fR or \fB\-t\fR
+Reverse the order of sorting\. Can be paired with \fB\-S\fR or \fB\-t\fR
 .
 .TP
 \fB\-S\fR
@@ -69,7 +69,7 @@ Time/Date format\. Can be set to \fBfull\-iso\fR, \fBlong\-iso\fR, \fBiso\fR, or
 .
 .TP
 \fB\-t\fR
-Sorts by modification time, newset first\.
+Sorts by modification time, newest first\.
 .
 .TP
 \fB\-U\fR
@@ -182,7 +182,7 @@ Runs files marked as executable\.
 Searches and marks files matching a string\.
 .
 .P
-Each of the commands are described in the following paragraphs\. If the command has any additional propts, they are also described here\.
+Each of the commands are described in the following paragraphs\. If the command has any additional prompts, they are also described here\.
 .
 .TP
 \fBCopy\fR
@@ -484,7 +484,7 @@ The display functions with their associated key assignments are described here\.
 .
 .TP
 \fBSort List\fR
-\fBF9\fR: Normally, the file list is sorted by file name alphabetically\. This function allows the files to be listed based on another sorting criteria which is requested by the following promt\.
+\fBF9\fR: Normally, the file list is sorted by file name alphabetically\. This function allows the files to be listed based on another sorting criteria which is requested by the following prompt\.
 .
 .IP
 \fBSort list by \- Date & time, Name, Size\fR
@@ -537,7 +537,7 @@ Using \fISHIFT\fR whilst selecting an option performs that action in reverse ord
 \fBESC\fR: Invoke the \fIGLOBAL COMMANDS\fR described in the next section\. This allows another directory to be displayed without terminating the current display\.
 .
 .SH "GLOBAL COMMANDS"
-When a file group display is terminated with the Quit command, one of the following commands can be used to display another group of files, invoke the editor for a fire, or terminate the application completely\. The first character of the command is used to invoke the desired function\. The command line is shown below\.
+When a file group display is terminated with the Quit command, one of the following commands can be used to display another group of files, invoke the editor for a file, or terminate the application completely\. The first character of the command is used to invoke the desired function\. The command line is shown below\.
 .
 .P
 \fBcOlors, Config, Edit file, Help, Make dir, Quit, Run, Show dir, Touch file\fR
@@ -581,7 +581,7 @@ Invoke your shell\. The \fBshow\fR application is still resident, so the "exit" 
 .
 .TP
 \fBShow dir\fR
-Invoke the application to display another directory\. The directory name is requrested by the following prompt\. An empty response is used to abort this command\.
+Invoke the application to display another directory\. The directory name is requested by the following prompt\. An empty response is used to abort this command\.
 .
 .IP
 \fBShow Directory \- Enter pathname:\fR
@@ -646,7 +646,7 @@ Initially, the cursor is positioned beside the "Command lines" string\. The curs
 .
 .TP
 \fBCommand lines\fR
-The color of the top and bottom lines of each utility\. These lines display the valid command, funcation keys and other global information\.
+The color of the top and bottom lines of each utility\. These lines display the valid command, function keys and other global information\.
 .
 .TP
 \fBDisplay lines\fR
@@ -666,7 +666,7 @@ The color used to display the headings for each column in \fBshow\fR\.
 .
 .TP
 \fBDanger lines\fR
-The color used to replace the informationa lines with a warning, such as when running as the root user\.
+The color used to replace the information lines with a warning, such as when running as the root user\.
 .
 .TP
 \fBSelected block lines\fR
@@ -681,7 +681,7 @@ The color of the command/function keys\.
 The color of input text lines\.
 .
 .P
-The following color settings are used when \fB\-\-color\fR arguement is used\. They are used to differentiate object status:
+The following color settings are used when \fB\-\-color\fR argument is used\. They are used to differentiate object status:
 .
 .IP "\(bu" 4
 \fBDirectories\fR
@@ -725,7 +725,7 @@ Quit the color modification utility and return to \fBshow\fR\.
 .
 .TP
 \fBSave\fR
-Save the theme information in a data file for use by all the utilities\. The following promt requests the data file name\.
+Save the theme information in a data file for use by all the utilities\. The following prompt requests the data file name\.
 .
 .IP
 \fBSave Colors \- Enter file pathname:\fR
@@ -799,7 +799,7 @@ Reverts settings to their original value from when the settings menu was invoked
 Saves settings for future sessions\.
 .
 .SH "SECURITY CONSIDERATIONS"
-DF\-SHOW is designed to be run as a non privileged user, and obays restrictions set by the system\. It is possible to launch \fBshow\fR as root\. When this occurs, \fBshow\fR warns the user by displaying the informational messages in a different color\.
+DF\-SHOW is designed to be run as a non privileged user, and obeys restrictions set by the system\. It is possible to launch \fBshow\fR as root\. When this occurs, \fBshow\fR warns the user by displaying the informational messages in a different color\.
 .
 .SH "AUTHOR"
 Written by Robert Ian Hawdon\.
