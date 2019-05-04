@@ -340,8 +340,10 @@ void global_menu_inputs();
 
 void show_directory_input()
 {
-  char oldpwd[1024];
-  char direrror[1024];
+  char *oldpwd = malloc(sizeof(char) * (strlen(currentpwd) + 1));
+  char *direrror = malloc(sizeof(char) + 1);
+  size_t direrrorLen;
+
   strcpy(oldpwd, currentpwd);
   move(0,0);
   clrtoeol();
@@ -383,6 +385,8 @@ void show_directory_input()
       chdir(currentpwd);
       refreshDirectory(sortmode, 0, selected, 0);
     } else {
+      direrrorLen = snprintf(NULL, 0, "The location %s cannot be opened or is not a directory\n", currentpwd);
+      direrror = realloc(direrror, sizeof(char) * (direrrorLen + 1));
       sprintf(direrror, "The location %s cannot be opened or is not a directory\n", currentpwd);
       strcpy(currentpwd, oldpwd);
       topLineMessage(direrror);
@@ -390,6 +394,8 @@ void show_directory_input()
   } else {
     strcpy(currentpwd, oldpwd); // Copying old value back if the input was aborted
   }
+  free(direrror);
+  free(oldpwd);
   if (historyref > 0){
     directory_view_menu_inputs();
   } else {
