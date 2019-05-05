@@ -779,11 +779,15 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
 
   swprintf(entryMeta, (entryMetaLen + 1), L"  %s %s%s%i %s%s%s %ls%s ", marked, ob[currentitem].perm, s1, *ob[currentitem].hlink, ogaval, s2, sizestring, ob[currentitem].datedisplay, s3);
 
-  entryNameLen = snprintf(NULL, 0, "%s", ob[currentitem].name);
+  entryMetaLen = wcslen(entryMeta);
+
+  entryNameLen = snprintf(NULL, 0, "%s", ob[currentitem].name) + 1;
 
   entryName = realloc(entryName, sizeof(wchar_t) * (entryNameLen + 1));
 
   swprintf(entryName, (entryNameLen + 1), L"%s", ob[currentitem].name);
+
+  entryNameLen = wcslen(entryName);
 
   if ( !strcmp(ob[currentitem].slink, "") ){
     entrySLinkLen = 1;
@@ -792,8 +796,8 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
     entrySLinkLen = snprintf(NULL, 0, "%s", ob[currentitem].slink);
     entrySLink = realloc(entrySLink, sizeof(wchar_t) * (entrySLinkLen + 1));
     swprintf(entrySLink, (entrySLinkLen + 1), L"%s\0", ob[currentitem].slink);
+    entrySLinkLen = wcslen(entrySLink);
   }
-
 
   // entryMetaLen = wcslen(entryMeta);
   // entryNameLen = wcslen(entryName);
