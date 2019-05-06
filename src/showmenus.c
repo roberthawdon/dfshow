@@ -406,9 +406,13 @@ void show_directory_input()
 
 int replace_file_confirm_input(char *filename)
 {
-  char message[1024];
+  char *message = malloc(sizeof(char) + 1);
+  size_t messageLen;
+  messageLen = snprintf(NULL, 0, "Replace file [<%s>]? (!Yes/!No)", filename);
+  message = realloc(message, sizeof(char) * messageLen);
   sprintf(message, "Replace file [<%s>]? (!Yes/!No)", filename);
   printMenu(0,0, message);
+  free(message);
   while(1)
     {
       *pc = getch10th();
