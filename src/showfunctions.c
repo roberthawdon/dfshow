@@ -143,6 +143,20 @@ static char const *long_time_format[2] =
    "%b %e %H:%M"
   };
 
+void freeResults(results *ob, int count)
+{
+  int i;
+  for (i = 0; i < (count - 1); i++){
+    free(ob[i].name);
+    free(ob[i].owner);
+    free(ob[i].group);
+    free(ob[i].author);
+    free(ob[i].slink);
+    free(ob[i].datedisplay);
+  }
+  free(ob);
+}
+
 int checkRunningEnv(){
   int i;
   if (!getenv("DFS_RUNNING")){
@@ -440,7 +454,7 @@ void writeResultStruct(results* ob, const char * filename, struct stat buffer, i
   struct passwd *pw;
   struct passwd *au;
   char *filedate;
-  ssize_t cslinklen;
+  ssize_t cslinklen = 0, datedisplayLen = 0;
 
   writePermsEntry(perms, buffer.st_mode);
 
@@ -455,23 +469,29 @@ void writeResultStruct(results* ob, const char * filename, struct stat buffer, i
   *ob[count].hlinklens = strlen(hlinkstr);
 
   if (!getpwuid(buffer.st_uid)){
+    ob[count].owner = malloc(sizeof(char) * 6);
     sprintf(ob[count].owner, "%i", buffer.st_uid);
   } else {
     pw = getpwuid(buffer.st_uid);
+    ob[count].owner = malloc(sizeof(char) * (strlen(pw->pw_name) + 1));
     strcpy(ob[count].owner, pw->pw_name);
   }
 
   if (!getgrgid(buffer.st_gid)){
+    ob[count].group = malloc(sizeof(char) * 6);
     sprintf(ob[count].group, "%i", buffer.st_gid);
   } else {
     gr = getgrgid(buffer.st_gid);
+    ob[count].group = malloc(sizeof(char) * (strlen(gr->gr_name) + 1));
     strcpy(ob[count].group, gr->gr_name);
   }
 
   if (!getpwuid(buffer.st_author)){
+    ob[count].author = malloc(sizeof(char) * 6);
     sprintf(ob[count].author, "%i", buffer.st_author);
   } else {
     au = getpwuid(buffer.st_author);
+    ob[count].author = malloc(sizeof(char) * (strlen(au->pw_name) + 1));
     strcpy(ob[count].author, au->pw_name);
   }
 
@@ -489,15 +509,27 @@ void writeResultStruct(results* ob, const char * filename, struct stat buffer, i
   ob[count].adate = buffer.st_atime;
 
   filedate = dateString(ob[count].date, timestyle);
-  mbstowcs(ob[count].datedisplay, filedate, 33);
+  ob[count].datedisplay = malloc(sizeof(wchar_t) * 64);
+  datedisplayLen = mbstowcs(ob[count].datedisplay, filedate, 64);
+  free(ob[count].datedisplay);
+  ob[count].datedisplay = malloc(sizeof(wchar_t) * datedisplayLen);
+  mbstowcs(ob[count].datedisplay, filedate, datedisplayLen);
+  ob[count].datedisplay[datedisplayLen] = '\0';
 
+  ob[count].name = malloc(sizeof(char) * (strlen(filename) + 1));
   strcpy(ob[count].name, filename);
 
   if (S_ISLNK(buffer.st_mode)) {
-    cslinklen = readlink(filename, ob[count].slink, 1023);
+    ob[count].slink = malloc(sizeof(char) * 4096);
+    cslinklen = readlink(filename, ob[count].slink, 4095);
     ob[count].slink[cslinklen] = '\0';
-
+    // Now we know the size, lets clear the memory and read again.
+    free(ob[count].slink);
+    ob[count].slink = malloc(sizeof(char) * (cslinklen + 1));
+    readlink(filename, ob[count].slink, cslinklen);
+    ob[count].slink[cslinklen] = '\0';
   } else {
+    ob[count].slink = malloc(sizeof(char) + 1);
     strcpy(ob[count].slink, "");
   }
 

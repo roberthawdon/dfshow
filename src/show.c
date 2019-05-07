@@ -512,7 +512,7 @@ int directory_view(char * currentpwd)
   wPrintMenu(0, 0, fileMenuLabel);
 
   set_history(currentpwd, "", "", 0, 0);
-  free(ob);
+  freeResults(ob, totalfilecount);
   ob = get_dir(currentpwd);
   reorder_ob(ob, sortmode);
   display_dir(currentpwd, ob, topfileref, 0);
@@ -526,7 +526,7 @@ int directory_view(char * currentpwd)
 
   directory_view_menu_inputs();
 
-  free(ob); //freeing memory
+  freeResults(ob, totalfilecount); //freeing memory
   return 0;
 }
 

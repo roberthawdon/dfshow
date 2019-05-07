@@ -5,18 +5,18 @@ typedef struct {
   char perm[11];
   int hlink[4];
   int hlinklens[5];
-  char owner[128];
-  char group[128];
-  char author[128];
+  char *owner;
+  char *group;
+  char *author;
   size_t size;
   int sizelens[32];
   int major;
   int minor;
   time_t date;
   time_t adate;
-  wchar_t datedisplay[33];
-  char name[512];
-  char slink[1024];
+  wchar_t *datedisplay;
+  char *name;
+  char *slink;
   int color;
 } results;
 
@@ -29,6 +29,7 @@ typedef struct {
 } history;
 
 int checkRunningEnv();
+void freeResults(results *ob, int count);
 char *getRelativePath(char *file, char *target);
 int wildcard(const char *value, char *wcard);
 int findResultByName(results *ob, char *name);

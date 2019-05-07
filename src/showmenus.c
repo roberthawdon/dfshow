@@ -305,7 +305,7 @@ void refreshDirectory(char *sortmode, int origtopfileref, int origselected, int 
       }
     }
     if (destructive != -1){
-      free(ob);
+      freeResults(ob, totalfilecount);
       ob = get_dir(currentpwd);
       clear_workspace();
       reorder_ob(ob, sortmode);
@@ -1456,7 +1456,7 @@ void directory_view_menu_inputs()
         } else {
           showhidden = 0;
         }
-        free(ob);
+        freeResults(ob, totalfilecount);
         ob = get_dir(currentpwd);
         clear_workspace();
         reorder_ob(ob, sortmode);
@@ -1480,7 +1480,7 @@ void directory_view_menu_inputs()
             if (check_dir(chpwd)){
               strcpy(currentpwd, chpwd);
               chdir(currentpwd);
-              free(ob);
+              freeResults(ob, totalfilecount);
               ob = get_dir(currentpwd);
               reorder_ob(ob, sortmode);
               selected = findResultByName(ob, hs[historyref].name);
@@ -1676,7 +1676,7 @@ void directory_view_menu_inputs()
         }
       } else if (*pc == menuHotkeyLookup(functionMenu, "f_07", functionMenuSize)){
         markall = 1;
-        free(ob);
+        freeResults(ob, totalfilecount);
         ob = get_dir(currentpwd);
         markall = 0; // Leaving this set as 1 keeps things marked even after refresh. This is bad
         clear_workspace();
@@ -1684,7 +1684,7 @@ void directory_view_menu_inputs()
         display_dir(currentpwd, ob, topfileref, selected);
       } else if (*pc == menuHotkeyLookup(functionMenu, "f_08", functionMenuSize)){
         markall = 0;
-        free(ob);
+        freeResults(ob, totalfilecount);
         ob = get_dir(currentpwd);
         clear_workspace();
         reorder_ob(ob, sortmode);
