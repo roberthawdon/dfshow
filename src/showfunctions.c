@@ -510,7 +510,7 @@ void writeResultStruct(results* ob, const char * filename, struct stat buffer, i
 
   filedate = dateString(ob[count].date, timestyle);
   ob[count].datedisplay = malloc(sizeof(wchar_t) * 64);
-  datedisplayLen = mbstowcs(ob[count].datedisplay, filedate, 64);
+  datedisplayLen = (mbstowcs(ob[count].datedisplay, filedate, 64) + 1);
   free(ob[count].datedisplay);
   ob[count].datedisplay = malloc(sizeof(wchar_t) * datedisplayLen);
   mbstowcs(ob[count].datedisplay, filedate, datedisplayLen);
