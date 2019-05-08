@@ -1516,6 +1516,7 @@ results* get_dir(char *pwd)
   char *path = pwd;
   struct stat buffer;
   int         status;
+  int         pass = 0;
   char *dirError = malloc(sizeof(char) + 1);
   // char direrror[1024];
   // char filename[256];
@@ -1550,26 +1551,33 @@ results* get_dir(char *pwd)
             }
           }
           // filename = res->d_name;
-          ob = realloc(ob, (count +1) * sizeof(results)); // Reallocating memory.
-          lstat(res->d_name, &sb);
-          status = lstat(res->d_name, &buffer);
+          if (pass == 0){
+            count++;
+          } else {
+            if (count > totalfilecount){
+              ob = realloc(ob, (count +1) * sizeof(results)); // Reallocating memory. Just in case a file is added between passes.
+            }
+            lstat(res->d_name, &sb);
+            status = lstat(res->d_name, &buffer);
 
-          sprintf(hlinkstr, "%d", buffer.st_nlink);
-          sprintf(sizestr, "%lld", (long long)buffer.st_size);
+            sprintf(hlinkstr, "%d", buffer.st_nlink);
+            sprintf(sizestr, "%lld", (long long)buffer.st_size);
 
-          writeResultStruct(ob, res->d_name, buffer, count);
+            writeResultStruct(ob, res->d_name, buffer, count);
 
-          sused = sused + buffer.st_size; // Adding the size values
+            sused = sused + buffer.st_size; // Adding the size values
 
-          // Finding the longest name and symlink pair
-          if ((strlen(ob[count].slink) + strlen(ob[count].name) + 4) > nameAndSLink){
-            nameAndSLink = strlen(ob[count].slink) + strlen(ob[count].name) + 4;
+            // Finding the longest name and symlink pair
+            if ((strlen(ob[count].slink) + strlen(ob[count].name) + 4) > nameAndSLink){
+              nameAndSLink = strlen(ob[count].slink) + strlen(ob[count].name) + 4;
+            }
+
+            count++;
           }
-
-          count++;
         }
 
         totalfilecount = count;
+
         closedir ( folder );
 
         if ( count == 0 ) {
@@ -1587,6 +1595,13 @@ results* get_dir(char *pwd)
             exitCode = 1;
             exittoshell();
           }
+        }
+
+        if (pass == 0){
+          ob = realloc(ob, sizeof(results) * (totalfilecount) + 1);
+          count = 0;
+          pass = 1;
+          goto reload;
         }
 
         // free(objectWild);
