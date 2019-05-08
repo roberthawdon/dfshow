@@ -2,7 +2,7 @@
 
 typedef struct {
   int marked[1];
-  char perm[11];
+  char *perm;
   int hlink[4];
   int hlinklens[5];
   char *owner;
@@ -21,15 +21,16 @@ typedef struct {
 } results;
 
 typedef struct {
-  char path[1024];
-  char name[512];
-  char objectWild[256];
+  char *path;
+  char *name;
+  char *objectWild;
   int topfileref;
   int selected;
 } history;
 
 int checkRunningEnv();
 void freeResults(results *ob, int count);
+void freeHistory(history *hs, int count);
 char *getRelativePath(char *file, char *target);
 int wildcard(const char *value, char *wcard);
 int findResultByName(results *ob, char *name);

@@ -147,6 +147,7 @@ void freeResults(results *ob, int count)
 {
   int i;
   for (i = 0; i < (count - 1); i++){
+    free(ob[i].perm);
     free(ob[i].name);
     free(ob[i].owner);
     free(ob[i].group);
@@ -155,6 +156,17 @@ void freeResults(results *ob, int count)
     free(ob[i].datedisplay);
   }
   free(ob);
+}
+
+void freeHistory(history *hs, int count)
+{
+  int i;
+  for (i = 0; i < (count - 1); i++){
+    free(hs[i].path);
+    free(hs[i].name);
+    free(hs[i].objectWild);
+  }
+  free(hs);
 }
 
 int checkRunningEnv(){
@@ -464,6 +476,7 @@ void writeResultStruct(results* ob, const char * filename, struct stat buffer, i
   } else {
     *ob[count].marked = 0;
   }
+  ob[count].perm = malloc(sizeof(char) * (strlen(perms) + 1));
   strcpy(ob[count].perm, perms);
   *ob[count].hlink = buffer.st_nlink;
   *ob[count].hlinklens = strlen(hlinkstr);
@@ -514,7 +527,7 @@ void writeResultStruct(results* ob, const char * filename, struct stat buffer, i
   free(ob[count].datedisplay);
   ob[count].datedisplay = malloc(sizeof(wchar_t) * datedisplayLen);
   mbstowcs(ob[count].datedisplay, filedate, datedisplayLen);
-  ob[count].datedisplay[datedisplayLen] = '\0';
+  // ob[count].datedisplay[datedisplayLen] = '\0';
 
   ob[count].name = malloc(sizeof(char) * (strlen(filename) + 1));
   strcpy(ob[count].name, filename);
@@ -1412,8 +1425,15 @@ void set_history(char *pwd, char *objectWild, char *name, int topfileref, int se
   if (historyref == sessionhistory) {
     hs = realloc(hs, (historyref +1) * sizeof(history));
     sessionhistory++;
+  } else if (historyref < sessionhistory){
+    free(hs[historyref].path);
+    free(hs[historyref].name);
+    free(hs[historyref].objectWild);
   }
 
+  hs[historyref].path = malloc(sizeof(char) * (strlen(pwd) + 1));
+  hs[historyref].name = malloc(sizeof(char) * (strlen(name) + 1));
+  hs[historyref].objectWild = malloc(sizeof(char) * (strlen(objectWild) + 1));
   strcpy(hs[historyref].path, pwd);
   strcpy(hs[historyref].objectWild, objectWild);
   strcpy(hs[historyref].name, name);

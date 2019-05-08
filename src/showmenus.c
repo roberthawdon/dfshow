@@ -66,6 +66,7 @@ extern history* hs;
 extern char currentpwd[1024];
 
 extern int historyref;
+extern int sessionhistory;
 extern int selected;
 extern int topfileref;
 extern int hpos;
@@ -1864,7 +1865,7 @@ void global_menu_inputs()
         make_directory_input();
       } else if (*pc == menuHotkeyLookup(globalMenu, "g_quit", globalMenuSize)) {
         if (historyref == 0){
-          free(hs);
+          freeHistory(hs, sessionhistory);
           exittoshell();
           refresh();
         } else {
