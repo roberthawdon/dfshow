@@ -43,7 +43,7 @@ The end of the file is indicated by a "`*eof`" line displayed in the file window
 
 ## COMMANDS
 
-The `sf` application provides functions to move the window up or down on the file being displayed. These functions are invoked by function keys specified before the function name. Commands are provided to position the window to a spesific line of the file and to quit the utility. These commands are invoked by using the first letter of the command name. Each of the commands and functions are described below.
+The `sf` application provides functions to move the window up or down on the file being displayed. These functions are invoked by function keys specified before the function name. Commands are provided to position the window to a specific line of the file and to quit the utility. These commands are invoked by using the first letter of the command name. Each of the commands and functions are described below.
 
 * `F1`, `PgDn`:
 Move the file window down or forward on the file by the size of the display to show the next section of the file.
@@ -75,7 +75,7 @@ Searches for a string provided in the form of a Regex. Case sensitivity is reque
 Launches the `man` pages for `sf`.
 
 * `Position`:
-Position the file window to a spesific line of the file or relative from the current file postion. Thew new file postion is requested by the following prompt.
+Position the file window to a specific line of the file or relative from the current file postion. Thew new file postion is requested by the following prompt.
 
   `Position relative (+num || -num) or absolute (num):`
 
