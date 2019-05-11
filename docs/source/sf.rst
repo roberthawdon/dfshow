@@ -94,8 +94,8 @@ Further information can be found in the `configuring sf <#configuring-sf>`__ sec
   Launches the ``man`` pages for ``sf``.
 
 ``Position``
-  Position the file window to a spesific line of the file or
-  relative from the current file postion. Thew new file postion is
+  Position the file window to a specific line of the file or
+  relative from the current file position. The new file postion is
   requested by the following prompt.
 
   ``Position relative (+num || -num) or absolute (num):``

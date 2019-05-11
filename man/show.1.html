@@ -100,14 +100,14 @@ The <code>.</code> and <code>..</code> objects are never hidden due to their nav
 <dt><code>--color</code>[=<var>COLOR</var>]</dt><dd><p>Sets colorizing of files and directories. Can be set to <code>always</code> or <code>never</code>.</p></dd>
 <dt class="flush"><code>-f</code></dt><dd><p>Does not sort the output, this is equivilent to running <code>show</code> with <code>-aU</code>.</p></dd>
 <dt><code>--full-time</code></dt><dd><p>Sets the Time/Date format to <code>full-iso</code>.</p></dd>
-<dt class="flush"><code>-g</code></dt><dd><p>Only displays the group of each object. Can be paird with <code>--author</code>.</p></dd>
+<dt class="flush"><code>-g</code></dt><dd><p>Only displays the group of each object. Can be paired with <code>--author</code>.</p></dd>
 <dt><code>-G</code>, <code>--no-group</code></dt><dd><p>Omits the group of each object in the output.</p></dd>
 <dt><code>-h</code>, <code>--human-readable</code></dt><dd><p>Displays the file sizes in a human readable format. For example, 1024 Bytes will be represented as 1M.</p></dd>
 <dt class="flush"><code>--si</code></dt><dd><p>As above, but uses powers of 1000. (1000 = 1m)</p></dd>
-<dt><code>-r</code>, <code>--reverse</code></dt><dd><p>Reverse the order of sorting. Can be paird with <code>-S</code> or <code>-t</code></p></dd>
+<dt><code>-r</code>, <code>--reverse</code></dt><dd><p>Reverse the order of sorting. Can be paired with <code>-S</code> or <code>-t</code></p></dd>
 <dt class="flush"><code>-S</code></dt><dd><p>Sorts files and directories by size, largest first.</p></dd>
 <dt><code>--time-style</code>=[<var>TIME_STYLE</var>]</dt><dd><p>Time/Date format. Can be set to <code>full-iso</code>, <code>long-iso</code>, <code>iso</code>, or <code>locale</code>.</p></dd>
-<dt class="flush"><code>-t</code></dt><dd><p>Sorts by modification time, newset first.</p></dd>
+<dt class="flush"><code>-t</code></dt><dd><p>Sorts by modification time, newest first.</p></dd>
 <dt class="flush"><code>-U</code></dt><dd><p>Displays output in the order they're found.</p></dd>
 <dt class="flush"><code>--help</code></dt><dd><p>Displays help message, then exits.</p></dd>
 <dt><code>--version</code></dt><dd><p>Displays program version, then exits.</p></dd>
@@ -158,7 +158,7 @@ The <code>.</code> and <code>..</code> objects are never hidden due to their nav
 </dl>
 
 
-<p>Each of the commands are described in the following paragraphs. If the command has any additional propts, they are also described here.</p>
+<p>Each of the commands are described in the following paragraphs. If the command has any additional prompts, they are also described here.</p>
 
 <dl>
 <dt class="flush"><code>Copy</code></dt><dd><p>Copy the selected file, or marked files to another file location. When using this command, only the destination must be specified. The destination file name is requested by one of the following prompts. An empty response to the prompt or the <em>ESC</em> key is used to abort the command. If there are no marked files, a single file copy is requested; otherwise, a multiple file copy is requested.</p>
@@ -312,7 +312,7 @@ The <code>.</code> and <code>..</code> objects are never hidden due to their nav
 <dt><code>Mark/Unmark File</code></dt><dd><p><code>F6</code>: Toggle the file mark on the current file. The file mark is indicated with an "*" in front of the file name.</p></dd>
 <dt><code>Mark All Files</code></dt><dd><p><code>F7</code>: Set the file mark on all the files but not directories in the list.</p></dd>
 <dt><code>Unmark All Files</code></dt><dd><p><code>F8</code>: Remove the file marks from all files in the list.</p></dd>
-<dt><code>Sort List</code></dt><dd><p><code>F9</code>: Normally, the file list is sorted by file name alphabetically. This function allows the files to be listed based on another sorting criteria which is requested by the following promt.</p>
+<dt><code>Sort List</code></dt><dd><p><code>F9</code>: Normally, the file list is sorted by file name alphabetically. This function allows the files to be listed based on another sorting criteria which is requested by the following prompt.</p>
 
 <p><code>Sort list by - Date &amp; time, Name, Size</code></p>
 
@@ -356,7 +356,7 @@ The <code>.</code> and <code>..</code> objects are never hidden due to their nav
 <p><code>Make Directory - Enter pathname:</code></p></dd>
 <dt class="flush"><code>Quit</code></dt><dd><p>Terminate <code>show</code>.</p></dd>
 <dt class="flush"><code>Run</code></dt><dd><p>Invoke your shell. The <code>show</code> application is still resident, so the "exit" command will return to the application.</p></dd>
-<dt><code>Show dir</code></dt><dd><p>Invoke the application to display another directory. The directory name is requrested by the following prompt. An empty response is used to abort this command.</p>
+<dt><code>Show dir</code></dt><dd><p>Invoke the application to display another directory. The directory name is requested by the following prompt. An empty response is used to abort this command.</p>
 
 <p><code>Show Directory - Enter pathname:</code></p></dd>
 <dt><code>Touch file</code></dt><dd><p>Updates the timestamp of a specified file requested by the following prompt. If the file doesn't exist, it will be created.</p>
@@ -405,19 +405,19 @@ The <code>.</code> and <code>..</code> objects are never hidden due to their nav
 <p>Initially, the cursor is positioned beside the "Command lines" string. The cursor can be moved to each of the display types using the up and down cursor keys, and each color can be set by using the number of the desired color. The background color can be set by using the <code>Toggle</code> command. Each of the types of lines are described below.</p>
 
 <dl>
-<dt><code>Command lines</code></dt><dd><p>The color of the top and bottom lines of each utility. These lines display the valid command, funcation keys and other global information.</p></dd>
+<dt><code>Command lines</code></dt><dd><p>The color of the top and bottom lines of each utility. These lines display the valid command, function keys and other global information.</p></dd>
 <dt><code>Display lines</code></dt><dd><p>The color for the main text lines in each utilities' display.</p></dd>
 <dt><code>Error messages</code></dt><dd><p>The color in which any error messages are displayed.</p></dd>
 <dt><code>Information lines</code></dt><dd><p>The color used to display general information such as the directory header information.</p></dd>
 <dt><code>Heading lines</code></dt><dd><p>The color used to display the headings for each column in <code>show</code>.</p></dd>
-<dt><code>Danger lines</code></dt><dd><p>The color used to replace the informationa lines with a warning, such as when running as the root user.</p></dd>
+<dt><code>Danger lines</code></dt><dd><p>The color used to replace the information lines with a warning, such as when running as the root user.</p></dd>
 <dt><code>Selected block lines</code></dt><dd><p>The color of the selected block lines of the current file in the <code>show</code> utility.</p></dd>
 <dt><code>Highlight</code></dt><dd><p>The color of the command/function keys.</p></dd>
 <dt><code>Text input</code></dt><dd><p>The color of input text lines.</p></dd>
 </dl>
 
 
-<p>The following color settings are used when <code>--color</code> arguement is used. They are used to differentiate object status:</p>
+<p>The following color settings are used when <code>--color</code> argument is used. They are used to differentiate object status:</p>
 
 <ul>
 <li><code>Directories</code></li>
@@ -438,7 +438,7 @@ The <code>.</code> and <code>..</code> objects are never hidden due to their nav
 
 <p><code>Load Colors - Enter file pathname:</code></p></dd>
 <dt class="flush"><code>Quit</code></dt><dd><p>Quit the color modification utility and return to <code>show</code>.</p></dd>
-<dt class="flush"><code>Save</code></dt><dd><p>Save the theme information in a data file for use by all the utilities. The following promt requests the data file name.</p>
+<dt class="flush"><code>Save</code></dt><dd><p>Save the theme information in a data file for use by all the utilities. The following prompt requests the data file name.</p>
 
 <p><code>Save Colors - Enter file pathname:</code></p></dd>
 <dt class="flush"><code>Toggle</code></dt><dd><p>Switches between foreground and background selection.</p></dd>
@@ -488,7 +488,7 @@ The <code>.</code> and <code>..</code> objects are never hidden due to their nav
 
 <h2 id="SECURITY-CONSIDERATIONS">SECURITY CONSIDERATIONS</h2>
 
-<p>DF-SHOW is designed to be run as a non privileged user, and obays restrictions set by the system. It is possible to launch <code>show</code> as root. When this occurs, <code>show</code> warns the user by displaying the informational messages in a different color.</p>
+<p>DF-SHOW is designed to be run as a non privileged user, and obeys restrictions set by the system. It is possible to launch <code>show</code> as root. When this occurs, <code>show</code> warns the user by displaying the informational messages in a different color.</p>
 
 <h2 id="AUTHOR">AUTHOR</h2>
 
@@ -502,14 +502,14 @@ The <code>.</code> and <code>..</code> objects are never hidden due to their nav
 
 <h2 id="SEE-ALSO">SEE ALSO</h2>
 
-<p><a class="man-ref" href="sf.1.html">sf<span class="s">(1)</span></a>, <span class="man-ref">chmod<span class="s">(1)</span></span>, <span class="man-ref">chown<span class="s">(1)</span></span></p>
+<p><span class="man-ref">sf<span class="s">(1)</span></span>, <span class="man-ref">chmod<span class="s">(1)</span></span>, <span class="man-ref">chown<span class="s">(1)</span></span></p>
 
 <p>DF-SHOW on GitHub: <a href="https://github.com/roberthawdon/dfshow" data-bare-link="true">https://github.com/roberthawdon/dfshow</a></p>
 
 
   <ol class='man-decor man-foot man foot'>
     <li class='tl'></li>
-    <li class='tc'>April 2019</li>
+    <li class='tc'>May 2019</li>
     <li class='tr'>show(1)</li>
   </ol>
 
