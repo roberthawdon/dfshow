@@ -115,7 +115,7 @@ time_t currenttime;
 extern DIR *folder;
 
 extern int messageBreak;
-extern char currentpwd[1024];
+extern char currentpwd[4096];
 extern char timestyle[9];
 extern int viewMode;
 extern int reverse;

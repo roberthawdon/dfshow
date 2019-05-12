@@ -54,8 +54,6 @@ wchar_t *settingsMenuLabel;
 
 extern int * pc;
 
-extern char fileMenuText[256];
-
 extern int resized;
 
 void refreshScreen(); // This reference needs to exist to allow getch10th to be common.

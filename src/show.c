@@ -33,7 +33,7 @@
 #include "common.h"
 #include "show.h"
 
-char currentpwd[1024];
+char currentpwd[4096];
 
 int viewMode = 0;
 int resized = 0;

@@ -351,7 +351,7 @@ void show_directory_input()
   mvprintw(0, 0, "Show Directory - Enter pathname:");
   curs_set(TRUE);
   move(0,33);
-  readline(currentpwd, 1024, oldpwd);
+  readline(currentpwd, 4096, oldpwd);
   curs_set(FALSE);
   testSlash:
   if (check_last_char(currentpwd, "/") && strcmp(currentpwd, "/")){
@@ -432,14 +432,14 @@ int replace_file_confirm_input(char *filename)
 void copy_file_input(char *file)
 {
   // YUCK, repetition, this needs sorting
-  char newfile[1024];
+  char newfile[4096];
   int e;
   move(0,0);
   clrtoeol();
   mvprintw(0, 0, "Copy file to:");
   curs_set(TRUE);
   move(0,14);
-  readline(newfile, 1024, file);
+  readline(newfile, 4096, file);
   curs_set(FALSE);
   // If the two values don't match, we want to do the copy
   if ( strcmp(newfile, file) && strcmp(newfile, "")) {
@@ -484,14 +484,14 @@ void copy_multi_file_input(results* ob, char *input)
 {
   int i, e;
 
-  char dest[1024];
-  char destfile[1024];
+  char dest[4096];
+  char destfile[4096];
   move(0,0);
   clrtoeol();
   mvprintw(0, 0, "Copy multiple files to:");
   curs_set(TRUE);
   move(0, 24);
-  readline(dest, 1024, input);
+  readline(dest, 4096, input);
   curs_set(FALSE);
   if ( strcmp(dest, input) && strcmp(dest, "")) {
     if (check_first_char(dest, "~")){
@@ -545,14 +545,14 @@ void rename_multi_file_input(results* ob, char *input)
 {
   int i, e;
 
-  char dest[1024];
-  char destfile[1024];
+  char dest[4096];
+  char destfile[4096];
   move(0,0);
   clrtoeol();
   mvprintw(0, 0, "Rename multiple files to:");
   curs_set(TRUE);
   move(0, 26);
-  readline(dest, 1024, input);
+  readline(dest, 4096, input);
   curs_set(FALSE);
   if (strcmp(dest, input) && strcmp(dest, "")){
     if (check_first_char(dest, "~")){
@@ -605,13 +605,13 @@ void rename_multi_file_input(results* ob, char *input)
 
 void edit_file_input()
 {
-  char filepath[1024];
+  char filepath[4096];
   move(0,0);
   clrtoeol();
   mvprintw(0, 0, "Edit File - Enter pathname:");
   curs_set(TRUE);
   move(0,28);
-  readline(filepath, 1024, "");
+  readline(filepath, 4096, "");
   curs_set(FALSE);
   SendToEditor(filepath);
   refreshDirectory(sortmode, topfileref, selected, 1);
@@ -620,14 +620,14 @@ void edit_file_input()
 void rename_file_input(char *file)
 {
   // YUCK, repetition, this needs sorting
-  char dest[1024];
+  char dest[4096];
   int e;
   move(0,0);
   clrtoeol();
   mvprintw(0, 0, "Rename file to:");
   curs_set(TRUE);
   move(0,16);
-  readline(dest, 1024, file);
+  readline(dest, 4096, file);
   curs_set(FALSE);
   if (strcmp(dest, file) && strcmp(dest, "")){
     if (check_first_char(dest, "~")){
@@ -672,7 +672,7 @@ void rename_file_input(char *file)
 
 void make_directory_input()
 {
-  char newdir[1024];
+  char newdir[4096];
   int e;
   move(0,0);
   clrtoeol();
@@ -682,7 +682,7 @@ void make_directory_input()
   if (!check_last_char(currentpwd, "/")){
     strcat(currentpwd, "/");
   }
-  readline(newdir, 1024, currentpwd);
+  readline(newdir, 4096, currentpwd);
   if (strcmp(newdir, currentpwd) && strcmp(newdir, "")){
     if (check_first_char(newdir, "~")){
       rewrite = str_replace(newdir, "~", getenv("HOME"));
@@ -787,7 +787,7 @@ int touchType()
 void touch_file_input()
 {
   char menuTitle[32];
-  char touchFile[1024];
+  char touchFile[4096];
   FILE* touchFileObject;
   int setDateFlag = -1;
   int e;
@@ -799,7 +799,7 @@ void touch_file_input()
   if (!check_last_char(currentpwd, "/")){
     strcat(currentpwd, "/");
   }
-  if (readline(touchFile, 1024, currentpwd) != -1){
+  if (readline(touchFile, 4096, currentpwd) != -1){
     //TODO: Ask if we want to set a time.
     wPrintMenu(0,0,touchDateConfirmMenuLabel);
     *pc = getch10th();
@@ -876,7 +876,10 @@ char * execute_argument_input(const char *exec)
 int huntCaseSelectInput()
 {
   int result = 0;
-  char message[1024];
+  char *message;
+  size_t messageLen;
+  messageLen = snprintf(NULL, 0, "Case Sensitive, !Yes/!No/<ESC> (enter = no)");
+  message = malloc(sizeof(char) * (messageLen + 1));
   sprintf(message,"Case Sensitive, !Yes/!No/<ESC> (enter = no)");
   printMenu(0,0, message);
   while(1)
@@ -900,6 +903,7 @@ int huntCaseSelectInput()
         }
       break;
     }
+  free(message);
   return(result);
 }
 
@@ -907,22 +911,28 @@ void huntInput(int selected, int charcase)
 {
   int regexcase;
   int i;
-  char regexinput[1024];
-  char inputmessage[32];
+  char regexinput[4096];
+  char *inputmessage;
+  size_t inputmessageLen;
   if (charcase){
     regexcase = 0;
-    strcpy(inputmessage, "Match Case - Enter string:");
+    inputmessageLen = snprintf(NULL, 0, "Match Case - Enter string:");
+    inputmessage = malloc(sizeof(char) * (inputmessageLen + 1));
+    sprintf(inputmessage, "Match Case - Enter string:");
   } else {
     regexcase = REG_ICASE;
-    strcpy(inputmessage, "Ignore Case - Enter string:");
+    inputmessageLen = snprintf(NULL, 0, "Ignore Case - Enter string:");
+    inputmessage = malloc(sizeof(char) * (inputmessageLen + 1));
+    sprintf(inputmessage, "Ignore Case - Enter string:");
   }
   move(0,0);
   clrtoeol();
   mvprintw(0, 0, inputmessage);
   //curs_set(TRUE);
+  free(inputmessage);
   move(0, strlen(inputmessage) + 1);
   //curs_set(FALSE);
-  if (readline(regexinput, 1024, "") == -1) {
+  if (readline(regexinput, 4096, "") == -1) {
     abortinput = 1;
   } else {
     if (CheckMarked(ob) < 1){
@@ -1002,7 +1012,8 @@ void delete_multi_file_confirm_input(results* ob)
   int i, k;
   int allflag = 0;
   int abortflag = 0;
-  char message[1024];
+  char *message;
+  size_t messageLen;
 
   for (i = 0; i < totalfilecount; i++)
     {
@@ -1017,8 +1028,11 @@ void delete_multi_file_confirm_input(results* ob)
             {
               delete_file(selfile);
             } else {
+            messageLen = snprintf(NULL, 0,"Delete file [<%s>]? (!Yes/!No/!All/!Stop)", selfile);
+            message = malloc(sizeof(char) * (messageLen + 1));
             sprintf(message,"Delete file [<%s>]? (!Yes/!No/!All/!Stop)", selfile);
             printMenu(0,0, message);
+            free(message);
             k = 1;
             while(k)
               {
