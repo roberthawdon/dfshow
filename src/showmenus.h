@@ -14,7 +14,7 @@ void show_directory_input();
 void directory_view_menu_inputs();
 void global_menu_inputs();
 char * execute_argument_input(const char *exec);
-void copy_file_input(char *file);
+void copy_file_input(char *file, mode_t mode);
 int replace_file_confirm_input(char *filename);
 void rename_file_input(char *file);
 void edit_file_input();

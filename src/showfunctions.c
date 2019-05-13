@@ -450,6 +450,9 @@ void writeResultStruct(results* ob, const char * filename, struct stat buffer, i
   } else {
     *ob[count].marked = 0;
   }
+
+  ob[count].mode = buffer.st_mode;
+
   strcpy(ob[count].perm, perms);
   *ob[count].hlink = buffer.st_nlink;
   *ob[count].hlinklens = strlen(hlinkstr);
@@ -910,7 +913,7 @@ void LaunchExecutable(const char* object, const char* args)
   refreshScreen();
 }
 
-void copy_file(char *source_input, char *target_input)
+void copy_file(char *source_input, char *target_input, mode_t mode)
 {
   char targetmod[1024];
   FILE *source = NULL;
@@ -953,6 +956,7 @@ void copy_file(char *source_input, char *target_input)
 
   fclose(source);
   fclose(target);
+  chmod(target_input, mode);
 }
 
 void delete_file(char *source_input)
