@@ -429,7 +429,7 @@ int replace_file_confirm_input(char *filename)
     }
 }
 
-void copy_file_input(char *file)
+void copy_file_input(char *file, mode_t mode)
 {
   // YUCK, repetition, this needs sorting
   char newfile[4096];
@@ -454,11 +454,11 @@ void copy_file_input(char *file)
         {
           if ( replace_file_confirm_input(newfile) )
             {
-              copy_file(file, newfile);
+              copy_file(file, newfile, mode);
               refreshDirectory(sortmode, 0, selected, 0);
             }
         } else {
-        copy_file(file, newfile);
+        copy_file(file, newfile, mode);
         refreshDirectory(sortmode, 0, selected, 0);
       }
     } else {
@@ -519,10 +519,10 @@ void copy_multi_file_input(results* ob, char *input)
                 {
                   if ( replace_file_confirm_input(destfile) )
                     {
-                      copy_file(selfile, dest);
+                      copy_file(selfile, dest, ob[i].mode);
                     }
                 } else {
-                copy_file(selfile, dest);
+                copy_file(selfile, dest, ob[i].mode);
               }
             }
         }
@@ -1434,7 +1434,7 @@ void directory_view_menu_inputs()
           }
           strcat(selfile, ob[selected].name);
           if (!check_dir(selfile)){
-            copy_file_input(selfile);
+            copy_file_input(selfile, ob[selected].mode);
           }
         }
       } else if (*pc == menuHotkeyLookup(fileMenu, "f_delete", fileMenuSize)){

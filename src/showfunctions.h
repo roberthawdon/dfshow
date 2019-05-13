@@ -2,6 +2,7 @@
 
 typedef struct {
   int marked[1];
+  mode_t mode;
   char *perm;
   int hlink[4];
   int hlinklens[5];
@@ -36,7 +37,7 @@ int wildcard(const char *value, char *wcard);
 int findResultByName(results *ob, char *name);
 char *dateString(time_t date, char *style);
 int check_object(const char *object);
-void copy_file(char *source_input, char *target_input);
+void copy_file(char *source_input, char *target_input, mode_t mode);
 void delete_file(char *source_input);
 int seglength(const void *seg, char *segname, int LEN);
 int cmp_str(const void *lhs, const void *rhs);
