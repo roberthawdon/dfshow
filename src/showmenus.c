@@ -39,8 +39,8 @@
 int c;
 int * pc = &c;
 
-char chpwd[1024];
-char selfile[1024];
+char chpwd[4096];
+char selfile[4096];
 
 char ownerinput[256];
 char groupinput[256];
@@ -63,7 +63,7 @@ time_t touchTime;
 
 extern results* ob;
 extern history* hs;
-extern char currentpwd[1024];
+extern char currentpwd[4096];
 
 extern int historyref;
 extern int sessionhistory;
