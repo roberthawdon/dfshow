@@ -508,10 +508,10 @@ void copy_multi_file_input(results* ob, char *input)
                 {
                   if ( replace_file_confirm_input(destfile) )
                     {
-                      copy_file(selfile, dest, ob[i].mode);
+                      copy_file(selfile, destfile, ob[i].mode);
                     }
                 } else {
-                copy_file(selfile, dest, ob[i].mode);
+                copy_file(selfile, destfile, ob[i].mode);
               }
             }
         }
