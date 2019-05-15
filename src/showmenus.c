@@ -1099,7 +1099,7 @@ void sort_view_inputs()
 
 void modify_group_input()
 {
-  char ofile[1024];
+  char *ofile;
 
   struct group grp;
   struct group *gresult;
@@ -1144,15 +1144,18 @@ void modify_group_input()
           {
             if ( *ob[i].marked )
               {
+                ofile = malloc(sizeof(char) * (strlen(currentpwd) + strlen(ob[i].name) + 2));
                 strcpy(ofile, currentpwd);
                 if (!check_last_char(ofile, "/")){
                   strcat(ofile, "/");
                 }
                 strcat(ofile, ob[i].name);
                 UpdateOwnerGroup(ofile, uids, gids);
+                free(ofile);
               }
           }
       } else {
+        ofile = malloc(sizeof(char) * (strlen(currentpwd) + strlen(ob[selected].name) + 2));
         strcpy(ofile, currentpwd);
         if (!check_last_char(ofile, "/")){
           strcat(ofile, "/");
@@ -1163,6 +1166,7 @@ void modify_group_input()
           sprintf(errmessage, "Error: %s", strerror(errno));
           topLineMessage(errmessage);
         }
+        free(ofile);
       }
       refreshDirectory(sortmode, topfileref, selected, 0);
 
@@ -1220,9 +1224,9 @@ void modify_owner_input()
 void modify_permissions_input()
 {
   int newperm, i, status;
-  char perms[4];
+  char perms[5];
   char *ptr;
-  char pfile[1024];
+  char *pfile;
   move(0,0);
   clrtoeol();
   mvprintw(0, 0, "Modify Permissions:");
@@ -1240,21 +1244,25 @@ void modify_permissions_input()
         {
           if ( *ob[i].marked )
             {
+              pfile = malloc(sizeof(char) * (strlen(currentpwd) + strlen(ob[i].name) + 2));
               strcpy(pfile, currentpwd);
               if (!check_last_char(pfile, "/")){
                 strcat(pfile, "/");
               }
               strcat(pfile, ob[i].name);
               chmod(pfile, newperm);
+              free(pfile);
             }
         }
     } else {
+      pfile = malloc(sizeof(char) * (strlen(currentpwd) + strlen(ob[selected].name) + 2));
       strcpy(pfile, currentpwd);
       if (!check_last_char(pfile, "/")){
         strcat(pfile, "/");
       }
       strcat(pfile, ob[selected].name);
       chmod(pfile, newperm);
+      free(pfile);
     }
     refreshDirectory(sortmode, topfileref, selected, 0);
   }
