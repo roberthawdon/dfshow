@@ -1296,7 +1296,7 @@ void linktext_input(char *file, int symbolic)
 {
   char inputmessage[32];
   char typeText[9];
-  char target[1024];
+  char target[4096];
   int relative, e;
   char *relativeFile;
   char tempDebug[1024];
@@ -1315,7 +1315,7 @@ void linktext_input(char *file, int symbolic)
   mvprintw(0,0,inputmessage);
   // curs_set(TRUE);
   move(0, strlen(inputmessage) + 1);
-  if (readline(target, 1024, target) != -1){
+  if (readline(target, 4096, target) != -1){
 
     // Check for ~ that needs replacing with home directory
     if (check_first_char(file, "~")){
