@@ -415,7 +415,7 @@ void loadTheme(){
     } else {
       curs_set(FALSE);
       topLineMessage("Error: Unable to read file");
-      curs_set(TRUE);
+      // curs_set(TRUE);
     }
   }
   themeBuilder();
@@ -832,8 +832,11 @@ void themeBuilder()
   setColors(DEFAULT_BOLD_PAIR);
   mvprintw(22, 22, "Select 0 to F for desired %s color", fgbgLabel);
 
-  curs_set(TRUE);
-  move(colorThemePos + 2, 1);
+  // curs_set(TRUE);
+  // move(colorThemePos + 2, 1);
+  attron(A_REVERSE);
+  mvprintw(colorThemePos + 2, 1, " ");
+  attroff(A_REVERSE);
 
 
 }

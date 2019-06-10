@@ -416,11 +416,11 @@ void settingsMenuView(){
 
   while(1)
     {
-      if (settingsBinPos < 0){
-        curs_set(TRUE);
-      } else {
-        curs_set(FALSE);
-      }
+      // if (settingsBinPos < 0){
+      //   curs_set(TRUE);
+      // } else {
+      //   curs_set(FALSE);
+      // }
       for (count = 0; count < items; count++){
         printSetting(2 + count, 3, &settingIndex, &charValues, &binValues, count, charValuesCount, binValuesCount, settingIndex[count].type, settingIndex[count].invert);
       }
@@ -441,7 +441,6 @@ void settingsMenuView(){
           createParentDirs(homeConfLocation);
         }
         saveConfig(homeConfLocation, &settingIndex, &charValues, &binValues, items, charValuesCount, binValuesCount);
-        // Future task: ensure saving actually worked
         curs_set(FALSE);
         topLineMessage("Settings saved.");
         curs_set(TRUE);

@@ -997,20 +997,32 @@ void printSetting(int line, int col, settingIndex **settings, t1CharValues **val
       settingWork = (*settings)[index].intSetting;
     }
     setColors(HILITE_PAIR);
-    if (settingWork == 0){
-      mvprintw(line, col, "[ ]");
-    } else {
-      mvprintw(line, col, "[*]");
+    mvprintw(line, col, "[");
+    if (settingsPos == index){
+      attron(A_REVERSE);
     }
+    if (settingWork == 0){
+      mvprintw(line, col + 1, " ");
+    } else {
+      mvprintw(line, col + 1, "*");
+    }
+    attroff(A_REVERSE);
+    mvprintw(line, col + 2, "]");
     setColors(COMMAND_PAIR);
     mvprintw(line, col + 4, "%ls", (*settings)[index].textLabel);
   } else if (type == 1){
     setColors(HILITE_PAIR);
-    if ((*settings)[index].maxValue > 0) {
-      mvprintw(line, col, "<->");
-    } else {
-      mvprintw(line, col, "<?>");
+    mvprintw(line, col, "<");
+    if (settingsPos == index){
+      attron(A_REVERSE);
     }
+    if ((*settings)[index].maxValue > 0) {
+      mvprintw(line, col + 1, "-");
+    } else {
+      mvprintw(line, col + 1, "?");
+    }
+    attroff(A_REVERSE);
+    mvprintw(line, col + 2, ">");
     setColors(COMMAND_PAIR);
     mvprintw(line, col + 4, "%ls:", (*settings)[index].textLabel);
     for(i = 0; i < ((*settings)[index].maxValue); i++){
@@ -1026,11 +1038,17 @@ void printSetting(int line, int col, settingIndex **settings, t1CharValues **val
     }
   } else if (type == 2){
     setColors(HILITE_PAIR);
-    if ((*settings)[index].maxValue > 0) {
-      mvprintw(line, col, "< >");
-    } else {
-      mvprintw(line, col, "<?>");
+    mvprintw(line, col, "<");
+    if (settingsPos == index && settingsBinPos < 0){
+      attron(A_REVERSE);
     }
+    if ((*settings)[index].maxValue > 0) {
+      mvprintw(line, col + 1, " ");
+    } else {
+      mvprintw(line, col + 1, "?");
+    }
+    attroff(A_REVERSE);
+    mvprintw(line, col + 2, ">");
     setColors(COMMAND_PAIR);
     mvprintw(line, col + 4, "%ls:", (*settings)[index].textLabel);
     for(i = 0; i < ((*settings)[index].maxValue); i++){
