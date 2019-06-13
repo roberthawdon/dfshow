@@ -84,10 +84,10 @@ extern int * pc;
 extern int settingsPos;
 extern int settingsBinPos;
 
-extern char globalConfLocation[128];
-extern char homeConfLocation[128];
+extern char globalConfLocation[4096];
+extern char homeConfLocation[4096];
 
-extern char themeName[128];
+extern char themeName[256];
 
 extern wchar_t *fileMenuLabel;
 

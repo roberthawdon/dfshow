@@ -84,10 +84,10 @@ extern int totalfilecount;
 extern char sortmode[5];
 extern int showhidden;
 
-extern char globalConfLocation[128];
-extern char homeConfLocation[128];
+extern char globalConfLocation[4096];
+extern char homeConfLocation[4096];
 
-extern char themeName[128];
+extern char themeName[256];
 
 struct sigaction sa;
 
