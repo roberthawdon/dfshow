@@ -1108,6 +1108,7 @@ void modify_group_input()
   int i;
   int status;
 
+ groupInputLoop:
   move(0,0);
   clrtoeol();
   mvprintw(0, 0, "Set Group:");
@@ -1135,6 +1136,7 @@ void modify_group_input()
       if (s == 0){
         sprintf(errmessage, "Invalid group: %s", groupinput);
         topLineMessage(errmessage);
+        goto groupInputLoop;
       }
     } else {
       sprintf(gids, "%d", gresult->gr_gid);
@@ -1184,6 +1186,7 @@ void modify_owner_input()
   size_t bufsize;
   int status;
 
+ ownerInputLoop:
   move(0,0);
   clrtoeol();
   mvprintw(0, 0, "Set Owner:");
@@ -1211,6 +1214,7 @@ void modify_owner_input()
       if (s == 0){
         sprintf(errmessage, "Invalid user: %s", ownerinput);
         topLineMessage(errmessage);
+        goto ownerInputLoop;
       }
     } else {
       sprintf(uids, "%d", presult->pw_uid);
