@@ -1,6 +1,7 @@
 *.o
 .deps
 .dirstamp
+.vscode
 /Makefile
 Makefile.in
 aclocal.m4
