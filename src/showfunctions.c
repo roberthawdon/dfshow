@@ -1610,8 +1610,6 @@ results* get_dir(char *pwd)
           if (historyref > 0){
             strcpy(path, hs[historyref - 1].path);
             chdir(path);
-            selected = hs[historyref].selected;
-            topfileref = hs[historyref].topfileref;
             goto reload;
           } else {
             exitCode = 1;
@@ -1658,9 +1656,6 @@ results* get_dir(char *pwd)
     if (historyref > 0){
       strcpy(path, hs[historyref - 1].path);
       chdir(path);
-      dirAbort = 1;
-      selected = hs[historyref].selected;
-      topfileref = hs[historyref].topfileref;
       goto reload;
     } else {
       exitCode = 1;
