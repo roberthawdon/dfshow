@@ -132,7 +132,7 @@ extern int useEnvPager;
 extern int showProcesses;
 extern int exitCode;
 
-extern char sortmode[5];
+extern char sortmode[9];
 
 /* Formatting time in a similar fashion to `ls` */
 static char const *long_time_format[2] =

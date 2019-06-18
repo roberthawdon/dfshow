@@ -38,7 +38,7 @@ char currentpwd[4096];
 int viewMode = 0;
 int resized = 0;
 
-char sortmode[5] = "name";
+char sortmode[9] = "name";
 char timestyle[9] = "locale";
 int reverse = 0;
 int human = 0;
@@ -81,7 +81,6 @@ extern history *hs;
 extern int topfileref;
 extern int selected;
 extern int totalfilecount;
-extern char sortmode[5];
 extern int showhidden;
 
 extern char globalConfLocation[4096];
@@ -786,7 +785,7 @@ Valid arguments are:\n\
       }
       break;
     case 'f':
-      strcpy(sortmode, "none"); // This can be set to anything non valid
+      strcpy(sortmode, "unsorted"); // This needs to be set to "unsorted" to allow the settings menu to render correctly.
       showhidden = 1;
       break;
     case 'S':
@@ -829,7 +828,7 @@ Valid arguments are:\n\
       reverse = 1;
       break;
     case 'U':
-      strcpy(sortmode, "none"); // Again, invalid
+      strcpy(sortmode, "unsorted");
       break;
     case GETOPT_NODANGER_CHAR:
       danger = 0;
