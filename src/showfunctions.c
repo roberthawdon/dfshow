@@ -105,6 +105,8 @@ int automark = 0;
 
 int mmMode = 0;
 
+int dirAbort = 0;
+
 unsigned long int savailable = 0;
 unsigned long int sused = 0;
 
@@ -1305,7 +1307,11 @@ int check_object(const char *object){
   struct stat sb;
   if (stat(object, &sb) == 0 ){
     if (S_ISDIR(sb.st_mode)){
-      return 1;
+      if (access(object, F_OK|X_OK) == 0){
+        return 1;
+      } else {
+        return 0;
+      }
     } else if (S_ISREG(sb.st_mode) || S_ISBLK(sb.st_mode) || S_ISFIFO(sb.st_mode) || S_ISLNK(sb.st_mode) || S_ISCHR(sb.st_mode)){
       return 2;
     } else {
@@ -1604,6 +1610,8 @@ results* get_dir(char *pwd)
           if (historyref > 0){
             strcpy(path, hs[historyref - 1].path);
             chdir(path);
+            selected = hs[historyref].selected;
+            topfileref = hs[historyref].topfileref;
             goto reload;
           } else {
             exitCode = 1;
@@ -1643,9 +1651,21 @@ results* get_dir(char *pwd)
     // This should never be called.
     // sprintf(direrror, "The location %s cannot be opened or is not a directory\n", path);
     dirErrorSize = snprintf(NULL, 0, "The location %s cannot be opened or is not a directory", path);
-    dirError = realloc(dirError, sizeof(char) * dirErrorSize);
+    dirError = realloc(dirError, sizeof(char) * (dirErrorSize + 1));
     sprintf(dirError, "The location %s cannot be opened or is not a directory", path);
     topLineMessage(dirError);
+    historyref--;
+    if (historyref > 0){
+      strcpy(path, hs[historyref - 1].path);
+      chdir(path);
+      dirAbort = 1;
+      selected = hs[historyref].selected;
+      topfileref = hs[historyref].topfileref;
+      goto reload;
+    } else {
+      exitCode = 1;
+      exittoshell();
+    }
   }
   hlinklen = seglength(ob, "hlink", count);
   ownerlen = seglength(ob, "owner", count);

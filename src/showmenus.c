@@ -98,6 +98,8 @@ extern char *objectWild;
 
 extern int resized;
 
+extern int dirAbort;
+
 extern int exitCode;
 
 menuDef *globalMenu;
