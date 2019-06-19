@@ -34,8 +34,6 @@
 #include "sfmenus.h"
 #include "sf.h"
 
-char fileMenuText[100];
-char filePosText[58];
 
 char regexinput[1024];
 
@@ -56,7 +54,7 @@ int wrapmode = LINE_WRAP;
 
 int launchSettingsMenu = 0;
 
-char fileName[512];
+char fileName[4096];
 
 int resized = 0;
 
@@ -86,10 +84,10 @@ extern int * pc;
 extern int settingsPos;
 extern int settingsBinPos;
 
-extern char globalConfLocation[128];
-extern char homeConfLocation[128];
+extern char globalConfLocation[4096];
+extern char homeConfLocation[4096];
 
-extern char themeName[128];
+extern char themeName[256];
 
 extern wchar_t *fileMenuLabel;
 
@@ -136,12 +134,6 @@ void readConfig(const char * confFile)
   }
 }
 
-void buildMenuText(){
-  // Writing Menus
-  // Fun fact, in DF-EDIT 2.3d, the following text input typoed "absolute" as "absolue", this typo also exists in the Windows version from 1997 (2.3d-76), however, the 1986 documentation correctly writes it as "absolute".
-  strcpy(filePosText, "Position relative (<+num> || <-num>) or absolute (<num>):");
-}
-
 void refreshScreen()
 {
   endwin();
@@ -153,12 +145,9 @@ void refreshScreen()
   refreshMenuLabels();
   if (viewmode == 0){
     mvprintw(0,0,"Show File - Enter pathname:");
-  } else if (viewmode == 1){
-    // printMenu(0, 0, fileMenuText);
+  } else if (viewmode > 0){
     wPrintMenu(0, 0, fileMenuLabel);
     loadFile(fileName);
-  } else if (viewmode == 2){
-    printMenu(0,0,filePosText);
   }
 }
 
@@ -241,11 +230,11 @@ The THEME argument can be:\n"), stdout);
 
 void fileShowStatus()
 {
-  wchar_t statusText[1024];
+  wchar_t statusText[5120];
   if (wrap){
-    swprintf(statusText, 1024, L"File = <%s>  Top = <%i>", fileName, topline);
+    swprintf(statusText, 5120, L"File = <%s>  Top = <%i>", fileName, topline);
   } else {
-    swprintf(statusText, 1024, L"File = <%s>  Top = <%i:%i>", fileName, topline, leftcol);
+    swprintf(statusText, 5120, L"File = <%s>  Top = <%i:%i>", fileName, topline, leftcol);
   }
   wPrintMenu(LINES - 1, 0, statusText);
 }
@@ -348,7 +337,6 @@ void file_view(char * currentfile)
   clear();
   setColors(COMMAND_PAIR);
 
-  // printMenu(0, 0, fileMenuText);
 
   displaysize = LINES - 2;
 
@@ -437,11 +425,11 @@ void settingsMenuView()
 
   while(1)
     {
-      if (settingsBinPos < 0){
-        curs_set(TRUE);
-      } else {
-        curs_set(FALSE);
-      }
+      // if (settingsBinPos < 0){
+      //   curs_set(TRUE);
+      // } else {
+      //   curs_set(FALSE);
+      // }
       for (count = 0; count < items; count++){
         printSetting(2 + count, 3, &settingIndex, &charValues, &binValues, count, charValuesCount, binValuesCount, settingIndex[count].type, settingIndex[count].invert);
       }
@@ -582,7 +570,6 @@ int main(int argc, char *argv[])
   }
 
   generateDefaultMenus();
-  buildMenuText();
 
   set_escdelay(10);
   //ESCDELAY = 10;

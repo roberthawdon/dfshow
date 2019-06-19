@@ -39,8 +39,8 @@
 int c;
 int * pc = &c;
 
-char chpwd[1024];
-char selfile[1024];
+char chpwd[4096];
+char selfile[4096];
 
 char ownerinput[256];
 char groupinput[256];
@@ -63,9 +63,10 @@ time_t touchTime;
 
 extern results* ob;
 extern history* hs;
-extern char currentpwd[1024];
+extern char currentpwd[4096];
 
 extern int historyref;
+extern int sessionhistory;
 extern int selected;
 extern int topfileref;
 extern int hpos;
@@ -96,6 +97,8 @@ extern int commandL, infoL, inputL, selectL, displayL, dangerL, dirL, slinkL, ex
 extern char *objectWild;
 
 extern int resized;
+
+extern int dirAbort;
 
 extern int exitCode;
 
@@ -305,7 +308,7 @@ void refreshDirectory(char *sortmode, int origtopfileref, int origselected, int 
       }
     }
     if (destructive != -1){
-      free(ob);
+      freeResults(ob, totalfilecount);
       ob = get_dir(currentpwd);
       clear_workspace();
       reorder_ob(ob, sortmode);
@@ -332,6 +335,11 @@ void refreshDirectory(char *sortmode, int origtopfileref, int origselected, int 
     goto handleMissingDir;
   }
   topfileref = sanitizeTopFileRef(origtopfileref);
+  if (dirAbort == 1){
+    topfileref = hs[historyref].topfileref;
+    selected = hs[historyref].selected;
+    dirAbort = 0;
+  }
   display_dir(currentpwd, ob, topfileref, selected);
 }
 
@@ -340,15 +348,17 @@ void global_menu_inputs();
 
 void show_directory_input()
 {
-  char oldpwd[1024];
-  char direrror[1024];
+  char *oldpwd = malloc(sizeof(char) * (strlen(currentpwd) + 1));
+  char *direrror = malloc(sizeof(char) + 1);
+  size_t direrrorLen;
+
   strcpy(oldpwd, currentpwd);
   move(0,0);
   clrtoeol();
   mvprintw(0, 0, "Show Directory - Enter pathname:");
   curs_set(TRUE);
   move(0,33);
-  readline(currentpwd, 1024, oldpwd);
+  readline(currentpwd, 4096, oldpwd);
   curs_set(FALSE);
   testSlash:
   if (check_last_char(currentpwd, "/") && strcmp(currentpwd, "/")){
@@ -383,6 +393,8 @@ void show_directory_input()
       chdir(currentpwd);
       refreshDirectory(sortmode, 0, selected, 0);
     } else {
+      direrrorLen = snprintf(NULL, 0, "The location %s cannot be opened or is not a directory\n", currentpwd);
+      direrror = realloc(direrror, sizeof(char) * (direrrorLen + 1));
       sprintf(direrror, "The location %s cannot be opened or is not a directory\n", currentpwd);
       strcpy(currentpwd, oldpwd);
       topLineMessage(direrror);
@@ -390,6 +402,8 @@ void show_directory_input()
   } else {
     strcpy(currentpwd, oldpwd); // Copying old value back if the input was aborted
   }
+  free(direrror);
+  free(oldpwd);
   if (historyref > 0){
     directory_view_menu_inputs();
   } else {
@@ -400,9 +414,13 @@ void show_directory_input()
 
 int replace_file_confirm_input(char *filename)
 {
-  char message[1024];
+  char *message = malloc(sizeof(char) + 1);
+  size_t messageLen;
+  messageLen = snprintf(NULL, 0, "Replace file [<%s>]? (!Yes/!No)", filename);
+  message = realloc(message, sizeof(char) * messageLen);
   sprintf(message, "Replace file [<%s>]? (!Yes/!No)", filename);
   printMenu(0,0, message);
+  free(message);
   while(1)
     {
       *pc = getch10th();
@@ -418,17 +436,17 @@ int replace_file_confirm_input(char *filename)
     }
 }
 
-void copy_file_input(char *file)
+void copy_file_input(char *file, mode_t mode)
 {
   // YUCK, repetition, this needs sorting
-  char newfile[1024];
+  char newfile[4096];
   int e;
   move(0,0);
   clrtoeol();
   mvprintw(0, 0, "Copy file to:");
   curs_set(TRUE);
   move(0,14);
-  readline(newfile, 1024, file);
+  readline(newfile, 4096, file);
   curs_set(FALSE);
   // If the two values don't match, we want to do the copy
   if ( strcmp(newfile, file) && strcmp(newfile, "")) {
@@ -443,11 +461,11 @@ void copy_file_input(char *file)
         {
           if ( replace_file_confirm_input(newfile) )
             {
-              copy_file(file, newfile);
+              copy_file(file, newfile, mode);
               refreshDirectory(sortmode, 0, selected, 0);
             }
         } else {
-        copy_file(file, newfile);
+        copy_file(file, newfile, mode);
         refreshDirectory(sortmode, 0, selected, 0);
       }
     } else {
@@ -473,14 +491,14 @@ void copy_multi_file_input(results* ob, char *input)
 {
   int i, e;
 
-  char dest[1024];
-  char destfile[1024];
+  char dest[4096];
+  char destfile[4096];
   move(0,0);
   clrtoeol();
   mvprintw(0, 0, "Copy multiple files to:");
   curs_set(TRUE);
   move(0, 24);
-  readline(dest, 1024, input);
+  readline(dest, 4096, input);
   curs_set(FALSE);
   if ( strcmp(dest, input) && strcmp(dest, "")) {
     if (check_first_char(dest, "~")){
@@ -508,10 +526,10 @@ void copy_multi_file_input(results* ob, char *input)
                 {
                   if ( replace_file_confirm_input(destfile) )
                     {
-                      copy_file(selfile, dest);
+                      copy_file(selfile, destfile, ob[i].mode);
                     }
                 } else {
-                copy_file(selfile, dest);
+                copy_file(selfile, destfile, ob[i].mode);
               }
             }
         }
@@ -534,14 +552,14 @@ void rename_multi_file_input(results* ob, char *input)
 {
   int i, e;
 
-  char dest[1024];
-  char destfile[1024];
+  char dest[4096];
+  char destfile[4096];
   move(0,0);
   clrtoeol();
   mvprintw(0, 0, "Rename multiple files to:");
   curs_set(TRUE);
   move(0, 26);
-  readline(dest, 1024, input);
+  readline(dest, 4096, input);
   curs_set(FALSE);
   if (strcmp(dest, input) && strcmp(dest, "")){
     if (check_first_char(dest, "~")){
@@ -594,13 +612,13 @@ void rename_multi_file_input(results* ob, char *input)
 
 void edit_file_input()
 {
-  char filepath[1024];
+  char filepath[4096];
   move(0,0);
   clrtoeol();
   mvprintw(0, 0, "Edit File - Enter pathname:");
   curs_set(TRUE);
   move(0,28);
-  readline(filepath, 1024, "");
+  readline(filepath, 4096, "");
   curs_set(FALSE);
   SendToEditor(filepath);
   refreshDirectory(sortmode, topfileref, selected, 1);
@@ -609,14 +627,14 @@ void edit_file_input()
 void rename_file_input(char *file)
 {
   // YUCK, repetition, this needs sorting
-  char dest[1024];
+  char dest[4096];
   int e;
   move(0,0);
   clrtoeol();
   mvprintw(0, 0, "Rename file to:");
   curs_set(TRUE);
   move(0,16);
-  readline(dest, 1024, file);
+  readline(dest, 4096, file);
   curs_set(FALSE);
   if (strcmp(dest, file) && strcmp(dest, "")){
     if (check_first_char(dest, "~")){
@@ -661,7 +679,7 @@ void rename_file_input(char *file)
 
 void make_directory_input()
 {
-  char newdir[1024];
+  char newdir[4096];
   int e;
   move(0,0);
   clrtoeol();
@@ -671,7 +689,7 @@ void make_directory_input()
   if (!check_last_char(currentpwd, "/")){
     strcat(currentpwd, "/");
   }
-  readline(newdir, 1024, currentpwd);
+  readline(newdir, 4096, currentpwd);
   if (strcmp(newdir, currentpwd) && strcmp(newdir, "")){
     if (check_first_char(newdir, "~")){
       rewrite = str_replace(newdir, "~", getenv("HOME"));
@@ -776,7 +794,7 @@ int touchType()
 void touch_file_input()
 {
   char menuTitle[32];
-  char touchFile[1024];
+  char touchFile[4096];
   FILE* touchFileObject;
   int setDateFlag = -1;
   int e;
@@ -788,7 +806,7 @@ void touch_file_input()
   if (!check_last_char(currentpwd, "/")){
     strcat(currentpwd, "/");
   }
-  if (readline(touchFile, 1024, currentpwd) != -1){
+  if (readline(touchFile, 4096, currentpwd) != -1){
     //TODO: Ask if we want to set a time.
     wPrintMenu(0,0,touchDateConfirmMenuLabel);
     *pc = getch10th();
@@ -865,7 +883,10 @@ char * execute_argument_input(const char *exec)
 int huntCaseSelectInput()
 {
   int result = 0;
-  char message[1024];
+  char *message;
+  size_t messageLen;
+  messageLen = snprintf(NULL, 0, "Case Sensitive, !Yes/!No/<ESC> (enter = no)");
+  message = malloc(sizeof(char) * (messageLen + 1));
   sprintf(message,"Case Sensitive, !Yes/!No/<ESC> (enter = no)");
   printMenu(0,0, message);
   while(1)
@@ -889,6 +910,7 @@ int huntCaseSelectInput()
         }
       break;
     }
+  free(message);
   return(result);
 }
 
@@ -896,22 +918,28 @@ void huntInput(int selected, int charcase)
 {
   int regexcase;
   int i;
-  char regexinput[1024];
-  char inputmessage[32];
+  char regexinput[4096];
+  char *inputmessage;
+  size_t inputmessageLen;
   if (charcase){
     regexcase = 0;
-    strcpy(inputmessage, "Match Case - Enter string:");
+    inputmessageLen = snprintf(NULL, 0, "Match Case - Enter string:");
+    inputmessage = malloc(sizeof(char) * (inputmessageLen + 1));
+    sprintf(inputmessage, "Match Case - Enter string:");
   } else {
     regexcase = REG_ICASE;
-    strcpy(inputmessage, "Ignore Case - Enter string:");
+    inputmessageLen = snprintf(NULL, 0, "Ignore Case - Enter string:");
+    inputmessage = malloc(sizeof(char) * (inputmessageLen + 1));
+    sprintf(inputmessage, "Ignore Case - Enter string:");
   }
   move(0,0);
   clrtoeol();
   mvprintw(0, 0, inputmessage);
   //curs_set(TRUE);
+  free(inputmessage);
   move(0, strlen(inputmessage) + 1);
   //curs_set(FALSE);
-  if (readline(regexinput, 1024, "") == -1) {
+  if (readline(regexinput, 4096, "") == -1) {
     abortinput = 1;
   } else {
     if (CheckMarked(ob) < 1){
@@ -991,7 +1019,8 @@ void delete_multi_file_confirm_input(results* ob)
   int i, k;
   int allflag = 0;
   int abortflag = 0;
-  char message[1024];
+  char *message;
+  size_t messageLen;
 
   for (i = 0; i < totalfilecount; i++)
     {
@@ -1006,8 +1035,11 @@ void delete_multi_file_confirm_input(results* ob)
             {
               delete_file(selfile);
             } else {
+            messageLen = snprintf(NULL, 0,"Delete file [<%s>]? (!Yes/!No/!All/!Stop)", selfile);
+            message = malloc(sizeof(char) * (messageLen + 1));
             sprintf(message,"Delete file [<%s>]? (!Yes/!No/!All/!Stop)", selfile);
             printMenu(0,0, message);
+            free(message);
             k = 1;
             while(k)
               {
@@ -1074,7 +1106,7 @@ void sort_view_inputs()
 
 void modify_group_input()
 {
-  char ofile[1024];
+  char *ofile;
 
   struct group grp;
   struct group *gresult;
@@ -1083,6 +1115,7 @@ void modify_group_input()
   int i;
   int status;
 
+ groupInputLoop:
   move(0,0);
   clrtoeol();
   mvprintw(0, 0, "Set Group:");
@@ -1110,6 +1143,7 @@ void modify_group_input()
       if (s == 0){
         sprintf(errmessage, "Invalid group: %s", groupinput);
         topLineMessage(errmessage);
+        goto groupInputLoop;
       }
     } else {
       sprintf(gids, "%d", gresult->gr_gid);
@@ -1119,15 +1153,18 @@ void modify_group_input()
           {
             if ( *ob[i].marked )
               {
+                ofile = malloc(sizeof(char) * (strlen(currentpwd) + strlen(ob[i].name) + 2));
                 strcpy(ofile, currentpwd);
                 if (!check_last_char(ofile, "/")){
                   strcat(ofile, "/");
                 }
                 strcat(ofile, ob[i].name);
                 UpdateOwnerGroup(ofile, uids, gids);
+                free(ofile);
               }
           }
       } else {
+        ofile = malloc(sizeof(char) * (strlen(currentpwd) + strlen(ob[selected].name) + 2));
         strcpy(ofile, currentpwd);
         if (!check_last_char(ofile, "/")){
           strcat(ofile, "/");
@@ -1138,6 +1175,7 @@ void modify_group_input()
           sprintf(errmessage, "Error: %s", strerror(errno));
           topLineMessage(errmessage);
         }
+        free(ofile);
       }
       refreshDirectory(sortmode, topfileref, selected, 0);
 
@@ -1155,6 +1193,7 @@ void modify_owner_input()
   size_t bufsize;
   int status;
 
+ ownerInputLoop:
   move(0,0);
   clrtoeol();
   mvprintw(0, 0, "Set Owner:");
@@ -1182,6 +1221,7 @@ void modify_owner_input()
       if (s == 0){
         sprintf(errmessage, "Invalid user: %s", ownerinput);
         topLineMessage(errmessage);
+        goto ownerInputLoop;
       }
     } else {
       sprintf(uids, "%d", presult->pw_uid);
@@ -1195,9 +1235,9 @@ void modify_owner_input()
 void modify_permissions_input()
 {
   int newperm, i, status;
-  char perms[4];
+  char perms[5];
   char *ptr;
-  char pfile[1024];
+  char *pfile;
   move(0,0);
   clrtoeol();
   mvprintw(0, 0, "Modify Permissions:");
@@ -1215,21 +1255,25 @@ void modify_permissions_input()
         {
           if ( *ob[i].marked )
             {
+              pfile = malloc(sizeof(char) * (strlen(currentpwd) + strlen(ob[i].name) + 2));
               strcpy(pfile, currentpwd);
               if (!check_last_char(pfile, "/")){
                 strcat(pfile, "/");
               }
               strcat(pfile, ob[i].name);
               chmod(pfile, newperm);
+              free(pfile);
             }
         }
     } else {
+      pfile = malloc(sizeof(char) * (strlen(currentpwd) + strlen(ob[selected].name) + 2));
       strcpy(pfile, currentpwd);
       if (!check_last_char(pfile, "/")){
         strcat(pfile, "/");
       }
       strcat(pfile, ob[selected].name);
       chmod(pfile, newperm);
+      free(pfile);
     }
     refreshDirectory(sortmode, topfileref, selected, 0);
   }
@@ -1263,7 +1307,7 @@ void linktext_input(char *file, int symbolic)
 {
   char inputmessage[32];
   char typeText[9];
-  char target[1024];
+  char target[4096];
   int relative, e;
   char *relativeFile;
   char tempDebug[1024];
@@ -1282,7 +1326,7 @@ void linktext_input(char *file, int symbolic)
   mvprintw(0,0,inputmessage);
   // curs_set(TRUE);
   move(0, strlen(inputmessage) + 1);
-  if (readline(target, 1024, target) != -1){
+  if (readline(target, 4096, target) != -1){
 
     // Check for ~ that needs replacing with home directory
     if (check_first_char(file, "~")){
@@ -1409,7 +1453,7 @@ void directory_view_menu_inputs()
           }
           strcat(selfile, ob[selected].name);
           if (!check_dir(selfile)){
-            copy_file_input(selfile);
+            copy_file_input(selfile, ob[selected].mode);
           }
         }
       } else if (*pc == menuHotkeyLookup(fileMenu, "f_delete", fileMenuSize)){
@@ -1446,7 +1490,7 @@ void directory_view_menu_inputs()
         } else {
           showhidden = 0;
         }
-        free(ob);
+        freeResults(ob, totalfilecount);
         ob = get_dir(currentpwd);
         clear_workspace();
         reorder_ob(ob, sortmode);
@@ -1470,7 +1514,7 @@ void directory_view_menu_inputs()
             if (check_dir(chpwd)){
               strcpy(currentpwd, chpwd);
               chdir(currentpwd);
-              free(ob);
+              freeResults(ob, totalfilecount);
               ob = get_dir(currentpwd);
               reorder_ob(ob, sortmode);
               selected = findResultByName(ob, hs[historyref].name);
@@ -1666,7 +1710,7 @@ void directory_view_menu_inputs()
         }
       } else if (*pc == menuHotkeyLookup(functionMenu, "f_07", functionMenuSize)){
         markall = 1;
-        free(ob);
+        freeResults(ob, totalfilecount);
         ob = get_dir(currentpwd);
         markall = 0; // Leaving this set as 1 keeps things marked even after refresh. This is bad
         clear_workspace();
@@ -1674,7 +1718,7 @@ void directory_view_menu_inputs()
         display_dir(currentpwd, ob, topfileref, selected);
       } else if (*pc == menuHotkeyLookup(functionMenu, "f_08", functionMenuSize)){
         markall = 0;
-        free(ob);
+        freeResults(ob, totalfilecount);
         ob = get_dir(currentpwd);
         clear_workspace();
         reorder_ob(ob, sortmode);
@@ -1854,7 +1898,7 @@ void global_menu_inputs()
         make_directory_input();
       } else if (*pc == menuHotkeyLookup(globalMenu, "g_quit", globalMenuSize)) {
         if (historyref == 0){
-          free(hs);
+          freeHistory(hs, sessionhistory);
           exittoshell();
           refresh();
         } else {

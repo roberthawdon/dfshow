@@ -105,6 +105,8 @@ int automark = 0;
 
 int mmMode = 0;
 
+int dirAbort = 0;
+
 unsigned long int savailable = 0;
 unsigned long int sused = 0;
 
@@ -115,7 +117,7 @@ time_t currenttime;
 extern DIR *folder;
 
 extern int messageBreak;
-extern char currentpwd[1024];
+extern char currentpwd[4096];
 extern char timestyle[9];
 extern int viewMode;
 extern int reverse;
@@ -132,7 +134,7 @@ extern int useEnvPager;
 extern int showProcesses;
 extern int exitCode;
 
-extern char sortmode[5];
+extern char sortmode[9];
 
 /* Formatting time in a similar fashion to `ls` */
 static char const *long_time_format[2] =
@@ -142,6 +144,32 @@ static char const *long_time_format[2] =
    // Without year, for recent files.
    "%b %e %H:%M"
   };
+
+void freeResults(results *ob, int count)
+{
+  int i;
+  for (i = 0; i < (count - 1); i++){
+    free(ob[i].perm);
+    free(ob[i].name);
+    free(ob[i].owner);
+    free(ob[i].group);
+    free(ob[i].author);
+    free(ob[i].slink);
+    free(ob[i].datedisplay);
+  }
+  free(ob);
+}
+
+void freeHistory(history *hs, int count)
+{
+  int i;
+  for (i = 0; i < (count - 1); i++){
+    free(hs[i].path);
+    free(hs[i].name);
+    free(hs[i].objectWild);
+  }
+  free(hs);
+}
 
 int checkRunningEnv(){
   int i;
@@ -440,7 +468,7 @@ void writeResultStruct(results* ob, const char * filename, struct stat buffer, i
   struct passwd *pw;
   struct passwd *au;
   char *filedate;
-  ssize_t cslinklen;
+  ssize_t cslinklen = 0, datedisplayLen = 0;
 
   writePermsEntry(perms, buffer.st_mode);
 
@@ -450,28 +478,38 @@ void writeResultStruct(results* ob, const char * filename, struct stat buffer, i
   } else {
     *ob[count].marked = 0;
   }
+
+  ob[count].mode = buffer.st_mode;
+
+  ob[count].perm = malloc(sizeof(char) * (strlen(perms) + 1));
   strcpy(ob[count].perm, perms);
   *ob[count].hlink = buffer.st_nlink;
   *ob[count].hlinklens = strlen(hlinkstr);
 
   if (!getpwuid(buffer.st_uid)){
+    ob[count].owner = malloc(sizeof(char) * 6);
     sprintf(ob[count].owner, "%i", buffer.st_uid);
   } else {
     pw = getpwuid(buffer.st_uid);
+    ob[count].owner = malloc(sizeof(char) * (strlen(pw->pw_name) + 1));
     strcpy(ob[count].owner, pw->pw_name);
   }
 
   if (!getgrgid(buffer.st_gid)){
+    ob[count].group = malloc(sizeof(char) * 6);
     sprintf(ob[count].group, "%i", buffer.st_gid);
   } else {
     gr = getgrgid(buffer.st_gid);
+    ob[count].group = malloc(sizeof(char) * (strlen(gr->gr_name) + 1));
     strcpy(ob[count].group, gr->gr_name);
   }
 
   if (!getpwuid(buffer.st_author)){
+    ob[count].author = malloc(sizeof(char) * 6);
     sprintf(ob[count].author, "%i", buffer.st_author);
   } else {
     au = getpwuid(buffer.st_author);
+    ob[count].author = malloc(sizeof(char) * (strlen(au->pw_name) + 1));
     strcpy(ob[count].author, au->pw_name);
   }
 
@@ -489,15 +527,27 @@ void writeResultStruct(results* ob, const char * filename, struct stat buffer, i
   ob[count].adate = buffer.st_atime;
 
   filedate = dateString(ob[count].date, timestyle);
-  mbstowcs(ob[count].datedisplay, filedate, 33);
+  ob[count].datedisplay = malloc(sizeof(wchar_t) * 64);
+  datedisplayLen = (mbstowcs(ob[count].datedisplay, filedate, 64) + 1);
+  free(ob[count].datedisplay);
+  ob[count].datedisplay = malloc(sizeof(wchar_t) * datedisplayLen);
+  mbstowcs(ob[count].datedisplay, filedate, datedisplayLen);
+  // ob[count].datedisplay[datedisplayLen] = '\0';
 
+  ob[count].name = malloc(sizeof(char) * (strlen(filename) + 1));
   strcpy(ob[count].name, filename);
 
   if (S_ISLNK(buffer.st_mode)) {
-    cslinklen = readlink(filename, ob[count].slink, 1023);
+    ob[count].slink = malloc(sizeof(char) * 4096);
+    cslinklen = readlink(filename, ob[count].slink, 4095);
     ob[count].slink[cslinklen] = '\0';
-
+    // Now we know the size, lets clear the memory and read again.
+    free(ob[count].slink);
+    ob[count].slink = malloc(sizeof(char) * (cslinklen + 1));
+    readlink(filename, ob[count].slink, cslinklen);
+    ob[count].slink[cslinklen] = '\0';
   } else {
+    ob[count].slink = malloc(sizeof(char) + 1);
     strcpy(ob[count].slink, "");
   }
 
@@ -603,9 +653,9 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   int i;
 
   char marked[2];
-  wchar_t entryMeta[1024];
-  wchar_t entryName[1024];
-  wchar_t entrySLink[1024];
+  wchar_t *entryMeta  = malloc(sizeof(wchar_t) + 1);
+  wchar_t *entryName  = malloc(sizeof(wchar_t) + 1);
+  wchar_t *entrySLink = malloc(sizeof(wchar_t) + 1);
   int maxlen = COLS - start - 1;
 
   int currentitem = listref + topref;
@@ -773,20 +823,35 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
     strcpy(marked, " ");
   }
 
-  swprintf(entryMeta, 1024, L"  %s %s%s%i %s%s%s %ls%s ", marked, ob[currentitem].perm, s1, *ob[currentitem].hlink, ogaval, s2, sizestring, ob[currentitem].datedisplay, s3);
+  entryMetaLen = snprintf(NULL, 0, "  %s %s%s%i %s%s%s %ls%s ", marked, ob[currentitem].perm, s1, *ob[currentitem].hlink, ogaval, s2, sizestring, ob[currentitem].datedisplay, s3);
 
-  swprintf(entryName, 1024, L"%s", ob[currentitem].name);
+  entryMeta = realloc(entryMeta, sizeof(wchar_t) * (entryMetaLen + 1));
 
-  if ( !strcmp(ob[currentitem].slink, "") ){
-    swprintf(entrySLink, 1024, L"\0");
-  } else {
-    swprintf(entrySLink, 1024, L"%s\0", ob[currentitem].slink);
-  }
-
+  swprintf(entryMeta, (entryMetaLen + 1), L"  %s %s%s%i %s%s%s %ls%s ", marked, ob[currentitem].perm, s1, *ob[currentitem].hlink, ogaval, s2, sizestring, ob[currentitem].datedisplay, s3);
 
   entryMetaLen = wcslen(entryMeta);
+
+  entryNameLen = snprintf(NULL, 0, "%s", ob[currentitem].name) + 1;
+
+  entryName = realloc(entryName, sizeof(wchar_t) * (entryNameLen + 1));
+
+  swprintf(entryName, (entryNameLen + 1), L"%s", ob[currentitem].name);
+
   entryNameLen = wcslen(entryName);
-  entrySLinkLen = wcslen(entrySLink);
+
+  if ( !strcmp(ob[currentitem].slink, "") ){
+    entrySLinkLen = 1;
+    swprintf(entrySLink, entrySLinkLen, L"");
+  } else {
+    entrySLinkLen = snprintf(NULL, 0, "%s", ob[currentitem].slink);
+    entrySLink = realloc(entrySLink, sizeof(wchar_t) * (entrySLinkLen + 1));
+    swprintf(entrySLink, (entrySLinkLen + 1), L"%s\0", ob[currentitem].slink);
+    entrySLinkLen = wcslen(entrySLink);
+  }
+
+  // entryMetaLen = wcslen(entryMeta);
+  // entryNameLen = wcslen(entryName);
+  // entrySLinkLen = wcslen(entrySLink);
   // mvprintw(4 + listref, start, "%s", entry);
 
   // Setting highlight
@@ -878,6 +943,9 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   free(s3);
   free(s4);
   free(sizestring);
+  free(entryMeta);
+  free(entryName);
+  free(entrySLink);
   free(ogaval);
 }
 
@@ -898,21 +966,17 @@ void LaunchShell()
 
 void LaunchExecutable(const char* object, const char* args)
 {
-  char command[1024];
+  char *command = malloc(sizeof(char) * (strlen(object) + strlen(args) + 2));
   sprintf(command, "%s %s", object, args);
-  //clear();
-  //endwin();
-  // printf("%s\n", command);
-  // exit(0);
   system("clear"); // Just to be sure
   system(command);
-  // initscr();
+  free(command);
   refreshScreen();
 }
 
-void copy_file(char *source_input, char *target_input)
+void copy_file(char *source_input, char *target_input, mode_t mode)
 {
-  char targetmod[1024];
+  char *targetmod = malloc(sizeof(char) * (strlen(target_input) + 1));
   FILE *source = NULL;
   FILE *target = NULL;
   char ch = '\0';
@@ -926,8 +990,10 @@ void copy_file(char *source_input, char *target_input)
 
   if ( check_dir(targetmod) ){
     if ( !check_last_char(targetmod, "/")){
+      targetmod = realloc(targetmod, sizeof(char) * (strlen(targetmod) + 2));
       strcat(targetmod, "/");
     }
+    targetmod = realloc(targetmod, sizeof(char) * (strlen(basename(source_input)) + 1));
     strcat(targetmod, basename(source_input));
   }
   target = fopen(targetmod, "wb");
@@ -941,18 +1007,10 @@ void copy_file(char *source_input, char *target_input)
     }
   } while ((n > 0) && (n == m));
 
-  // while(1){
-  //   ch = fgetc(source);
-
-  //   if(ch == EOF){
-  //     break;
-  //   }
-
-  //   fputc(ch, target);
-  // }
-
+  free(targetmod);
   fclose(source);
   fclose(target);
+  chmod(target_input, mode);
 }
 
 void delete_file(char *source_input)
@@ -962,15 +1020,16 @@ void delete_file(char *source_input)
 
 int SendToPager(char* object)
 {
-  char page[1024];
-  char esc[1024];
+  char *page = malloc(sizeof(char) * 2);
+  char *pagerCommand;
   int pset = 0;
   int e = 0;
   char *escObject = str_replace(object, "'", "'\"'\"'");
 
   if (can_run_command("sf")){
     setenv("DFS_THEME_OVERRIDE", "TRUE", 1);
-    strcpy(page, "sf");
+    page = realloc(page, (sizeof(char) * 3));
+    sprintf(page, "sf");
     pset = 1;
   } else {
     useEnvPager = 1;
@@ -978,69 +1037,71 @@ int SendToPager(char* object)
 
   if (useEnvPager){
     if ( getenv("PAGER")) {
-      strcpy(page, getenv("PAGER"));
+      page = realloc(page, (sizeof(char) * (strlen(getenv("PAGER")) + 1)));
+      sprintf(page, "%s", getenv("PAGER"));
       pset = 1;
     }
   }
 
   if ( pset ) {
-    strcat(page, " ");
-    strcpy(esc, "'");
-    strcat(esc, escObject);
+    pagerCommand = malloc(sizeof(char) * (strlen(page) + strlen(escObject) + 4));
+    sprintf(pagerCommand, "%s '%s'", page, escObject);
     free(escObject);
-    strcat(esc, "'");
-    strcat(page, esc);
     if (access(object, R_OK) == 0){
       // clear();
       // endwin();
-      e = system(page);
+      e = system(pagerCommand);
       // initscr();
       refreshScreen();
       return e;
     } else {
       topLineMessage("Error: Permission denied");
     }
+    free(pagerCommand);
   } else {
     topLineMessage("Please export a PAGER environment variable to define the utility program name.");
   }
+  free(page);
   return 0;
 }
 
 int SendToEditor(char* object)
 
 {
-  char editor[1024];
-  char esc[1024];
+  char *editor = malloc(sizeof(char) * 2);
+  char *editorCommand;
   int eset = 0;
   int e = 0;
   char *escObject = str_replace(object, "'", "'\"'\"'");
+
   if ( getenv("EDITOR")) {
-    strcpy(editor, getenv("EDITOR"));
+    editor = realloc(editor, (sizeof(char) * (strlen(getenv("EDITOR")) + 1 )));
+    sprintf(editor, "%s", getenv("EDITOR"));
     eset = 1;
   } else if ( getenv("VISUAL")) {
-    strcpy(editor, getenv("VISUAL"));
+    editor = realloc(editor, (sizeof(char) * (strlen(getenv("VISUAL")) + 1 )));
+    sprintf(editor, "%s", getenv("VISUAL"));
     eset = 1;
   }
   if ( eset ){
-    strcat(editor, " ");
-    strcpy(esc, "'");
-    strcat(esc, escObject);
+    editorCommand = malloc(sizeof(char) * (strlen(editor) + strlen(escObject) + 4));
+    sprintf(editorCommand, "%s '%s'", editor, escObject);
     free(escObject);
-    strcat(esc, "'");
-    strcat(editor, esc);
     if (access(object, R_OK) == 0){
       clear();
       // endwin();
-      e = system(editor);
+      e = system(editorCommand);
       // initscr();
       refreshScreen();
       return e;
     } else {
       topLineMessage("Error: Permission denied");
     }
+    free(editorCommand);
   } else {
     topLineMessage("Please export a VISUAL environment variable to define the utility program name.");
   }
+  free(editor);
   return 0;
 }
 
@@ -1246,7 +1307,11 @@ int check_object(const char *object){
   struct stat sb;
   if (stat(object, &sb) == 0 ){
     if (S_ISDIR(sb.st_mode)){
-      return 1;
+      if (access(object, F_OK|X_OK) == 0){
+        return 1;
+      } else {
+        return 0;
+      }
     } else if (S_ISREG(sb.st_mode) || S_ISBLK(sb.st_mode) || S_ISFIFO(sb.st_mode) || S_ISLNK(sb.st_mode) || S_ISCHR(sb.st_mode)){
       return 2;
     } else {
@@ -1294,8 +1359,8 @@ int UpdateOwnerGroup(const char* object, const char* pwdstr, const char* grpstr)
 
 int RenameObject(char* source, char* dest)
 {
-  char sourceDevId[256];
-  char destDevId[256];
+  // char sourceDevId[256];
+  // char destDevId[256];
   char *destPath;
   struct stat sourcebuffer;
   struct stat destbuffer;
@@ -1309,10 +1374,11 @@ int RenameObject(char* source, char* dest)
     lstat(source, &sourcebuffer);
     lstat(destPath, &destbuffer);
 
-    sprintf(sourceDevId, "%d", sourcebuffer.st_dev);
-    sprintf(destDevId, "%d", destbuffer.st_dev);
+    // sprintf(sourceDevId, "%d", sourcebuffer.st_dev);
+    // sprintf(destDevId, "%d", destbuffer.st_dev);
 
-    if (!strcmp(sourceDevId, destDevId)) {
+    // if (!strcmp(sourceDevId, destDevId)) {
+    if (sourcebuffer.st_dev == destbuffer.st_dev) {
       // Destination is on the same filesystem.
       //mvprintw(0,66,"PASS: %s:%s %s", sourceDevId, destDevId, dest); // test pass
       e = rename(source, dest);
@@ -1359,8 +1425,15 @@ void set_history(char *pwd, char *objectWild, char *name, int topfileref, int se
   if (historyref == sessionhistory) {
     hs = realloc(hs, (historyref +1) * sizeof(history));
     sessionhistory++;
+  } else if (historyref < sessionhistory){
+    free(hs[historyref].path);
+    free(hs[historyref].name);
+    free(hs[historyref].objectWild);
   }
 
+  hs[historyref].path = malloc(sizeof(char) * (strlen(pwd) + 1));
+  hs[historyref].name = malloc(sizeof(char) * (strlen(name) + 1));
+  hs[historyref].objectWild = malloc(sizeof(char) * (strlen(objectWild) + 1));
   strcpy(hs[historyref].path, pwd);
   strcpy(hs[historyref].objectWild, objectWild);
   strcpy(hs[historyref].name, name);
@@ -1457,12 +1530,15 @@ results* get_dir(char *pwd)
   //sused = GetUsedSpace(pwd); // Original DF-EDIT added the sizes to show what was used in that directory, rather than the whole disk.
   size_t count = 0;
   size_t file_count = 0;
+  size_t dirErrorSize = 0;
   struct dirent *res;
   struct stat sb;
   char *path = pwd;
   struct stat buffer;
   int         status;
-  char direrror[1024];
+  int         pass = 0;
+  char *dirError = malloc(sizeof(char) + 1);
+  // char direrror[1024];
   // char filename[256];
 
   results *ob = malloc(sizeof(results)); // Allocating a tiny amount of memory. We'll expand this on each file found.
@@ -1495,36 +1571,46 @@ results* get_dir(char *pwd)
             }
           }
           // filename = res->d_name;
-          ob = realloc(ob, (count +1) * sizeof(results)); // Reallocating memory.
-          lstat(res->d_name, &sb);
-          status = lstat(res->d_name, &buffer);
+          if (pass == 0){
+            count++;
+          } else {
+            if (count > totalfilecount){
+              ob = realloc(ob, (count +1) * sizeof(results)); // Reallocating memory. Just in case a file is added between passes.
+            }
+            lstat(res->d_name, &sb);
+            status = lstat(res->d_name, &buffer);
 
-          sprintf(hlinkstr, "%d", buffer.st_nlink);
-          sprintf(sizestr, "%lld", (long long)buffer.st_size);
+            sprintf(hlinkstr, "%d", buffer.st_nlink);
+            sprintf(sizestr, "%lld", (long long)buffer.st_size);
 
-          writeResultStruct(ob, res->d_name, buffer, count);
+            writeResultStruct(ob, res->d_name, buffer, count);
 
-          sused = sused + buffer.st_size; // Adding the size values
+            sused = sused + buffer.st_size; // Adding the size values
 
-          // Finding the longest name and symlink pair
-          if ((strlen(ob[count].slink) + strlen(ob[count].name) + 4) > nameAndSLink){
-            nameAndSLink = strlen(ob[count].slink) + strlen(ob[count].name) + 4;
+            // Finding the longest name and symlink pair
+            if ((strlen(ob[count].slink) + strlen(ob[count].name) + 4) > nameAndSLink){
+              nameAndSLink = strlen(ob[count].slink) + strlen(ob[count].name) + 4;
+            }
+
+            count++;
           }
-
-          count++;
         }
 
         totalfilecount = count;
+
         closedir ( folder );
 
         if ( count == 0 ) {
           // This is a hacky mitigation for drivefs returning 0 objects, it should prevent the crash of #82. However, it doesn't fix the inablity to load Google Drive Stream directories properly. The GNU version of 'ls' also has similar issues, so the bug is most likely in the underlying library rather than DF-SHOW itself.
-          sprintf(direrror, "Error: Directory Returned 0 Objects" );
-          topLineMessage(direrror);
+          dirErrorSize = 36;
+          dirError = realloc(dirError, sizeof(char) * dirErrorSize);
+          sprintf(dirError, "Error: Directory Returned 0 Objects" );
+          topLineMessage(dirError);
           historyref--;
           if (historyref > 0){
             strcpy(path, hs[historyref - 1].path);
             chdir(path);
+            dirAbort = 1;
             goto reload;
           } else {
             exitCode = 1;
@@ -1532,12 +1618,22 @@ results* get_dir(char *pwd)
           }
         }
 
+        if (pass == 0){
+          ob = realloc(ob, sizeof(results) * (totalfilecount) + 1);
+          count = 0;
+          pass = 1;
+          goto reload;
+        }
+
         // free(objectWild);
 
         // return ob;
       }else{
-        sprintf(direrror, "Could not open the directory" );
-        topLineMessage(direrror);
+        // May want to use error no. here.
+        dirErrorSize = 29;
+        dirError = realloc(dirError, sizeof(char) * dirErrorSize);
+        sprintf(dirError, "Could not open the directory" );
+        topLineMessage(dirError);
         historyref--;
         // return ob;
       }
@@ -1551,9 +1647,20 @@ results* get_dir(char *pwd)
     goto fetch;
 
   } else {
-    // This should never be called.
-    sprintf(direrror, "The location %s cannot be opened or is not a directory\n", path);
-    topLineMessage(direrror);
+    dirErrorSize = snprintf(NULL, 0, "The location %s cannot be opened or is not a directory", path);
+    dirError = realloc(dirError, sizeof(char) * (dirErrorSize + 1));
+    sprintf(dirError, "The location %s cannot be opened or is not a directory", path);
+    topLineMessage(dirError);
+    historyref--;
+    if (historyref > 0){
+      strcpy(path, hs[historyref - 1].path);
+      chdir(path);
+      dirAbort = 1;
+      goto reload;
+    } else {
+      exitCode = 1;
+      exittoshell();
+    }
   }
   hlinklen = seglength(ob, "hlink", count);
   ownerlen = seglength(ob, "owner", count);
@@ -1566,6 +1673,7 @@ results* get_dir(char *pwd)
   namelen = seglength(ob, "name", count);
   slinklen = seglength(ob, "slink", count);
 
+  free(dirError);
   free(res);
   return ob;
 }
@@ -1592,11 +1700,16 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   size_t list_count = 0;
   int count = totalfilecount;
   int printSelect = 0;
-  char sizeHeader[256], headings[256];
+  //char sizeHeader[256], headings[256];
+  char *sizeHeader = malloc(sizeof(char) + 1);
+  char *headings = malloc(sizeof(char) + 1);
+  size_t sizeHeaderLen;
+  size_t headingsLen;
   int i, s1, s2, s3;
   int headerpos, displaypos;
   char *susedString, *savailableString;
-  wchar_t pwdprint[1024];
+  wchar_t *pwdPrint = malloc(sizeof(wchar_t) + 1);
+  size_t pwdPrintSize;
   char *markedInfoLine, *padding0, *padding1, *padding2, *padding3;
 
   if (markedinfo == 2 && (CheckMarked(ob) > 0)){
@@ -1620,10 +1733,14 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
 
   selected = selected - topfileref;
 
+  pwdPrintSize = (strlen(pwd) + strlen(objectWild) + 2);
+
+  pwdPrint = realloc(pwdPrint, (sizeof(wchar_t) * pwdPrintSize));
+
   if (strcmp(objectWild, "")){
-    swprintf(pwdprint, 1024, L"%s/%s", pwd, objectWild);
+    swprintf(pwdPrint, pwdPrintSize, L"%s/%s", pwd, objectWild);
   } else {
-    swprintf(pwdprint, 1024, L"%s", pwd);
+    swprintf(pwdPrint, pwdPrintSize, L"%s", pwd);
   }
 
   if (human) {
@@ -1763,12 +1880,20 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
     s3 = 1;
   }
 
+  sizeHeaderLen = snprintf(NULL, 0, "%i Objects   %s Used %s Available", count, susedString, savailableString);
+
+  sizeHeader = realloc(sizeHeader, sizeof(char) * (sizeHeaderLen + 1));
+
   sprintf(sizeHeader, "%i Objects   %s Used %s Available", count, susedString, savailableString);
 
   padding0 = genPadding(hlinklen + 1);
   padding1 = genPadding(s1);
   padding2 = genPadding(s2);
   padding3 = genPadding(s3);
+
+  headingsLen = snprintf(NULL, 0, "%s%s%s%s%s%s%s%s%s%s", headAttrs, padding0, headOG, padding1, padding2, headSize, " ", headDT, padding3, headName);
+
+  headings = realloc(headings, sizeof(char) * (headingsLen + 1));
 
   sprintf(headings, "%s%s%s%s%s%s%s%s%s%s", headAttrs, padding0, headOG, padding1, padding2, headSize, " ", headDT, padding3, headName);
 
@@ -1783,7 +1908,10 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
     setColors(INFO_PAIR);
   }
   // attroff(A_BOLD); // Required to ensure the last selected item doesn't bold the header
-  wPrintLine(1, 2, pwdprint);
+  wPrintLine(1, 2, pwdPrint);
+
+  free(pwdPrint);
+
   printLine(2, 2, sizeHeader);
 
   if (markedinfo == 1 || (markedinfo == 2 && (CheckMarked(ob) > 0))){
@@ -1808,6 +1936,8 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   setColors(COMMAND_PAIR);
   free(susedString);
   free(savailableString);
+  free(sizeHeader);
+  free(headings);
 }
 
 void resizeDisplayDir(results* ob){

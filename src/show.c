@@ -33,12 +33,12 @@
 #include "common.h"
 #include "show.h"
 
-char currentpwd[1024];
+char currentpwd[4096];
 
 int viewMode = 0;
 int resized = 0;
 
-char sortmode[5] = "name";
+char sortmode[9] = "name";
 char timestyle[9] = "locale";
 int reverse = 0;
 int human = 0;
@@ -81,13 +81,12 @@ extern history *hs;
 extern int topfileref;
 extern int selected;
 extern int totalfilecount;
-extern char sortmode[5];
 extern int showhidden;
 
-extern char globalConfLocation[128];
-extern char homeConfLocation[128];
+extern char globalConfLocation[4096];
+extern char homeConfLocation[4096];
 
-extern char themeName[128];
+extern char themeName[256];
 
 struct sigaction sa;
 
@@ -416,11 +415,11 @@ void settingsMenuView(){
 
   while(1)
     {
-      if (settingsBinPos < 0){
-        curs_set(TRUE);
-      } else {
-        curs_set(FALSE);
-      }
+      // if (settingsBinPos < 0){
+      //   curs_set(TRUE);
+      // } else {
+      //   curs_set(FALSE);
+      // }
       for (count = 0; count < items; count++){
         printSetting(2 + count, 3, &settingIndex, &charValues, &binValues, count, charValuesCount, binValuesCount, settingIndex[count].type, settingIndex[count].invert);
       }
@@ -441,7 +440,6 @@ void settingsMenuView(){
           createParentDirs(homeConfLocation);
         }
         saveConfig(homeConfLocation, &settingIndex, &charValues, &binValues, items, charValuesCount, binValuesCount);
-        // Future task: ensure saving actually worked
         curs_set(FALSE);
         topLineMessage("Settings saved.");
         curs_set(TRUE);
@@ -512,7 +510,7 @@ int directory_view(char * currentpwd)
   wPrintMenu(0, 0, fileMenuLabel);
 
   set_history(currentpwd, "", "", 0, 0);
-  free(ob);
+  freeResults(ob, totalfilecount);
   ob = get_dir(currentpwd);
   reorder_ob(ob, sortmode);
   display_dir(currentpwd, ob, topfileref, 0);
@@ -526,7 +524,7 @@ int directory_view(char * currentpwd)
 
   directory_view_menu_inputs();
 
-  free(ob); //freeing memory
+  freeResults(ob, totalfilecount); //freeing memory
   return 0;
 }
 
@@ -787,7 +785,7 @@ Valid arguments are:\n\
       }
       break;
     case 'f':
-      strcpy(sortmode, "none"); // This can be set to anything non valid
+      strcpy(sortmode, "unsorted"); // This needs to be set to "unsorted" to allow the settings menu to render correctly.
       showhidden = 1;
       break;
     case 'S':
@@ -830,7 +828,7 @@ Valid arguments are:\n\
       reverse = 1;
       break;
     case 'U':
-      strcpy(sortmode, "none"); // Again, invalid
+      strcpy(sortmode, "unsorted");
       break;
     case GETOPT_NODANGER_CHAR:
       danger = 0;

@@ -43,13 +43,11 @@ extern menuDef *settingsMenu;
 extern int settingsMenuSize;
 extern wchar_t *settingsMenuLabel;
 
-extern char fileMenuText[74];
-extern char filePosText[58];
 extern char regexinput[1024];
 extern FILE *file;
 extern int topline;
 extern int leftcol;
-extern char fileName[512];
+extern char fileName[4096];
 extern int displaysize;
 extern int totallines;
 extern int longestlongline;
@@ -166,11 +164,18 @@ int show_file_find_case_input()
 void show_file_position_input(int currentpos)
 {
   char newpos[11];
+  char *filePosText;
+  int filePosTextLen;
   int status;
+  // Fun fact, in DF-EDIT 2.3d, the following text input typoed "absolute" as "absolue", this typo also exists in the Windows version from 1997 (2.3d-76), however, the 1986 documentation correctly writes it as "absolute".
+  filePosTextLen = snprintf(NULL, 0, "Position relative (<+num> || <-num>) or absolute (<num>):");
+  filePosText = malloc(sizeof(char) * (filePosTextLen + 1));
+  sprintf(filePosText, "Position relative (<+num> || <-num>) or absolute (<num>):");
   viewmode = 2;
   move(0,0);
   clrtoeol();
   printMenu(0,0,filePosText);
+  free(filePosText);
   curs_set(TRUE);
   move(0,52);
   status = readline(newpos, 11, ""); // DF-EDIT defaulted to 0, but it also defaulted to overtype mode, so for ease of use, we'll leave the default blank.
@@ -314,7 +319,7 @@ void show_file_file_input()
   mvprintw(0,0,"Show File - Enter pathname:");
   curs_set(TRUE);
   move(0,28);
-  readline(fileName, 512, "");
+  readline(fileName, 4096, "");
   curs_set(FALSE);
   if (check_first_char(fileName, "~")){
     rewrite = str_replace(fileName, "~", getenv("HOME"));
