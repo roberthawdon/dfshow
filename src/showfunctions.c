@@ -1610,6 +1610,7 @@ results* get_dir(char *pwd)
           if (historyref > 0){
             strcpy(path, hs[historyref - 1].path);
             chdir(path);
+            dirAbort = 1;
             goto reload;
           } else {
             exitCode = 1;
@@ -1646,8 +1647,6 @@ results* get_dir(char *pwd)
     goto fetch;
 
   } else {
-    // This should never be called.
-    // sprintf(direrror, "The location %s cannot be opened or is not a directory\n", path);
     dirErrorSize = snprintf(NULL, 0, "The location %s cannot be opened or is not a directory", path);
     dirError = realloc(dirError, sizeof(char) * (dirErrorSize + 1));
     sprintf(dirError, "The location %s cannot be opened or is not a directory", path);
@@ -1656,6 +1655,7 @@ results* get_dir(char *pwd)
     if (historyref > 0){
       strcpy(path, hs[historyref - 1].path);
       chdir(path);
+      dirAbort = 1;
       goto reload;
     } else {
       exitCode = 1;

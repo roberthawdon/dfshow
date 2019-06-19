@@ -335,6 +335,11 @@ void refreshDirectory(char *sortmode, int origtopfileref, int origselected, int 
     goto handleMissingDir;
   }
   topfileref = sanitizeTopFileRef(origtopfileref);
+  if (dirAbort == 1){
+    topfileref = hs[historyref].topfileref;
+    selected = hs[historyref].selected;
+    dirAbort = 0;
+  }
   display_dir(currentpwd, ob, topfileref, selected);
 }
 
