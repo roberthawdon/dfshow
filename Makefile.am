@@ -3,7 +3,7 @@ AUTOMAKE_OPTIONS = foreign
 dfshowconfdir = $(sysconfdir)
 dfshowdatadir = $(datadir)/dfshow
 
-AM_CFLAGS = -DSYSCONFIG=\"$(dfshowconfdir)\" -DDATADIR=\"$(dfshowdatadir)\" -D_XOPEN_SOURCE_EXTENDED
+AM_CFLAGS = -DSYSCONFIG=\"$(dfshowconfdir)\" -DDATADIR=\"$(dfshowdatadir)\" -D_XOPEN_SOURCE_EXTENDED -D__USE_MINGW_ANSI_STDIO=1 -O3 -Wall
 
 if DARWIN
 LDADD = -lncurses -lm -lconfig
