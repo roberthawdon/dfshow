@@ -36,6 +36,10 @@
 #include "show.h"
 #include "colors.h"
 
+#if HAVE_WINDOWS_H
+# include <windows.h>
+#endif
+
 int c;
 int * pc = &c;
 

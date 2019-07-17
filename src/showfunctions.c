@@ -51,6 +51,10 @@
 # include <hurd.h>
 #endif
 
+#if HAVE_WINDOWS_H
+# include <windows.h>
+#endif
+
 // It turns out most systems don't have an ST_AUTHOR, so for those systems, we set the author as the owner. Yup, `ls` does this too.
 #if ! HAVE_STRUCT_STAT_ST_AUTHOR
 # define st_author st_uid
