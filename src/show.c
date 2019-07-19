@@ -33,6 +33,8 @@
 #include "common.h"
 #include "show.h"
 
+#include "os_mswin.h"
+
 char currentpwd[4096];
 
 int viewMode = 0;
