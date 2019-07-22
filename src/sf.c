@@ -17,6 +17,7 @@
 */
 
 #define _GNU_SOURCE
+#define LIBCONFIG_STATIC
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -29,11 +30,11 @@
 #include <wchar.h>
 #include <libconfig.h>
 #include "config.h"
+#include "os_mswin.h"
 #include "colors.h"
 #include "common.h"
 #include "sfmenus.h"
 #include "sf.h"
-
 
 char regexinput[1024];
 
@@ -77,7 +78,7 @@ int i, s;
 long int topPos;
 long int *filePos;
 
-struct sigaction sa;
+// struct sigaction sa;
 
 extern int * pc;
 
@@ -110,7 +111,7 @@ void readConfig(const char * confFile)
       if (setting){
         if (!getenv("DFS_THEME_OVERRIDE")){
           strcpy(themeName, config_setting_get_string(setting));
-          setenv("DFS_THEME", themeName, 1);
+          // setenv("DFS_THEME", themeName, 1);
         }
       }
       setting = config_setting_get_member(group, "sigint");
@@ -180,34 +181,34 @@ void sigwinchHandle(int sig)
 
 int findInFile(const char * currentfile, const char * search, int charcase)
 {
-  regex_t regex;
-  int reti;
-  char msgbuf[8192];
-
-  reti = regcomp(&regex, search, charcase);
-
-  if (reti) {
-    return(-1);
-  }
-
-  fseek(stream, filePos[top], SEEK_SET);
-  top = 0;
-  count = 0;
-
-  if ( stream ) {
-    while ((line = read_line(stream) )){
-      count++;
-      reti = regexec(&regex, line, 0, NULL, 0);
-      if (!reti && count > topline) {
-        regfree(&regex);
-        return(count);
-      }
-    }
-  }
-
-  regfree(&regex);
-  return (-2);
-
+//   regex_t regex;
+//   int reti;
+//   char msgbuf[8192];
+// 
+//   reti = regcomp(&regex, search, charcase);
+// 
+//   if (reti) {
+//     return(-1);
+//   }
+// 
+//   fseek(stream, filePos[top], SEEK_SET);
+//   top = 0;
+//   count = 0;
+// 
+//   if ( stream ) {
+//     while ((line = read_line(stream) )){
+//       count++;
+//       reti = regexec(&regex, line, 0, NULL, 0);
+//       if (!reti && count > topline) {
+//         regfree(&regex);
+//         return(count);
+//       }
+//     }
+//   }
+// 
+//   regfree(&regex);
+//   return (-2);
+// 
 }
 
 void printHelp(char* programName)
@@ -552,7 +553,7 @@ int main(int argc, char *argv[])
       if (optarg){
         if (strcmp(optarg, "\0")){
           strcpy(themeName, optarg);
-          setenv("DFS_THEME_OVERRIDE", "TRUE", 1);
+          // setenv("DFS_THEME_OVERRIDE", "TRUE", 1);
         }
       } else {
         printf("%s: The following themes are available:\n", argv[0]);
@@ -584,13 +585,13 @@ int main(int argc, char *argv[])
 
   refreshMenuLabels();
 
-  memset(&sa, 0, sizeof(struct sigaction));
-  sa.sa_handler = sigwinchHandle;
-  sigaction(SIGWINCH, &sa, NULL);
+  // memset(&sa, 0, sizeof(struct sigaction));
+  // sa.sa_handler = sigwinchHandle;
+  // sigaction(SIGWINCH, &sa, NULL);
 
-  if (!enableCtrlC){
-    signal(SIGINT, sigintHandle);
-  }
+  // if (!enableCtrlC){
+  //   signal(SIGINT, sigintHandle);
+  // }
 
   start_color();
   cbreak();

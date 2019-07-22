@@ -15,7 +15,7 @@ endif
 bin_PROGRAMS = $(top_builddir)/bin/sf
 __top_builddir__bin_show_SOURCES = src/show.c src/showfunctions.c src/showmenus.c src/colors.c src/common.c
 __top_builddir__bin_show_LDADD = $(LDADD)
-__top_builddir__bin_sf_SOURCES = src/sf.c src/sfmenus.c src/colors.c src/common.c
+__top_builddir__bin_sf_SOURCES = src/sf.c src/sfmenus.c src/colors.c src/common.c src/os_mswin.c
 __top_builddir__bin_sf_LDADD = $(LDADD)
 dfshowconf_DATA = conf/dfshow.conf
 dfshowdata_DATA = themes/*
