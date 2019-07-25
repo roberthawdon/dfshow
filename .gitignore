@@ -2,15 +2,12 @@
 .deps
 .dirstamp
 .vscode
+config.*
 /Makefile
 Makefile.in
 aclocal.m4
 autom4te.cache
 compile
-config.h
-config.hin
-config.log
-config.status
 configure
 depcomp
 install-sh

@@ -5,10 +5,14 @@ dfshowdatadir = $(datadir)/dfshow
 
 AM_CFLAGS = -DSYSCONFIG=\"$(dfshowconfdir)\" -DDATADIR=\"$(dfshowdatadir)\" -D_XOPEN_SOURCE_EXTENDED -D__USE_MINGW_ANSI_STDIO=1 -O3 -Wall
 
-if DARWIN
+if MACOS
 LDADD = -lncurses -lm -lconfig
 else
+if WINDOWS
+LDADD = -lncursesw -lm -lconfig -lpcre2-posix -lpcre2-8
+else
 LDADD = -lncursesw -lm -lconfig
+endif
 endif
 
 # bin_PROGRAMS = $(top_builddir)/bin/show $(top_builddir)/bin/sf

@@ -18,6 +18,7 @@
 
 #define _GNU_SOURCE
 #define LIBCONFIG_STATIC
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -26,15 +27,21 @@
 #include <getopt.h>
 #include <string.h>
 #include <signal.h>
-#include <regex.h>
 #include <wchar.h>
 #include <libconfig.h>
 #include "config.h"
-#include "os_mswin.h"
 #include "colors.h"
 #include "common.h"
 #include "sfmenus.h"
 #include "sf.h"
+
+#ifdef _WIN32
+  #define PCRE2_STATIC
+  #include <pcre2posix.h>
+  #include "os_mswin.h"
+#else
+  #include <regex.h>
+#endif
 
 char regexinput[1024];
 
@@ -181,34 +188,34 @@ void sigwinchHandle(int sig)
 
 int findInFile(const char * currentfile, const char * search, int charcase)
 {
-//   regex_t regex;
-//   int reti;
-//   char msgbuf[8192];
-// 
-//   reti = regcomp(&regex, search, charcase);
-// 
-//   if (reti) {
-//     return(-1);
-//   }
-// 
-//   fseek(stream, filePos[top], SEEK_SET);
-//   top = 0;
-//   count = 0;
-// 
-//   if ( stream ) {
-//     while ((line = read_line(stream) )){
-//       count++;
-//       reti = regexec(&regex, line, 0, NULL, 0);
-//       if (!reti && count > topline) {
-//         regfree(&regex);
-//         return(count);
-//       }
-//     }
-//   }
-// 
-//   regfree(&regex);
-//   return (-2);
-// 
+  regex_t regex;
+  int reti;
+  char msgbuf[8192];
+
+  reti = regcomp(&regex, search, charcase);
+
+  if (reti) {
+    return(-1);
+  }
+
+  fseek(stream, filePos[top], SEEK_SET);
+  top = 0;
+  count = 0;
+
+  if ( stream ) {
+    while ((line = read_line(stream) )){
+      count++;
+      reti = regexec(&regex, line, 0, NULL, 0);
+      if (!reti && count > topline) {
+        regfree(&regex);
+        return(count);
+      }
+    }
+  }
+
+  regfree(&regex);
+  return (-2);
+
 }
 
 void printHelp(char* programName)
