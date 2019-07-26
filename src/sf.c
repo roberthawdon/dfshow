@@ -118,7 +118,7 @@ void readConfig(const char * confFile)
       if (setting){
         if (!getenv("DFS_THEME_OVERRIDE")){
           strcpy(themeName, config_setting_get_string(setting));
-          // setenv("DFS_THEME", themeName, 1);
+          setenv("DFS_THEME", themeName, 1);
         }
       }
       setting = config_setting_get_member(group, "sigint");
@@ -560,7 +560,7 @@ int main(int argc, char *argv[])
       if (optarg){
         if (strcmp(optarg, "\0")){
           strcpy(themeName, optarg);
-          // setenv("DFS_THEME_OVERRIDE", "TRUE", 1);
+          setenv("DFS_THEME_OVERRIDE", "TRUE", 1);
         }
       } else {
         printf("%s: The following themes are available:\n", argv[0]);

@@ -53,3 +53,19 @@ ssize_t getline(char **lineptr, size_t *n, FILE *stream) {
     (*lineptr)[pos] = '\0';
     return pos;
 }
+
+int setenv(const char *name, const char *value, int overwrite){
+
+  char* envValue;
+  int envValueLen = 0;
+  int returnVal = -1;
+
+  envValueLen = snprintf(NULL, 0, "%s=%s", name, value);
+  envValue = malloc(sizeof(char) * (envValueLen + 1));
+
+  sprintf(envValue, "%s=%s", name, value);
+
+  returnVal =_putenv(envValue);
+
+  return returnVal;
+}

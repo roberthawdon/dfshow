@@ -29,6 +29,10 @@
 #include "common.h"
 #include "colors.h"
 
+#ifdef _WIN32
+  #include "os_mswin.h"
+#endif
+
 int lightColorPair[256];
 // int commandL, infoL, inputL, selectL, displayL, dangerL, dirL, slinkL, exeL, suidL, sgidL, hiliteL = 0;
 
@@ -324,7 +328,7 @@ void saveTheme(){
         *pc = getch10th();
         if (*pc == 'y'){
           config_write_file(&cfg, filename);
-          // setenv("DFS_THEME", objectFromPath(filename), 1);
+          setenv("DFS_THEME", objectFromPath(filename), 1);
         } else {
           // Skip
         }
@@ -332,7 +336,7 @@ void saveTheme(){
         themeBuilder();
       } else {
         config_write_file(&cfg, filename);
-        // setenv("DFS_THEME", objectFromPath(filename), 1);
+        setenv("DFS_THEME", objectFromPath(filename), 1);
         themeModified = 0;
       }
     } else {
@@ -364,7 +368,7 @@ int applyTheme(const char *filename){
   config_t cfg;
   config_setting_t *root, *setting, *group, *array;
   int groupLen, i, h;
-  // setenv("DFS_THEME", objectFromPath(filename), 1);
+  setenv("DFS_THEME", objectFromPath(filename), 1);
   config_init(&cfg);
   if (config_read_file(&cfg, filename)){
     group = config_lookup(&cfg, "theme");
@@ -410,7 +414,7 @@ void loadTheme(){
       free(rewrite);
     }
     if (check_file(filename) ){
-      // setenv("DFS_THEME_OVERRIDE", "TRUE", 1);
+      setenv("DFS_THEME_OVERRIDE", "TRUE", 1);
       themeModified = 0;
       applyTheme(filename);
     } else {
@@ -442,7 +446,7 @@ void loadAppTheme(const char *themeName)
       free(rewrite);
   } else {
     // Assume default
-    // setenv("DFS_THEME", "default", 1);
+    setenv("DFS_THEME", "default", 1);
   }
 }
 

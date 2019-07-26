@@ -6,3 +6,5 @@ uid_t getuid();
 uid_t geteuid();
 gid_t getgid();
 
+int setenv(const char *name, const char *value, int overwrite);
+
