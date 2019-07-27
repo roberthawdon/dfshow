@@ -43,6 +43,10 @@
   #include <regex.h>
 #endif
 
+#ifndef _WIN32
+struct sigaction sa;
+#endif
+
 char regexinput[1024];
 
 int colormode = 0;
@@ -84,8 +88,6 @@ int i, s;
 
 long int topPos;
 long int *filePos;
-
-// struct sigaction sa;
 
 extern int * pc;
 
@@ -164,7 +166,6 @@ int calculateTab(int pos)
   int currentpos;
   int result;
 
-  // currentpos = pos + leftcol - 1;
   currentpos = pos;
 
   while (currentpos > tabsize){
@@ -182,7 +183,6 @@ int calculateTab(int pos)
 
 void sigwinchHandle(int sig)
 {
-  // refreshScreen();
   resized = 1;
 }
 
@@ -358,7 +358,6 @@ void file_view(char * currentfile)
     topLineMessage(notFoundMessage);
     exitCode = 1;
   }
-  // sleep(10); // No function, so we'll pause for 10 seconds to display our menu
 
   return;
 }
@@ -433,11 +432,6 @@ void settingsMenuView()
 
   while(1)
     {
-      // if (settingsBinPos < 0){
-      //   curs_set(TRUE);
-      // } else {
-      //   curs_set(FALSE);
-      // }
       for (count = 0; count < items; count++){
         printSetting(2 + count, 3, &settingIndex, &charValues, &binValues, count, charValuesCount, binValuesCount, settingIndex[count].type, settingIndex[count].invert);
       }
@@ -458,7 +452,6 @@ void settingsMenuView()
           createParentDirs(homeConfLocation);
         }
         saveConfig(homeConfLocation, &settingIndex, &charValues, &binValues, items, charValuesCount, binValuesCount);
-        // Future task: ensure saving actually worked
         curs_set(FALSE);
         topLineMessage("Settings saved.");
         curs_set(TRUE);
@@ -592,13 +585,15 @@ int main(int argc, char *argv[])
 
   refreshMenuLabels();
 
-  // memset(&sa, 0, sizeof(struct sigaction));
-  // sa.sa_handler = sigwinchHandle;
-  // sigaction(SIGWINCH, &sa, NULL);
+#ifndef _WIN32
+  memset(&sa, 0, sizeof(struct sigaction));
+  sa.sa_handler = sigwinchHandle;
+  sigaction(SIGWINCH, &sa, NULL);
+#endif
 
-  // if (!enableCtrlC){
-  //   signal(SIGINT, sigintHandle);
-  // }
+  if (!enableCtrlC){
+    signal(SIGINT, sigintHandle);
+  }
 
   start_color();
   cbreak();
