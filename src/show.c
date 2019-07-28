@@ -33,7 +33,13 @@
 #include "common.h"
 #include "show.h"
 
-#include "os_mswin.h"
+#ifdef _WIN32
+  #include "os_mswin.h"
+#endif
+
+#ifndef _WIN32
+struct sigaction sa;
+#endif
 
 char currentpwd[4096];
 
@@ -89,8 +95,6 @@ extern char globalConfLocation[4096];
 extern char homeConfLocation[4096];
 
 extern char themeName[256];
-
-struct sigaction sa;
 
 extern int exitCode;
 extern int enableCtrlC;
@@ -628,7 +632,6 @@ void refreshScreen()
 
 void sigwinchHandle(int sig){
   resized = 1;
-  // refreshScreen();
 }
 
 void printHelp(char* programName){
@@ -903,9 +906,12 @@ Valid arguments are:\n\
   initscr();
   refreshMenuLabels();
 
+#ifndef _WIN32
   memset(&sa, 0, sizeof(struct sigaction));
   sa.sa_handler = sigwinchHandle;
   sigaction(SIGWINCH, &sa, NULL);
+#endif
+
   if (!enableCtrlC){
     signal(SIGINT, sigintHandle);
   }
