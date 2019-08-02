@@ -1275,31 +1275,55 @@ int cmp_dflist_name(const void *lhs, const void *rhs)
 
 int cmp_dflist_date(const void *lhs, const void *rhs)
 {
+  time_t compare;
+  int output;
   results *dforderA = (results *)lhs;
   results *dforderB = (results *)rhs;
 
   if (reverse){
     // Oldest to Newest
-    return (dforderA->date - dforderB->date);
+    compare = (dforderA->date - dforderB->date);
   } else {
     // Newest to Oldest
-    return (dforderB->date - dforderA->date);
+    compare = (dforderB->date - dforderA->date);
   }
+
+  if (compare > 0){
+    output = 1;
+  } else if (compare < 0) {
+    output = -1;
+  } else {
+    output = 0;
+  }
+
+  return output;
 
 }
 
 int cmp_dflist_size(const void *lhs, const void *rhs)
 {
+  ptrdiff_t compare;
+  int output;
   results *dforderA = (results *)lhs;
   results *dforderB = (results *)rhs;
 
-  if (reverse) {
-    // Smallest to largest
-    return (dforderA->size - dforderB->size);
+  if (reverse){
+    // Smallest to Largest
+    compare = (dforderA->size - dforderB->size);
   } else {
-    // Largest to smallest
-    return (dforderB->size - dforderA->size);
+    // Largest to Smallest
+    compare = (dforderB->size - dforderA->size);
   }
+
+  if (compare > 0){
+    output = 1;
+  } else if (compare < 0) {
+    output = -1;
+  } else {
+    output = 0;
+  }
+
+  return output;
 
 }
 
