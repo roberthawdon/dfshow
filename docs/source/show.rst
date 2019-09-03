@@ -251,10 +251,11 @@ the command has any additional propts, they are also described here.
 
   ``Set Owner:``
 
-  ``Set Group:``
+  ``Set Group (owner):``
 
-  If the names of the owner or group is invalid, an error will be
-  displayed to the user.
+  If the names of the owner or group is invalid, an error will be displayed to
+  the user. If the group prompt is left blank, then it will use the value of 
+  the owner prompt.
 
   Selecting "P" will bring up the following prompt.
 
