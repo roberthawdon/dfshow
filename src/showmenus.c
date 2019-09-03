@@ -936,8 +936,8 @@ void huntInput(int selected, int charcase)
   clrtoeol();
   mvprintw(0, 0, inputmessage);
   //curs_set(TRUE);
-  free(inputmessage);
   move(0, strlen(inputmessage) + 1);
+  free(inputmessage);
   //curs_set(FALSE);
   if (readline(regexinput, 4096, "") == -1) {
     abortinput = 1;

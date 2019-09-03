@@ -688,6 +688,7 @@ int main(int argc, char *argv[])
 {
   uid_t uid=getuid(), euid=geteuid();
   int c;
+  char * tmpPwd;
 
   showProcesses = checkRunningEnv() + 1;
 
@@ -931,8 +932,10 @@ Valid arguments are:\n\
     if (optind < argc){
       if (!check_first_char(argv[optind], "/")){
         // If the path given doesn't start with a / then assume we're dealing with a relative path.
-        getcwd(currentpwd, sizeof(currentpwd));
-        sprintf(currentpwd, "%s/%s", currentpwd, argv[optind]);
+        tmpPwd = malloc(sizeof(currentpwd));
+        getcwd(tmpPwd, sizeof(currentpwd));
+        sprintf(currentpwd, "%s/%s", tmpPwd, argv[optind]);
+        free(tmpPwd);
       } else {
         strcpy(currentpwd, argv[optind]);
       }
