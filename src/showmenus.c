@@ -1112,19 +1112,22 @@ void modify_group_input()
   struct group *gresult;
   size_t bufsize;
   char errortxt[256];
-  int i;
-  int status;
+  int i, menuLen, status;
 
  groupInputLoop:
   move(0,0);
   clrtoeol();
-  mvprintw(0, 0, "Set Group:");
+  menuLen = (strlen(ownerinput) + 14);
+  mvprintw(0, 0, "Set Group (%s):", ownerinput);
   curs_set(TRUE);
-  move(0,11);
+  move(0,menuLen);
   status = readline(groupinput, 256, "");
   curs_set(FALSE);
 
   if (status != -1){
+    if (!strcmp(groupinput, "")){
+      sprintf(groupinput, "%s", ownerinput);
+    }
     bufsize = sysconf(_SC_GETPW_R_SIZE_MAX);
     if (bufsize == -1)          /* Value was indeterminate */
       {
