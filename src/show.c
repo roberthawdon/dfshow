@@ -47,7 +47,6 @@ int viewMode = 0;
 int resized = 0;
 
 char sortmode[9] = "name";
-char timestyle[9] = "locale";
 int reverse = 0;
 int human = 0;
 int si = 0;
@@ -75,6 +74,8 @@ int showProcesses;
 char *objectWild;
 
 results *ob;
+
+extern char timestyle[9];
 
 extern int settingsPos;
 extern int settingsBinPos;

@@ -1,33 +1,5 @@
 #include <sys/stat.h>
-
-typedef struct {
-  int marked[1];
-  mode_t mode;
-  char *perm;
-  int hlink[4];
-  int hlinklens[5];
-  char *owner;
-  char *group;
-  char *author;
-  size_t size;
-  int sizelens[32];
-  int major;
-  int minor;
-  time_t date;
-  time_t adate;
-  wchar_t *datedisplay;
-  char *name;
-  char *slink;
-  int color;
-} results;
-
-typedef struct {
-  char *path;
-  char *name;
-  char *objectWild;
-  int topfileref;
-  int selected;
-} history;
+#include "typedefs.h"
 
 int checkRunningEnv();
 void freeResults(results *ob, int count);
@@ -35,7 +7,6 @@ void freeHistory(history *hs, int count);
 char *getRelativePath(char *file, char *target);
 int wildcard(const char *value, char *wcard);
 int findResultByName(results *ob, char *name);
-char *dateString(time_t date, char *style);
 int check_object(const char *object);
 void copy_file(char *source_input, char *target_input, mode_t mode);
 void delete_file(char *source_input);

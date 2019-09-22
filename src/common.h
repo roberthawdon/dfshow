@@ -81,3 +81,4 @@ void updateSetting(settingIndex **settings, int index, int type, int intSetting)
 int intSettingValue(int *setting, int newValue);
 void printSetting(int line, int col, settingIndex **settings, t1CharValues **values, t2BinValues **bins, int index, int charIndex, int binIndex, int type, int invert);
 int textValueLookup(t1CharValues **values, int *items, char *refLabel, char *value);
+char *dateString(time_t date, char *style);

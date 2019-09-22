@@ -30,6 +30,7 @@
 #include <wchar.h>
 #include <signal.h>
 #include <math.h>
+#include <time.h>
 #include "colors.h"
 #include "config.h"
 #include "common.h"
@@ -59,6 +60,17 @@ extern int resized;
 void refreshScreen(); // This reference needs to exist to allow getch10th to be common.
 
 void unloadMenuLabels();
+
+time_t currenttime;
+
+/* Formatting time in a similar fashion to `ls` */
+static char const *long_time_format[2] =
+  {
+   // With year, intended for if the file is older than 6 months.
+   "%b %e  %Y",
+   // Without year, for recent files.
+   "%b %e %H:%M"
+  };
 
 int getch10th (void) {
   int ch;
@@ -1079,3 +1091,30 @@ int textValueLookup(t1CharValues **values, int *items, char *refLabel, char *val
 
   return -1;
 }
+
+char *dateString(time_t date, char *style)
+{
+  char *outputString = malloc (sizeof (char) * 33);
+  bool recent = 0;
+
+  if ( date > (currenttime - 31556952 / 2) ) {
+    recent = 1;
+  }
+
+  if ( !strcmp(style, "long-iso") ) {
+    long_time_format[0] = long_time_format[1] = "%Y-%m-%d %H:%M";
+  } else if ( !strcmp(style, "full-iso") ) {
+    long_time_format[0] = long_time_format[1] = "%Y-%m-%d %H:%M:%S %z";
+  } else if ( !strcmp(style, "iso") ) {
+    long_time_format[0] = "%Y-%m-%d ";
+    long_time_format[1] = "%m-%d %H:%M";
+  } else {
+    // Default back to locale
+    long_time_format[0] = "%b %e  %Y";
+    long_time_format[1] = "%b %e %H:%M";
+  }
+  strftime(outputString, 32, long_time_format[recent], localtime(&(date)));
+  return (outputString);
+}
+
+
