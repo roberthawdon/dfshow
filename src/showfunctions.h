@@ -1,6 +1,11 @@
 #include <sys/stat.h>
 #include <sys/acl.h>
 
+#define ACL_NONE    0
+#define ACL_TRUE    1
+#define ACL_SELINUX 2
+#define ACL_XATTR   3 // macOS Specific
+
 typedef struct {
   int marked[1];
   mode_t mode;

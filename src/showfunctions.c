@@ -463,11 +463,11 @@ int writePermsEntry(char * perms, mode_t mode, int axFlag){
   }
 
   if (axDisplay){
-    if (axFlag == 1){
+    if (axFlag == ACL_TRUE){
       perms[10] = '+';
-    } else if (axFlag == 2){
+    } else if (axFlag == ACL_SELINUX){
       perms[10] = '.';
-    } else if (axFlag == 3){
+    } else if (axFlag == ACL_XATTR){
       perms[10] = '@';
     } else {
       perms[10] = ' ';
