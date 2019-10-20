@@ -1,8 +1,11 @@
 #include <sys/stat.h>
+#include <sys/acl.h>
 
 typedef struct {
   int marked[1];
   mode_t mode;
+  acl_t acl;
+  ssize_t xattr;
   char *perm;
   int hlink[4];
   int hlinklens[5];
@@ -64,8 +67,8 @@ void padstring(char *str, int len, char c);
 char *genPadding(int num_of_spaces);
 void resizeDisplayDir(results* ob);
 char *readableSize(double size, char *buf, int si);
-int writePermsEntry(char * perms, mode_t mode);
-void writeResultStruct(results* ob, const char * filename, struct stat buffer, int count);
+int writePermsEntry(char * perms, mode_t mode, int axFlag);
+void writeResultStruct(results* ob, const char * filename, struct stat buffer, int count, int axFlag);
 char *markedDisplay(results* ob);
 int huntFile(const char * file, const char * search, int charcase);
 

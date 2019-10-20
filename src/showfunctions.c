@@ -36,6 +36,8 @@
 #include <wchar.h>
 #include <math.h>
 #include <regex.h>
+#include <sys/xattr.h>
+#include <sys/acl.h>
 #include "common.h"
 #include "config.h"
 #include "showfunctions.h"
@@ -106,6 +108,8 @@ int automark = 0;
 int mmMode = 0;
 
 int dirAbort = 0;
+
+int axDisplay = 0;
 
 unsigned long int savailable = 0;
 unsigned long int sused = 0;
@@ -357,7 +361,7 @@ int wildcard(const char *value, char *wcard)
     return match;
 }
 
-int writePermsEntry(char * perms, mode_t mode){
+int writePermsEntry(char * perms, mode_t mode, int axFlag){
 
   typecolor = DISPLAY_PAIR;
 
@@ -458,19 +462,31 @@ int writePermsEntry(char * perms, mode_t mode){
     perms[9] = '-';
   }
 
+  if (axDisplay){
+    if (axFlag == 1){
+      perms[10] = '+';
+    } else if (axFlag == 2){
+      perms[10] = '.';
+    } else if (axFlag == 3){
+      perms[10] = '@';
+    } else {
+      perms[10] = ' ';
+    }
+  }
+
   return typecolor;
 
 }
 
-void writeResultStruct(results* ob, const char * filename, struct stat buffer, int count){
-  char perms[11] = {0};
+void writeResultStruct(results* ob, const char * filename, struct stat buffer, int count, int axFlag){
+  char perms[12] = {0};
   struct group *gr;
   struct passwd *pw;
   struct passwd *au;
   char *filedate;
   ssize_t cslinklen = 0, datedisplayLen = 0;
 
-  writePermsEntry(perms, buffer.st_mode);
+  writePermsEntry(perms, buffer.st_mode, axFlag);
 
   // Writing our structure
   if ( markall && !(buffer.st_mode & S_IFDIR) ) {
@@ -684,7 +700,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   int linepadding;
   int colpos;
 
-  char tmpperms[11];
+  char tmpperms[12];
 
   struct stat buffer;
   int status;
@@ -906,7 +922,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
         } else {
           // setColors(ob[currentitem].color);
           status = lstat(ob[currentitem].slink, &buffer);
-          setColors(writePermsEntry(tmpperms, buffer.st_mode));
+          setColors(writePermsEntry(tmpperms, buffer.st_mode, -1));
         }
       }
     }
@@ -1561,9 +1577,13 @@ results* get_dir(char *pwd)
   struct stat buffer;
   int         status;
   int         pass = 0;
+  int axFlag = 0;
   char *dirError = malloc(sizeof(char) + 1);
   // char direrror[1024];
   // char filename[256];
+  acl_t acl;
+  acl_entry_t dummy;
+  ssize_t xattr;
 
   results *ob = malloc(sizeof(results)); // Allocating a tiny amount of memory. We'll expand this on each file found.
 
@@ -1574,6 +1594,7 @@ results* get_dir(char *pwd)
   time ( &currenttime );
   savailable = GetAvailableSpace(pwd);
   sused = 0; // Resetting used value
+  axDisplay = 0;
 
   //if (stat(path, &sb) == 0 && S_ISDIR(sb.st_mode)){
   if (check_object(path) == 1){
@@ -1583,6 +1604,8 @@ results* get_dir(char *pwd)
     if (access ( path, F_OK ) != -1 ){
       if ( folder ){
         while ( ( res = readdir ( folder ) ) != NULL ){
+          acl = NULL; // Resetting
+          xattr = 0; // Resetting
           if ( showhidden == 0 && check_first_char(res->d_name, ".") && strcmp(res->d_name, ".") && strcmp(res->d_name, "..") ) {
             continue; // Skipping hidden files
           }
@@ -1607,7 +1630,12 @@ results* get_dir(char *pwd)
             sprintf(hlinkstr, "%d", buffer.st_nlink);
             sprintf(sizestr, "%lld", (long long)buffer.st_size);
 
-            writeResultStruct(ob, res->d_name, buffer, count);
+            // axflag here
+
+            // axDisplay = 1;
+            // axFlag = 0;
+
+            writeResultStruct(ob, res->d_name, buffer, count, axFlag);
 
             sused = sused + buffer.st_size; // Adding the size values
 
@@ -1910,7 +1938,7 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
 
   sprintf(sizeHeader, "%i Objects   %s Used %s Available", count, susedString, savailableString);
 
-  padding0 = genPadding(hlinklen + 1);
+  padding0 = genPadding(hlinklen + 1 + axDisplay);
   padding1 = genPadding(s1);
   padding2 = genPadding(s2);
   padding3 = genPadding(s3);
