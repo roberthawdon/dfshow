@@ -1,9 +1,12 @@
 #include <sys/stat.h>
 #include <sys/acl.h>
 
+#define MULTICHAR '*'
+#define ONECHAR '?'
+
 #define ACL_NONE    0
 #define ACL_TRUE    1
-#define ACL_SELINUX 2
+#define ACL_SELINUX 2 // Linux Specific
 #define ACL_XATTR   3 // macOS Specific
 
 typedef struct {
@@ -73,9 +76,7 @@ char *genPadding(int num_of_spaces);
 void resizeDisplayDir(results* ob);
 char *readableSize(double size, char *buf, int si);
 int writePermsEntry(char * perms, mode_t mode, int axFlag);
-void writeResultStruct(results* ob, const char * filename, struct stat buffer, int count, int axFlag);
+void writeResultStruct(results* ob, const char * filename, struct stat buffer, int count, acl_t acl, ssize_t xattr);
 char *markedDisplay(results* ob);
 int huntFile(const char * file, const char * search, int charcase);
 
-#define MULTICHAR '*'
-#define ONECHAR '?'

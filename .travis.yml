@@ -5,4 +5,4 @@ script:
 - make
 
 before_install:
-- sudo apt-get install -y libconfig-dev
+- sudo apt-get install -y libconfig-dev libacl1-dev

@@ -53,6 +53,13 @@
 # include <hurd.h>
 #endif
 
+#if HAVE_SELINUX_SELINUX_H
+# include <selinux/selinux.h>
+int haveSELinux = 1;
+# else
+int haveSELinux = 0;
+#endif
+
 // It turns out most systems don't have an ST_AUTHOR, so for those systems, we set the author as the owner. Yup, `ls` does this too.
 #if ! HAVE_STRUCT_STAT_ST_AUTHOR
 # define st_author st_uid
@@ -478,13 +485,21 @@ int writePermsEntry(char * perms, mode_t mode, int axFlag){
 
 }
 
-void writeResultStruct(results* ob, const char * filename, struct stat buffer, int count, int axFlag){
+void writeResultStruct(results* ob, const char * filename, struct stat buffer, int count, acl_t acl, ssize_t xattr){
   char perms[12] = {0};
   struct group *gr;
   struct passwd *pw;
   struct passwd *au;
   char *filedate;
   ssize_t cslinklen = 0, datedisplayLen = 0;
+  int axFlag = 0;
+
+  ob[count].acl = acl;
+  ob[count].xattr = xattr;
+
+  if (acl != NULL){
+    axFlag = ACL_TRUE; //Temp
+  }
 
   writePermsEntry(perms, buffer.st_mode, axFlag);
 
@@ -1635,7 +1650,18 @@ results* get_dir(char *pwd)
             // axDisplay = 1;
             // axFlag = 0;
 
-            writeResultStruct(ob, res->d_name, buffer, count, axFlag);
+            acl = acl_get_file(res->d_name, ACL_TYPE_ACCESS);
+
+            endwin();
+            printf("Error: %s - %s\n", res->d_name, strerror(errno));
+
+            if (acl != NULL){
+              axDisplay = 1;
+            }
+
+            writeResultStruct(ob, res->d_name, buffer, count, acl, xattr);
+
+            acl_free(acl);
 
             sused = sused + buffer.st_size; // Adding the size values
 
