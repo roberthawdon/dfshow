@@ -1669,7 +1669,7 @@ results* get_dir(char *pwd)
             // axDisplay = 1;
             // axFlag = 0;
 
-            if (HAVE_ACL_TYPE_EXTENDED){
+            #ifdef HAVE_ACL_TYPE_EXTENDED
               acl = acl_get_file(res->d_name, ACL_TYPE_EXTENDED);
               if (acl && acl_get_entry(acl, ACL_FIRST_ENTRY, &dummy) == -1) {
                 acl_free(acl);
@@ -1679,9 +1679,9 @@ results* get_dir(char *pwd)
               if (xattr < 0){
                 xattr = 0;
               }
-            } else {
+            #else
               acl = acl_get_file(res->d_name, ACL_TYPE_ACCESS);
-            }
+            #endif
 
             if (acl != NULL){
               axDisplay = 1;
