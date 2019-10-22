@@ -469,16 +469,14 @@ int writePermsEntry(char * perms, mode_t mode, int axFlag){
     perms[9] = '-';
   }
 
-  if (axDisplay){
-    if (axFlag == ACL_TRUE){
-      perms[10] = '+';
-    } else if (axFlag == ACL_SELINUX){
-      perms[10] = '.';
-    } else if (axFlag == ACL_XATTR){
-      perms[10] = '@';
-    } else {
-      perms[10] = ' ';
-    }
+  if (axFlag == ACL_TRUE){
+    perms[10] = '+';
+  } else if (axFlag == ACL_SELINUX){
+    perms[10] = '.';
+  } else if (axFlag == ACL_XATTR){
+    perms[10] = '@';
+  } else {
+    perms[10] = ' ';
   }
 
   return typecolor;
@@ -498,7 +496,11 @@ void writeResultStruct(results* ob, const char * filename, struct stat buffer, i
   ob[count].xattr = xattr;
 
   if (acl != NULL){
-    axFlag = ACL_TRUE; //Temp
+    axFlag = ACL_TRUE;
+  }
+
+  if (xattr > 0){
+    axFlag = ACL_XATTR;
   }
 
   writePermsEntry(perms, buffer.st_mode, axFlag);
@@ -717,6 +719,9 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
 
   char tmpperms[12];
 
+  int printPermLen;
+  char *printPerm;
+
   struct stat buffer;
   int status;
 
@@ -854,11 +859,25 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
     strcpy(marked, " ");
   }
 
-  entryMetaLen = snprintf(NULL, 0, "  %s %s%s%i %s%s%s %ls%s ", marked, ob[currentitem].perm, s1, *ob[currentitem].hlink, ogaval, s2, sizestring, ob[currentitem].datedisplay, s3);
+  if (axDisplay){
+    printPermLen = 11;
+  } else {
+    printPermLen = 10;
+  }
+
+  printPerm = malloc(sizeof(char) * printPermLen);
+  for (i = 0; i < printPermLen; i++){
+    printPerm[i] = ob[currentitem].perm[i];
+    printPerm[printPermLen] = '\0';
+  }
+
+  entryMetaLen = snprintf(NULL, 0, "  %s %s%s%i %s%s%s %ls%s ", marked, printPerm, s1, *ob[currentitem].hlink, ogaval, s2, sizestring, ob[currentitem].datedisplay, s3);
 
   entryMeta = realloc(entryMeta, sizeof(wchar_t) * (entryMetaLen + 1));
 
-  swprintf(entryMeta, (entryMetaLen + 1), L"  %s %s%s%i %s%s%s %ls%s ", marked, ob[currentitem].perm, s1, *ob[currentitem].hlink, ogaval, s2, sizestring, ob[currentitem].datedisplay, s3);
+  swprintf(entryMeta, (entryMetaLen + 1), L"  %s %s%s%i %s%s%s %ls%s ", marked, printPerm, s1, *ob[currentitem].hlink, ogaval, s2, sizestring, ob[currentitem].datedisplay, s3);
+
+  free(printPerm);
 
   entryMetaLen = wcslen(entryMeta);
 
@@ -1652,6 +1671,14 @@ results* get_dir(char *pwd)
 
             if (HAVE_ACL_TYPE_EXTENDED){
               acl = acl_get_file(res->d_name, ACL_TYPE_EXTENDED);
+              if (acl && acl_get_entry(acl, ACL_FIRST_ENTRY, &dummy) == -1) {
+                acl_free(acl);
+                acl = NULL;
+              }
+              xattr = listxattr(res->d_name, NULL, 0, XATTR_NOFOLLOW);
+              if (xattr < 0){
+                xattr = 0;
+              }
             } else {
               acl = acl_get_file(res->d_name, ACL_TYPE_ACCESS);
             }
