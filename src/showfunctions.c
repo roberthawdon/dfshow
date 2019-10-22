@@ -1681,6 +1681,10 @@ results* get_dir(char *pwd)
               }
             #else
               acl = acl_get_file(res->d_name, ACL_TYPE_ACCESS);
+              if (errno == ENODATA) {
+                acl_free(acl);
+                acl = NULL;
+              }
             #endif
 
             if (acl != NULL){
