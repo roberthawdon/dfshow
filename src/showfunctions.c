@@ -1650,10 +1650,11 @@ results* get_dir(char *pwd)
             // axDisplay = 1;
             // axFlag = 0;
 
-            acl = acl_get_file(res->d_name, ACL_TYPE_ACCESS);
-
-            endwin();
-            printf("Error: %s - %s\n", res->d_name, strerror(errno));
+            if (HAVE_ACL_TYPE_EXTENDED){
+              acl = acl_get_file(res->d_name, ACL_TYPE_EXTENDED);
+            } else {
+              acl = acl_get_file(res->d_name, ACL_TYPE_ACCESS);
+            }
 
             if (acl != NULL){
               axDisplay = 1;
