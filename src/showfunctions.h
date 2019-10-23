@@ -14,6 +14,7 @@ typedef struct {
   mode_t mode;
   acl_t acl;
   ssize_t xattr;
+  int seLinuxCon;
   char *perm;
   int hlink[4];
   int hlinklens[5];
@@ -76,7 +77,7 @@ char *genPadding(int num_of_spaces);
 void resizeDisplayDir(results* ob);
 char *readableSize(double size, char *buf, int si);
 int writePermsEntry(char * perms, mode_t mode, int axFlag);
-void writeResultStruct(results* ob, const char * filename, struct stat buffer, int count, acl_t acl, ssize_t xattr);
+void writeResultStruct(results* ob, const char * filename, struct stat buffer, int count, acl_t acl, ssize_t xattr, int seLinuxCon);
 char *markedDisplay(results* ob);
 int huntFile(const char * file, const char * search, int charcase);
 

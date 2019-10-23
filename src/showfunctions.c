@@ -55,9 +55,7 @@
 
 #if HAVE_SELINUX_SELINUX_H
 # include <selinux/selinux.h>
-int haveSELinux = 1;
 # else
-int haveSELinux = 0;
 #endif
 
 // It turns out most systems don't have an ST_AUTHOR, so for those systems, we set the author as the owner. Yup, `ls` does this too.
@@ -483,7 +481,7 @@ int writePermsEntry(char * perms, mode_t mode, int axFlag){
 
 }
 
-void writeResultStruct(results* ob, const char * filename, struct stat buffer, int count, acl_t acl, ssize_t xattr){
+void writeResultStruct(results* ob, const char * filename, struct stat buffer, int count, acl_t acl, ssize_t xattr, int seLinuxCon){
   char perms[12] = {0};
   struct group *gr;
   struct passwd *pw;
@@ -501,6 +499,10 @@ void writeResultStruct(results* ob, const char * filename, struct stat buffer, i
 
   if (xattr > 0){
     axFlag = ACL_XATTR;
+  }
+
+  if (seLinuxCon > 0){
+    axFlag = ACL_SELINUX;
   }
 
   writePermsEntry(perms, buffer.st_mode, axFlag);
@@ -1618,6 +1620,10 @@ results* get_dir(char *pwd)
   acl_t acl;
   acl_entry_t dummy;
   ssize_t xattr;
+  int seLinuxCon = 0;
+  #ifdef HAVE_SELINUX_SELINUX_H
+    security_context_t context;
+  #endif
 
   results *ob = malloc(sizeof(results)); // Allocating a tiny amount of memory. We'll expand this on each file found.
 
@@ -1640,6 +1646,7 @@ results* get_dir(char *pwd)
         while ( ( res = readdir ( folder ) ) != NULL ){
           acl = NULL; // Resetting
           xattr = 0; // Resetting
+          seLinuxCon = 0; //Resetting
           if ( showhidden == 0 && check_first_char(res->d_name, ".") && strcmp(res->d_name, ".") && strcmp(res->d_name, "..") ) {
             continue; // Skipping hidden files
           }
@@ -1685,13 +1692,17 @@ results* get_dir(char *pwd)
                 acl_free(acl);
                 acl = NULL;
               }
+              #ifdef HAVE_SELINUX_SELINUX_H
+              seLinuxCon = getfilecon(res->d_name, &context);
+              freecon(context);
+              #endif
             #endif
 
             if (acl != NULL){
               axDisplay = 1;
             }
 
-            writeResultStruct(ob, res->d_name, buffer, count, acl, xattr);
+            writeResultStruct(ob, res->d_name, buffer, count, acl, xattr, seLinuxCon);
 
             acl_free(acl);
 
