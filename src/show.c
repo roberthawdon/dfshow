@@ -740,7 +740,7 @@ int main(int argc, char *argv[])
         };
       int option_index = 0;
 
-      c = getopt_long(argc, argv, "aABfgGhrStU", long_options, &option_index);
+      c = getopt_long(argc, argv, "aABfgGhlrStU", long_options, &option_index);
 
       if ( c == -1 ){
         break;
@@ -789,6 +789,8 @@ Valid arguments are:\n\
       strcpy(sortmode, "unsorted"); // This needs to be set to "unsorted" to allow the settings menu to render correctly.
       showhidden = 1;
       break;
+    case 'l':
+      break; // Allows for accidental -l from `ls` muscle memory commands. Does nothing.
     case 'S':
       strcpy(sortmode, "size");
       break;
