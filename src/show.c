@@ -64,6 +64,8 @@ int messageBreak = 0;
 
 int showProcesses;
 
+int showContext = 0;
+
 char *objectWild;
 
 results *ob;
@@ -212,6 +214,13 @@ void readConfig(const char * confFile)
           enterAsShow = 1;
         }
       }
+      // Check Security Context
+      setting = config_setting_get_member(group, "context");
+      if (setting){
+        if (config_setting_get_int(setting)){
+          showContext = 1;
+        }
+      }
     }
     // Check owner column
     group = config_lookup(&cfg, "show.owner");
@@ -280,6 +289,8 @@ void saveConfig(const char * confFile, settingIndex **settings, t1CharValues **v
         config_setting_set_int(setting, human);
       } else if (!strcmp((*settings)[i].refLabel, "show-on-enter")){
         config_setting_set_int(setting, enterAsShow);
+      } else if (!strcmp((*settings)[i].refLabel, "context")){
+        config_setting_set_int(setting, showContext);
       }
     } else if ((*settings)[i].type == 1){
       //
@@ -335,6 +346,8 @@ void applySettings(settingIndex **settings, t1CharValues **values, int items, in
       enterAsShow = (*settings)[i].intSetting;
     } else if (!strcmp((*settings)[i].refLabel, "marked")){
       markedinfo = (*settings)[i].intSetting;
+    } else if (!strcmp((*settings)[i].refLabel, "context")){
+      showContext = (*settings)[i].intSetting;
     } else if (!strcmp((*settings)[i].refLabel, "sortmode")){
       for (j = 0; j < valuesCount; j++){
         if (!strcmp((*values)[j].refLabel, "sortmode") && ((*values)[j].index == (*settings)[i].intSetting)){
@@ -410,6 +423,7 @@ void settingsMenuView(){
   importSetting(&settingIndex, &items, "human-readable", L"Human readable sizes", 0, human, -1, 0);
   importSetting(&settingIndex, &items, "show-on-enter",  L"Enter key acts like Show", 0, enterAsShow, -1, 0);
   importSetting(&settingIndex, &items, "owner",          L"Owner Column", 2, ogavis, ownerCount, 0);
+  importSetting(&settingIndex, &items, "context",        L"Show security context of files", 0, showContext, -1, 0);
 
   populateBool(&binValues, "owner", ogavis, binValuesCount);
 
@@ -652,6 +666,7 @@ Options shared with ls:\n\
       --time-style=TIME_STYLE  time/date format, see TIME_STYLE section below\n\
   -t                           sort by modification time, newest first\n\
   -U                           do not sort; lists objects in directory order\n\
+  -Z, --context                show security context of each file, if any\n\
       --help                   displays help message, then exits\n\
       --version                displays version, then exits\n"), stdout);
   fputs (("\n\
@@ -736,11 +751,12 @@ int main(int argc, char *argv[])
          {"full-time",      no_argument,       0, GETOPT_FULLTIME_CHAR},
          {"edit-themes",    no_argument,       0, GETOPT_THEMEEDIT_CHAR},
          {"settings-menu",  no_argument,       0, GETOPT_OPTIONSMENU_CHAR},
+         {"contect",        no_argument,       0, 'Z'},
          {0, 0, 0, 0}
         };
       int option_index = 0;
 
-      c = getopt_long(argc, argv, "aABfgGhlrStU", long_options, &option_index);
+      c = getopt_long(argc, argv, "aABfgGhlrStUZ", long_options, &option_index);
 
       if ( c == -1 ){
         break;
@@ -878,6 +894,9 @@ Valid arguments are:\n\
       break;
     case GETOPT_OPTIONSMENU_CHAR:
       launchSettingsMenu = 1;
+      break;
+    case 'Z':
+      showContext = 1;
       break;
     default:
       // abort();
