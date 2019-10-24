@@ -15,6 +15,7 @@ typedef struct {
   acl_t acl;
   ssize_t xattr;
   int seLinuxCon;
+  char *context;
   char *perm;
   int hlink[4];
   int hlinklens[5];
