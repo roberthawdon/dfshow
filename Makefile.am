@@ -8,7 +8,7 @@ AM_CFLAGS = -DSYSCONFIG=\"$(dfshowconfdir)\" -DDATADIR=\"$(dfshowdatadir)\" -D_X
 if DARWIN
 LDADD = -lncurses -lm -lconfig
 else
-LDADD = -lncursesw -lm -lconfig
+LDADD = -lncursesw -lm -lconfig -ltinfo
 endif
 
 bin_PROGRAMS = $(top_builddir)/bin/show $(top_builddir)/bin/sf
