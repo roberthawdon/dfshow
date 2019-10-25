@@ -142,6 +142,7 @@ extern int markedinfo;
 extern int useEnvPager;
 extern int showProcesses;
 extern int exitCode;
+extern int showContext;
 
 extern char sortmode[9];
 
@@ -165,6 +166,7 @@ void freeResults(results *ob, int count)
     free(ob[i].author);
     free(ob[i].slink);
     free(ob[i].datedisplay);
+    free(ob[i].contextText);
   }
   free(ob);
 }
@@ -481,7 +483,7 @@ int writePermsEntry(char * perms, mode_t mode, int axFlag){
 
 }
 
-void writeResultStruct(results* ob, const char * filename, struct stat buffer, int count, acl_t acl, ssize_t xattr, int seLinuxCon){
+void writeResultStruct(results* ob, const char * filename, struct stat buffer, int count, acl_t acl, ssize_t xattr, int seLinuxCon, char * contextText){
   char perms[12] = {0};
   struct group *gr;
   struct passwd *pw;
@@ -585,6 +587,9 @@ void writeResultStruct(results* ob, const char * filename, struct stat buffer, i
     ob[count].slink = malloc(sizeof(char) + 1);
     strcpy(ob[count].slink, "");
   }
+
+  ob[count].contextText = malloc(sizeof(char) * strlen(contextText));
+  strcpy(ob[count].contextText, contextText);
 
   ob[count].color = typecolor;
 
@@ -806,6 +811,12 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
     } else {
       ogpad = ogseglen - strlen(ogaval);
     }
+  }
+
+  if (showContext){
+    // Test
+    // endwin();
+    // printf("%s - %s\n", ob[currentitem].name, ob[currentitem].contextText);
   }
 
   if (ob[currentitem].minor > 1){
@@ -1624,6 +1635,7 @@ results* get_dir(char *pwd)
   #ifdef HAVE_SELINUX_SELINUX_H
     security_context_t context;
   #endif
+    char *contextText;
 
   results *ob = malloc(sizeof(results)); // Allocating a tiny amount of memory. We'll expand this on each file found.
 
@@ -1647,6 +1659,7 @@ results* get_dir(char *pwd)
           acl = NULL; // Resetting
           xattr = 0; // Resetting
           seLinuxCon = 0; //Resetting
+          contextText = malloc(sizeof(char) * 2);
           if ( showhidden == 0 && check_first_char(res->d_name, ".") && strcmp(res->d_name, ".") && strcmp(res->d_name, "..") ) {
             continue; // Skipping hidden files
           }
@@ -1694,6 +1707,7 @@ results* get_dir(char *pwd)
               }
               #ifdef HAVE_SELINUX_SELINUX_H
               seLinuxCon = getfilecon(res->d_name, &context);
+              contextText = realloc(contextText, sizeof(char) * strlen(context));
               freecon(context);
               #endif
             #endif
@@ -1702,9 +1716,15 @@ results* get_dir(char *pwd)
               axDisplay = 1;
             }
 
-            writeResultStruct(ob, res->d_name, buffer, count, acl, xattr, seLinuxCon);
+            if (seLinuxCon == 0){
+              sprintf(contextText, "?");
+            }
+
+            writeResultStruct(ob, res->d_name, buffer, count, acl, xattr, seLinuxCon, contextText);
 
             acl_free(acl);
+
+            free(contextText);
 
             sused = sused + buffer.st_size; // Adding the size values
 
