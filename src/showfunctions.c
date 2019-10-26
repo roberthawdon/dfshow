@@ -1708,6 +1708,7 @@ results* get_dir(char *pwd)
               #ifdef HAVE_SELINUX_SELINUX_H
               seLinuxCon = getfilecon(res->d_name, &context);
               contextText = realloc(contextText, sizeof(char) * strlen(context));
+              strcpy(contextText, context);
               freecon(context);
               #endif
             #endif
