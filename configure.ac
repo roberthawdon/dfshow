@@ -36,6 +36,7 @@ AC_CHECK_HEADERS(ncurses.h, , AC_MSG_ERROR(ncurses header (ncurses.h) not found.
 AC_CHECK_HEADERS(libconfig.h, , AC_MSG_ERROR(libconfig header (libconfig.h) not found. You may need to install a libconfig development package.))
 
 AM_CONDITIONAL([DARWIN], [test $(uname) = "Darwin"])
+AM_CONDITIONAL([LINUX], [test $(uname) = "Linux"])
 
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT

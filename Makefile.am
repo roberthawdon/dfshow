@@ -5,10 +5,16 @@ dfshowdatadir = $(datadir)/dfshow
 
 AM_CFLAGS = -DSYSCONFIG=\"$(dfshowconfdir)\" -DDATADIR=\"$(dfshowdatadir)\" -D_XOPEN_SOURCE_EXTENDED
 
+LDADD = -lm -lconfig
+
 if DARWIN
-LDADD = -lncurses -lm -lconfig
+LDADD += -lncurses
 else
-LDADD = -lncursesw -lm -lconfig -lacl -lselinux -ltinfo
+LDADD += -lncursesw
+endif
+
+if LINUX
+LDADD += -lacl -lselinux -ltinfo
 endif
 
 bin_PROGRAMS = $(top_builddir)/bin/show $(top_builddir)/bin/sf
