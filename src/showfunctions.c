@@ -64,7 +64,7 @@
 #endif
 
 char hlinkstr[6], sizestr[32], majorstr[6], minorstr[6];
-char headAttrs[12], headOG[25], headSize[14], headDT[18], headName[13];
+char headAttrs[12], headOG[25], headSize[14], headDT[18], headName[13], headContext[14];
 
 int hlinklen;
 int ownerlen;
@@ -873,9 +873,9 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   }
 
   if (axDisplay){
-    printPermLen = 12;
-  } else {
     printPermLen = 11;
+  } else {
+    printPermLen = 10;
   }
 
   printPerm = malloc(sizeof(char) * printPermLen);
@@ -1717,7 +1717,7 @@ results* get_dir(char *pwd)
               #endif
             #endif
 
-            if (acl != NULL || seLinuxCon != 0){
+            if (acl != NULL || seLinuxCon != 0 || xattr != 0){
               axDisplay = 1;
             }
 
@@ -1851,12 +1851,12 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   char *headings = malloc(sizeof(char) + 1);
   size_t sizeHeaderLen;
   size_t headingsLen;
-  int i, s1, s2, s3;
+  int i, padIntHeadOG, padIntHeadSize, padIntHeadDT;
   int headerpos, displaypos;
   char *susedString, *savailableString;
   wchar_t *pwdPrint = malloc(sizeof(wchar_t) + 1);
   size_t pwdPrintSize;
-  char *markedInfoLine, *padding0, *padding1, *padding2, *padding3;
+  char *markedInfoLine, *padCharHeadAttrs, *padCharHeadOG, *padCharHeadSize, *padCharHeadDT;
 
   if (markedinfo == 2 && (CheckMarked(ob) > 0)){
     automark = 1;
@@ -1910,6 +1910,12 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   }
 
   strcpy(headAttrs, "---Attrs---");
+
+  if (showContext){
+    strcpy(headContext, "---Context---");
+  } else {
+    strcpy(headContext, "");
+  }
 
   if ( mmMode ){
     strcpy(headSize, "-Driver/Size-");
@@ -2005,25 +2011,25 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   // the space between the largest owner and largest group should always end up being 1... in theory.
   // 2018-07-05: That assumption was solid, until we added a third element (Owner, Group, and Author)
   if (!ogavis){
-    s1 = 1;
+    padIntHeadOG = 1;
   } else {
     if ( (ogalen + ogapad) > strlen(headOG)){
-      s1 = (ogalen + ogapad) - strlen(headOG) + 1;
+      padIntHeadOG = (ogalen + ogapad) - strlen(headOG) + 1;
     } else {
-      s1 = 1;
+      padIntHeadOG = 1;
     }
   }
 
   if ( sizelen > strlen(headSize)) {
-    s2 = sizelen - strlen(headSize);
+    padIntHeadSize = sizelen - strlen(headSize);
   } else {
-    s2 = 0;
+    padIntHeadSize = 0;
   }
 
   if ( datelen > strlen(headDT)) {
-    s3 = (datelen - strlen(headDT)) + 1;
+    padIntHeadDT = (datelen - strlen(headDT)) + 1;
   } else {
-    s3 = 1;
+    padIntHeadDT = 1;
   }
 
   sizeHeaderLen = snprintf(NULL, 0, "%i Objects   %s Used %s Available", count, susedString, savailableString);
@@ -2032,21 +2038,21 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
 
   sprintf(sizeHeader, "%i Objects   %s Used %s Available", count, susedString, savailableString);
 
-  padding0 = genPadding(hlinklen + 1 + axDisplay);
-  padding1 = genPadding(s1);
-  padding2 = genPadding(s2);
-  padding3 = genPadding(s3);
+  padCharHeadAttrs = genPadding(hlinklen + 1 + axDisplay);
+  padCharHeadOG = genPadding(padIntHeadOG);
+  padCharHeadSize = genPadding(padIntHeadSize);
+  padCharHeadDT = genPadding(padIntHeadDT);
 
-  headingsLen = snprintf(NULL, 0, "%s%s%s%s%s%s%s%s%s%s", headAttrs, padding0, headOG, padding1, padding2, headSize, " ", headDT, padding3, headName);
+  headingsLen = snprintf(NULL, 0, "%s%s%s%s%s%s%s%s%s%s", headAttrs, padCharHeadAttrs, headOG, padCharHeadOG, padCharHeadSize, headSize, " ", headDT, padCharHeadDT, headName);
 
   headings = realloc(headings, sizeof(char) * (headingsLen + 1));
 
-  sprintf(headings, "%s%s%s%s%s%s%s%s%s%s", headAttrs, padding0, headOG, padding1, padding2, headSize, " ", headDT, padding3, headName);
+  sprintf(headings, "%s%s%s%s%s%s%s%s%s%s", headAttrs, padCharHeadAttrs, headOG, padCharHeadOG, padCharHeadSize, headSize, " ", headDT, padCharHeadDT, headName);
 
-  free(padding0);
-  free(padding1);
-  free(padding2);
-  free(padding3);
+  free(padCharHeadAttrs);
+  free(padCharHeadOG);
+  free(padCharHeadSize);
+  free(padCharHeadDT);
 
   if ( danger ) {
     setColors(DANGER_PAIR);
