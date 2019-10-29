@@ -873,9 +873,9 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   }
 
   if (axDisplay){
-    printPermLen = 11;
+    printPermLen = 12;
   } else {
-    printPermLen = 10;
+    printPermLen = 11;
   }
 
   printPerm = malloc(sizeof(char) * printPermLen);
