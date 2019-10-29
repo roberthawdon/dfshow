@@ -1851,12 +1851,12 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   char *headings = malloc(sizeof(char) + 1);
   size_t sizeHeaderLen;
   size_t headingsLen;
-  int i, padIntHeadOG, padIntHeadSize, padIntHeadDT;
+  int i, padIntHeadOG, padIntHeadContext, padIntHeadSize, padIntHeadDT;
   int headerpos, displaypos;
   char *susedString, *savailableString;
   wchar_t *pwdPrint = malloc(sizeof(wchar_t) + 1);
   size_t pwdPrintSize;
-  char *markedInfoLine, *padCharHeadAttrs, *padCharHeadOG, *padCharHeadSize, *padCharHeadDT;
+  char *markedInfoLine, *padCharHeadAttrs, *padCharHeadOG, *padCharHeadContext, *padCharHeadSize, *padCharHeadDT;
 
   if (markedinfo == 2 && (CheckMarked(ob) > 0)){
     automark = 1;
@@ -2020,6 +2020,13 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
     }
   }
 
+  if ( showContext ){
+    // To Do, find longest context to generate proper padding size
+    padIntHeadContext = 1;
+  } else {
+    padIntHeadContext = 0;
+  }
+
   if ( sizelen > strlen(headSize)) {
     padIntHeadSize = sizelen - strlen(headSize);
   } else {
@@ -2040,17 +2047,19 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
 
   padCharHeadAttrs = genPadding(hlinklen + 1 + axDisplay);
   padCharHeadOG = genPadding(padIntHeadOG);
+  padCharHeadContext = genPadding(padIntHeadContext);
   padCharHeadSize = genPadding(padIntHeadSize);
   padCharHeadDT = genPadding(padIntHeadDT);
 
-  headingsLen = snprintf(NULL, 0, "%s%s%s%s%s%s%s%s%s%s", headAttrs, padCharHeadAttrs, headOG, padCharHeadOG, padCharHeadSize, headSize, " ", headDT, padCharHeadDT, headName);
+  headingsLen = snprintf(NULL, 0, "%s%s%s%s%s%s%s%s%s%s%s%s", headAttrs, padCharHeadAttrs, headOG, padCharHeadOG, headContext, padCharHeadContext, padCharHeadSize, headSize, " ", headDT, padCharHeadDT, headName);
 
   headings = realloc(headings, sizeof(char) * (headingsLen + 1));
 
-  sprintf(headings, "%s%s%s%s%s%s%s%s%s%s", headAttrs, padCharHeadAttrs, headOG, padCharHeadOG, padCharHeadSize, headSize, " ", headDT, padCharHeadDT, headName);
+  sprintf(headings, "%s%s%s%s%s%s%s%s%s%s%s%s", headAttrs, padCharHeadAttrs, headOG, padCharHeadOG, headContext, padCharHeadContext, padCharHeadSize, headSize, " ", headDT, padCharHeadDT, headName);
 
   free(padCharHeadAttrs);
   free(padCharHeadOG);
+  free(padCharHeadContext);
   free(padCharHeadSize);
   free(padCharHeadDT);
 
