@@ -588,7 +588,7 @@ void writeResultStruct(results* ob, const char * filename, struct stat buffer, i
     strcpy(ob[count].slink, "");
   }
 
-  ob[count].contextText = malloc(sizeof(char) * strlen(contextText));
+  ob[count].contextText = malloc(sizeof(char) * (strlen(contextText) + 1));
   strcpy(ob[count].contextText, contextText);
 
   ob[count].color = typecolor;
@@ -1708,7 +1708,7 @@ results* get_dir(char *pwd)
               #ifdef HAVE_SELINUX_SELINUX_H
               seLinuxCon = getfilecon(res->d_name, &context);
               if (seLinuxCon > 0){
-                contextText = realloc(contextText, sizeof(char) * strlen(context));
+                contextText = realloc(contextText, sizeof(char) * seLinuxCon);
                 strcpy(contextText, context);
               } else {
                 seLinuxCon = 0;
