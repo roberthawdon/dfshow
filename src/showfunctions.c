@@ -833,7 +833,9 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
 
   if ((ob[currentitem].major > 0) || (ob[currentitem].minor > 0)){
     // If either of these are not 0, then we're dealing with a Character or Block device.
-    sizestring = malloc (sizeof (char) * (sizelen + 6));
+    // sizestring = malloc (sizeof (char) * (sizelen + 5));
+    sizelen = snprintf(NULL, 0, "%i,%s%i", ob[currentitem].major, s4, ob[currentitem].minor);
+    sizestring = malloc (sizeof (char) * (sizelen + 1));
     sprintf(sizestring, "%i,%s%i", ob[currentitem].major, s4, ob[currentitem].minor);
   } else {
     if (human){
