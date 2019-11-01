@@ -76,6 +76,8 @@ int minorlen;
 int datelen;
 int namelen;
 int slinklen;
+int contextlen;
+
 int nameAndSLink = 0;
 
 int entryMetaLen, entryNameLen, entrySLinkLen = 0;
@@ -688,7 +690,7 @@ char *genPadding(int num_of_spaces) {
   return dest;
 }
 
-void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorlen, int sizelen, int majorlen, int minorlen, int datelen, int namelen, int selected, int listref, int topref, results* ob){
+void printEntry(int start, int selected, int listref, int topref, results* ob){
 
   int i;
 
@@ -1248,6 +1250,9 @@ int seglength(const void *seg, char *segname, int LEN)
   else if (!strcmp(segname, "slink")) {
     longest = strlen(dfseg[0].slink);
   }
+  else if (!strcmp(segname, "contextText")) {
+    longest = strlen(dfseg[0].contextText);
+  }
   else {
     longest = 0;
   }
@@ -1291,6 +1296,9 @@ int seglength(const void *seg, char *segname, int LEN)
       }
       else if (!strcmp(segname, "slink")) {
         len = strlen(dfseg[i].slink);
+      }
+      else if (!strcmp(segname, "contextText")) {
+        len = strlen(dfseg[i].contextText);
       }
       else {
         len = 0;
@@ -1818,6 +1826,7 @@ results* get_dir(char *pwd)
   datelen = seglength(ob, "datedisplay", count);
   namelen = seglength(ob, "name", count);
   slinklen = seglength(ob, "slink", count);
+  // contextlen = seglength(ob, "contextText", count);
 
   free(dirError);
   free(res);
@@ -1991,7 +2000,7 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
       // endwin();
       // printf("LC: %i, TFR: %i, DC: %i\n", list_count, topfileref, displaycount);
 
-      printEntry(displaypos, hlinklen, ownerlen, grouplen, authorlen, sizelen, majorlen, minorlen, datelen, namelen, printSelect, list_count, topfileref, ob);
+      printEntry(displaypos, printSelect, list_count, topfileref, ob);
 
       //list_count++;
     } else {
