@@ -690,7 +690,7 @@ char *genPadding(int num_of_spaces) {
   return dest;
 }
 
-void printEntry(int start, int selected, int listref, int topref, results* ob){
+void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorlen, int sizelen, int majorlen, int minorlen, int datelen, int namelen, int contextlen, int selected, int listref, int topref, results* ob){
 
   int i;
 
@@ -1826,7 +1826,7 @@ results* get_dir(char *pwd)
   datelen = seglength(ob, "datedisplay", count);
   namelen = seglength(ob, "name", count);
   slinklen = seglength(ob, "slink", count);
-  // contextlen = seglength(ob, "contextText", count);
+  contextlen = seglength(ob, "contextText", count);
 
   free(dirError);
   free(res);
@@ -2000,7 +2000,7 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
       // endwin();
       // printf("LC: %i, TFR: %i, DC: %i\n", list_count, topfileref, displaycount);
 
-      printEntry(displaypos, printSelect, list_count, topfileref, ob);
+      printEntry(displaypos, hlinklen, ownerlen, grouplen, authorlen, sizelen, majorlen, minorlen, datelen, namelen, contextlen, printSelect, list_count, topfileref, ob);
 
       //list_count++;
     } else {
