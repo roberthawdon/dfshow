@@ -880,7 +880,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
     printPermLen = 10;
   }
 
-  printPerm = malloc(sizeof(char) * printPermLen);
+  printPerm = malloc(sizeof(char) * printPermLen + 1);
   for (i = 0; i < printPermLen; i++){
     printPerm[i] = ob[currentitem].perm[i];
     printPerm[printPermLen] = '\0';
