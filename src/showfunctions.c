@@ -716,12 +716,15 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   int ogpad = 0;
   int sizepad = 0;
   int mmpad = 0;
+  int contextpad = 0;
 
   int datepad = 0;
 
-  char *s1, *s2, *s3, *s4;
+  char *s1, *s2, *s3, *s4, *s5, *s6;
 
   char *sizestring;
+
+  char *contextText;
 
   int linepadding;
   int colpos;
@@ -815,10 +818,24 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
     }
   }
 
+  s6 = genPadding(ogpad + 1);
+
   if (showContext){
     // Test
     // endwin();
     // printf("%s - %s\n", ob[currentitem].name, ob[currentitem].contextText);
+    contextText = malloc(sizeof(char) * (strlen(ob[currentitem].contextText) + 1));
+    sprintf(contextText, "%s", ob[currentitem].contextText);
+    if (contextlen < (strlen(headContext) + 1)){
+      contextpad = (strlen(headContext) - strlen(contextText) + 1);
+    } else {
+      contextpad = (contextlen - strlen(contextText) +1 );
+    }
+    s5 = genPadding(contextpad);
+  } else {
+    contextText = malloc(sizeof(char) * 1);
+    sprintf(contextText, "");
+    s5 = genPadding(0);
   }
 
   if (ob[currentitem].minor > 1){
@@ -852,7 +869,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
     sizelen = sizeminlen;
   }
 
-  sizepad = (sizelen - strlen(sizestring)) + ogpad + 1;
+  sizepad = (sizelen - strlen(sizestring));
 
   if ( (dateminlen - datelen) > 0 ) {
     datepad = dateminlen - wcslen(ob[currentitem].datedisplay);
@@ -888,11 +905,11 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
     printPerm[printPermLen] = '\0';
   }
 
-  entryMetaLen = snprintf(NULL, 0, "  %s %s%s%i %s%s%s %ls%s ", marked, printPerm, s1, *ob[currentitem].hlink, ogaval, s2, sizestring, ob[currentitem].datedisplay, s3);
+  entryMetaLen = snprintf(NULL, 0, "  %s %s%s%i %s%s%s%s%s%s %ls%s ", marked, printPerm, s1, *ob[currentitem].hlink, ogaval, s6, contextText, s5, s2, sizestring, ob[currentitem].datedisplay, s3);
 
   entryMeta = realloc(entryMeta, sizeof(wchar_t) * (entryMetaLen + 1));
 
-  swprintf(entryMeta, (entryMetaLen + 1), L"  %s %s%s%i %s%s%s %ls%s ", marked, printPerm, s1, *ob[currentitem].hlink, ogaval, s2, sizestring, ob[currentitem].datedisplay, s3);
+  swprintf(entryMeta, (entryMetaLen + 1), L"  %s %s%s%i %s%s%s%s%s%s %ls%s ", marked, printPerm, s1, *ob[currentitem].hlink, ogaval, s6, contextText, s5, s2, sizestring, ob[currentitem].datedisplay, s3);
 
   free(printPerm);
 
@@ -1009,6 +1026,8 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   free(s2);
   free(s3);
   free(s4);
+  free(s5);
+  free(s6);
   free(sizestring);
   free(entryMeta);
   free(entryName);
