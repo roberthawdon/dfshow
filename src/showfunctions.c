@@ -2051,8 +2051,11 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   }
 
   if ( showContext ){
-    // To Do, find longest context to generate proper padding size
-    padIntHeadContext = 1;
+    if ( contextlen > strlen(headContext)){
+      padIntHeadContext = contextlen - strlen(headContext);
+    } else {
+      padIntHeadContext = 1;
+    }
   } else {
     padIntHeadContext = 0;
   }
