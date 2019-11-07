@@ -2052,7 +2052,7 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
 
   if ( showContext ){
     if ( contextlen > strlen(headContext)){
-      padIntHeadContext = contextlen - strlen(headContext);
+      padIntHeadContext = ((contextlen - strlen(headContext)) + 1 );
     } else {
       padIntHeadContext = 1;
     }
