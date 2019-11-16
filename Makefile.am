@@ -14,7 +14,7 @@ LDADD += -lncursesw
 endif
 
 if LINUX
-LDADD += -lacl -lselinux -ltinfo
+LDADD += -lacl -ltinfo
 endif
 
 bin_PROGRAMS = $(top_builddir)/bin/show $(top_builddir)/bin/sf

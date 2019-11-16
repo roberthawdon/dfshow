@@ -9,6 +9,9 @@
 #define ACL_SELINUX 2 // Linux Specific
 #define ACL_XATTR   3 // macOS Specific
 
+#define LEFT  0
+#define RIGHT 1
+
 typedef struct {
   int marked[1];
   mode_t mode;
@@ -72,6 +75,8 @@ void LaunchExecutable(const char* object, const char* args);
 int UpdateOwnerGroup(const char* object, const char* pwdstr, const char* grpstr);
 int RenameObject(char* source, char* dest);
 int CheckMarked(results* ob);
+wchar_t *wWriteSegment(int segLen, wchar_t *text, int align);
+char *writeSegment(int segLen, char *text, int align);
 void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorlen, int sizelen, int majorlen, int minorlen, int datelen, int namelen, int contextlen, int selected, int listref, int topref, results* ob);
 void padstring(char *str, int len, char c);
 char *genPadding(int num_of_spaces);
