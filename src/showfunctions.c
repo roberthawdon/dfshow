@@ -699,14 +699,19 @@ wchar_t *wWriteSegment(int segLen, wchar_t *text, int align){
 
   textLen = wcslen(text);
   paddingLen = segLen - textLen;
-  padding = genPadding(paddingLen);
 
-  segment = malloc(sizeof(wchar_t) * (segLen + 1));
+  segment = malloc(sizeof(wchar_t) * (segLen + 2));
 
   if (align == LEFT){
-    swprintf(segment, (segLen + 1), L"%ls%s", text, padding);
+    padding = genPadding(paddingLen);
+    swprintf(segment, (segLen + 2), L"%ls%s ", text, padding);
   } else {
-    swprintf(segment, (segLen + 1), L"%s%ls", padding, text);
+    if (paddingLen < 0){
+      padding = genPadding(paddingLen - 1);
+    } else {
+      padding = genPadding(paddingLen);
+    }
+    swprintf(segment, (segLen + 2), L"%s%ls ", padding, text);
   }
   free(padding);
   return(segment);
@@ -719,7 +724,7 @@ char *writeSegment(int segLen, char *text, int align){
   wchar_t *wWriteSegmentString;
   inputText = malloc(sizeof(wchar_t) * (strlen(text) + 1));
   swprintf(inputText, (strlen(text) + 1), L"%s", text);
-  segment = malloc(sizeof(char) * (segLen + 1));
+  segment = malloc(sizeof(char) * (segLen + 2));
   wWriteSegmentString = wWriteSegment(segLen, inputText, align);
   free(inputText);
   sprintf(segment, "%ls", wWriteSegmentString);
@@ -741,6 +746,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   int ogminlen = strlen(headOG); // Length of "Owner & Group" heading
   int sizeminlen = strlen(headSize); // Length of "Size" heading
   int dateminlen = strlen(headDT); // Length of "Date" heading
+  int contextminlen = strlen(headContext); // Length of "Context" heading
 
   int oggap, gagap = 0;
 
@@ -872,16 +878,15 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
     // printf("%s - %s\n", ob[currentitem].name, ob[currentitem].contextText);
     contextText = malloc(sizeof(char) * (strlen(ob[currentitem].contextText) + 1));
     sprintf(contextText, "%s", ob[currentitem].contextText);
-    if (contextlen < (strlen(headContext) + 1)){
-      contextpad = (strlen(headContext) - strlen(contextText) + 1);
+    if (contextlen < contextminlen) {
+      contextSegment = writeSegment((contextminlen + 1), contextText, LEFT);
     } else {
-      contextpad = (contextlen - strlen(contextText) +1 );
+      contextSegment = writeSegment((contextlen + 1), contextText, LEFT);
     }
-    s5 = genPadding(contextpad);
   } else {
     contextText = malloc(sizeof(char) * 1);
     sprintf(contextText, "");
-    s5 = genPadding(0);
+    contextSegment = writeSegment(contextminlen, contextText, LEFT);
   }
 
   if (ob[currentitem].minor > 1){
@@ -954,13 +959,16 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
     printPerm[printPermLen] = '\0';
   }
 
-  entryMetaLen = snprintf(NULL, 0, "  %s %s%s%i %s%s%s%s%s %ls%s ", marked, printPerm, s1, *ob[currentitem].hlink, ogaval, s6, contextText, s5, sizeSegment, ob[currentitem].datedisplay, s3);
+  entryMetaLen = snprintf(NULL, 0, "  %s %s%s%i %s%s%s%s%ls%s ", marked, printPerm, s1, *ob[currentitem].hlink, ogaval, s6, contextSegment, sizeSegment, ob[currentitem].datedisplay, s3);
 
   entryMeta = realloc(entryMeta, sizeof(wchar_t) * (entryMetaLen + 1));
 
-  swprintf(entryMeta, (entryMetaLen + 1), L"  %s %s%s%i %s%s%s%s%s %ls%s ", marked, printPerm, s1, *ob[currentitem].hlink, ogaval, s6, contextText, s5, sizeSegment, ob[currentitem].datedisplay, s3);
+  swprintf(entryMeta, (entryMetaLen + 1), L"  %s %s%s%i %s%s%s%s%ls%s ", marked, printPerm, s1, *ob[currentitem].hlink, ogaval, s6, contextSegment, sizeSegment, ob[currentitem].datedisplay, s3);
 
   free(printPerm);
+
+  // Free segments
+  free(contextSegment);
   free(sizeSegment);
 
   entryMetaLen = wcslen(entryMeta);
