@@ -763,7 +763,14 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
 
   char *contextText;
 
+  char *attrSegment;
+  char *hlinkSegment;
+  wchar_t *ownerSegment;
+  char *contextSegment;
   char *sizeSegment;
+  wchar_t *dateSegment;
+  wchar_t *nameSegment;
+  wchar_t *linkSegment;
 
   int linepadding;
   int colpos;
