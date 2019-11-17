@@ -879,14 +879,15 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
     contextText = malloc(sizeof(char) * (strlen(ob[currentitem].contextText) + 1));
     sprintf(contextText, "%s", ob[currentitem].contextText);
     if (contextlen < contextminlen) {
-      contextSegment = writeSegment((contextminlen + 1), contextText, LEFT);
+      contextSegment = writeSegment(contextminlen, contextText, LEFT);
     } else {
-      contextSegment = writeSegment((contextlen + 1), contextText, LEFT);
+      contextSegment = writeSegment(contextlen, contextText, LEFT);
     }
   } else {
     contextText = malloc(sizeof(char) * 1);
     sprintf(contextText, "");
-    contextSegment = writeSegment(contextminlen, contextText, LEFT);
+    contextSegment = malloc(sizeof(char));
+    sprintf(contextSegment, "");
   }
 
   if (ob[currentitem].minor > 1){
