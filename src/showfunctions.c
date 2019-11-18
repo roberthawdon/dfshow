@@ -891,7 +891,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   }
 
   if (ob[currentitem].minor > 1){
-    mmpad = sizelen - (log10(ob[currentitem].minor + 1)) + 2;
+    mmpad = sizelen - (log10(ob[currentitem].minor + 2)) + 2;
   } else {
     mmpad = sizelen + 1;
   }
@@ -1678,7 +1678,7 @@ char *markedDisplay(results* ob)
     if (markedSize == 0){
       markedSizeString = malloc (sizeof (char) * 1);
     } else {
-      markedSizeString = malloc (sizeof (char) * (log10(markedSize) + 1));
+      markedSizeString = malloc (sizeof (char) * (log10(markedSize) + 2));
     }
     sprintf(markedSizeString, "%lu", markedSize);
   }
@@ -1987,12 +1987,12 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
     if (sused == 0){
       susedString = malloc (sizeof (char) * 1);
     } else {
-      susedString = malloc (sizeof (char) * (log10(sused) + 1));
+      susedString = malloc (sizeof (char) * (log10(sused) + 2));
     }
     if (savailable == 0){
       savailableString = malloc (sizeof (char) * 1);
     } else {
-      savailableString = malloc (sizeof (char) * (log10(savailable) + 1));
+      savailableString = malloc (sizeof (char) * (log10(savailable) + 2));
     }
     sprintf(susedString, "%lu", sused);
     sprintf(savailableString, "%lu", savailable);
