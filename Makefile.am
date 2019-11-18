@@ -17,6 +17,10 @@ if LINUX
 LDADD += -lacl -ltinfo
 endif
 
+if SELINUX
+LDADD += -lselinux
+endif
+
 bin_PROGRAMS = $(top_builddir)/bin/show $(top_builddir)/bin/sf
 __top_builddir__bin_show_SOURCES = src/show.c src/showfunctions.c src/showmenus.c src/colors.c src/common.c
 __top_builddir__bin_show_LDADD = $(LDADD)
