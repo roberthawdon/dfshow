@@ -1,7 +1,7 @@
 language: c
 script:
 - "./bootstrap"
-- "./configure"
+- "./configure --with-selinux"
 - make
 
 before_install:
