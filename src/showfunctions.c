@@ -754,6 +754,9 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
 
   char *ogaval;
 
+  int hlinkCharLen;
+  char *hlinkChar;
+
   int ogseglen = ogalen + ogapad;
 
   int ogpad = 0;
@@ -954,21 +957,35 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
     printPermLen = 10;
   }
 
+  hlinkCharLen = (log10(*ob[currentitem].hlink) + 2);
+
+  hlinkChar = malloc(sizeof(char) * (hlinkCharLen));
+
+  sprintf(hlinkChar, "%i", *ob[currentitem].hlink);
+
+  hlinkSegment = writeSegment(hlinklen, hlinkChar, RIGHT);
+
+  free(hlinkChar);
+
   printPerm = malloc(sizeof(char) * printPermLen + 1);
   for (i = 0; i < printPermLen; i++){
     printPerm[i] = ob[currentitem].perm[i];
     printPerm[printPermLen] = '\0';
   }
 
-  entryMetaLen = snprintf(NULL, 0, "  %s %s%s%i %s%s%s%s%ls%s ", marked, printPerm, s1, *ob[currentitem].hlink, ogaval, s6, contextSegment, sizeSegment, ob[currentitem].datedisplay, s3);
+  attrSegment = writeSegment(printPermLen, printPerm, LEFT);
+
+  entryMetaLen = snprintf(NULL, 0, "  %s %s%s%s%s%s%s%ls%s ", marked, attrSegment, hlinkSegment, ogaval, s6, contextSegment, sizeSegment, ob[currentitem].datedisplay, s3);
 
   entryMeta = realloc(entryMeta, sizeof(wchar_t) * (entryMetaLen + 1));
 
-  swprintf(entryMeta, (entryMetaLen + 1), L"  %s %s%s%i %s%s%s%s%ls%s ", marked, printPerm, s1, *ob[currentitem].hlink, ogaval, s6, contextSegment, sizeSegment, ob[currentitem].datedisplay, s3);
+  swprintf(entryMeta, (entryMetaLen + 1), L"  %s %s%s%s%s%s%s%ls%s ", marked, attrSegment, hlinkSegment, ogaval, s6, contextSegment, sizeSegment, ob[currentitem].datedisplay, s3);
 
   free(printPerm);
 
   // Free segments
+  free(attrSegment);
+  free(hlinkSegment);
   free(contextSegment);
   free(sizeSegment);
 
