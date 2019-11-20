@@ -1938,9 +1938,11 @@ results* reorder_ob(results* ob, char *order){
     qsort(ob, count, sizeof(results), cmp_dflist_name);
   }
   else if ( !strcmp(order, "date")){
+    qsort(ob, count, sizeof(results), cmp_dflist_name);
     qsort(ob, count, sizeof(results), cmp_dflist_date);
   }
   else if ( !strcmp(order, "size")){
+    qsort(ob, count, sizeof(results), cmp_dflist_name);
     qsort(ob, count, sizeof(results), cmp_dflist_size);
   }
 
