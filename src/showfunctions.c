@@ -868,14 +868,11 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   } else {
     if ( (ogminlen - ogseglen) > 0 ) {
       ownerSegment = writeSegment(ogminlen, ogaval, LEFT);
-      // ogpad = ogminlen - strlen(ogaval);
     } else {
       ownerSegment = writeSegment(ogseglen, ogaval, LEFT);
-      // ogpad = ogseglen - strlen(ogaval);
     }
   }
 
-  // s6 = genPadding(ogpad + 1);
 
   if (showContext){
     // Test
@@ -932,9 +929,11 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   sizeSegment = writeSegment(sizelen, sizestring, RIGHT);
 
   if ( (dateminlen - datelen) > 0 ) {
-    datepad = dateminlen - wcslen(ob[currentitem].datedisplay);
+    dateSegment = wWriteSegment(dateminlen, ob[currentitem].datedisplay, LEFT);
+    // datepad = dateminlen - wcslen(ob[currentitem].datedisplay);
   } else {
-    datepad = datelen - wcslen(ob[currentitem].datedisplay);
+    dateSegment = wWriteSegment(datelen, ob[currentitem].datedisplay, LEFT);
+    // datepad = datelen - wcslen(ob[currentitem].datedisplay);
   }
 
   if (hlinkstart > -1){
@@ -981,11 +980,11 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
 
   attrSegment = writeSegment(printPermLen, printPerm, LEFT);
 
-  entryMetaLen = snprintf(NULL, 0, "  %s %s%s%s%s%s%ls%s ", marked, attrSegment, hlinkSegment, ownerSegment, contextSegment, sizeSegment, ob[currentitem].datedisplay, s3);
+  entryMetaLen = snprintf(NULL, 0, "  %s %s%s%s%s%s%ls", marked, attrSegment, hlinkSegment, ownerSegment, contextSegment, sizeSegment, dateSegment);
 
   entryMeta = realloc(entryMeta, sizeof(wchar_t) * (entryMetaLen + 1));
 
-  swprintf(entryMeta, (entryMetaLen + 1), L"  %s %s%s%s%s%s%ls%s ", marked, attrSegment, hlinkSegment, ownerSegment, contextSegment, sizeSegment, ob[currentitem].datedisplay, s3);
+  swprintf(entryMeta, (entryMetaLen + 1), L"  %s %s%s%s%s%s%ls", marked, attrSegment, hlinkSegment, ownerSegment, contextSegment, sizeSegment, dateSegment);
 
   free(printPerm);
 
@@ -995,6 +994,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   free(ownerSegment);
   free(contextSegment);
   free(sizeSegment);
+  free(dateSegment);
 
   entryMetaLen = wcslen(entryMeta);
 
