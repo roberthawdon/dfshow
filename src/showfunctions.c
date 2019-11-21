@@ -957,7 +957,11 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
     printPermLen = 10;
   }
 
-  hlinkCharLen = (log10(*ob[currentitem].hlink) + 2);
+  if (*ob[currentitem].hlink > 0){
+    hlinkCharLen = (log10(*ob[currentitem].hlink) + 2);
+  } else {
+    hlinkCharLen = 2;
+  }
 
   hlinkChar = malloc(sizeof(char) * (hlinkCharLen));
 
