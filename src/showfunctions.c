@@ -772,6 +772,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
 
   char *contextText;
 
+  char *markedSegment;
   char *attrSegment;
   char *hlinkSegment;
   char *ownerSegment;
@@ -930,10 +931,8 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
 
   if ( (dateminlen - datelen) > 0 ) {
     dateSegment = wWriteSegment(dateminlen, ob[currentitem].datedisplay, LEFT);
-    // datepad = dateminlen - wcslen(ob[currentitem].datedisplay);
   } else {
     dateSegment = wWriteSegment(datelen, ob[currentitem].datedisplay, LEFT);
-    // datepad = datelen - wcslen(ob[currentitem].datedisplay);
   }
 
   if (hlinkstart > -1){
@@ -947,9 +946,9 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   }
 
   if ( *ob[currentitem].marked ){
-    strcpy(marked, "*");
+    markedSegment = writeSegment(3, "*", RIGHT);
   } else {
-    strcpy(marked, " ");
+    markedSegment = writeSegment(3, " ", RIGHT);
   }
 
   if (axDisplay){
@@ -980,15 +979,16 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
 
   attrSegment = writeSegment(printPermLen, printPerm, LEFT);
 
-  entryMetaLen = snprintf(NULL, 0, "  %s %s%s%s%s%s%ls", marked, attrSegment, hlinkSegment, ownerSegment, contextSegment, sizeSegment, dateSegment);
+  entryMetaLen = snprintf(NULL, 0, "%s%s%s%s%s%s%ls", markedSegment, attrSegment, hlinkSegment, ownerSegment, contextSegment, sizeSegment, dateSegment);
 
   entryMeta = realloc(entryMeta, sizeof(wchar_t) * (entryMetaLen + 1));
 
-  swprintf(entryMeta, (entryMetaLen + 1), L"  %s %s%s%s%s%s%ls", marked, attrSegment, hlinkSegment, ownerSegment, contextSegment, sizeSegment, dateSegment);
+  swprintf(entryMeta, (entryMetaLen + 1), L"%s%s%s%s%s%s%ls", markedSegment, attrSegment, hlinkSegment, ownerSegment, contextSegment, sizeSegment, dateSegment);
 
   free(printPerm);
 
   // Free segments
+  free(markedSegment);
   free(attrSegment);
   free(hlinkSegment);
   free(ownerSegment);
