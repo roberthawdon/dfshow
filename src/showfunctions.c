@@ -866,6 +866,8 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
 
   if (!ogavis){
     ogpad = 0;
+    ownerSegment = malloc(sizeof(char));
+    sprintf(ownerSegment, "");
   } else {
     if ( (ogminlen - ogseglen) > 0 ) {
       ownerSegment = writeSegment(ogminlen, ogaval, LEFT);
@@ -2126,7 +2128,7 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   // the space between the largest owner and largest group should always end up being 1... in theory.
   // 2018-07-05: That assumption was solid, until we added a third element (Owner, Group, and Author)
   if (!ogavis){
-    padIntHeadOG = 1;
+    padIntHeadOG = 0;
   } else {
     if ( (ogalen + ogapad) > strlen(headOG)){
       padIntHeadOG = (ogalen + ogapad) - strlen(headOG) + 1;
