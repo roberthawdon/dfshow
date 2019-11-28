@@ -12,6 +12,14 @@
 #define LEFT  0
 #define RIGHT 1
 
+#define COL_MARK  0
+#define COL_ATTR  1
+#define COL_HLINK 2
+#define COL_OWNER 3
+#define COL_SIZE  4
+#define COL_DATE  5
+#define COL_NAME  6
+
 typedef struct {
   int marked[1];
   mode_t mode;
