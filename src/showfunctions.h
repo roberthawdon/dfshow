@@ -90,7 +90,7 @@ void padstring(char *str, int len, char c);
 char *genPadding(int num_of_spaces);
 void resizeDisplayDir(results* ob);
 char *readableSize(double size, char *buf, int si);
-int writePermsEntry(char * perms, mode_t mode, int axFlag);
+int writePermsEntry(char * perms, mode_t mode, int axFlag, int sLinkCheck);
 void writeResultStruct(results* ob, const char * filename, struct stat buffer, int count, acl_t acl, ssize_t xattr, int seLinuxCon, char * contextText);
 char *markedDisplay(results* ob);
 int huntFile(const char * file, const char * search, int charcase);

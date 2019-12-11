@@ -370,7 +370,7 @@ int wildcard(const char *value, char *wcard)
     return match;
 }
 
-int writePermsEntry(char * perms, mode_t mode, int axFlag){
+int writePermsEntry(char * perms, mode_t mode, int axFlag, int sLinkCheck){
 
   typecolor = DISPLAY_PAIR;
 
@@ -380,14 +380,18 @@ int writePermsEntry(char * perms, mode_t mode, int axFlag){
     perms[0] = 'd';
     typecolor = DIR_PAIR;
   } else if (S_ISCHR(mode)){
-    mmMode = 1;
+    if (!sLinkCheck){
+      mmMode = 1;
+    }
     perms[0] = 'c';
   } else if (S_ISLNK(mode)){
     perms[0] = 'l';
   } else if (S_ISFIFO(mode)){
     perms[0] = 'p';
   } else if (S_ISBLK(mode)){
-    mmMode = 1;
+    if (!sLinkCheck){
+      mmMode = 1;
+    }
     perms[0] = 'b';
   } else if (S_ISSOCK(mode)){
     perms[0] = 's';
@@ -509,7 +513,7 @@ void writeResultStruct(results* ob, const char * filename, struct stat buffer, i
     axFlag = ACL_SELINUX;
   }
 
-  writePermsEntry(perms, buffer.st_mode, axFlag);
+  writePermsEntry(perms, buffer.st_mode, axFlag, 0);
 
   // Writing our structure
   if ( markall && !(buffer.st_mode & S_IFDIR) ) {
@@ -1075,7 +1079,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
         } else {
           // setColors(ob[currentitem].color);
           status = lstat(ob[currentitem].slink, &buffer);
-          setColors(writePermsEntry(tmpperms, buffer.st_mode, -1));
+          setColors(writePermsEntry(tmpperms, buffer.st_mode, -1, 1));
         }
       }
     }
