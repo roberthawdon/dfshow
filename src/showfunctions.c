@@ -738,7 +738,7 @@ char *writeSegment(int segLen, char *text, int align){
 
 void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorlen, int sizelen, int majorlen, int minorlen, int datelen, int namelen, int contextlen, int selected, int listref, int topref, results* ob){
 
-  int i;
+  int i, t;
 
   char marked[2];
   wchar_t *entryMeta  = malloc(sizeof(wchar_t) + 1);
@@ -786,8 +786,12 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   wchar_t *nameSegment;
   wchar_t *linkSegment;
 
+  wchar_t *tmpSegment;
+
   int linepadding;
   int colpos;
+
+  int charPos = 0;
 
   char tmpperms[12];
 
@@ -993,15 +997,6 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
 
   free(printPerm);
 
-  // Free segments
-  free(markedSegment);
-  free(attrSegment);
-  free(hlinkSegment);
-  free(ownerSegment);
-  free(contextSegment);
-  free(sizeSegment);
-  free(dateSegment);
-
   entryMetaLen = wcslen(entryMeta);
 
   entryNameLen = snprintf(NULL, 0, "%s", ob[currentitem].name) + 1;
@@ -1034,12 +1029,57 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
     setColors(DISPLAY_PAIR);
   }
 
-  for ( i = 0; i < maxlen; i++ ){
-    mvprintw(displaystart + listref, start + i,"%lc", entryMeta[i]);
-    if ( i == entryMetaLen ){
+  // Temporary ordering by simple count
+  for ( t = COL_MARK; t < COL_NAME; t++){
+    switch(t){
+    case COL_MARK:
+      tmpSegment = malloc(sizeof(wchar_t) * strlen(markedSegment));
+      swprintf(tmpSegment, strlen(markedSegment), L"%s", markedSegment);
+      break;
+    case COL_ATTR:
+      tmpSegment = malloc(sizeof(wchar_t) * strlen(attrSegment));
+      swprintf(tmpSegment, strlen(attrSegment), L"%s", attrSegment);
+      break;
+    case COL_HLINK:
+      tmpSegment = malloc(sizeof(wchar_t) * strlen(hlinkSegment));
+      swprintf(tmpSegment, strlen(hlinkSegment), L"%s", hlinkSegment);
+      break;
+    case COL_OWNER:
+      tmpSegment = malloc(sizeof(wchar_t) * strlen(ownerSegment));
+      swprintf(tmpSegment, strlen(ownerSegment), L"%s", ownerSegment);
+      break;
+    case COL_CONTEXT:
+      tmpSegment = malloc(sizeof(wchar_t) * strlen(contextSegment));
+      swprintf(tmpSegment, strlen(contextSegment), L"%s", contextSegment);
+      break;
+    case COL_SIZE:
+      tmpSegment = malloc(sizeof(wchar_t) * strlen(sizeSegment));
+      swprintf(tmpSegment, strlen(sizeSegment), L"%s", sizeSegment);
+      break;
+    case COL_DATE:
+      tmpSegment = malloc(sizeof(wchar_t) * wcslen(dateSegment));
+      swprintf(tmpSegment, wcslen(dateSegment), L"%ls", dateSegment);
       break;
     }
+
+    for ( i = 0; i < maxlen; i++ ){
+      if (wcslen(tmpSegment) > 0){
+        mvprintw(displaystart + listref, (start + charPos), "%lc", tmpSegment[i]);
+        charPos++;
+        if (i == wcslen(tmpSegment)){
+          break;
+        }
+      }
+    }
+    free(tmpSegment);
   }
+
+  // for ( i = 0; i < maxlen; i++ ){
+  //   mvprintw(displaystart + listref, start + i,"%lc", entryMeta[i]);
+  //   if ( i == entryMetaLen ){
+  //     break;
+  //   }
+  // }
 
   if (filecolors && !selected){
     if ( strcmp(ob[currentitem].slink, "" )) {
@@ -1110,6 +1150,15 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
     }
     free(paddingE0);
   }
+
+  // Free segments
+  free(markedSegment);
+  free(attrSegment);
+  free(hlinkSegment);
+  free(ownerSegment);
+  free(contextSegment);
+  free(sizeSegment);
+  free(dateSegment);
 
   free(s1);
   free(s2);

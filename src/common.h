@@ -37,6 +37,11 @@ typedef struct {
   int boolVal;
 } t2BinValues;
 
+typedef struct node {
+  int val;
+  struct node * next;
+} node_t;
+
 int getch10th (void);
 int cmp_menu_ref(const void *lhs, const void *rhs);
 int splitPath(pathDirs **dirStruct, char *path);
