@@ -776,6 +776,8 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
 
   char *contextText;
 
+  int printSegment = 0;
+
   int markedSegmentLen, attrSegmentLen, hlinkSegmentLen, ownerSegmentLen, contextSegmentLen, sizeSegmentLen, dateSegmentLen, nameSegmentLen, linkSegmentLen, tmpSegmentLen;
 
   char *markedSegment;
@@ -1045,45 +1047,64 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   for ( t = COL_MARK; t < COL_NAME; t++){
     switch(t){
     case COL_MARK:
-      tmpSegment = malloc(sizeof(wchar_t) * markedSegmentLen + 1);
-      swprintf(tmpSegment, markedSegmentLen + 1, L"%s", markedSegment);
+      printSegment = 1;
+      tmpSegmentLen = markedSegmentLen + 2;
+      tmpSegment = malloc(sizeof(wchar_t) * tmpSegmentLen);
+      swprintf(tmpSegment, tmpSegmentLen, L"%s", markedSegment);
       break;
     case COL_ATTR:
-      tmpSegment = malloc(sizeof(wchar_t) * printPermLen + 1);
-      swprintf(tmpSegment, printPermLen + 1, L"%s", attrSegment);
+      printSegment = 1;
+      tmpSegmentLen = printPermLen + 2;
+      tmpSegment = malloc(sizeof(wchar_t) * tmpSegmentLen);
+      swprintf(tmpSegment, tmpSegmentLen, L"%s", attrSegment);
       break;
     case COL_HLINK:
-      tmpSegment = malloc(sizeof(wchar_t) * hlinkSegmentLen + 1);
-      swprintf(tmpSegment, hlinkSegmentLen + 1, L"%s", hlinkSegment);
+      printSegment = 1;
+      tmpSegmentLen = hlinkSegmentLen + 2;
+      tmpSegment = malloc(sizeof(wchar_t) * tmpSegmentLen);
+      swprintf(tmpSegment, tmpSegmentLen, L"%s", hlinkSegment);
       break;
     case COL_OWNER:
-      tmpSegment = malloc(sizeof(wchar_t) * ownerSegmentLen + 1);
-      swprintf(tmpSegment, ownerSegmentLen + 1, L"%s", ownerSegment);
+      if (ogavis){
+        printSegment = 1;
+        tmpSegmentLen = ownerSegmentLen + 2;
+        tmpSegment = malloc(sizeof(wchar_t) * tmpSegmentLen);
+        swprintf(tmpSegment, tmpSegmentLen, L"%s", ownerSegment);
+      }
       break;
     case COL_CONTEXT:
-      tmpSegment = malloc(sizeof(wchar_t) * contextSegmentLen + 1);
-      swprintf(tmpSegment, contextSegmentLen + 1, L"%s", contextSegment);
+      if (showContext){
+        printSegment = 1;
+        tmpSegmentLen = contextSegmentLen + 2;
+        tmpSegment = malloc(sizeof(wchar_t) * tmpSegmentLen);
+        swprintf(tmpSegment, tmpSegmentLen, L"%s", contextSegment);
+      }
       break;
     case COL_SIZE:
-      tmpSegment = malloc(sizeof(wchar_t) * sizeSegmentLen + 1);
-      swprintf(tmpSegment, sizeSegmentLen + 1, L"%s", sizeSegment);
+      printSegment = 1;
+      tmpSegmentLen = sizeSegmentLen + 2;
+      tmpSegment = malloc(sizeof(wchar_t) * tmpSegmentLen);
+      swprintf(tmpSegment, tmpSegmentLen, L"%s", sizeSegment);
       break;
     case COL_DATE:
-      tmpSegment = malloc(sizeof(wchar_t) * dateSegmentLen + 1);
-      swprintf(tmpSegment, dateSegmentLen + 1, L"%ls", dateSegment);
+      printSegment = 1;
+      tmpSegmentLen = dateSegmentLen + 2;
+      tmpSegment = malloc(sizeof(wchar_t) * tmpSegmentLen);
+      swprintf(tmpSegment, tmpSegmentLen, L"%ls", dateSegment);
       break;
     }
 
-    for ( i = 0; i < maxlen; i++ ){
-      if (wcslen(tmpSegment) > 0){
+    if (printSegment){
+      for ( i = 0; i < maxlen; i++ ){
         mvprintw(displaystart + listref, start + charPos, "%lc", tmpSegment[i]);
         charPos++;
-        if (i == wcslen(tmpSegment)){
+        if (i == tmpSegmentLen - 2){
           break;
         }
       }
+      free(tmpSegment);
+      printSegment = 0;
     }
-    free(tmpSegment);
   }
 
   // for ( i = 0; i < maxlen; i++ ){
