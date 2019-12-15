@@ -4,7 +4,7 @@ theme :
   info = [ 2, -1, 0 ];
   input = [ 0, 7, 0 ];
   select = [ 12, -1, 0 ];
-  display = [ 6, -1, 0 ];
+  display = [ -1, -1, 0 ];
   danger = [ 9, -1, 0 ];
   dir = [ 14, -1, 0 ];
   symlink = [ 5, -1, 0 ];
