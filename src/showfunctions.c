@@ -1092,6 +1092,8 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
       tmpSegment = malloc(sizeof(wchar_t) * tmpSegmentLen);
       swprintf(tmpSegment, tmpSegmentLen, L"%ls", dateSegment);
       break;
+    default:
+      break;
     }
 
     if (printSegment){
@@ -1106,13 +1108,6 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
       printSegment = 0;
     }
   }
-
-  // for ( i = 0; i < maxlen; i++ ){
-  //   mvprintw(displaystart + listref, start + i,"%lc", entryMeta[i]);
-  //   if ( i == entryMetaLen ){
-  //     break;
-  //   }
-  // }
 
   if (filecolors && !selected){
     if ( strcmp(ob[currentitem].slink, "" )) {
