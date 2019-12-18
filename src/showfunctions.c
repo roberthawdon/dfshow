@@ -911,7 +911,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   }
 
   if (ob[currentitem].minor > 1){
-    mmpad = sizelen - (log10(ob[currentitem].minor + 2)) + 2;
+    mmpad = sizelen - (log10(ob[currentitem].minor + 1)) + 2;
   } else {
     mmpad = sizelen + 1;
   }
