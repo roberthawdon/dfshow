@@ -1045,7 +1045,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   }
 
   // Temporary ordering by simple count
-  for ( t = COL_MARK; t < COL_NAME; t++){
+  for ( t = COL_MARK; t < COL_NAME + 1; t++){
     switch(t){
     case COL_MARK:
       printSegment = 1;
@@ -1092,6 +1092,8 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
       tmpSegmentLen = dateSegmentLen + 2;
       tmpSegment = malloc(sizeof(wchar_t) * tmpSegmentLen);
       swprintf(tmpSegment, tmpSegmentLen, L"%ls", dateSegment);
+      break;
+    case COL_NAME:
       break;
     default:
       break;
