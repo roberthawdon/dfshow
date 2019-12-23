@@ -81,6 +81,7 @@ int contextlen;
 int nameAndSLink = 0;
 
 int entryMetaLen, entryNameLen, entrySLinkLen = 0;
+int charPos = 0;
 
 int ogalen;
 
@@ -741,7 +742,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   int i, t;
 
   char marked[2];
-  wchar_t *entryMeta  = malloc(sizeof(wchar_t) + 1);
+  // wchar_t *entryMeta  = malloc(sizeof(wchar_t) + 1);
   wchar_t *entryName  = malloc(sizeof(wchar_t) + 1);
   wchar_t *entrySLink = malloc(sizeof(wchar_t) + 1);
   int maxlen = COLS - start - 1;
@@ -795,8 +796,6 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   int linepadding;
   int colpos;
 
-  int charPos = 0;
-
   char tmpperms[12];
 
   int printPermLen;
@@ -810,6 +809,8 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   char *paddingG0, *paddingG1, *paddingE0;
 
   strcpy(slinkpoint, " -> \0");
+
+  charPos = 0;
 
   // Owner, Group, Author
   switch(ogavis){
@@ -1003,15 +1004,15 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
 
   attrSegment = writeSegment(printPermLen, printPerm, LEFT);
 
-  entryMetaLen = snprintf(NULL, 0, "%s%s%s%s%s%s%ls", markedSegment, attrSegment, hlinkSegment, ownerSegment, contextSegment, sizeSegment, dateSegment);
+  // entryMetaLen = snprintf(NULL, 0, "%s%s%s%s%s%s%ls", markedSegment, attrSegment, hlinkSegment, ownerSegment, contextSegment, sizeSegment, dateSegment);
 
-  entryMeta = realloc(entryMeta, sizeof(wchar_t) * (entryMetaLen + 1));
+  // entryMeta = realloc(entryMeta, sizeof(wchar_t) * (entryMetaLen + 1));
 
-  swprintf(entryMeta, (entryMetaLen + 1), L"%s%s%s%s%s%s%ls", markedSegment, attrSegment, hlinkSegment, ownerSegment, contextSegment, sizeSegment, dateSegment);
+  // swprintf(entryMeta, (entryMetaLen + 1), L"%s%s%s%s%s%s%ls", markedSegment, attrSegment, hlinkSegment, ownerSegment, contextSegment, sizeSegment, dateSegment);
 
   free(printPerm);
 
-  entryMetaLen = wcslen(entryMeta);
+  // entryMetaLen = wcslen(entryMeta);
 
   entryNameLen = snprintf(NULL, 0, "%s", ob[currentitem].name) + 1;
 
@@ -1122,9 +1123,9 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   }
 
   for ( i = 0; i < maxlen; i++ ){
-    mvprintw(displaystart + listref, (entryMetaLen + start) + i,"%lc", entryName[i]);
+    mvprintw(displaystart + listref, (charPos + start) + i,"%lc", entryName[i]);
     if ( i == entryNameLen ){
-      colpos = (entryMetaLen + start) + i;
+      colpos = (charPos + start) + i;
       break;
     }
   }
@@ -1135,7 +1136,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
     }
 
     for ( i = 0; i < strlen(slinkpoint); i++) {
-      mvprintw(displaystart + listref, (entryMetaLen + entryNameLen + start) + i, "%c", slinkpoint[i]);
+      mvprintw(displaystart + listref, (charPos + entryNameLen + start) + i, "%c", slinkpoint[i]);
     }
 
     if (filecolors && !selected){
@@ -1153,9 +1154,9 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
     }
 
     for ( i = 0; i < maxlen; i++ ){
-      mvprintw(displaystart + listref, (entryMetaLen + entryNameLen + 4 + start) + i,"%lc", entrySLink[i]);
+      mvprintw(displaystart + listref, (charPos + entryNameLen + 4 + start) + i,"%lc", entrySLink[i]);
       if ( i == entrySLinkLen ){
-        colpos = (entryMetaLen + entryNameLen + 4 + start) + i;
+        colpos = (charPos + entryNameLen + 4 + start) + i;
         break;
       }
     }
@@ -1195,7 +1196,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   free(s5);
   free(s6);
   free(sizestring);
-  free(entryMeta);
+  // free(entryMeta);
   free(entryName);
   free(entrySLink);
   free(ogaval);
@@ -2198,10 +2199,10 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   }
 
   if (slinklen == 0){
-    maxdisplaywidth = entryMetaLen + namelen;
+    maxdisplaywidth = charPos + namelen;
   } else {
     // maxdisplaywidth = entryMetaLen + namelen + slinklen + 4;
-    maxdisplaywidth = entryMetaLen + nameAndSLink;
+    maxdisplaywidth = charPos + nameAndSLink;
   }
 
   //mvprintw(0, 66, "%d %d", historyref, sessionhistory);
