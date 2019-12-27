@@ -54,6 +54,13 @@ typedef struct {
   int selected;
 } history;
 
+typedef struct {
+  wchar_t *name;
+  int linkStat;
+  wchar_t *link;
+  char *padding;
+} nameStruct;
+
 int checkRunningEnv();
 void freeResults(results *ob, int count);
 void freeHistory(history *hs, int count);

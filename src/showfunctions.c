@@ -777,9 +777,9 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
 
   char *contextText;
 
-  int printSegment = 0;
+  int printSegment, printNameSegment = 0;
 
-  int markedSegmentLen, attrSegmentLen, hlinkSegmentLen, ownerSegmentLen, contextSegmentLen, sizeSegmentLen, dateSegmentLen, nameSegmentLen, linkSegmentLen, tmpSegmentLen;
+  int markedSegmentLen, attrSegmentLen, hlinkSegmentLen, ownerSegmentLen, contextSegmentLen, sizeSegmentLen, dateSegmentLen, nameSegmentDataLen, linkSegmentLen, tmpSegmentLen;
 
   char *markedSegment;
   char *attrSegment;
@@ -788,8 +788,8 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   char *contextSegment;
   char *sizeSegment;
   wchar_t *dateSegment;
-  wchar_t *nameSegment;
   wchar_t *linkSegment;
+  nameStruct *nameSegmentData;
 
   wchar_t *tmpSegment;
 
@@ -1014,6 +1014,20 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
 
   // entryMetaLen = wcslen(entryMeta);
 
+  // Writing Name Segment Data
+  nameSegmentData = malloc(sizeof(nameStruct));
+  nameSegmentData[0].name = malloc(sizeof(wchar_t) * (strlen(ob[currentitem].name) + 1));
+  swprintf(nameSegmentData[0].name, (strlen(ob[currentitem].name) + 1), L"%s", ob[currentitem].name);
+  if ( !strcmp(ob[currentitem].slink, "") ){
+    nameSegmentData[0].linkStat = 0;
+    nameSegmentData[0].link = malloc(sizeof(wchar_t));
+  } else {
+    nameSegmentData[0].linkStat = 1;
+    nameSegmentData[0].link = malloc(sizeof(wchar_t) * (strlen(ob[currentitem].slink) + 1));
+    swprintf(nameSegmentData[0].link, (strlen(ob[currentitem].slink) + 1), L"%s", ob[currentitem].slink);
+  }
+
+
   entryNameLen = snprintf(NULL, 0, "%s", ob[currentitem].name) + 1;
 
   entryName = realloc(entryName, sizeof(wchar_t) * (entryNameLen + 1));
@@ -1094,8 +1108,11 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
       swprintf(tmpSegment, tmpSegmentLen, L"%ls", dateSegment);
       break;
     case COL_NAME:
+      printSegment = 0;
+      printNameSegment = 1;
       break;
     default:
+      printSegment = 0;
       break;
     }
 
@@ -1110,71 +1127,82 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
       free(tmpSegment);
       printSegment = 0;
     }
-  }
 
-  if (filecolors && !selected){
-    if ( strcmp(ob[currentitem].slink, "" )) {
-      if (check_file(ob[currentitem].slink)){
-        setColors(SLINK_PAIR);
-      } else {
-        setColors(DEADLINK_PAIR);
-      }
-    } else {
-      setColors(ob[currentitem].color);
-    }
-  }
-
-  for ( i = 0; i < maxlen; i++ ){
-    mvprintw(displaystart + listref, (charPos + start) + i,"%lc", entryName[i]);
-    if ( i == entryNameLen ){
-      colpos = (charPos + start) + i;
-      break;
-    }
-  }
-
-  if ( strcmp(ob[currentitem].slink, "") ){
-    if (!selected){
-      setColors(DISPLAY_PAIR);
-    }
-
-    for ( i = 0; i < strlen(slinkpoint); i++) {
-      mvprintw(displaystart + listref, (charPos + entryNameLen + start) + i, "%c", slinkpoint[i]);
-    }
-
-    if (filecolors && !selected){
-      if ( strcmp(ob[currentitem].slink, "" )) {
-        if ( check_dir(ob[currentitem].slink) ){
-          setColors(DIR_PAIR);
-        } else if ( !check_file(ob[currentitem].slink) ){
-          setColors(DEADLINK_PAIR);
+    if (printNameSegment){
+      if (filecolors && !selected){
+        if ( strcmp(ob[currentitem].slink, "" )) {
+          if (check_file(ob[currentitem].slink)){
+            setColors(SLINK_PAIR);
+          } else {
+            setColors(DEADLINK_PAIR);
+          }
         } else {
-          // setColors(ob[currentitem].color);
-          status = lstat(ob[currentitem].slink, &buffer);
-          setColors(writePermsEntry(tmpperms, buffer.st_mode, -1, 1));
+          setColors(ob[currentitem].color);
         }
       }
-    }
 
-    for ( i = 0; i < maxlen; i++ ){
-      mvprintw(displaystart + listref, (charPos + entryNameLen + 4 + start) + i,"%lc", entrySLink[i]);
-      if ( i == entrySLinkLen ){
-        colpos = (charPos + entryNameLen + 4 + start) + i;
-        break;
+      for ( i = 0; i < maxlen; i++ ){
+        mvprintw(displaystart + listref, start + charPos, "%lc", nameSegmentData[0].name[i]);
+        charPos++;
+        if ( i == wcslen(nameSegmentData[0].name) - 1 ){
+          break;
+        }
       }
+
+      if ( nameSegmentData[0].linkStat ){
+        if (!selected){
+          setColors(DISPLAY_PAIR);
+        }
+
+        for ( i = 0; i < strlen(slinkpoint); i++) {
+          mvprintw(displaystart + listref, start + charPos, "%c", slinkpoint[i]);
+          charPos++;
+        }
+
+        if (filecolors && !selected){
+          if ( nameSegmentData[0].linkStat ) {
+            if ( check_dir(ob[currentitem].slink) ){
+              setColors(DIR_PAIR);
+            } else if ( !check_file(ob[currentitem].slink) ){
+              setColors(DEADLINK_PAIR);
+            } else {
+              // setColors(ob[currentitem].color);
+              status = lstat(ob[currentitem].slink, &buffer);
+              setColors(writePermsEntry(tmpperms, buffer.st_mode, -1, 1));
+            }
+          }
+        }
+
+          for ( i = 0; i < maxlen; i++ ){
+            mvprintw(displaystart + listref, start + charPos,"%lc", nameSegmentData[0].link[i]);
+            charPos++;
+            if ( i == wcslen(nameSegmentData[0].link) - 1 ){
+              break;
+            }
+          }
+        }
+
+        if (filecolors && !selected){
+          setColors(DISPLAY_PAIR);
+        }
+
+
+
+      printNameSegment = 0;
     }
   }
 
-  if (filecolors && !selected){
-    setColors(DISPLAY_PAIR);
-  }
+  free(nameSegmentData[0].name);
+  free(nameSegmentData[0].link);
+  free(nameSegmentData);
 
-  linepadding = COLS - colpos;
+  linepadding = COLS - charPos;
 
 
   if (linepadding > 0){
-    if (colpos > -1){
+    if (charPos > 0){
       paddingE0 = genPadding(linepadding);
-      mvprintw(displaystart + listref, colpos, "%s", paddingE0);
+      mvprintw(displaystart + listref, charPos, "%s", paddingE0);
     } else {
       paddingE0 = genPadding(COLS);
       mvprintw(displaystart + listref, 0, "%s", paddingE0);
