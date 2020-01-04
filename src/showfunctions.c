@@ -1038,10 +1038,10 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   if (nameSegLen > nameminlen){
     nameFullSegPadding = nameSegLen - nameCombineLen;
   } else {
-    nameFullSegPadding = nameSegLen - nameminlen;
+    nameFullSegPadding = nameminlen - nameCombineLen;
   }
   if ( nameFullSegPadding < 1 ){
-    nameFullSegPadding = 0;
+    nameFullSegPadding = 1;
   }
   nameSegmentData[0].padding = genPadding(nameFullSegPadding);
 
@@ -1200,6 +1200,10 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
           }
         }
 
+      if (filecolors && !selected){
+        setColors(DISPLAY_PAIR);
+      }
+
       for ( i = 0; i < maxlen; i++){
         mvprintw(displaystart + listref, start + charPos, "%c", nameSegmentData[0].padding[i]);
         charPos++;
@@ -1207,12 +1211,6 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
           break;
         }
       }
-
-      if (filecolors && !selected){
-        setColors(DISPLAY_PAIR);
-      }
-
-
 
       printNameSegment = 0;
     }
