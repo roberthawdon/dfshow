@@ -77,6 +77,7 @@ int datelen;
 int namelen;
 int slinklen;
 int contextlen;
+int nameSegLen;
 
 int nameAndSLink = 0;
 
@@ -748,6 +749,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   int maxlen = COLS - start - 1;
 
   int currentitem = listref + topref;
+  int nameminlen = strlen(headName); // Length of "Name" heading
   int ogminlen = strlen(headOG); // Length of "Owner & Group" heading
   int sizeminlen = strlen(headSize); // Length of "Size" heading
   int dateminlen = strlen(headDT); // Length of "Date" heading
@@ -780,6 +782,8 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   int printSegment, printNameSegment = 0;
 
   int markedSegmentLen, attrSegmentLen, hlinkSegmentLen, ownerSegmentLen, contextSegmentLen, sizeSegmentLen, dateSegmentLen, nameSegmentDataLen, linkSegmentLen, tmpSegmentLen;
+
+  int nameCombineLen, nameFullSegPadding;
 
   char *markedSegment;
   char *attrSegment;
@@ -1026,6 +1030,20 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
     nameSegmentData[0].link = malloc(sizeof(wchar_t) * (strlen(ob[currentitem].slink) + 1));
     swprintf(nameSegmentData[0].link, (strlen(ob[currentitem].slink) + 1), L"%s", ob[currentitem].slink);
   }
+  if ( nameSegmentData[0].linkStat ){
+    nameCombineLen = (wcslen(nameSegmentData[0].name) + wcslen(nameSegmentData[0].link) + 4);
+  } else {
+    nameCombineLen = wcslen(nameSegmentData[0].name);
+  }
+  if (nameSegLen > nameminlen){
+    nameFullSegPadding = nameSegLen - nameCombineLen;
+  } else {
+    nameFullSegPadding = nameSegLen - nameminlen;
+  }
+  if ( nameFullSegPadding < 1 ){
+    nameFullSegPadding = 0;
+  }
+  nameSegmentData[0].padding = genPadding(nameFullSegPadding);
 
 
   entryNameLen = snprintf(NULL, 0, "%s", ob[currentitem].name) + 1;
@@ -1182,9 +1200,17 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
           }
         }
 
-        if (filecolors && !selected){
-          setColors(DISPLAY_PAIR);
+      for ( i = 0; i < maxlen; i++){
+        mvprintw(displaystart + listref, start + charPos, "%c", nameSegmentData[0].padding[i]);
+        charPos++;
+        if ( i == strlen(nameSegmentData[0].padding) - 1 ){
+          break;
         }
+      }
+
+      if (filecolors && !selected){
+        setColors(DISPLAY_PAIR);
+      }
 
 
 
@@ -1194,6 +1220,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
 
   free(nameSegmentData[0].name);
   free(nameSegmentData[0].link);
+  free(nameSegmentData[0].padding);
   free(nameSegmentData);
 
   linepadding = COLS - charPos;
@@ -2045,6 +2072,8 @@ results* get_dir(char *pwd)
   namelen = seglength(ob, "name", count);
   slinklen = seglength(ob, "slink", count);
   contextlen = seglength(ob, "contextText", count);
+
+  nameSegLen = namelen + slinklen + 4; // The 4 is the length of " -> "
 
   free(dirError);
   free(res);
