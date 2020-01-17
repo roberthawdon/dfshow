@@ -120,6 +120,8 @@ int dirAbort = 0;
 
 int axDisplay = 0;
 
+int markedSegmentLen, attrSegmentLen, hlinkSegmentLen, ownerSegmentLen, contextSegmentLen, sizeSegmentLen, dateSegmentLen, nameSegmentDataLen, linkSegmentLen, tmpSegmentLen;
+
 unsigned long int savailable = 0;
 unsigned long int sused = 0;
 
@@ -780,8 +782,6 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   char *contextText;
 
   int printSegment, printNameSegment = 0;
-
-  int markedSegmentLen, attrSegmentLen, hlinkSegmentLen, ownerSegmentLen, contextSegmentLen, sizeSegmentLen, dateSegmentLen, nameSegmentDataLen, linkSegmentLen, tmpSegmentLen;
 
   int nameCombineLen, nameFullSegPadding;
 
@@ -2113,6 +2113,8 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   wchar_t *pwdPrint = malloc(sizeof(wchar_t) + 1);
   size_t pwdPrintSize;
   char *markedInfoLine, *padCharHeadAttrs, *padCharHeadOG, *padCharHeadContext, *padCharHeadSize, *padCharHeadDT;
+  char *headerCombined = malloc(sizeof(char) + 1);
+  char *markedHeadSeg, *attrHeadSeg, *hlinkHeadSeg, *ownerHeadSeg, *contextHeadSeg, *sizeHeadSeg, *dateHeadSeg, *nameHeadSeg;
 
   if (markedinfo == 2 && (CheckMarked(ob) > 0)){
     automark = 1;
@@ -2316,6 +2318,24 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
 
   sprintf(headings, "%s%s%s%s%s%s%s%s%s%s%s%s", headAttrs, padCharHeadAttrs, headOG, padCharHeadOG, headContext, padCharHeadContext, padCharHeadSize, headSize, " ", headDT, padCharHeadDT, headName);
 
+  // Segment Dev
+  attrHeadSeg = writeSegment(attrSegmentLen, headAttrs, LEFT);
+  ownerHeadSeg = writeSegment(ownerSegmentLen, headOG, LEFT);
+  contextHeadSeg = writeSegment(contextSegmentLen, headContext, LEFT);
+  sizeHeadSeg = writeSegment(sizeSegmentLen, headSize, LEFT);
+  dateHeadSeg = writeSegment(dateSegmentLen, headDT, LEFT);
+  // nameHeadSeg = writeSegment(nameSegmentLen, headName, LEFT);
+
+  // TO-DO - Populate combined header
+
+  // Freeing Segments
+  free(attrHeadSeg);
+  free(ownerHeadSeg);
+  free(contextHeadSeg);
+  free(sizeHeadSeg);
+  free(dateHeadSeg);
+  // free(nameHeadSeg);
+
   free(padCharHeadAttrs);
   free(padCharHeadOG);
   free(padCharHeadContext);
@@ -2358,6 +2378,7 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   free(savailableString);
   free(sizeHeader);
   free(headings);
+  free(headerCombined);
 }
 
 void resizeDisplayDir(results* ob){
