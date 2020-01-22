@@ -802,7 +802,6 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
 
   char tmpperms[12];
 
-  int printPermLen;
   char *printPerm;
 
   struct stat buffer;
@@ -979,9 +978,9 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   }
 
   if (axDisplay){
-    printPermLen = 11;
+    attrSegmentLen = 11;
   } else {
-    printPermLen = 10;
+    attrSegmentLen = 10;
   }
 
   if (*ob[currentitem].hlink > 0){
@@ -1000,13 +999,13 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
 
   free(hlinkChar);
 
-  printPerm = malloc(sizeof(char) * printPermLen + 1);
-  for (i = 0; i < printPermLen; i++){
+  printPerm = malloc(sizeof(char) * attrSegmentLen + 1);
+  for (i = 0; i < attrSegmentLen; i++){
     printPerm[i] = ob[currentitem].perm[i];
-    printPerm[printPermLen] = '\0';
+    printPerm[attrSegmentLen] = '\0';
   }
 
-  attrSegment = writeSegment(printPermLen, printPerm, LEFT);
+  attrSegment = writeSegment(attrSegmentLen, printPerm, LEFT);
 
   // entryMetaLen = snprintf(NULL, 0, "%s%s%s%s%s%s%ls", markedSegment, attrSegment, hlinkSegment, ownerSegment, contextSegment, sizeSegment, dateSegment);
 
@@ -1037,8 +1036,10 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   }
   if (nameSegLen > nameminlen){
     nameFullSegPadding = nameSegLen - nameCombineLen;
+    nameSegmentDataLen = nameSegLen;
   } else {
     nameFullSegPadding = nameminlen - nameCombineLen;
+    nameSegmentDataLen = nameminlen;
   }
   if ( nameFullSegPadding < 1 ){
     nameFullSegPadding = 1;
@@ -1078,6 +1079,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
 
   // Temporary ordering by simple count
   for ( t = COL_MARK; t < COL_NAME + 1; t++){
+  // for ( t = COL_NAME; t > - 1; t--){
     switch(t){
     case COL_MARK:
       printSegment = 1;
@@ -1087,7 +1089,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
       break;
     case COL_ATTR:
       printSegment = 1;
-      tmpSegmentLen = printPermLen + 2;
+      tmpSegmentLen = attrSegmentLen + 2;
       tmpSegment = malloc(sizeof(wchar_t) * tmpSegmentLen);
       swprintf(tmpSegment, tmpSegmentLen, L"%s", attrSegment);
       break;
@@ -2099,6 +2101,7 @@ results* reorder_ob(results* ob, char *order){
 
 void display_dir(char *pwd, results* ob, int topfileref, int selected){
 
+  int t;
   size_t list_count = 0;
   int count = totalfilecount;
   int printSelect = 0;
@@ -2114,6 +2117,7 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   size_t pwdPrintSize;
   char *markedInfoLine, *padCharHeadAttrs, *padCharHeadOG, *padCharHeadContext, *padCharHeadSize, *padCharHeadDT;
   char *headerCombined = malloc(sizeof(char) + 1);
+  int headerCombinedLen = 1;
   char *markedHeadSeg, *attrHeadSeg, *hlinkHeadSeg, *ownerHeadSeg, *contextHeadSeg, *sizeHeadSeg, *dateHeadSeg, *nameHeadSeg;
 
   if (markedinfo == 2 && (CheckMarked(ob) > 0)){
@@ -2306,41 +2310,96 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
 
   sprintf(sizeHeader, "%i Objects   %s Used %s Available", count, susedString, savailableString);
 
-  padCharHeadAttrs = genPadding(hlinklen + 1 + axDisplay);
-  padCharHeadOG = genPadding(padIntHeadOG);
-  padCharHeadContext = genPadding(padIntHeadContext);
-  padCharHeadSize = genPadding(padIntHeadSize);
-  padCharHeadDT = genPadding(padIntHeadDT);
+  // padCharHeadAttrs = genPadding(hlinklen + 1 + axDisplay);
+  // padCharHeadOG = genPadding(padIntHeadOG);
+  // padCharHeadContext = genPadding(padIntHeadContext);
+  // padCharHeadSize = genPadding(padIntHeadSize);
+  // padCharHeadDT = genPadding(padIntHeadDT);
 
-  headingsLen = snprintf(NULL, 0, "%s%s%s%s%s%s%s%s%s%s%s%s", headAttrs, padCharHeadAttrs, headOG, padCharHeadOG, headContext, padCharHeadContext, padCharHeadSize, headSize, " ", headDT, padCharHeadDT, headName);
+  // headingsLen = snprintf(NULL, 0, "%s%s%s%s%s%s%s%s%s%s%s%s", headAttrs, padCharHeadAttrs, headOG, padCharHeadOG, headContext, padCharHeadContext, padCharHeadSize, headSize, " ", headDT, padCharHeadDT, headName);
 
-  headings = realloc(headings, sizeof(char) * (headingsLen + 1));
+  // headings = realloc(headings, sizeof(char) * (headingsLen + 1));
 
-  sprintf(headings, "%s%s%s%s%s%s%s%s%s%s%s%s", headAttrs, padCharHeadAttrs, headOG, padCharHeadOG, headContext, padCharHeadContext, padCharHeadSize, headSize, " ", headDT, padCharHeadDT, headName);
+  // sprintf(headings, "%s%s%s%s%s%s%s%s%s%s%s%s", headAttrs, padCharHeadAttrs, headOG, padCharHeadOG, headContext, padCharHeadContext, padCharHeadSize, headSize, " ", headDT, padCharHeadDT, headName);
 
-  // Segment Dev
+  markedHeadSeg = writeSegment(4, "", LEFT);
   attrHeadSeg = writeSegment(attrSegmentLen, headAttrs, LEFT);
+  hlinkHeadSeg = writeSegment(hlinkSegmentLen, "", LEFT);
   ownerHeadSeg = writeSegment(ownerSegmentLen, headOG, LEFT);
   contextHeadSeg = writeSegment(contextSegmentLen, headContext, LEFT);
   sizeHeadSeg = writeSegment(sizeSegmentLen, headSize, LEFT);
   dateHeadSeg = writeSegment(dateSegmentLen, headDT, LEFT);
-  // nameHeadSeg = writeSegment(nameSegmentLen, headName, LEFT);
+  nameHeadSeg = writeSegment(nameSegmentDataLen, headName, LEFT);
 
   // TO-DO - Populate combined header
+  // Temporary ordering by simple count
+  for ( t = COL_MARK; t < COL_NAME + 1; t++){
+  // for ( t = COL_NAME; t > - 1; t--){
+    switch(t){
+    case COL_MARK:
+      headerCombinedLen = (headerCombinedLen + strlen(markedHeadSeg));
+      headerCombined = realloc(headerCombined, sizeof(char) * headerCombinedLen);
+      strcat(headerCombined, markedHeadSeg);
+      break;
+    case COL_ATTR:
+      headerCombinedLen = (headerCombinedLen + strlen(attrHeadSeg));
+      headerCombined = realloc(headerCombined, sizeof(char) * headerCombinedLen);
+      strcat(headerCombined, attrHeadSeg);
+      break;
+    case COL_HLINK:
+      headerCombinedLen = (headerCombinedLen + strlen(hlinkHeadSeg));
+      headerCombined = realloc(headerCombined, sizeof(char) * headerCombinedLen);
+      strcat(headerCombined, hlinkHeadSeg);
+      break;
+    case COL_OWNER:
+      if (ogavis){
+        headerCombinedLen = (headerCombinedLen + strlen(ownerHeadSeg));
+        headerCombined = realloc(headerCombined, sizeof(char) * headerCombinedLen);
+        strcat(headerCombined, ownerHeadSeg);
+      }
+      break;
+    case COL_CONTEXT:
+      if (showContext){
+        headerCombinedLen = (headerCombinedLen + strlen(contextHeadSeg));
+        headerCombined = realloc(headerCombined, sizeof(char) * headerCombinedLen);
+        strcat(headerCombined, contextHeadSeg);
+      }
+      break;
+    case COL_SIZE:
+      headerCombinedLen = (headerCombinedLen + strlen(sizeHeadSeg));
+      headerCombined = realloc(headerCombined, sizeof(char) * headerCombinedLen);
+      strcat(headerCombined, sizeHeadSeg);
+      break;
+    case COL_DATE:
+      headerCombinedLen = (headerCombinedLen + strlen(dateHeadSeg));
+      headerCombined = realloc(headerCombined, sizeof(char) * headerCombinedLen);
+      strcat(headerCombined, dateHeadSeg);
+      break;
+    case COL_NAME:
+      headerCombinedLen = (headerCombinedLen + strlen(nameHeadSeg));
+      headerCombined = realloc(headerCombined, sizeof(char) * headerCombinedLen);
+      strcat(headerCombined, nameHeadSeg);
+      break;
+    default:
+      break;
+    }
+  }
 
   // Freeing Segments
+  free(markedHeadSeg);
   free(attrHeadSeg);
+  free(hlinkHeadSeg);
   free(ownerHeadSeg);
   free(contextHeadSeg);
   free(sizeHeadSeg);
   free(dateHeadSeg);
-  // free(nameHeadSeg);
+  free(nameHeadSeg);
 
-  free(padCharHeadAttrs);
-  free(padCharHeadOG);
-  free(padCharHeadContext);
-  free(padCharHeadSize);
-  free(padCharHeadDT);
+  // free(padCharHeadAttrs);
+  // free(padCharHeadOG);
+  // free(padCharHeadContext);
+  // free(padCharHeadSize);
+  // free(padCharHeadDT);
 
   if ( danger ) {
     setColors(DANGER_PAIR);
@@ -2366,12 +2425,14 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
     setColors(HEADING_PAIR);
   }
 
-  headerpos = 4 - hpos;
+  // headerpos = 4 - hpos;
 
   if (markedinfo == 1 || (markedinfo == 2 && (CheckMarked(ob) > 0))){
-    printLine (4, headerpos, headings);
+    // printLine (4, headerpos, headings);
+    printLine (4, (hpos - 1), headerCombined);
   } else {
-    printLine (3, headerpos, headings);
+    // printLine (3, headerpos, headings);
+    printLine (3, (hpos - 1), headerCombined);
   }
   setColors(COMMAND_PAIR);
   free(susedString);
