@@ -130,6 +130,9 @@ history *hs;
 
 time_t currenttime;
 
+int segOrder[8] = {COL_MARK, COL_ATTR, COL_HLINK, COL_OWNER, COL_CONTEXT, COL_SIZE, COL_DATE, COL_NAME};
+// int segOrder[8] = {COL_MARK, COL_NAME, COL_SIZE, COL_DATE, COL_ATTR}; // Emulating NET-DF-EDIT's XENIX layout
+
 extern DIR *folder;
 
 extern int messageBreak;
@@ -743,7 +746,7 @@ char *writeSegment(int segLen, char *text, int align){
 
 void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorlen, int sizelen, int majorlen, int minorlen, int datelen, int namelen, int contextlen, int selected, int listref, int topref, results* ob){
 
-  int i, t;
+  int i, n, t;
 
   char marked[2];
   // wchar_t *entryMeta  = malloc(sizeof(wchar_t) + 1);
@@ -1078,9 +1081,8 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
     setColors(DISPLAY_PAIR);
   }
 
-  // Temporary ordering by simple count
-  for ( t = COL_MARK; t < COL_NAME + 1; t++){
-  // for ( t = COL_NAME; t > - 1; t--){
+  for ( n = 0; n < 8; n++){
+    t = segOrder[n];
     switch(t){
     case COL_MARK:
       printSegment = 1;
@@ -2102,7 +2104,7 @@ results* reorder_ob(results* ob, char *order){
 
 void display_dir(char *pwd, results* ob, int topfileref, int selected){
 
-  int t;
+  int i, n, t;
   size_t list_count = 0;
   int count = totalfilecount;
   int printSelect = 0;
@@ -2111,12 +2113,13 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   char *headings = malloc(sizeof(char) + 1);
   size_t sizeHeaderLen;
   size_t headingsLen;
-  int i, padIntHeadOG, padIntHeadContext, padIntHeadSize, padIntHeadDT;
+  int padIntHeadOG, padIntHeadContext, padIntHeadSize, padIntHeadDT;
   int headerpos, displaypos;
   char *susedString, *savailableString;
   wchar_t *pwdPrint = malloc(sizeof(wchar_t) + 1);
   size_t pwdPrintSize;
-  char *markedInfoLine, *padCharHeadAttrs, *padCharHeadOG, *padCharHeadContext, *padCharHeadSize, *padCharHeadDT;
+  char *markedInfoLine;
+  // char *padCharHeadAttrs, *padCharHeadOG, *padCharHeadContext, *padCharHeadSize, *padCharHeadDT;
   char *headerCombined = malloc(sizeof(char) + 1);
   int headerCombinedLen = 1;
   char *markedHeadSeg, *attrHeadSeg, *hlinkHeadSeg, *ownerHeadSeg, *contextHeadSeg, *sizeHeadSeg, *dateHeadSeg, *nameHeadSeg;
@@ -2330,13 +2333,11 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   contextHeadSeg = writeSegment(contextSegmentLen, headContext, LEFT);
   sizeHeadSeg = writeSegment(sizeSegmentLen, headSize, LEFT);
   dateHeadSeg = writeSegment(dateSegmentLen, headDT, LEFT);
-  nameHeadSeg = writeSegment(nameSegmentDataLen, headName, LEFT);
+  nameHeadSeg = writeSegment((nameSegmentDataLen - 1), headName, LEFT);
 
-  // TO-DO - Populate combined header
-  // Temporary ordering by simple count
   sprintf(headerCombined, "");
-  for ( t = COL_MARK; t < COL_NAME + 1; t++){
-  // for ( t = COL_NAME; t > - 1; t--){
+  for ( n = 0; n < 8; n++){
+    t = segOrder[n];
     switch(t){
     case COL_MARK:
       headerCombinedLen = (headerCombinedLen + strlen(markedHeadSeg));
@@ -2431,10 +2432,10 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
 
   if (markedinfo == 1 || (markedinfo == 2 && (CheckMarked(ob) > 0))){
     // printLine (4, headerpos, headings);
-    printLine (4, (hpos - 1), headerCombined);
+    printLine (4, (-1 - hpos), headerCombined);
   } else {
     // printLine (3, headerpos, headings);
-    printLine (3, (hpos - 1), headerCombined);
+    printLine (3, (-1 - hpos), headerCombined);
   }
   setColors(COMMAND_PAIR);
   free(susedString);
