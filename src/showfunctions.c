@@ -2333,6 +2333,7 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
 
   // TO-DO - Populate combined header
   // Temporary ordering by simple count
+  sprintf(headerCombined, "");
   for ( t = COL_MARK; t < COL_NAME + 1; t++){
   // for ( t = COL_NAME; t > - 1; t--){
     switch(t){
