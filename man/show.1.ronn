@@ -585,7 +585,7 @@ DF-SHOW is designed to be run as a non privileged user, and obeys restrictions s
 Written by Robert Ian Hawdon.
 
 ## COPYRIGHT
-Copyright (C) 2019 License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.
+Copyright (C) 2020 License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.
 
 This program comes with ABSOLUTELY NO WARRANTY. This is free software, and you are welcome to redistribute it under certain conditions.
 
