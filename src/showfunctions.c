@@ -712,7 +712,7 @@ wchar_t *wWriteSegment(int segLen, wchar_t *text, int align){
   textLen = wcslen(text);
   paddingLen = segLen - textLen;
 
-  segment = malloc(sizeof(wchar_t) * (segLen + 2));
+  segment = calloc((segLen + 2), sizeof(wchar_t));
 
   if (align == LEFT){
     padding = genPadding(paddingLen);
@@ -734,9 +734,9 @@ char *writeSegment(int segLen, char *text, int align){
   char *segment;
   wchar_t *inputText;
   wchar_t *wWriteSegmentString;
-  inputText = malloc(sizeof(wchar_t) * (strlen(text) + 1));
+  inputText = calloc((strlen(text) + 1), sizeof(wchar_t));
   swprintf(inputText, (strlen(text) + 1), L"%s", text);
-  segment = malloc(sizeof(char) * (segLen + 2));
+  segment = calloc((segLen + 2), sizeof(char));
   wWriteSegmentString = wWriteSegment(segLen, inputText, align);
   free(inputText);
   sprintf(segment, "%ls", wWriteSegmentString);
