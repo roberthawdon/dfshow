@@ -153,6 +153,7 @@ extern int useEnvPager;
 extern int showProcesses;
 extern int exitCode;
 extern int showContext;
+extern int oneLine;
 
 extern char sortmode[9];
 
@@ -1871,6 +1872,7 @@ char *markedDisplay(results* ob)
 results* get_dir(char *pwd)
 {
   //sused = GetUsedSpace(pwd); // Original DF-EDIT added the sizes to show what was used in that directory, rather than the whole disk.
+  int i;
   size_t count = 0;
   size_t file_count = 0;
   size_t dirErrorSize = 0;
@@ -1903,6 +1905,15 @@ results* get_dir(char *pwd)
   savailable = GetAvailableSpace(pwd);
   sused = 0; // Resetting used value
   axDisplay = 0;
+
+
+  if (oneLine){
+    segOrder[0] = COL_MARK;
+    segOrder[1] = COL_NAME;
+    for (i = 2; i < 8; i++){
+      segOrder[i] = -1;
+    }
+  }
 
   //if (stat(path, &sb) == 0 && S_ISDIR(sb.st_mode)){
   if (check_object(path) == 1){

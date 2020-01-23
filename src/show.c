@@ -55,6 +55,7 @@ int markedinfo = 0;
 int useEnvPager = 0;
 int launchThemeEditor = 0;
 int launchSettingsMenu = 0;
+int oneLine = 0;
 
 
 int plugins = 0; // Not yet implemented
@@ -668,6 +669,7 @@ Options shared with ls:\n\
   -t                           sort by modification time, newest first\n\
   -U                           do not sort; lists objects in directory order\n\
   -Z, --context                show security context of each file, if any\n\
+  -1                           only show file name, one per line\n\
       --help                   displays help message, then exits\n\
       --version                displays version, then exits\n"), stdout);
   fputs (("\n\
@@ -757,7 +759,7 @@ int main(int argc, char *argv[])
         };
       int option_index = 0;
 
-      c = getopt_long(argc, argv, "aABfgGhlrStUZ", long_options, &option_index);
+      c = getopt_long(argc, argv, "aABfgGhlrStUZ1", long_options, &option_index);
 
       if ( c == -1 ){
         break;
@@ -898,6 +900,9 @@ Valid arguments are:\n\
       break;
     case 'Z':
       showContext = 1;
+      break;
+    case '1':
+      oneLine = 1;
       break;
     default:
       // abort();
