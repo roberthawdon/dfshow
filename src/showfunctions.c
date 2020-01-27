@@ -130,8 +130,8 @@ history *hs;
 
 time_t currenttime;
 
-int segOrder[8] = {COL_MARK, COL_ATTR, COL_HLINK, COL_OWNER, COL_CONTEXT, COL_SIZE, COL_DATE, COL_NAME};
-// int segOrder[8] = {COL_MARK, COL_NAME, COL_SIZE, COL_DATE, COL_ATTR}; // Emulating NET-DF-EDIT's XENIX layout
+int segOrder[] = {COL_MARK, COL_ATTR, COL_HLINK, COL_OWNER, COL_CONTEXT, COL_SIZE, COL_DATE, COL_NAME};
+// int segOrder[] = {COL_MARK, COL_NAME, COL_SIZE, COL_DATE, COL_ATTR}; // Emulating NET-DF-EDIT's XENIX layout
 
 extern DIR *folder;
 
@@ -1082,7 +1082,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
     setColors(DISPLAY_PAIR);
   }
 
-  for ( n = 0; n < 8; n++){
+  for ( n = 0; n < (sizeof(segOrder) / sizeof(segOrder[0])); n++){
     t = segOrder[n];
     switch(t){
     case COL_MARK:
@@ -1922,7 +1922,7 @@ results* get_dir(char *pwd)
   if (oneLine){
     segOrder[0] = COL_MARK;
     segOrder[1] = COL_NAME;
-    for (i = 2; i < 8; i++){
+    for (i = 2; i < (sizeof(segOrder) / sizeof(segOrder[0])); i++){
       segOrder[i] = -1;
     }
   }
@@ -2360,7 +2360,7 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   nameHeadSeg = writeSegment(nameSegmentDataLen, headName, LEFT);
 
   sprintf(headerCombined, "");
-  for ( n = 0; n < 8; n++){
+  for ( n = 0; n < (sizeof(segOrder) / sizeof(segOrder[0])); n++){
     t = segOrder[n];
     switch(t){
     case COL_MARK:
