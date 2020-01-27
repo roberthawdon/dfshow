@@ -1040,10 +1040,10 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
     nameCombineLen = wcslen(nameSegmentData[0].name);
   }
   if (nameSegLen > nameminlen){
-    nameFullSegPadding = nameSegLen - nameCombineLen;
+    nameFullSegPadding = nameSegLen - nameCombineLen + 1;
     nameSegmentDataLen = nameSegLen;
   } else {
-    nameFullSegPadding = nameminlen - nameCombineLen;
+    nameFullSegPadding = nameminlen - nameCombineLen + 1;
     nameSegmentDataLen = nameminlen;
   }
   if ( nameFullSegPadding < 1 ){
@@ -1461,52 +1461,57 @@ int seglength(const void *seg, char *segname, int LEN)
 
   size_t i;
 
-  if (!strcmp(segname, "owner")) {
-    longest = strlen(dfseg[0].owner);
-  }
-  else if (!strcmp(segname, "group")) {
-    longest = strlen(dfseg[0].group);
-  }
-  else if (!strcmp(segname, "author")) {
-    longest = strlen(dfseg[0].author);
-  }
-  else if (!strcmp(segname, "hlink")) {
-    sprintf(hlinkstr, "%d", *dfseg[0].hlink);
-    longest = strlen(hlinkstr);
-  }
-  else if (!strcmp(segname, "size")) {
-    if (human){
-      readableSize(dfseg[0].size, sizestr, si);
-    } else {
-      sprintf(sizestr, "%lu", dfseg[0].size);
-    }
-    longest = strlen(sizestr);
-  }
-  else if (!strcmp(segname, "major")) {
-    sprintf(majorstr, "%d", dfseg[0].major);
-    longest = strlen(majorstr);
-  }
-  else if (!strcmp(segname, "minor")) {
-    sprintf(minorstr, "%d", dfseg[0].minor);
-    longest = strlen(minorstr);
-  }
-  else if (!strcmp(segname, "datedisplay")) {
-    longest = wcslen(dfseg[0].datedisplay);
-  }
-  else if (!strcmp(segname, "name")) {
-    longest = strlen(dfseg[0].name);
-  }
-  else if (!strcmp(segname, "slink")) {
-    longest = strlen(dfseg[0].slink);
-  }
-  else if (!strcmp(segname, "contextText")) {
-    longest = strlen(dfseg[0].contextText);
-  }
-  else {
-    longest = 0;
-  }
+  // This seems unnessessary, what was I thinking?
 
-  for(i = 1; i < LEN; i++)
+
+  // if (!strcmp(segname, "owner")) {
+  //   longest = strlen(dfseg[0].owner);
+  // }
+  // else if (!strcmp(segname, "group")) {
+  //   longest = strlen(dfseg[0].group);
+  // }
+  // else if (!strcmp(segname, "author")) {
+  //   longest = strlen(dfseg[0].author);
+  // }
+  // else if (!strcmp(segname, "hlink")) {
+  //   sprintf(hlinkstr, "%d", *dfseg[0].hlink);
+  //   longest = strlen(hlinkstr);
+  // }
+  // else if (!strcmp(segname, "size")) {
+  //   if (human){
+  //     readableSize(dfseg[0].size, sizestr, si);
+  //   } else {
+  //     sprintf(sizestr, "%lu", dfseg[0].size);
+  //   }
+  //   longest = strlen(sizestr);
+  // }
+  // else if (!strcmp(segname, "major")) {
+  //   sprintf(majorstr, "%d", dfseg[0].major);
+  //   longest = strlen(majorstr);
+  // }
+  // else if (!strcmp(segname, "minor")) {
+  //   sprintf(minorstr, "%d", dfseg[0].minor);
+  //   longest = strlen(minorstr);
+  // }
+  // else if (!strcmp(segname, "datedisplay")) {
+  //   longest = wcslen(dfseg[0].datedisplay);
+  // }
+  // else if (!strcmp(segname, "name")) {
+  //   longest = strlen(dfseg[0].name);
+  // }
+  // else if (!strcmp(segname, "slink")) {
+  //   longest = strlen(dfseg[0].slink);
+  // }
+  // else if (!strcmp(segname, "contextText")) {
+  //   longest = strlen(dfseg[0].contextText);
+  // }
+  // else {
+  //   longest = 0;
+  // }
+
+  longest = 0;
+
+  for(i = 0; i < LEN; i++)
     {
       if (!strcmp(segname, "owner")) {
         len = strlen(dfseg[i].owner);
@@ -1548,6 +1553,13 @@ int seglength(const void *seg, char *segname, int LEN)
       }
       else if (!strcmp(segname, "contextText")) {
         len = strlen(dfseg[i].contextText);
+      }
+      else if (!strcmp(segname, "nameSegBlock")) {
+        if (strlen(dfseg[i].slink) > 0){
+          len = (strlen(dfseg[i].name) + strlen(dfseg[i].slink) + 4);
+        } else {
+          len = strlen(dfseg[i].name);
+        }
       }
       else {
         len = 0;
@@ -2087,7 +2099,8 @@ results* get_dir(char *pwd)
   slinklen = seglength(ob, "slink", count);
   contextlen = seglength(ob, "contextText", count);
 
-  nameSegLen = namelen + slinklen + 4; // The 4 is the length of " -> "
+  // nameSegLen = namelen + slinklen + 4; // The 4 is the length of " -> "
+  nameSegLen = seglength(ob, "nameSegBlock", count);
 
   free(dirError);
   free(res);
@@ -2344,7 +2357,7 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   contextHeadSeg = writeSegment(contextSegmentLen, headContext, LEFT);
   sizeHeadSeg = writeSegment(sizeSegmentLen, headSize, LEFT);
   dateHeadSeg = writeSegment(dateSegmentLen, headDT, LEFT);
-  nameHeadSeg = writeSegment((nameSegmentDataLen - 1), headName, LEFT);
+  nameHeadSeg = writeSegment(nameSegmentDataLen, headName, LEFT);
 
   sprintf(headerCombined, "");
   for ( n = 0; n < 8; n++){
