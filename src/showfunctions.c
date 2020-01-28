@@ -2352,7 +2352,7 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
 
   // sprintf(headings, "%s%s%s%s%s%s%s%s%s%s%s%s", headAttrs, padCharHeadAttrs, headOG, padCharHeadOG, headContext, padCharHeadContext, padCharHeadSize, headSize, " ", headDT, padCharHeadDT, headName);
 
-  markedHeadSeg = writeSegment(4, "", LEFT);
+  markedHeadSeg = writeSegment(3, "", LEFT);
   attrHeadSeg = writeSegment(attrSegmentLen, headAttrs, LEFT);
   hlinkHeadSeg = writeSegment(hlinkSegmentLen, "", LEFT);
   ownerHeadSeg = writeSegment(ownerSegmentLen, headOG, LEFT);
@@ -2458,10 +2458,10 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
 
   if (markedinfo == 1 || (markedinfo == 2 && (CheckMarked(ob) > 0))){
     // printLine (4, headerpos, headings);
-    printLine (4, (-1 - hpos), headerCombined);
+    printLine (4, (hpos), headerCombined);
   } else {
     // printLine (3, headerpos, headings);
-    printLine (3, (-1 - hpos), headerCombined);
+    printLine (3, (hpos), headerCombined);
   }
   setColors(COMMAND_PAIR);
   free(susedString);
