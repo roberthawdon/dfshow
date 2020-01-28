@@ -1341,10 +1341,12 @@ int SendToPager(char* object)
   char *escObject = str_replace(object, "'", "'\"'\"'");
 
   if (can_run_command("sf")){
-    setenv("DFS_THEME_OVERRIDE", "TRUE", 1);
-    page = realloc(page, (sizeof(char) * 3));
-    sprintf(page, "sf");
-    pset = 1;
+    if (!useEnvPager){
+      setenv("DFS_THEME_OVERRIDE", "TRUE", 1);
+      page = realloc(page, (sizeof(char) * 3));
+      sprintf(page, "sf");
+      pset = 1;
+    }
   } else {
     useEnvPager = 1;
   }
