@@ -2357,7 +2357,7 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   hlinkHeadSeg = writeSegment(hlinkSegmentLen, "", LEFT);
   ownerHeadSeg = writeSegment(ownerSegmentLen, headOG, LEFT);
   contextHeadSeg = writeSegment(contextSegmentLen, headContext, LEFT);
-  sizeHeadSeg = writeSegment(sizeSegmentLen, headSize, LEFT);
+  sizeHeadSeg = writeSegment(sizeSegmentLen, headSize, RIGHT);
   dateHeadSeg = writeSegment(dateSegmentLen, headDT, LEFT);
   nameHeadSeg = writeSegment(nameSegmentDataLen, headName, LEFT);
 
