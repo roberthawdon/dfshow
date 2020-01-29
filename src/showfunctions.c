@@ -2354,9 +2354,9 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
 
   // sprintf(headings, "%s%s%s%s%s%s%s%s%s%s%s%s", headAttrs, padCharHeadAttrs, headOG, padCharHeadOG, headContext, padCharHeadContext, padCharHeadSize, headSize, " ", headDT, padCharHeadDT, headName);
 
-  markedHeadSeg = writeSegment(3, "", LEFT);
+  markedHeadSeg = writeSegment(3, "", RIGHT);
   attrHeadSeg = writeSegment(attrSegmentLen, headAttrs, LEFT);
-  hlinkHeadSeg = writeSegment(hlinkSegmentLen, "", LEFT);
+  hlinkHeadSeg = writeSegment(hlinkSegmentLen, "", RIGHT);
   ownerHeadSeg = writeSegment(ownerSegmentLen, headOG, LEFT);
   contextHeadSeg = writeSegment(contextSegmentLen, headContext, LEFT);
   sizeHeadSeg = writeSegment(sizeSegmentLen, headSize, RIGHT);
