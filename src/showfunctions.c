@@ -133,6 +133,8 @@ time_t currenttime;
 int segOrder[] = {COL_MARK, COL_ATTR, COL_HLINK, COL_OWNER, COL_CONTEXT, COL_SIZE, COL_DATE, COL_NAME};
 // int segOrder[] = {COL_MARK, COL_NAME, COL_SIZE, COL_DATE, COL_ATTR}; // Emulating NET-DF-EDIT's XENIX layout
 
+int skippable = 0;
+
 extern DIR *folder;
 
 extern int messageBreak;
@@ -154,6 +156,7 @@ extern int showProcesses;
 extern int exitCode;
 extern int showContext;
 extern int oneLine;
+extern int skipToFirstFile;
 
 extern char sortmode[9];
 
@@ -622,7 +625,11 @@ int findResultByName(results *ob, char *name)
     i++;
   }
   //If there's no match, we'll fall back to the top item in the list
-  return 0;
+  if (skipToFirstFile == 1 && skippable == 1){
+    return 2;
+  } else {
+    return 0;
+  }
 }
 
 char *dateString(time_t date, char *style)
@@ -2113,6 +2120,8 @@ results* reorder_ob(results* ob, char *order){
   //mvprintw(2,66,"%i",*ob[0].sys);
   int count = totalfilecount;
 
+  skippable = 0;
+
   if ( !strcmp(order, "name")){
     qsort(ob, count, sizeof(results), cmp_dflist_name);
   }
@@ -2123,6 +2132,10 @@ results* reorder_ob(results* ob, char *order){
   else if ( !strcmp(order, "size")){
     qsort(ob, count, sizeof(results), cmp_dflist_name);
     qsort(ob, count, sizeof(results), cmp_dflist_size);
+  }
+
+  if (!strcmp(ob[0].name, ".") && !strcmp(ob[1].name, "..")){
+    skippable = 1;
   }
 
   return ob;

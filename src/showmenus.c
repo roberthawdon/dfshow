@@ -81,6 +81,9 @@ extern int markall;
 extern int viewMode;
 extern int markedinfo;
 extern int automark;
+extern int skipToFirstFile;
+
+extern int skippable;
 
 extern int plugins;
 
@@ -328,6 +331,7 @@ void refreshDirectory(char *sortmode, int origtopfileref, int origselected, int 
       }
     } else {
       selected = findResultByName(ob, currentselectname);
+
     }
   } else {
     strcpy(currentpwd, hs[historyref - 2].path);
@@ -391,7 +395,11 @@ void show_directory_input()
         set_history(currentpwd, objectWild, ob[selected].name, topfileref, selected);
       }
       topfileref = 0;
-      selected = 0;
+      if (skipToFirstFile == 1 && skippable == 1){
+        selected = 2;
+      } else {
+        selected = 0;
+      }
       chdir(currentpwd);
       refreshDirectory(sortmode, 0, selected, 0);
     } else {
@@ -1566,7 +1574,11 @@ void directory_view_menu_inputs()
               }
               set_history(chpwd, objectWild, ob[selected].name, topfileref, selected);
               topfileref = 0;
-              selected = 0;
+              if (skipToFirstFile == 1 && skippable == 1){
+                selected = 2;
+              } else {
+                selected = 0;
+              }
               strcpy(currentpwd, chpwd);
               chdir(currentpwd);
               refreshDirectory(sortmode, topfileref, selected, 0);
@@ -1578,7 +1590,11 @@ void directory_view_menu_inputs()
               objectWild = "";
               set_history(chpwd, objectWild, ob[selected].name, topfileref, selected);
               topfileref = 0;
-              selected = 0;
+              if (skipToFirstFile == 1 && skippable == 1){
+                selected = 2;
+              } else {
+                selected = 0;
+              }
               strcpy(currentpwd, chpwd);
               chdir(currentpwd);
               refreshDirectory(sortmode, topfileref, selected, 0);

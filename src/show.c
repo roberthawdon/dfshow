@@ -56,6 +56,7 @@ int useEnvPager = 0;
 int launchThemeEditor = 0;
 int launchSettingsMenu = 0;
 int oneLine = 0;
+int skipToFirstFile = 0;
 
 
 int plugins = 0; // Not yet implemented
@@ -71,6 +72,8 @@ int showContext = 0;
 char *objectWild;
 
 results *ob;
+
+extern int skippable;
 
 extern int settingsPos;
 extern int settingsBinPos;
@@ -529,7 +532,14 @@ int directory_view(char * currentpwd)
   freeResults(ob, totalfilecount);
   ob = get_dir(currentpwd);
   reorder_ob(ob, sortmode);
-  display_dir(currentpwd, ob, topfileref, 0);
+
+  if (skipToFirstFile == 1 && skippable == 1){
+    selected = 2;
+  } else {
+    selected = 0;
+  }
+
+  display_dir(currentpwd, ob, topfileref, selected);
 
   // function_key_menu();
 
