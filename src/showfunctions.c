@@ -2291,12 +2291,14 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
     }
   }
 
-  if (slinklen == 0){
-    maxdisplaywidth = charPos + namelen;
-  } else {
-    // maxdisplaywidth = entryMetaLen + namelen + slinklen + 4;
-    maxdisplaywidth = charPos + nameAndSLink;
-  }
+  maxdisplaywidth = charPos;
+
+  // if (slinklen == 0){
+  //   maxdisplaywidth = charPos + namelen;
+  // } else {
+  //   // maxdisplaywidth = entryMetaLen + namelen + slinklen + 4;
+  //   maxdisplaywidth = charPos + nameAndSLink;
+  // }
 
   //mvprintw(0, 66, "%d %d", historyref, sessionhistory);
 
