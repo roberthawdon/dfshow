@@ -2458,10 +2458,10 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
 
   if (markedinfo == 1 || (markedinfo == 2 && (CheckMarked(ob) > 0))){
     // printLine (4, headerpos, headings);
-    printLine (4, (hpos), headerCombined);
+    printLine (4, (0 - hpos), headerCombined);
   } else {
     // printLine (3, headerpos, headings);
-    printLine (3, (hpos), headerCombined);
+    printLine (3, (0 - hpos), headerCombined);
   }
   setColors(COMMAND_PAIR);
   free(susedString);
