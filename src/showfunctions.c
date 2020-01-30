@@ -2134,8 +2134,10 @@ results* reorder_ob(results* ob, char *order){
     qsort(ob, count, sizeof(results), cmp_dflist_size);
   }
 
-  if (!strcmp(ob[0].name, ".") && !strcmp(ob[1].name, "..")){
-    skippable = 1;
+  if (count > 2){
+    if (!strcmp(ob[0].name, ".") && !strcmp(ob[1].name, "..")){
+      skippable = 1;
+    }
   }
 
   return ob;
