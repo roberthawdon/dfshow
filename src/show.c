@@ -226,6 +226,13 @@ void readConfig(const char * confFile)
           showContext = 1;
         }
       }
+      // Check Skip To First Object
+      setting = config_setting_get_member(group, "skip-to-first");
+      if (setting){
+        if (config_setting_get_int(setting)){
+          skipToFirstFile = 1;
+        }
+      }
     }
     // Check owner column
     group = config_lookup(&cfg, "show.owner");
@@ -296,6 +303,8 @@ void saveConfig(const char * confFile, settingIndex **settings, t1CharValues **v
         config_setting_set_int(setting, enterAsShow);
       } else if (!strcmp((*settings)[i].refLabel, "context")){
         config_setting_set_int(setting, showContext);
+      } else if (!strcmp((*settings)[i].refLabel, "skip-to-first")){
+        config_setting_set_int(setting, skipToFirstFile);
       }
     } else if ((*settings)[i].type == 1){
       //
@@ -353,6 +362,8 @@ void applySettings(settingIndex **settings, t1CharValues **values, int items, in
       markedinfo = (*settings)[i].intSetting;
     } else if (!strcmp((*settings)[i].refLabel, "context")){
       showContext = (*settings)[i].intSetting;
+    } else if (!strcmp((*settings)[i].refLabel, "skip-to-first")){
+      skipToFirstFile = (*settings)[i].intSetting;
     } else if (!strcmp((*settings)[i].refLabel, "sortmode")){
       for (j = 0; j < valuesCount; j++){
         if (!strcmp((*values)[j].refLabel, "sortmode") && ((*values)[j].index == (*settings)[i].intSetting)){
@@ -429,6 +440,7 @@ void settingsMenuView(){
   importSetting(&settingIndex, &items, "show-on-enter",  L"Enter key acts like Show", 0, enterAsShow, -1, 0);
   importSetting(&settingIndex, &items, "owner",          L"Owner Column", 2, ogavis, ownerCount, 0);
   importSetting(&settingIndex, &items, "context",        L"Show security context of files", 0, showContext, -1, 0);
+  importSetting(&settingIndex, &items, "skip-to-first",  L"Skip to the first object", 0, skipToFirstFile, -1, 0);
 
   populateBool(&binValues, "owner", ogavis, binValuesCount);
 
