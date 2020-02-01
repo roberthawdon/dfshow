@@ -726,6 +726,11 @@ void make_directory_input()
       }
     }
     // curs_set(FALSE);
+  testSlash:
+    if (check_last_char(currentpwd, "/") && strcmp(currentpwd, "/")){
+      currentpwd[strlen(currentpwd) - 1] = '\0';
+      goto testSlash;
+    }
     refreshDirectory(sortmode, 0, selected, 0);
   }
   directory_view_menu_inputs();
@@ -868,6 +873,11 @@ void touch_file_input()
         sprintf(errmessage, "Error: %s", strerror(errno));
         topLineMessage(errmessage);
       }
+    }
+  testSlash:
+    if (check_last_char(currentpwd, "/") && strcmp(currentpwd, "/")){
+      currentpwd[strlen(currentpwd) - 1] = '\0';
+      goto testSlash;
     }
     refreshDirectory(sortmode, 0, selected, 0);
   }
