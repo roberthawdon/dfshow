@@ -712,7 +712,8 @@ Options specific to show:\n\
                                command\n\
       --running                display number of parent show processes\n\
       --settings-menu          launch settings menu\n\
-      --edit-themes            launchs directly into the theme editor\n"), stdout);
+      --edit-themes            launchs directly into the theme editor\n\
+      --skip-to-first          skips naviation items if at the top of list\n"), stdout);
   fputs (("\n\
 The THEME argument can be:\n"), stdout);
   listThemes();
@@ -777,6 +778,7 @@ int main(int argc, char *argv[])
          {"edit-themes",    no_argument,       0, GETOPT_THEMEEDIT_CHAR},
          {"settings-menu",  no_argument,       0, GETOPT_OPTIONSMENU_CHAR},
          {"contect",        no_argument,       0, 'Z'},
+         {"skip-to-first",  no_argument,       0, GETOPT_SKIPTOFIRST_CHAR},
          {0, 0, 0, 0}
         };
       int option_index = 0;
@@ -925,6 +927,9 @@ Valid arguments are:\n\
       break;
     case '1':
       oneLine = 1;
+      break;
+    case GETOPT_SKIPTOFIRST_CHAR:
+      skipToFirstFile = 1;
       break;
     default:
       // abort();
