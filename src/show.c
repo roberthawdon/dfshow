@@ -69,6 +69,8 @@ int showProcesses;
 
 int showContext = 0;
 
+int showXAttrs = 0;
+
 char *objectWild;
 
 results *ob;
@@ -783,7 +785,7 @@ int main(int argc, char *argv[])
         };
       int option_index = 0;
 
-      c = getopt_long(argc, argv, "aABfgGhlrStUZ1", long_options, &option_index);
+      c = getopt_long(argc, argv, "aABfgGhlrStUZ1@", long_options, &option_index);
 
       if ( c == -1 ){
         break;
@@ -930,6 +932,9 @@ Valid arguments are:\n\
       break;
     case GETOPT_SKIPTOFIRST_CHAR:
       skipToFirstFile = 1;
+      break;
+    case '@':
+      showXAttrs = 1;
       break;
     default:
       // abort();

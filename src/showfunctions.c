@@ -157,6 +157,7 @@ extern int exitCode;
 extern int showContext;
 extern int oneLine;
 extern int skipToFirstFile;
+extern int showXAttrs;
 
 extern char sortmode[9];
 
@@ -181,6 +182,7 @@ void freeResults(results *ob, int count)
     free(ob[i].slink);
     free(ob[i].datedisplay);
     free(ob[i].contextText);
+    free(ob[i].xattrs);
   }
   free(ob);
 }
@@ -196,6 +198,16 @@ void freeHistory(history *hs, int count)
   free(hs);
 }
 
+void freeXAttrs(xattrList *xa, int count)
+{
+  int i;
+  for (i = 0; i < (count - 1); i++){
+    free(xa[i].name);
+    free(xa[i].xattr);
+  }
+  free(xa);
+}
+
 int checkRunningEnv(){
   int i;
   if (!getenv("DFS_RUNNING")){
@@ -204,6 +216,55 @@ int checkRunningEnv(){
     i = atoi(getenv("DFS_RUNNING"));
   }
   return i;
+}
+
+int processXAttrs(xattrList **xa, char *name, unsigned char *xattrs, size_t xattrLen, int pos)
+{
+  char *xattrTmp;
+  int i, n;
+  bool reset = false; //To-Do, swap all 0/1 ints to bools
+  xattrList *tmp;
+
+
+
+
+  xattrTmp = malloc(sizeof(char));
+
+  for (i = 0; i < xattrLen + 1; i++){
+    if (i == 0 || reset == true){
+      n = 0;
+      free(xattrTmp);
+      xattrTmp = calloc(xattrLen, sizeof(char));
+      if (pos == 0){
+        tmp = malloc(sizeof(xattrList) * 2);
+      } else {
+        tmp = realloc(*xa, (pos + 1) * (sizeof(xattrList) + 1) );
+      }
+      if (tmp){
+        *xa = tmp;
+      }
+      // xa = realloc(xa, (pos + 1) * sizeof(xattrList));
+      reset = false;
+    }
+    if (xattrs[i] != '\0'){
+      xattrTmp[n] = xattrs[i];
+      n++;
+    }
+    if (xattrs[i] == '\0' && xattrTmp[0] != '\0'){
+      (*xa)[pos].name = calloc(strlen(name), sizeof(char));
+      strcpy((*xa)[pos].name, name);
+      (*xa)[pos].xattr = calloc(strlen(xattrTmp), sizeof(char));
+      strcpy((*xa)[pos].xattr, xattrTmp);
+      (*xa)[pos].xattrSize = strlen((*xa)[pos].xattr);
+      // endwin();
+      // printf("%s - %s\n", (*xa)[pos].name, (*xa)[pos].xattr);
+      reset = true;
+      pos++;
+    }
+  }
+  free(xattrTmp);
+
+  return pos;
 }
 
 char *getRelativePath(char *file, char *target)
@@ -501,7 +562,7 @@ int writePermsEntry(char * perms, mode_t mode, int axFlag, int sLinkCheck){
 
 }
 
-void writeResultStruct(results* ob, const char * filename, struct stat buffer, int count, acl_t acl, ssize_t xattr, int seLinuxCon, char * contextText){
+void writeResultStruct(results* ob, const char * filename, struct stat buffer, int count, acl_t acl, ssize_t xattr, int seLinuxCon, char * contextText, char * xattrs){
   char perms[12] = {0};
   struct group *gr;
   struct passwd *pw;
@@ -509,6 +570,7 @@ void writeResultStruct(results* ob, const char * filename, struct stat buffer, i
   char *filedate;
   ssize_t cslinklen = 0, datedisplayLen = 0;
   int axFlag = 0;
+  int i;
 
   ob[count].acl = acl;
   ob[count].xattr = xattr;
@@ -523,6 +585,12 @@ void writeResultStruct(results* ob, const char * filename, struct stat buffer, i
 
   if (seLinuxCon > 0){
     axFlag = ACL_SELINUX;
+  }
+
+  ob[count].xattrs = malloc(sizeof(char) * xattr);
+  // strcpy(ob[count].xattrs, xattrs);
+  for ( i = 0; i < xattr; i++ ){
+    ob[count].xattrs[i] = xattrs[i];
   }
 
   writePermsEntry(perms, buffer.st_mode, axFlag, 0);
@@ -1066,6 +1134,18 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   swprintf(entryName, (entryNameLen + 1), L"%s", ob[currentitem].name);
 
   entryNameLen = wcslen(entryName);
+
+  // KekWhistle
+  // endwin();
+  // printf("%s\n        ", ob[currentitem].name);
+  // for (n = 0; n < ob[currentitem].xattr; n++){
+  //   if (ob[currentitem].xattrs[n] == '\0'){
+  //     printf("\n        ");
+  //   } else {
+  //     printf("%c", ob[currentitem].xattrs[n]);
+  //   }
+  // }
+  // printf("\n");
 
   if ( !strcmp(ob[currentitem].slink, "") ){
     entrySLinkLen = 1;
@@ -1910,6 +1990,8 @@ results* get_dir(char *pwd)
   acl_t acl;
   acl_entry_t dummy;
   ssize_t xattr;
+  char *xattrs;
+  unsigned char *uXattrs;
   int seLinuxCon = 0;
   #ifdef HAVE_SELINUX_SELINUX_H
     security_context_t context;
@@ -1917,6 +1999,8 @@ results* get_dir(char *pwd)
     char *contextText;
 
   results *ob = malloc(sizeof(results)); // Allocating a tiny amount of memory. We'll expand this on each file found.
+  xattrList *xa = malloc(sizeof(xattrList));
+  int xattrPos = 0;
 
   fetch:
 
@@ -1987,7 +2071,20 @@ results* get_dir(char *pwd)
               if (xattr < 0){
                 xattr = 0;
               }
+              xattrs = malloc(sizeof(char) * xattr);
+              listxattr(res->d_name, xattrs, xattr, XATTR_NOFOLLOW);
+              uXattrs = calloc(xattr, sizeof(unsigned char));
+              memcpy(uXattrs, xattrs, xattr);
+              // endwin();
+              // printf("%s\n", uXattrs);
+              // xa = realloc(xa, (count +1) * sizeof(xattrList));
+              xattrPos = processXAttrs(&xa, res->d_name, uXattrs, xattr, xattrPos);
+              free(uXattrs);
+              // endwin();
+              // printf("%s - %zu - %i\n", res->d_name, count, xattrPos);
             #else
+              xattrs = malloc(sizeof(char) * 1);
+              strcpy(xattrs, "");
               acl = acl_get_file(res->d_name, ACL_TYPE_ACCESS);
               if (errno == ENODATA) {
                 acl_free(acl);
@@ -2013,11 +2110,12 @@ results* get_dir(char *pwd)
               sprintf(contextText, "?");
             }
 
-            writeResultStruct(ob, res->d_name, buffer, count, acl, xattr, seLinuxCon, contextText);
+            writeResultStruct(ob, res->d_name, buffer, count, acl, xattr, seLinuxCon, contextText, xattrs);
 
             acl_free(acl);
 
             free(contextText);
+            free(xattrs);
 
             sused = sused + buffer.st_size; // Adding the size values
 

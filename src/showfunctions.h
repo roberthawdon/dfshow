@@ -44,6 +44,7 @@ typedef struct {
   char *name;
   char *slink;
   int color;
+  char *xattrs;
 } results;
 
 typedef struct {
@@ -55,6 +56,12 @@ typedef struct {
 } history;
 
 typedef struct {
+  char *name;
+  char *xattr;
+  size_t xattrSize;
+} xattrList;
+
+typedef struct {
   wchar_t *name;
   int linkStat;
   wchar_t *link;
@@ -64,6 +71,8 @@ typedef struct {
 int checkRunningEnv();
 void freeResults(results *ob, int count);
 void freeHistory(history *hs, int count);
+void freeXAttrs(xattrList *xa, int count);
+int processXAttrs(xattrList **xa, char *name, unsigned char *xattrs, size_t xattrLen, int pos);
 char *getRelativePath(char *file, char *target);
 int wildcard(const char *value, char *wcard);
 int findResultByName(results *ob, char *name);
@@ -99,7 +108,7 @@ char *genPadding(int num_of_spaces);
 void resizeDisplayDir(results* ob);
 char *readableSize(double size, char *buf, int si);
 int writePermsEntry(char * perms, mode_t mode, int axFlag, int sLinkCheck);
-void writeResultStruct(results* ob, const char * filename, struct stat buffer, int count, acl_t acl, ssize_t xattr, int seLinuxCon, char * contextText);
+void writeResultStruct(results* ob, const char * filename, struct stat buffer, int count, acl_t acl, ssize_t xattr, int seLinuxCon, char * contextText, char * xattrs);
 char *markedDisplay(results* ob);
 int huntFile(const char * file, const char * search, int charcase);
 
