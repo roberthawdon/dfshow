@@ -109,6 +109,9 @@ extern wchar_t *modifyMenuLabel;
 extern wchar_t *sortMenuLabel;
 extern wchar_t *linkMenuLabel;
 
+extern xattrList *xa;
+extern int xattrPos;
+
 int setMarked(char* markedinput);
 int checkStyle(char* styleinput);
 
@@ -544,6 +547,7 @@ int directory_view(char * currentpwd)
 
   set_history(currentpwd, "", "", 0, 0);
   freeResults(ob, totalfilecount);
+  freeXAttrs(xa, xattrPos);
   ob = get_dir(currentpwd);
   reorder_ob(ob, sortmode);
 
@@ -565,6 +569,7 @@ int directory_view(char * currentpwd)
   directory_view_menu_inputs();
 
   freeResults(ob, totalfilecount); //freeing memory
+  freeXAttrs(xa, xattrPos);
   return 0;
 }
 

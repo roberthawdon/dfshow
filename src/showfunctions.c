@@ -135,6 +135,9 @@ int segOrder[] = {COL_MARK, COL_ATTR, COL_HLINK, COL_OWNER, COL_CONTEXT, COL_SIZ
 
 int skippable = 0;
 
+xattrList *xa;
+int xattrPos;
+
 extern DIR *folder;
 
 extern int messageBreak;
@@ -1999,8 +2002,10 @@ results* get_dir(char *pwd)
     char *contextText;
 
   results *ob = malloc(sizeof(results)); // Allocating a tiny amount of memory. We'll expand this on each file found.
-  xattrList *xa = malloc(sizeof(xattrList));
-  int xattrPos = 0;
+  // xattrList *xa = malloc(sizeof(xattrList));
+  // int xattrPos = 0;
+  xa = malloc(sizeof(xattrList));
+  xattrPos = 0;
 
   fetch:
 
