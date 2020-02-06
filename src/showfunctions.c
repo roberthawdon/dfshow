@@ -228,9 +228,6 @@ int processXAttrs(xattrList **xa, char *name, unsigned char *xattrs, size_t xatt
   bool reset = false; //To-Do, swap all 0/1 ints to bools
   xattrList *tmp;
 
-
-
-
   xattrTmp = malloc(sizeof(char));
 
   for (i = 0; i < xattrLen + 1; i++){
@@ -246,7 +243,6 @@ int processXAttrs(xattrList **xa, char *name, unsigned char *xattrs, size_t xatt
       if (tmp){
         *xa = tmp;
       }
-      // xa = realloc(xa, (pos + 1) * sizeof(xattrList));
       reset = false;
     }
     if (xattrs[i] != '\0'){
@@ -254,9 +250,9 @@ int processXAttrs(xattrList **xa, char *name, unsigned char *xattrs, size_t xatt
       n++;
     }
     if (xattrs[i] == '\0' && xattrTmp[0] != '\0'){
-      (*xa)[pos].name = calloc(strlen(name), sizeof(char));
+      (*xa)[pos].name = calloc(strlen(name) + 1, sizeof(char));
       strcpy((*xa)[pos].name, name);
-      (*xa)[pos].xattr = calloc(strlen(xattrTmp), sizeof(char));
+      (*xa)[pos].xattr = calloc(strlen(xattrTmp) + 1, sizeof(char));
       strcpy((*xa)[pos].xattr, xattrTmp);
       (*xa)[pos].xattrSize = strlen((*xa)[pos].xattr);
       // endwin();
