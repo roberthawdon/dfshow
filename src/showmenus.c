@@ -350,10 +350,12 @@ void refreshDirectory(char *sortmode, int origtopfileref, int origselected, int 
     selected = hs[historyref].selected;
     dirAbort = 0;
   }
-  if (selected == 0 && skipToFirstFile == 1 && skippable == 1){
-    selected = 2;
-  } else {
-    selected = 0;
+  if (destructive == -2){
+    if (selected == 0 && skipToFirstFile == 1 && skippable == 1){
+      selected = 2;
+    } else {
+      selected = 0;
+    }
   }
   display_dir(currentpwd, ob, topfileref, selected);
 }
@@ -406,7 +408,7 @@ void show_directory_input()
       topfileref = 0;
       selected = 0;
       chdir(currentpwd);
-      refreshDirectory(sortmode, 0, selected, 0);
+      refreshDirectory(sortmode, 0, selected, -2);
     } else {
       direrrorLen = snprintf(NULL, 0, "The location %s cannot be opened or is not a directory\n", currentpwd);
       direrror = realloc(direrror, sizeof(char) * (direrrorLen + 1));
@@ -1594,7 +1596,7 @@ void directory_view_menu_inputs()
               selected = 0;
               strcpy(currentpwd, chpwd);
               chdir(currentpwd);
-              refreshDirectory(sortmode, topfileref, selected, 0);
+              refreshDirectory(sortmode, topfileref, selected, -2);
             }
           } else if (!strcmp(ob[selected].name, ".")) {
             // Do nothing
@@ -1606,7 +1608,7 @@ void directory_view_menu_inputs()
               selected = 0;
               strcpy(currentpwd, chpwd);
               chdir(currentpwd);
-              refreshDirectory(sortmode, topfileref, selected, 0);
+              refreshDirectory(sortmode, topfileref, selected, -2);
             } else {
               e = SendToPager(chpwd);
               refreshDirectory(sortmode, topfileref, selected, 1);
