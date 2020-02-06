@@ -355,7 +355,7 @@ void refreshDirectory(char *sortmode, int origtopfileref, int origselected, int 
     dirAbort = 0;
   }
   if (destructive == -2){
-    if (selected == 0 && skipToFirstFile == 1 && skippable == 1){
+    if (skipToFirstFile == 1 && skippable == 1){
       selected = 2;
     } else {
       selected = 0;
