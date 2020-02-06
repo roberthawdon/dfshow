@@ -254,9 +254,14 @@ int processXAttrs(xattrList **xa, char *name, unsigned char *xattrs, size_t xatt
       strcpy((*xa)[pos].name, name);
       (*xa)[pos].xattr = calloc(strlen(xattrTmp) + 1, sizeof(char));
       strcpy((*xa)[pos].xattr, xattrTmp);
-      (*xa)[pos].xattrSize = strlen((*xa)[pos].xattr);
+      // (*xa)[pos].xattrSize = strlen((*xa)[pos].xattr);
+    #ifdef HAVE_ACL_TYPE_EXTENDED
+      (*xa)[pos].xattrSize = getxattr(name, xattrTmp, NULL, 0, 0, XATTR_NOFOLLOW);
+    #else
+      (*xa)[pos].xattrSize = lgetxattr(name, xattrTmp, NULL, 0);
+    #endif
       // endwin();
-      // printf("%s - %s\n", (*xa)[pos].name, (*xa)[pos].xattr);
+      // printf("%s - %s - %zu\n", (*xa)[pos].name, (*xa)[pos].xattr, (*xa)[pos].xattrSize);
       reset = true;
       pos++;
     }
