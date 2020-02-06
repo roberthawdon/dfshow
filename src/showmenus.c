@@ -338,11 +338,15 @@ void refreshDirectory(char *sortmode, int origtopfileref, int origselected, int 
 
     }
   } else {
-    strcpy(currentpwd, hs[historyref - 2].path);
-    objectWild = hs[historyref - 2].objectWild;
-    historyref--;
-    chdir(currentpwd);
-    goto handleMissingDir;
+    if (historyref > 1){
+      strcpy(currentpwd, hs[historyref - 2].path);
+      objectWild = hs[historyref - 2].objectWild;
+      historyref--;
+      chdir(currentpwd);
+      goto handleMissingDir;
+    } else {
+      global_menu();
+    }
   }
   topfileref = sanitizeTopFileRef(origtopfileref);
   if (dirAbort == 1){
