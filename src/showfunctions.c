@@ -221,7 +221,7 @@ int checkRunningEnv(){
   return i;
 }
 
-int processXAttrs(xattrList **xa, char *name, unsigned char *xattrs, size_t xattrLen, int pos)
+int processXAttrs(xattrList **xa, char *name, unsigned char *xattrs, size_t xattrLen, int pos, int *xattrsNum)
 {
   char *xattrTmp;
   int i, n;
@@ -264,6 +264,7 @@ int processXAttrs(xattrList **xa, char *name, unsigned char *xattrs, size_t xatt
       // printf("%s - %s - %zu\n", (*xa)[pos].name, (*xa)[pos].xattr, (*xa)[pos].xattrSize);
       reset = true;
       pos++;
+      ++*xattrsNum;
     }
   }
   free(xattrTmp);
@@ -566,7 +567,7 @@ int writePermsEntry(char * perms, mode_t mode, int axFlag, int sLinkCheck){
 
 }
 
-void writeResultStruct(results* ob, const char * filename, struct stat buffer, int count, acl_t acl, ssize_t xattr, int seLinuxCon, char * contextText, char * xattrs){
+void writeResultStruct(results* ob, const char * filename, struct stat buffer, int count, acl_t acl, ssize_t xattr, int seLinuxCon, char * contextText, char * xattrs, const int xattrsNum){
   char perms[12] = {0};
   struct group *gr;
   struct passwd *pw;
@@ -578,6 +579,7 @@ void writeResultStruct(results* ob, const char * filename, struct stat buffer, i
 
   ob[count].acl = acl;
   ob[count].xattr = xattr;
+  ob[count].xattrsNum = xattrsNum;
 
   if (acl != NULL){
     axFlag = ACL_TRUE;
@@ -824,7 +826,7 @@ char *writeSegment(int segLen, char *text, int align){
   return(segment);
 }
 
-void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorlen, int sizelen, int majorlen, int minorlen, int datelen, int namelen, int contextlen, int selected, int listref, int topref, results* ob){
+void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorlen, int sizelen, int majorlen, int minorlen, int datelen, int namelen, int contextlen, int selected, int listref, int topref, int offset, results* ob){
 
   int i, n, t;
 
@@ -1233,7 +1235,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
 
     if (printSegment){
       for ( i = 0; i < maxlen; i++ ){
-        mvprintw(displaystart + listref, start + charPos, "%lc", tmpSegment[i]);
+        mvprintw(displaystart + listref + offset, start + charPos, "%lc", tmpSegment[i]);
         charPos++;
         if (i == tmpSegmentLen - 2){
           break;
@@ -1257,7 +1259,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
       }
 
       for ( i = 0; i < maxlen; i++ ){
-        mvprintw(displaystart + listref, start + charPos, "%lc", nameSegmentData[0].name[i]);
+        mvprintw(displaystart + listref + offset, start + charPos, "%lc", nameSegmentData[0].name[i]);
         charPos++;
         if ( i == wcslen(nameSegmentData[0].name) - 1 ){
           break;
@@ -1270,7 +1272,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
         }
 
         for ( i = 0; i < strlen(slinkpoint); i++) {
-          mvprintw(displaystart + listref, start + charPos, "%c", slinkpoint[i]);
+          mvprintw(displaystart + listref + offset, start + charPos, "%c", slinkpoint[i]);
           charPos++;
         }
 
@@ -1289,7 +1291,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
         }
 
           for ( i = 0; i < maxlen; i++ ){
-            mvprintw(displaystart + listref, start + charPos,"%lc", nameSegmentData[0].link[i]);
+            mvprintw(displaystart + listref + offset, start + charPos,"%lc", nameSegmentData[0].link[i]);
             charPos++;
             if ( i == wcslen(nameSegmentData[0].link) - 1 ){
               break;
@@ -1302,7 +1304,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
       }
 
       for ( i = 0; i < maxlen; i++){
-        mvprintw(displaystart + listref, start + charPos, "%c", nameSegmentData[0].padding[i]);
+        mvprintw(displaystart + listref + offset, start + charPos, "%c", nameSegmentData[0].padding[i]);
         charPos++;
         if ( i == strlen(nameSegmentData[0].padding) - 1 ){
           break;
@@ -1997,6 +1999,7 @@ results* get_dir(char *pwd)
   char *xattrs;
   unsigned char *uXattrs;
   int seLinuxCon = 0;
+  int xattrsNum;
   #ifdef HAVE_SELINUX_SELINUX_H
     security_context_t context;
   #endif
@@ -2037,6 +2040,7 @@ results* get_dir(char *pwd)
           acl = NULL; // Resetting
           xattr = 0; // Resetting
           seLinuxCon = 0; //Resetting
+          xattrsNum = 0;
           contextText = malloc(sizeof(char) * 2);
           if ( showhidden == 0 && check_first_char(res->d_name, ".") && strcmp(res->d_name, ".") && strcmp(res->d_name, "..") ) {
             continue; // Skipping hidden files
@@ -2084,7 +2088,7 @@ results* get_dir(char *pwd)
               // endwin();
               // printf("%s\n", uXattrs);
               // xa = realloc(xa, (count +1) * sizeof(xattrList));
-              xattrPos = processXAttrs(&xa, res->d_name, uXattrs, xattr, xattrPos);
+              xattrPos = processXAttrs(&xa, res->d_name, uXattrs, xattr, xattrPos, &xattrsNum);
               free(uXattrs);
               // endwin();
               // printf("%s - %zu - %i\n", res->d_name, count, xattrPos);
@@ -2116,7 +2120,7 @@ results* get_dir(char *pwd)
               sprintf(contextText, "?");
             }
 
-            writeResultStruct(ob, res->d_name, buffer, count, acl, xattr, seLinuxCon, contextText, xattrs);
+            writeResultStruct(ob, res->d_name, buffer, count, acl, xattr, seLinuxCon, contextText, xattrs, xattrsNum);
 
             acl_free(acl);
 
@@ -2268,6 +2272,7 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   char *headerCombined = malloc(sizeof(char) + 1);
   int headerCombinedLen = 1;
   char *markedHeadSeg, *attrHeadSeg, *hlinkHeadSeg, *ownerHeadSeg, *contextHeadSeg, *sizeHeadSeg, *dateHeadSeg, *nameHeadSeg;
+  int xattrOffset = 0;
 
   if (markedinfo == 2 && (CheckMarked(ob) > 0)){
     automark = 1;
@@ -2399,10 +2404,17 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
 
       displaypos = 0 - hpos;
 
+      if (showXAttrs && ob[list_count + topfileref].xattrsNum > 0){
+        displaysize = displaysize - ob[list_count + topfileref].xattrsNum;
+        displaycount = displaycount - ob[list_count + topfileref].xattrsNum;
+        // list_count = list_count + ob[list_count + topfileref].xattrsNum;
+        xattrOffset += ob[list_count + topfileref].xattrsNum;
+      }
+
       // endwin();
       // printf("LC: %i, TFR: %i, DC: %i\n", list_count, topfileref, displaycount);
 
-      printEntry(displaypos, hlinklen, ownerlen, grouplen, authorlen, sizelen, majorlen, minorlen, datelen, namelen, contextlen, printSelect, list_count, topfileref, ob);
+      printEntry(displaypos, hlinklen, ownerlen, grouplen, authorlen, sizelen, majorlen, minorlen, datelen, namelen, contextlen, printSelect, list_count, topfileref, xattrOffset, ob);
 
       //list_count++;
     } else {

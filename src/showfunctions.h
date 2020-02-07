@@ -45,6 +45,7 @@ typedef struct {
   char *slink;
   int color;
   char *xattrs;
+  int xattrsNum;
 } results;
 
 typedef struct {
@@ -72,7 +73,7 @@ int checkRunningEnv();
 void freeResults(results *ob, int count);
 void freeHistory(history *hs, int count);
 void freeXAttrs(xattrList *xa, int count);
-int processXAttrs(xattrList **xa, char *name, unsigned char *xattrs, size_t xattrLen, int pos);
+int processXAttrs(xattrList **xa, char *name, unsigned char *xattrs, size_t xattrLen, int pos, int *xattrsNum);
 char *getRelativePath(char *file, char *target);
 int wildcard(const char *value, char *wcard);
 int findResultByName(results *ob, char *name);
@@ -102,13 +103,13 @@ int RenameObject(char* source, char* dest);
 int CheckMarked(results* ob);
 wchar_t *wWriteSegment(int segLen, wchar_t *text, int align);
 char *writeSegment(int segLen, char *text, int align);
-void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorlen, int sizelen, int majorlen, int minorlen, int datelen, int namelen, int contextlen, int selected, int listref, int topref, results* ob);
+void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorlen, int sizelen, int majorlen, int minorlen, int datelen, int namelen, int contextlen, int selected, int listref, int topref, int offset, results* ob);
 void padstring(char *str, int len, char c);
 char *genPadding(int num_of_spaces);
 void resizeDisplayDir(results* ob);
 char *readableSize(double size, char *buf, int si);
 int writePermsEntry(char * perms, mode_t mode, int axFlag, int sLinkCheck);
-void writeResultStruct(results* ob, const char * filename, struct stat buffer, int count, acl_t acl, ssize_t xattr, int seLinuxCon, char * contextText, char * xattrs);
+void writeResultStruct(results* ob, const char * filename, struct stat buffer, int count, acl_t acl, ssize_t xattr, int seLinuxCon, char * contextText, char * xattrs, const int xattrsNum);
 char *markedDisplay(results* ob);
 int huntFile(const char * file, const char * search, int charcase);
 
