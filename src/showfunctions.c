@@ -2404,17 +2404,17 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
 
       displaypos = 0 - hpos;
 
-      if (showXAttrs && ob[list_count + topfileref].xattrsNum > 0){
-        displaysize = displaysize - ob[list_count + topfileref].xattrsNum;
-        displaycount = displaycount - ob[list_count + topfileref].xattrsNum;
-        // list_count = list_count + ob[list_count + topfileref].xattrsNum;
-        xattrOffset += ob[list_count + topfileref].xattrsNum;
-      }
-
       // endwin();
       // printf("LC: %i, TFR: %i, DC: %i\n", list_count, topfileref, displaycount);
 
       printEntry(displaypos, hlinklen, ownerlen, grouplen, authorlen, sizelen, majorlen, minorlen, datelen, namelen, contextlen, printSelect, list_count, topfileref, xattrOffset, ob);
+
+      if (showXAttrs && ob[list_count + topfileref].xattrsNum > 0){
+        displaysize = displaysize - ob[list_count + topfileref].xattrsNum;
+        // displaycount = displaycount + ob[list_count + topfileref].xattrsNum;
+        // list_count = list_count + ob[list_count + topfileref].xattrsNum;
+        xattrOffset += ob[list_count + topfileref].xattrsNum;
+      }
 
       //list_count++;
     } else {
