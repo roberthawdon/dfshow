@@ -71,6 +71,8 @@ extern int historyref;
 extern int sessionhistory;
 extern int selected;
 extern int topfileref;
+extern int bottomFileRef;
+extern int visibleObjects;
 extern int hpos;
 extern int maxdisplaywidth;
 extern int totalfilecount;
@@ -109,6 +111,8 @@ extern int exitCode;
 
 extern xattrList *xa;
 extern int xattrPos;
+
+extern int visibleOffset;
 
 menuDef *globalMenu;
 int globalMenuSize = 0;
@@ -266,22 +270,28 @@ void unloadMenuLabels(){
 
 int sanitizeTopFileRef(int topfileref)
 {
-  if (((topfileref + displaysize) < totalfilecount + 1 ) && ((selected) > topfileref + 1) && (selected < (topfileref + displaysize))) {
+  if (((topfileref + visibleObjects) < totalfilecount + 1 ) && ((selected) > topfileref + 1) && (selected < (topfileref + visibleObjects))) {
     // If we're already good, we don't need to adjust the topfileref
   } else if ( (topfileref > totalfilecount) ){
     // If the top file ref exceeds the number of files, we'll want to do something about that
-    topfileref = totalfilecount - (displaysize);
+    topfileref = totalfilecount - (visibleObjects);
   } else if ( (selected - topfileref) < 0 ) {
     // We certainly don't want the top file ref in the negatives
     topfileref = 0;
-  } else if ((topfileref + displaysize) > totalfilecount){
+  } else if ((topfileref + visibleObjects) > totalfilecount){
     // If we end up with the top file ref in a position where the list of files ends before the end of the screen, we need to sort that too.
-    topfileref = totalfilecount - (displaysize);
+    topfileref = totalfilecount - (visibleObjects);
   }
-  if ( (selected - topfileref ) > displaysize ){
-    // We don't want the selected item off the bottom of the screen
-    topfileref = selected - displaysize + 1;
+  if ( topfileref > bottomFileRef ){
+    topfileref = selected - visibleObjects + 1;
   }
+  if ( selected > bottomFileRef) {
+    topfileref = selected - visibleObjects + 1;
+  }
+  // if ( (selected - topfileref ) > visibleObjects ){
+  //   // We don't want the selected item off the bottom of the screen
+  //   topfileref = selected - visibleObjects + 1;
+  // }
   if ( selected == 0 ) {
     // Just in case we're thrust to the top of the list - like when in a hidden directory and hidden files are switched off
     topfileref = 0;
@@ -290,7 +300,7 @@ int sanitizeTopFileRef(int topfileref)
     // Likewise, we don't want the topfileref < 0 here either
     topfileref = 0;
   }
-  if ( totalfilecount < displaysize ){
+  if ( totalfilecount < visibleObjects ){
     // Finally, to override all of the above, if we have less files than display, reset top file ref to 0.
     topfileref = 0;
   }
@@ -1554,7 +1564,9 @@ void directory_view_menu_inputs()
               ob = get_dir(currentpwd);
               reorder_ob(ob, sortmode);
               selected = findResultByName(ob, hs[historyref].name);
+              visibleObjects = hs[historyref].visibleObjects;
               topfileref = sanitizeTopFileRef(hs[historyref].topfileref);
+              // topfileref = hs[historyref].topfileref;
               clear_workspace();
               display_dir(currentpwd, ob, topfileref, selected);
             } else {
@@ -1826,10 +1838,12 @@ void directory_view_menu_inputs()
       moveDown:
         if (selected < (totalfilecount - 1)) {
           selected++;
-          if (selected > ((topfileref + displaysize) - 1)){
-            topfileref++;
-            clear_workspace();
+          if (selected > (topfileref + visibleObjects) - 1){
+            topfileref = selected - visibleObjects + 1;
+            // topfileref++;
+            // clear_workspace();
           }
+          clear_workspace();
           display_dir(currentpwd, ob, topfileref, selected);
         }
       } else if (*pc == 259){
@@ -1838,8 +1852,9 @@ void directory_view_menu_inputs()
           selected--;
           if (selected < topfileref){
             topfileref--;
-            clear_workspace();
+            // clear_workspace();
           }
+          clear_workspace();
           display_dir(currentpwd, ob, topfileref, selected);
         }
       } else if (*pc == 260){
@@ -1862,8 +1877,29 @@ void directory_view_menu_inputs()
         display_dir(currentpwd, ob, topfileref, selected);
       } else if (*pc == 360){
         // End Key
-        selected = topfileref + (displaycount - 1);
+        // selected = topfileref + (displaycount - 1);
+        selected = topfileref + (visibleObjects - 1);
         display_dir(currentpwd, ob, topfileref, selected);
+      } else if (*pc == 276){
+        // F12 Key
+        endwin();
+        printf("Debug Exit Triggered.\n\n");
+        printf("selected: %i\n\n", selected);
+
+        printf("topfileref: %i\n", topfileref);
+        printf("bottomFileRef: %i\n", bottomFileRef);
+        printf("DIFFERENCE: %i\n\n", bottomFileRef - topfileref);
+
+        printf("visibleObjects: %i\n", visibleObjects);
+        printf("visibleOffset: %i\n", visibleOffset);
+        printf("displaysize: %i\n", displaysize);
+
+        if ((visibleObjects + visibleOffset) == displaysize){
+          printf("Visible matches display: %i\n",(visibleObjects + visibleOffset));
+        } else {
+          printf("Visible DOES NOT match display: %i\n",(visibleObjects + visibleOffset));
+        }
+        exit(127);
       }
     }
 }

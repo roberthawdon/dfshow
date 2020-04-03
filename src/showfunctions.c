@@ -138,6 +138,12 @@ int skippable = 0;
 xattrList *xa;
 int xattrPos;
 
+int lineCount;
+int bottomFileRef;
+int visibleObjects;
+
+int visibleOffset;
+
 extern DIR *folder;
 
 extern int messageBreak;
@@ -881,6 +887,15 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   wchar_t *linkSegment;
   nameStruct *nameSegmentData;
 
+  char *tmpXattrAt;
+  int xattrAtPos;
+  bool hasXattr = false;
+  int tmpXattrDataLen;
+  char *tmpXattrPrint;
+  char *tmpXattrSize;
+  int tmpXattrSizeLen;
+  char *tmpXattrPadding;
+
   wchar_t *tmpSegment;
 
   int linepadding;
@@ -1141,18 +1156,6 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
 
   entryNameLen = wcslen(entryName);
 
-  // KekWhistle
-  // endwin();
-  // printf("%s\n        ", ob[currentitem].name);
-  // for (n = 0; n < ob[currentitem].xattr; n++){
-  //   if (ob[currentitem].xattrs[n] == '\0'){
-  //     printf("\n        ");
-  //   } else {
-  //     printf("%c", ob[currentitem].xattrs[n]);
-  //   }
-  // }
-  // printf("\n");
-
   if ( !strcmp(ob[currentitem].slink, "") ){
     entrySLinkLen = 1;
     swprintf(entrySLink, entrySLinkLen, L"");
@@ -1173,6 +1176,47 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
     setColors(SELECT_PAIR);
   } else {
     setColors(DISPLAY_PAIR);
+  }
+
+  // Temp
+  if (showXAttrs){
+    hasXattr = false;
+    xattrAtPos = 0;
+    for(i = 0; i < xattrPos; i++){
+      if (!strcmp(ob[currentitem].name, xa[i].name)){
+        xattrAtPos = i;
+        hasXattr = true;
+        break;
+      }
+    }
+    // endwin();
+    // printf("\n%s:\n", ob[currentitem].name);
+    for(i = 0; i < ob[currentitem].xattrsNum + 1; i++){
+      // printf("%lu < %i\n", (listref - (ob[currentitem].xattrsNum - i)), visibleObjects);
+      if ((listref - (ob[currentitem].xattrsNum - i)) < (visibleObjects + visibleOffset)){
+        if (hasXattr && i != 0){
+          if (human){
+            tmpXattrSize = malloc(sizeof(char) * 10);
+            readableSize(xa[xattrAtPos + (i - 1)].xattrSize, tmpXattrSize, si);
+          } else {
+            tmpXattrSizeLen = snprintf(NULL, 0, "%zu", xa[xattrAtPos + (i - 1)].xattrSize);
+            tmpXattrSize = malloc(sizeof(char) * tmpXattrSizeLen);
+            sprintf(tmpXattrSize, "%zu", xa[xattrAtPos + (i - 1)].xattrSize);
+          }
+          tmpXattrPrint = calloc(COLS, sizeof(char));
+          tmpXattrDataLen = snprintf(NULL, 0, "            %s        %s", xa[(xattrAtPos + (i - 1))].xattr, tmpXattrSize);
+          tmpXattrPadding = genPadding(COLS - tmpXattrDataLen);
+          sprintf(tmpXattrPrint, "            %s        %s%s", xa[(xattrAtPos + (i - 1))].xattr, tmpXattrSize, tmpXattrPadding);
+          for (n = 0; n < strlen(tmpXattrPrint); n++){
+            mvprintw(displaystart + listref + offset + i, start + charPos + n, "%c", tmpXattrPrint[n]);
+          }
+          // mvprintw(displaystart + listref + offset + i, start + charPos, "            %s", xa[(xattrAtPos + (i - 1))].xattr);
+          free(tmpXattrPrint);
+          free(tmpXattrSize);
+          free(tmpXattrPadding);
+        }
+      }
+    }
   }
 
   for ( n = 0; n < (sizeof(segOrder) / sizeof(segOrder[0])); n++){
@@ -1326,10 +1370,10 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   if (linepadding > 0){
     if (charPos > 0){
       paddingE0 = genPadding(linepadding);
-      mvprintw(displaystart + listref, charPos, "%s", paddingE0);
+      mvprintw(displaystart + listref + offset, charPos, "%s", paddingE0);
     } else {
       paddingE0 = genPadding(COLS);
-      mvprintw(displaystart + listref, 0, "%s", paddingE0);
+      mvprintw(displaystart + listref + offset, 0, "%s", paddingE0);
     }
     free(paddingE0);
   }
@@ -1890,6 +1934,7 @@ void set_history(char *pwd, char *objectWild, char *name, int topfileref, int se
   strcpy(hs[historyref].name, name);
   hs[historyref].topfileref = topfileref;
   hs[historyref].selected = selected;
+  hs[historyref].visibleObjects = visibleObjects;
   historyref++;
 
 }
@@ -2273,6 +2318,7 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   int headerCombinedLen = 1;
   char *markedHeadSeg, *attrHeadSeg, *hlinkHeadSeg, *ownerHeadSeg, *contextHeadSeg, *sizeHeadSeg, *dateHeadSeg, *nameHeadSeg;
   int xattrOffset = 0;
+  int origTopFileRef;
 
   if (markedinfo == 2 && (CheckMarked(ob) > 0)){
     automark = 1;
@@ -2291,7 +2337,65 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
     }
   }
 
+  i = 0;
+
+ rerunCalc:
+
+  if (i > 50){
+    exit(127);
+  }
+
+  lineCount = 0;
+  bottomFileRef = 0;
+  visibleOffset = 0;
+
+  origTopFileRef = topfileref;
+
+  for(list_count = topfileref; list_count < totalfilecount; list_count++ ){
+    lineCount++;
+
+    if (showXAttrs){
+      lineCount += ob[list_count].xattrsNum;
+      visibleOffset += ob[list_count].xattrsNum;
+    }
+
+    if (lineCount > displaysize){
+      // lineCount--;
+      break;
+    }
+    bottomFileRef = list_count;
+  }
+
+  visibleObjects = bottomFileRef - topfileref + 1;
+
+  // Hacky, but it works.
+  if ((visibleObjects + visibleOffset) > displaysize){
+    visibleOffset -= (visibleObjects + visibleOffset) - displaysize;
+  }
+
+  // if (visibleObjects > count){
+  //   displaycount = count;
+  // } else {
+  //   displaycount = visibleObjects;
+  // }
+
+  displaycount = visibleObjects;
+
+  if (displaycount < 0){
+    displaycount = 0;
+  }
+
   topfileref = sanitizeTopFileRef(topfileref);
+
+  // endwin();
+  // printf("OTFR: %i, NTFR: %i\n", origTopFileRef, topfileref);
+
+  if (topfileref != origTopFileRef){
+    i++;
+    goto rerunCalc;
+  }
+
+  // printf("\n");
 
   selected = selected - topfileref;
 
@@ -2380,18 +2484,15 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
     break;
   }
 
-  if (displaysize > count){
-    displaycount = count;
-  } else {
-    displaycount = displaysize;
-  }
+  // mvprintw(LINES-1, 0, "bottomFileRef: %i", bottomFileRef);
+  // mvprintw(LINES-1, 0, "visibleObjects: %i", visibleObjects);
+  // if (showXAttrs){
+  //   if (display)
+  // } else {
+  // }
 
-  if (displaycount < 0){
-    displaycount = 0;
-  }
-
-  for(list_count = 0; list_count < displaycount; list_count++ ){
-    if (list_count < totalfilecount){
+  for(list_count = 0; list_count < displaycount + 1; list_count++ ){
+    if ((list_count + topfileref) < totalfilecount){
       // Setting highlight
       if (list_count == selected) {
         printSelect = 1;
@@ -2407,10 +2508,12 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
       // endwin();
       // printf("LC: %i, TFR: %i, DC: %i\n", list_count, topfileref, displaycount);
 
+      // printf("DP: %i, HL: %i, OL: %i, GL: %i, AL: %i, SL: %i, MaL: %i, MiL: %i, DL: %i, NL: %i, CL: %i, PS: %i, LC: %i, TF: %i, XO: %i\n", displaypos, hlinklen, ownerlen, grouplen, authorlen, sizelen, majorlen, minorlen, datelen, namelen, contextlen, printSelect, list_count, topfileref, xattrOffset);
+      // mvprintw(list_count + 4, 0, "DP: %i, HL: %i, OL: %i, GL: %i, AL: %i, SL: %i, MaL: %i, MiL: %i, DL: %i, NL: %i, CL: %i, PS: %i, LC: %i, TF: %i, XO: %i", displaypos, hlinklen, ownerlen, grouplen, authorlen, sizelen, majorlen, minorlen, datelen, namelen, contextlen, printSelect, list_count, topfileref, xattrOffset);
       printEntry(displaypos, hlinklen, ownerlen, grouplen, authorlen, sizelen, majorlen, minorlen, datelen, namelen, contextlen, printSelect, list_count, topfileref, xattrOffset, ob);
 
       if (showXAttrs && ob[list_count + topfileref].xattrsNum > 0){
-        displaysize = displaysize - ob[list_count + topfileref].xattrsNum;
+        // displaysize = displaysize - ob[list_count + topfileref].xattrsNum;
         // displaycount = displaycount + ob[list_count + topfileref].xattrsNum;
         // list_count = list_count + ob[list_count + topfileref].xattrsNum;
         xattrOffset += ob[list_count + topfileref].xattrsNum;
@@ -2467,11 +2570,11 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
     padIntHeadDT = 1;
   }
 
-  sizeHeaderLen = snprintf(NULL, 0, "%i Objects   %s Used %s Available", count, susedString, savailableString);
+  sizeHeaderLen = snprintf(NULL, 0, "%i Objects   %s Used %s Available", totalfilecount, susedString, savailableString);
 
   sizeHeader = realloc(sizeHeader, sizeof(char) * (sizeHeaderLen + 1));
 
-  sprintf(sizeHeader, "%i Objects   %s Used %s Available", count, susedString, savailableString);
+  sprintf(sizeHeader, "%i Objects   %s Used %s Available", totalfilecount, susedString, savailableString);
 
   // padCharHeadAttrs = genPadding(hlinklen + 1 + axDisplay);
   // padCharHeadOG = genPadding(padIntHeadOG);

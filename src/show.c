@@ -562,7 +562,7 @@ int directory_view(char * currentpwd)
   // function_key_menu();
 
   //printMenu(LINES-1, 0, functionMenuText);
-  wPrintMenu(LINES-1, 0, functionMenuLabel);
+  // wPrintMenu(LINES-1, 0, functionMenuLabel);
 
   refresh();
 

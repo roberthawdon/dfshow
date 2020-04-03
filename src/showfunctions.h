@@ -54,6 +54,7 @@ typedef struct {
   char *objectWild;
   int topfileref;
   int selected;
+  int visibleObjects;
 } history;
 
 typedef struct {
