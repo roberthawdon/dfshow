@@ -52,6 +52,8 @@ menuDef *settingsMenu;
 int settingsMenuSize = 0;
 wchar_t *settingsMenuLabel;
 
+char errmessage[256];
+
 extern int * pc;
 
 extern int resized;

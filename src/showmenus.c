@@ -46,7 +46,6 @@ char ownerinput[256];
 char groupinput[256];
 char uids[24];
 char gids[24];
-char errmessage[256];
 char currentfilename[512];
 
 int s;
@@ -60,6 +59,8 @@ int abortinput = 0;
 
 struct utimbuf touchDate;
 time_t touchTime;
+
+extern char errmessage[256];
 
 extern results* ob;
 extern history* hs;

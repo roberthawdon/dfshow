@@ -44,7 +44,7 @@ colorPairs colors[256];
 
 char fgbgLabel[11];
 
-char errmessage[256];
+extern char errmessage[256];
 
 extern int colormode;
 extern int c;
