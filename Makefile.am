@@ -3,7 +3,7 @@ AUTOMAKE_OPTIONS = foreign
 dfshowconfdir = $(sysconfdir)
 dfshowdatadir = $(datadir)/dfshow
 
-AM_CFLAGS = -DSYSCONFIG=\"$(dfshowconfdir)\" -DDATADIR=\"$(dfshowdatadir)\" -D_XOPEN_SOURCE_EXTENDED
+AM_CFLAGS = -DSYSCONFIG=\"$(dfshowconfdir)\" -DDATADIR=\"$(dfshowdatadir)\" -D_XOPEN_SOURCE_EXTENDED -fno-common
 
 LDADD = -lm -lconfig
 

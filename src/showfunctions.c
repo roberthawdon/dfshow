@@ -705,11 +705,12 @@ int findResultByName(results *ob, char *name)
     i++;
   }
   //If there's no match, we'll fall back to the top item in the list
-  if (skipToFirstFile == 1 && skippable == 1){
-    return 2;
-  } else {
-    return 0;
-  }
+  // if (skipToFirstFile == 1 && skippable == 1){
+  //   return 2;
+  // } else {
+  //   return 0;
+  // }
+  return -1;
 }
 
 char *dateString(time_t date, char *style)
@@ -1418,7 +1419,7 @@ void LaunchShell()
 void LaunchExecutable(const char* object, const char* args)
 {
   char *command = malloc(sizeof(char) * (strlen(object) + strlen(args) + 2));
-  sprintf(command, "%s %s", object, args);
+  sprintf(command, "'%s' %s", object, args);
   system("clear"); // Just to be sure
   system(command);
   free(command);
@@ -2341,8 +2342,9 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
 
  rerunCalc:
 
+  // Hacky, but this will stop show hanging if the topfileref check fails after 50 times. It's in place as if CTRL-C is disabled, then this lock can't be exited without killing show from another terminal.
   if (i > 50){
-    exit(127);
+    exit(27);
   }
 
   lineCount = 0;
@@ -2386,7 +2388,6 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   }
 
   topfileref = sanitizeTopFileRef(topfileref);
-
   // endwin();
   // printf("OTFR: %i, NTFR: %i\n", origTopFileRef, topfileref);
 

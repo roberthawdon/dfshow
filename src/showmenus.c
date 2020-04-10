@@ -304,7 +304,14 @@ int sanitizeTopFileRef(int topfileref)
     // Finally, to override all of the above, if we have less files than display, reset top file ref to 0.
     topfileref = 0;
   }
+  if ( totalfilecount < displaysize ){
+    // Finally, to override all of the above, if we have less files than display, reset top file ref to 0.
+    topfileref = 0;
+  }
 
+  // endwin();
+  // printf("%i - %i\n", selected, topfileref);
+  // exit(1);
   return topfileref;
 }
 
@@ -334,7 +341,7 @@ void refreshDirectory(char *sortmode, int origtopfileref, int origselected, int 
     }
     if (destructive > 0){
       i = findResultByName(ob, currentselectname);
-      if (i != 0){
+      if (i != -1){
         selected = i;
       } else {
         if (selected > totalfilecount - 1){
@@ -365,6 +372,16 @@ void refreshDirectory(char *sortmode, int origtopfileref, int origselected, int 
     dirAbort = 0;
   }
   if (destructive == -2){
+    if (skipToFirstFile == 1 && skippable == 1){
+      selected = 2;
+    } else {
+      selected = 0;
+    }
+  }
+  // endwin();
+  // printf("%i\n", selected);
+  // exit(123);
+  if (selected == -1){
     if (skipToFirstFile == 1 && skippable == 1){
       selected = 2;
     } else {
@@ -1540,6 +1557,13 @@ void directory_view_menu_inputs()
         clear_workspace();
         reorder_ob(ob, sortmode);
         selected = findResultByName(ob, currentfilename);
+        if (selected == -1){
+          if (skipToFirstFile == 1 && skippable == 1){
+            selected = 2;
+          } else {
+            selected = 0;
+          }
+        }
         refreshDirectory(sortmode, topfileref, selected, 0);
       } else if (*pc == menuHotkeyLookup(fileMenu, "f_link", fileMenuSize)){
         if ( !(CheckMarked(ob) > 0) ) {
@@ -1564,6 +1588,13 @@ void directory_view_menu_inputs()
               ob = get_dir(currentpwd);
               reorder_ob(ob, sortmode);
               selected = findResultByName(ob, hs[historyref].name);
+              if (selected == -1){
+                if (skipToFirstFile == 1 && skippable == 1){
+                  selected = 2;
+                } else {
+                  selected = 0;
+                }
+              }
               visibleObjects = hs[historyref].visibleObjects;
               topfileref = sanitizeTopFileRef(hs[historyref].topfileref);
               // topfileref = hs[historyref].topfileref;
@@ -1689,9 +1720,12 @@ void directory_view_menu_inputs()
         if (selected < (totalfilecount - 1) ) {
           clear_workspace();
           topfileref = topfileref + displaycount;
-          if (topfileref > (totalfilecount - displaycount)){
-            topfileref = totalfilecount - displaycount;
+          if (topfileref > (totalfilecount - visibleObjects)){
+            topfileref = totalfilecount - visibleObjects;
           }
+          // if (topfileref > (totalfilecount - displaycount)){
+          //   topfileref = totalfilecount - displaycount;
+          // }
           selected = selected + displaycount;
           if (selected > totalfilecount - 1){
             selected = totalfilecount - 1;
@@ -1899,7 +1933,11 @@ void directory_view_menu_inputs()
         } else {
           printf("Visible DOES NOT match display: %i\n",(visibleObjects + visibleOffset));
         }
-        exit(127);
+
+        printf("\nTotal Files (objects): %i\n", totalfilecount);
+        printf("Total xattr lines: %i\n", xattrPos);
+        printf("Total lines: %i\n", (totalfilecount + xattrPos));
+        exit(3);
       }
     }
 }
