@@ -338,6 +338,7 @@ void refreshDirectory(char *sortmode, int origtopfileref, int origselected, int 
       ob = get_dir(currentpwd);
       clear_workspace();
       reorder_ob(ob, sortmode);
+      generateEntryLineIndex(ob);
     }
     if (destructive > 0){
       i = findResultByName(ob, currentselectname);
@@ -1556,6 +1557,7 @@ void directory_view_menu_inputs()
         ob = get_dir(currentpwd);
         clear_workspace();
         reorder_ob(ob, sortmode);
+        generateEntryLineIndex(ob);
         selected = findResultByName(ob, currentfilename);
         if (selected == -1){
           if (skipToFirstFile == 1 && skippable == 1){
@@ -1587,6 +1589,7 @@ void directory_view_menu_inputs()
               freeXAttrs(xa, xattrPos);
               ob = get_dir(currentpwd);
               reorder_ob(ob, sortmode);
+              generateEntryLineIndex(ob);
               selected = findResultByName(ob, hs[historyref].name);
               if (selected == -1){
                 if (skipToFirstFile == 1 && skippable == 1){
@@ -1798,6 +1801,7 @@ void directory_view_menu_inputs()
         markall = 0; // Leaving this set as 1 keeps things marked even after refresh. This is bad
         clear_workspace();
         reorder_ob(ob, sortmode);
+        generateEntryLineIndex(ob);
         display_dir(currentpwd, ob, topfileref, selected);
       } else if (*pc == menuHotkeyLookup(functionMenu, "f_08", functionMenuSize)){
         markall = 0;
@@ -1806,6 +1810,7 @@ void directory_view_menu_inputs()
         ob = get_dir(currentpwd);
         clear_workspace();
         reorder_ob(ob, sortmode);
+        generateEntryLineIndex(ob);
         display_dir(currentpwd, ob, topfileref, selected);
       } else if (*pc == menuHotkeyLookup(functionMenu, "f_09", functionMenuSize)){
         sort_view_inputs();

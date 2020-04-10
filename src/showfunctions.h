@@ -70,11 +70,19 @@ typedef struct {
   char *padding;
 } nameStruct;
 
+typedef struct {
+  int fileRef;
+  bool object;
+  bool xattr;
+  int subIndex;
+} entryLines;
+
 int checkRunningEnv();
 void freeResults(results *ob, int count);
 void freeHistory(history *hs, int count);
 void freeXAttrs(xattrList *xa, int count);
 int processXAttrs(xattrList **xa, char *name, unsigned char *xattrs, size_t xattrLen, int pos, int *xattrsNum);
+void generateEntryLineIndex(results *ob);
 char *getRelativePath(char *file, char *target);
 int wildcard(const char *value, char *wcard);
 int findResultByName(results *ob, char *name);

@@ -144,6 +144,8 @@ int visibleObjects;
 
 int visibleOffset;
 
+entryLines *el;
+
 extern DIR *folder;
 
 extern int messageBreak;
@@ -194,6 +196,7 @@ void freeResults(results *ob, int count)
     free(ob[i].xattrs);
   }
   free(ob);
+  free(el);
 }
 
 void freeHistory(history *hs, int count)
@@ -2295,6 +2298,43 @@ results* reorder_ob(results* ob, char *order){
   }
 
   return ob;
+}
+
+void generateEntryLineIndex(results *ob){
+  int i, n, t;
+  int listLen = totalfilecount;
+
+  if (showXAttrs) {
+    listLen = totalfilecount + xattrPos;
+  }
+
+  el = calloc(listLen, sizeof(entryLines));
+  n = 0;
+  for (i = 0; i < totalfilecount; i++){
+    el[n].object = true;
+    el[n].xattr = false;
+    el[n].subIndex = 0;
+    el[n].fileRef = i;
+    n++;
+    if (showXAttrs){
+      if (ob[i].xattrsNum > 0){
+        for (t = 0; t < ob[i].xattrsNum; t++){
+          el[n].object = false;
+          el[n].xattr = true;
+          el[n].subIndex = t;
+          el[n].fileRef = i;
+          n++;
+        }
+      }
+    }
+  }
+
+  // Test
+  // endwin();
+  // for (i = 0; i < listLen; i++){
+  //   printf("I: %d, F: %d, O: %d, X: %d, S: %d\n", i, el[i].fileRef, el[i].object, el[i].xattr, el[i].subIndex);
+  // }
+  // exit(4);
 }
 
 void display_dir(char *pwd, results* ob, int topfileref, int selected){

@@ -550,6 +550,7 @@ int directory_view(char * currentpwd)
   freeXAttrs(xa, xattrPos);
   ob = get_dir(currentpwd);
   reorder_ob(ob, sortmode);
+  generateEntryLineIndex(ob);
 
   if (skipToFirstFile == 1 && skippable == 1){
     selected = 2;
