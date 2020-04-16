@@ -2846,6 +2846,6 @@ void resizeDisplayDir(results* ob){
     }
   }
   refreshDirectory(sortmode, lineStart, selected, -1);
-  // display_dir(currentpwd, ob, lineStart, selected);
+  // display_dir(currentpwd, ob);
 }
 

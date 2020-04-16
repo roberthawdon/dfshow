@@ -560,7 +560,7 @@ int directory_view(char * currentpwd)
     selected = 0;
   }
 
-  display_dir(currentpwd, ob, lineStart, selected);
+  display_dir(currentpwd, ob);
 
   // function_key_menu();
 
