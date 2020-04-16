@@ -121,6 +121,7 @@ int CheckMarked(results* ob);
 wchar_t *wWriteSegment(int segLen, wchar_t *text, int align);
 char *writeSegment(int segLen, char *text, int align);
 void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorlen, int sizelen, int majorlen, int minorlen, int datelen, int namelen, int contextlen, int selected, int listref, int currentitem, results* ob);
+void printXattr(int start, int selected, int listref, int currentItem, int subIndex, xattrList* xa, results* ob);
 void padstring(char *str, int len, char c);
 char *genPadding(int num_of_spaces);
 void resizeDisplayDir(results* ob);

@@ -838,6 +838,54 @@ char *writeSegment(int segLen, char *text, int align){
   return(segment);
 }
 
+void printXattr(int start, int selected, int listref, int currentItem, int subIndex, xattrList* xa, results* ob){
+  int i;
+
+  char *tmpXattrAt;
+  int xattrAtPos;
+  bool hasXattr = false;
+  int tmpXattrDataLen;
+  char *tmpXattrPrint;
+  char *tmpXattrSize;
+  int tmpXattrSizeLen;
+  char *tmpXattrPadding;
+
+  // Setting highlight
+  if (selected) {
+    setColors(SELECT_PAIR);
+  } else {
+    setColors(DISPLAY_PAIR);
+  }
+
+  for (i = 0; i < xattrPos; i++){
+    if (!strcmp(xa[i].name, ob[currentItem].name)) {
+      xattrAtPos = i;
+      break;
+    }
+  }
+  if (human){
+    tmpXattrSize = malloc(sizeof(char) * 10);
+    readableSize(xa[xattrAtPos + subIndex].xattrSize, tmpXattrSize, si);
+  } else {
+    tmpXattrSizeLen = snprintf(NULL, 0, "%zu", xa[xattrAtPos + subIndex].xattrSize);
+    tmpXattrSize = malloc(sizeof(char) * tmpXattrSizeLen);
+    sprintf(tmpXattrSize, "%zu", xa[xattrAtPos + subIndex].xattrSize);
+  }
+  tmpXattrPrint = calloc(COLS, sizeof(char));
+  tmpXattrDataLen = snprintf(NULL, 0, "            %s        %s", xa[xattrAtPos + subIndex].xattr, tmpXattrSize);
+  tmpXattrPadding = genPadding(COLS - tmpXattrDataLen);
+  sprintf(tmpXattrPrint, "            %s        %s%s", xa[xattrAtPos + subIndex].xattr, tmpXattrSize, tmpXattrPadding);
+  for (i = 0; i < strlen(tmpXattrPrint); i++){
+    mvprintw(displaystart + listref, i, "%c", tmpXattrPrint[i]);
+  }
+  // mvprintw(displaystart + listref + offset + i, start + charPos, "            %s", xa[(xattrAtPos + (i - 1))].xattr);
+  free(tmpXattrPrint);
+  free(tmpXattrSize);
+  free(tmpXattrPadding);
+
+  // mvprintw(displaystart + listref + start, 0, "            %s        %s", "uk.me.robertianhawdon.test", "27");
+}
+
 void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorlen, int sizelen, int majorlen, int minorlen, int datelen, int namelen, int contextlen, int selected, int listref, int currentitem, results* ob){
 
   int i, n, t;
@@ -894,15 +942,6 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   wchar_t *dateSegment;
   wchar_t *linkSegment;
   nameStruct *nameSegmentData;
-
-  char *tmpXattrAt;
-  int xattrAtPos;
-  bool hasXattr = false;
-  int tmpXattrDataLen;
-  char *tmpXattrPrint;
-  char *tmpXattrSize;
-  int tmpXattrSizeLen;
-  char *tmpXattrPadding;
 
   wchar_t *tmpSegment;
 
@@ -2341,7 +2380,7 @@ void generateEntryLineIndex(results *ob){
     }
   }
 
-  // Test
+  // // Test
   // endwin();
   // for (i = 0; i < listLen; i++){
   //   printf("I: %d, F: %d, T: %d, S: %d\n", i, el[i].fileRef, el[i].entryLineType, el[i].subIndex);
@@ -2394,7 +2433,8 @@ void display_dir(char *pwd, results* ob){
 
   int i, n, t;
   size_t list_count = 0;
-  int count = totalfilecount;
+  // int count = totalfilecount;
+  int count = listLen;
   int printSelect = 0;
   //char sizeHeader[256], headings[256];
   char *sizeHeader = malloc(sizeof(char) + 1);
@@ -2485,7 +2525,7 @@ void display_dir(char *pwd, results* ob){
   // }
 
   if (displaysize > count){
-    displaycount = count;
+    displaycount = count + 1;
   } else {
     displaycount = displaysize;
   }
@@ -2606,6 +2646,8 @@ void display_dir(char *pwd, results* ob){
   }
 
   for(list_count = 0; list_count < displaycount + 1; list_count++ ){
+    // endwin();
+    // printf("%zu, %i, %i, - %i\n", list_count, lineStart, listLen, displaycount + 1);
     if ((list_count + lineStart) < listLen){
       // Setting highlight
       // if (list_count == selected) {
@@ -2634,7 +2676,7 @@ void display_dir(char *pwd, results* ob){
         // Not implemented yet
       } else if (el[(list_count + lineStart)].entryLineType == ET_XATTR) {
         // Not implemented yet
-        mvprintw(displaystart + list_count, 0, "            %s        %s", "uk.me.robertianhawdon.test", "27");
+        printXattr(displaypos, printSelect, list_count, currentItem, el[(list_count + lineStart)].subIndex, xa, ob);
       } else {
         mvprintw(displaystart + list_count, 0, "THIS SHOULDN'T BE HERE! - entryLineType: %d", el[(list_count + lineStart)].entryLineType);
       }
