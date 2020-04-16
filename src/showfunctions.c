@@ -102,6 +102,7 @@ int totalfilecount;
 
 int selected;
 int topfileref = 0;
+int lineStart = 0;
 int hpos = 0;
 int maxdisplaywidth;
 int displaysize; // Calculate area to print
@@ -144,6 +145,7 @@ int visibleObjects;
 
 int visibleOffset;
 
+int listLen;
 entryLines *el;
 
 extern DIR *folder;
@@ -836,7 +838,7 @@ char *writeSegment(int segLen, char *text, int align){
   return(segment);
 }
 
-void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorlen, int sizelen, int majorlen, int minorlen, int datelen, int namelen, int contextlen, int selected, int listref, int topref, int offset, results* ob){
+void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorlen, int sizelen, int majorlen, int minorlen, int datelen, int namelen, int contextlen, int selected, int listref, int currentitem, results* ob){
 
   int i, n, t;
 
@@ -846,7 +848,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   wchar_t *entrySLink = malloc(sizeof(wchar_t) + 1);
   int maxlen = COLS - start - 1;
 
-  int currentitem = listref + topref;
+  // int currentitem = listref + topref;
   int nameminlen = strlen(headName); // Length of "Name" heading
   int ogminlen = strlen(headOG); // Length of "Owner & Group" heading
   int sizeminlen = strlen(headSize); // Length of "Size" heading
@@ -871,7 +873,9 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
 
   int datepad = 0;
 
-  char *s1, *s2, *s3, *s4, *s5, *s6;
+  // char *s1, *s2, *s3, *s4, *s5, *s6;
+
+  char *sizePadding;
 
   char *sizestring;
 
@@ -1026,15 +1030,15 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   }
 
   if (mmpad > 0 ){
-    s4 = genPadding(mmpad);
+    sizePadding = genPadding(mmpad);
   }
 
   if ((ob[currentitem].major > 0) || (ob[currentitem].minor > 0)){
     // If either of these are not 0, then we're dealing with a Character or Block device.
     // sizestring = malloc (sizeof (char) * (sizelen + 5));
-    sizelen = snprintf(NULL, 0, "%i,%s%i", ob[currentitem].major, s4, ob[currentitem].minor);
+    sizelen = snprintf(NULL, 0, "%i,%s%i", ob[currentitem].major, sizePadding, ob[currentitem].minor);
     sizestring = malloc (sizeof (char) * (sizelen + 1));
-    sprintf(sizestring, "%i,%s%i", ob[currentitem].major, s4, ob[currentitem].minor);
+    sprintf(sizestring, "%i,%s%i", ob[currentitem].major, sizePadding, ob[currentitem].minor);
   } else {
     if (human){
       sizestring = malloc (sizeof (char) * 10);
@@ -1064,15 +1068,15 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   }
   dateSegment = wWriteSegment(dateSegmentLen, ob[currentitem].datedisplay, LEFT);
 
-  if (hlinkstart > -1){
-    s1 = genPadding(hlinkstart);
-  }
-  if (sizepad > -1){
-    s2 = genPadding(sizepad);
-  }
-  if (datepad > -1){
-    s3 = genPadding(datepad);
-  }
+  // if (hlinkstart > -1){
+  //   s1 = genPadding(hlinkstart);
+  // }
+  // if (sizepad > -1){
+  //   s2 = genPadding(sizepad);
+  // }
+  // if (datepad > -1){
+  //   s3 = genPadding(datepad);
+  // }
 
   markedSegmentLen = 3;
 
@@ -1182,46 +1186,46 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
     setColors(DISPLAY_PAIR);
   }
 
-  // Temp
-  if (showXAttrs){
-    hasXattr = false;
-    xattrAtPos = 0;
-    for(i = 0; i < xattrPos; i++){
-      if (!strcmp(ob[currentitem].name, xa[i].name)){
-        xattrAtPos = i;
-        hasXattr = true;
-        break;
-      }
-    }
-    // endwin();
-    // printf("\n%s:\n", ob[currentitem].name);
-    for(i = 0; i < ob[currentitem].xattrsNum + 1; i++){
-      // printf("%lu < %i\n", (listref - (ob[currentitem].xattrsNum - i)), visibleObjects);
-      if ((listref - (ob[currentitem].xattrsNum - i)) < (visibleObjects + visibleOffset)){
-        if (hasXattr && i != 0){
-          if (human){
-            tmpXattrSize = malloc(sizeof(char) * 10);
-            readableSize(xa[xattrAtPos + (i - 1)].xattrSize, tmpXattrSize, si);
-          } else {
-            tmpXattrSizeLen = snprintf(NULL, 0, "%zu", xa[xattrAtPos + (i - 1)].xattrSize);
-            tmpXattrSize = malloc(sizeof(char) * tmpXattrSizeLen);
-            sprintf(tmpXattrSize, "%zu", xa[xattrAtPos + (i - 1)].xattrSize);
-          }
-          tmpXattrPrint = calloc(COLS, sizeof(char));
-          tmpXattrDataLen = snprintf(NULL, 0, "            %s        %s", xa[(xattrAtPos + (i - 1))].xattr, tmpXattrSize);
-          tmpXattrPadding = genPadding(COLS - tmpXattrDataLen);
-          sprintf(tmpXattrPrint, "            %s        %s%s", xa[(xattrAtPos + (i - 1))].xattr, tmpXattrSize, tmpXattrPadding);
-          for (n = 0; n < strlen(tmpXattrPrint); n++){
-            mvprintw(displaystart + listref + offset + i, start + charPos + n, "%c", tmpXattrPrint[n]);
-          }
-          // mvprintw(displaystart + listref + offset + i, start + charPos, "            %s", xa[(xattrAtPos + (i - 1))].xattr);
-          free(tmpXattrPrint);
-          free(tmpXattrSize);
-          free(tmpXattrPadding);
-        }
-      }
-    }
-  }
+  // // Temp
+  // if (showXAttrs){
+  //   hasXattr = false;
+  //   xattrAtPos = 0;
+  //   for(i = 0; i < xattrPos; i++){
+  //     if (!strcmp(ob[currentitem].name, xa[i].name)){
+  //       xattrAtPos = i;
+  //       hasXattr = true;
+  //       break;
+  //     }
+  //   }
+  //   // endwin();
+  //   // printf("\n%s:\n", ob[currentitem].name);
+  //   for(i = 0; i < ob[currentitem].xattrsNum + 1; i++){
+  //     // printf("%lu < %i\n", (listref - (ob[currentitem].xattrsNum - i)), visibleObjects);
+  //     if ((listref - (ob[currentitem].xattrsNum - i)) < (visibleObjects + visibleOffset)){
+  //       if (hasXattr && i != 0){
+  //         if (human){
+  //           tmpXattrSize = malloc(sizeof(char) * 10);
+  //           readableSize(xa[xattrAtPos + (i - 1)].xattrSize, tmpXattrSize, si);
+  //         } else {
+  //           tmpXattrSizeLen = snprintf(NULL, 0, "%zu", xa[xattrAtPos + (i - 1)].xattrSize);
+  //           tmpXattrSize = malloc(sizeof(char) * tmpXattrSizeLen);
+  //           sprintf(tmpXattrSize, "%zu", xa[xattrAtPos + (i - 1)].xattrSize);
+  //         }
+  //         tmpXattrPrint = calloc(COLS, sizeof(char));
+  //         tmpXattrDataLen = snprintf(NULL, 0, "            %s        %s", xa[(xattrAtPos + (i - 1))].xattr, tmpXattrSize);
+  //         tmpXattrPadding = genPadding(COLS - tmpXattrDataLen);
+  //         sprintf(tmpXattrPrint, "            %s        %s%s", xa[(xattrAtPos + (i - 1))].xattr, tmpXattrSize, tmpXattrPadding);
+  //         for (n = 0; n < strlen(tmpXattrPrint); n++){
+  //           mvprintw(displaystart + listref + offset + i, start + charPos + n, "%c", tmpXattrPrint[n]);
+  //         }
+  //         // mvprintw(displaystart + listref + offset + i, start + charPos, "            %s", xa[(xattrAtPos + (i - 1))].xattr);
+  //         free(tmpXattrPrint);
+  //         free(tmpXattrSize);
+  //         free(tmpXattrPadding);
+  //       }
+  //     }
+  //   }
+  // }
 
   for ( n = 0; n < (sizeof(segOrder) / sizeof(segOrder[0])); n++){
     t = segOrder[n];
@@ -1283,7 +1287,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
 
     if (printSegment){
       for ( i = 0; i < maxlen; i++ ){
-        mvprintw(displaystart + listref + offset, start + charPos, "%lc", tmpSegment[i]);
+        mvprintw(displaystart + listref, start + charPos, "%lc", tmpSegment[i]);
         charPos++;
         if (i == tmpSegmentLen - 2){
           break;
@@ -1307,7 +1311,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
       }
 
       for ( i = 0; i < maxlen; i++ ){
-        mvprintw(displaystart + listref + offset, start + charPos, "%lc", nameSegmentData[0].name[i]);
+        mvprintw(displaystart + listref, start + charPos, "%lc", nameSegmentData[0].name[i]);
         charPos++;
         if ( i == wcslen(nameSegmentData[0].name) - 1 ){
           break;
@@ -1320,7 +1324,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
         }
 
         for ( i = 0; i < strlen(slinkpoint); i++) {
-          mvprintw(displaystart + listref + offset, start + charPos, "%c", slinkpoint[i]);
+          mvprintw(displaystart + listref, start + charPos, "%c", slinkpoint[i]);
           charPos++;
         }
 
@@ -1339,7 +1343,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
         }
 
           for ( i = 0; i < maxlen; i++ ){
-            mvprintw(displaystart + listref + offset, start + charPos,"%lc", nameSegmentData[0].link[i]);
+            mvprintw(displaystart + listref, start + charPos,"%lc", nameSegmentData[0].link[i]);
             charPos++;
             if ( i == wcslen(nameSegmentData[0].link) - 1 ){
               break;
@@ -1351,13 +1355,13 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
         setColors(DISPLAY_PAIR);
       }
 
-      for ( i = 0; i < maxlen; i++){
-        mvprintw(displaystart + listref + offset, start + charPos, "%c", nameSegmentData[0].padding[i]);
-        charPos++;
-        if ( i == strlen(nameSegmentData[0].padding) - 1 ){
-          break;
-        }
-      }
+      // for ( i = 0; i < maxlen; i++){
+      //   mvprintw(displaystart + listref, start + charPos, "%c", nameSegmentData[0].padding[i]);
+      //   charPos++;
+      //   if ( i == strlen(nameSegmentData[0].padding) - 1 ){
+      //     break;
+      //   }
+      // }
 
       printNameSegment = 0;
     }
@@ -1374,10 +1378,10 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   if (linepadding > 0){
     if (charPos > 0){
       paddingE0 = genPadding(linepadding);
-      mvprintw(displaystart + listref + offset, charPos, "%s", paddingE0);
+      mvprintw(displaystart + listref, charPos, "%s", paddingE0);
     } else {
       paddingE0 = genPadding(COLS);
-      mvprintw(displaystart + listref + offset, 0, "%s", paddingE0);
+      mvprintw(displaystart + listref, 0, "%s", paddingE0);
     }
     free(paddingE0);
   }
@@ -1391,13 +1395,14 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   free(sizeSegment);
   free(dateSegment);
 
-  free(s1);
-  free(s2);
-  free(s3);
-  free(s4);
-  free(s5);
-  free(s6);
+  // free(s1);
+  // free(s2);
+  // free(s3);
+  // free(s4);
+  // free(s5);
+  // free(s6);
   free(sizestring);
+  free(sizePadding);
   // free(entryMeta);
   free(entryName);
   free(entrySLink);
@@ -1410,11 +1415,13 @@ void LaunchShell()
   sprintf(c, "%i", showProcesses);
   setenv("DFS_RUNNING", c, 1);
   clear();
+  def_prog_mode();
   endwin();
   // system("clear"); // Not exactly sure if I want this yet.
   // printf("\nUse 'exit' to return to Show.\n\n");
   write(STDOUT_FILENO, "\nUse 'exit' to return to Show.\n\n", 32);
   system(getenv("SHELL"));
+  reset_prog_mode();
   initscr();
   refreshScreen();
 }
@@ -1507,7 +1514,10 @@ int SendToPager(char* object)
     if (access(object, R_OK) == 0){
       // clear();
       // endwin();
+      def_prog_mode();
+      endwin();
       e = system(pagerCommand);
+      reset_prog_mode();
       // initscr();
       refreshScreen();
       return e;
@@ -1547,7 +1557,10 @@ int SendToEditor(char* object)
     if (access(object, R_OK) == 0){
       clear();
       // endwin();
+      def_prog_mode();
+      endwin();
       e = system(editorCommand);
+      reset_prog_mode();
       // initscr();
       refreshScreen();
       return e;
@@ -1915,7 +1928,7 @@ int CheckMarked(results* ob)
   return(result);
 }
 
-void set_history(char *pwd, char *objectWild, char *name, int topfileref, int selected)
+void set_history(char *pwd, char *objectWild, char *name, int lineStart, int selected)
 {
   if (sessionhistory == 0){
     history *hs = malloc(sizeof(history));
@@ -1936,7 +1949,7 @@ void set_history(char *pwd, char *objectWild, char *name, int topfileref, int se
   strcpy(hs[historyref].path, pwd);
   strcpy(hs[historyref].objectWild, objectWild);
   strcpy(hs[historyref].name, name);
-  hs[historyref].topfileref = topfileref;
+  hs[historyref].lineStart = lineStart;
   hs[historyref].selected = selected;
   hs[historyref].visibleObjects = visibleObjects;
   historyref++;
@@ -2302,7 +2315,8 @@ results* reorder_ob(results* ob, char *order){
 
 void generateEntryLineIndex(results *ob){
   int i, n, t;
-  int listLen = totalfilecount;
+
+  listLen = totalfilecount;
 
   if (showXAttrs) {
     listLen = totalfilecount + xattrPos;
@@ -2311,16 +2325,14 @@ void generateEntryLineIndex(results *ob){
   el = calloc(listLen, sizeof(entryLines));
   n = 0;
   for (i = 0; i < totalfilecount; i++){
-    el[n].object = true;
-    el[n].xattr = false;
+    el[n].entryLineType = ET_OBJECT;
     el[n].subIndex = 0;
     el[n].fileRef = i;
     n++;
     if (showXAttrs){
       if (ob[i].xattrsNum > 0){
         for (t = 0; t < ob[i].xattrsNum; t++){
-          el[n].object = false;
-          el[n].xattr = true;
+          el[n].entryLineType = ET_XATTR;
           el[n].subIndex = t;
           el[n].fileRef = i;
           n++;
@@ -2332,12 +2344,53 @@ void generateEntryLineIndex(results *ob){
   // Test
   // endwin();
   // for (i = 0; i < listLen; i++){
-  //   printf("I: %d, F: %d, O: %d, X: %d, S: %d\n", i, el[i].fileRef, el[i].object, el[i].xattr, el[i].subIndex);
+  //   printf("I: %d, F: %d, T: %d, S: %d\n", i, el[i].fileRef, el[i].entryLineType, el[i].subIndex);
   // }
   // exit(4);
 }
 
-void display_dir(char *pwd, results* ob, int topfileref, int selected){
+void adjustViewForSelected(int selected, entryLines* el, int listLen, int displaysize){
+  int i;
+
+  for (i = 0; i < listLen; i++){
+    if ((el[i].fileRef == selected) && (el[i].entryLineType == ET_OBJECT)){
+      if (listLen < displaysize) {
+        lineStart = 0;
+      } else if ((i + displaysize) > listLen){
+        lineStart = listLen - displaysize;
+      } else {
+        lineStart = i;
+      }
+      topfileref = el[lineStart].fileRef;
+      if ((lineStart + displaysize) > listLen){
+        bottomFileRef = el[listLen - 1].fileRef;
+      } else {
+        bottomFileRef = el[(lineStart + displaysize) - 1].fileRef;
+      }
+      break;
+    }
+  }
+
+}
+
+int lineStartFromBottomFileRef(int fileRef, entryLines* el, int listLen, int displaySize){
+  int i;
+  int output = 0;
+
+  for (i = 0; i < listLen; i++){
+    if ((el[i].fileRef == fileRef) &&(el[i].entryLineType == ET_OBJECT)){
+      if ((i - displaySize) > -1){
+        output = i - displaySize + 1;
+      } else {
+        output = 0;
+      }
+      break;
+    }
+  }
+  return output;
+}
+
+void display_dir(char *pwd, results* ob){
 
   int i, n, t;
   size_t list_count = 0;
@@ -2360,6 +2413,9 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   char *markedHeadSeg, *attrHeadSeg, *hlinkHeadSeg, *ownerHeadSeg, *contextHeadSeg, *sizeHeadSeg, *dateHeadSeg, *nameHeadSeg;
   int xattrOffset = 0;
   int origTopFileRef;
+  int currentItem;
+
+  topfileref = el[lineStart].fileRef;
 
   if (markedinfo == 2 && (CheckMarked(ob) > 0)){
     automark = 1;
@@ -2373,9 +2429,22 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   } else{
     displaysize = LINES - 5;
     displaystart = 4;
-    if ((totalfilecount >= displaysize) && (topfileref + (displaysize ) > totalfilecount )){
-      topfileref--;
-    }
+    // TO DO: REFACTOR
+    // if ((totalfilecount >= displaysize) && (lineStart + (displaysize ) > totalfilecount )){
+    //   lineStart--;
+    // }
+  }
+
+  // endwin();
+  if ((lineStart + displaysize) > listLen){
+    bottomFileRef = el[listLen - 1].fileRef;
+  } else {
+    bottomFileRef = el[(lineStart + displaysize) - 1].fileRef;
+  }
+
+  // Replacement to "sanitizeTopFileRef" - should be simpler with the lookup table.
+  if ((selected > bottomFileRef) || (selected < topfileref)){
+    adjustViewForSelected(selected, el, listLen, displaysize);
   }
 
   i = 0;
@@ -2388,57 +2457,57 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   }
 
   lineCount = 0;
-  bottomFileRef = 0;
+  // bottomFileRef = 0;
   visibleOffset = 0;
 
-  origTopFileRef = topfileref;
+  // origTopFileRef = topfileref;
 
-  for(list_count = topfileref; list_count < totalfilecount; list_count++ ){
-    lineCount++;
+  // for(list_count = topfileref; list_count < totalfilecount; list_count++ ){
+  //   lineCount++;
 
-    if (showXAttrs){
-      lineCount += ob[list_count].xattrsNum;
-      visibleOffset += ob[list_count].xattrsNum;
-    }
+  //   if (showXAttrs){
+  //     lineCount += ob[list_count].xattrsNum;
+  //     // visibleOffset += ob[list_count].xattrsNum;
+  //   }
 
-    if (lineCount > displaysize){
-      // lineCount--;
-      break;
-    }
-    bottomFileRef = list_count;
-  }
-
-  visibleObjects = bottomFileRef - topfileref + 1;
-
-  // Hacky, but it works.
-  if ((visibleObjects + visibleOffset) > displaysize){
-    visibleOffset -= (visibleObjects + visibleOffset) - displaysize;
-  }
-
-  // if (visibleObjects > count){
-  //   displaycount = count;
-  // } else {
-  //   displaycount = visibleObjects;
+  //   if (lineCount > displaysize){
+  //     // lineCount--;
+  //     break;
+  //   }
+  //   // bottomFileRef = list_count;
   // }
 
-  displaycount = visibleObjects;
+  // visibleObjects = bottomFileRef - topfileref + 1;
+
+  // // Hacky, but it works.
+  // if ((visibleObjects + visibleOffset) > displaysize){
+  //   visibleOffset -= (visibleObjects + visibleOffset) - displaysize;
+  // }
+
+  if (displaysize > count){
+    displaycount = count;
+  } else {
+    displaycount = displaysize;
+  }
+
+  // displaycount = visibleObjects;
 
   if (displaycount < 0){
     displaycount = 0;
   }
 
-  topfileref = sanitizeTopFileRef(topfileref);
+  // topfileref = sanitizeTopFileRef(topfileref);
   // endwin();
   // printf("OTFR: %i, NTFR: %i\n", origTopFileRef, topfileref);
 
-  if (topfileref != origTopFileRef){
-    i++;
-    goto rerunCalc;
-  }
+  // if (topfileref != origTopFileRef){
+  //   i++;
+  //   goto rerunCalc;
+  // }
 
   // printf("\n");
 
-  selected = selected - topfileref;
+  // selected = selected - topfileref;
 
   pwdPrintSize = (strlen(pwd) + strlen(objectWild) + 2);
 
@@ -2532,33 +2601,50 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   // } else {
   // }
 
+  if (el[lineStart].entryLineType != ET_OBJECT){
+    topfileref++;
+  }
+
   for(list_count = 0; list_count < displaycount + 1; list_count++ ){
-    if ((list_count + topfileref) < totalfilecount){
+    if ((list_count + lineStart) < listLen){
       // Setting highlight
-      if (list_count == selected) {
+      // if (list_count == selected) {
+      if (el[(list_count + lineStart)].fileRef == selected) {
         printSelect = 1;
       } else {
         printSelect = 0;
       }
 
-      ownstart = hlinklen + 2;
-      hlinkstart = ownstart - 1 - *ob[list_count + topfileref].hlinklens;
+      // ownstart = hlinklen + 2;
+      // hlinkstart = ownstart - 1 - *ob[list_count + lineStart].hlinklens;
 
       displaypos = 0 - hpos;
+
+      currentItem = el[(list_count + lineStart)].fileRef;
 
       // endwin();
       // printf("LC: %i, TFR: %i, DC: %i\n", list_count, topfileref, displaycount);
 
       // printf("DP: %i, HL: %i, OL: %i, GL: %i, AL: %i, SL: %i, MaL: %i, MiL: %i, DL: %i, NL: %i, CL: %i, PS: %i, LC: %i, TF: %i, XO: %i\n", displaypos, hlinklen, ownerlen, grouplen, authorlen, sizelen, majorlen, minorlen, datelen, namelen, contextlen, printSelect, list_count, topfileref, xattrOffset);
       // mvprintw(list_count + 4, 0, "DP: %i, HL: %i, OL: %i, GL: %i, AL: %i, SL: %i, MaL: %i, MiL: %i, DL: %i, NL: %i, CL: %i, PS: %i, LC: %i, TF: %i, XO: %i", displaypos, hlinklen, ownerlen, grouplen, authorlen, sizelen, majorlen, minorlen, datelen, namelen, contextlen, printSelect, list_count, topfileref, xattrOffset);
-      printEntry(displaypos, hlinklen, ownerlen, grouplen, authorlen, sizelen, majorlen, minorlen, datelen, namelen, contextlen, printSelect, list_count, topfileref, xattrOffset, ob);
-
-      if (showXAttrs && ob[list_count + topfileref].xattrsNum > 0){
-        // displaysize = displaysize - ob[list_count + topfileref].xattrsNum;
-        // displaycount = displaycount + ob[list_count + topfileref].xattrsNum;
-        // list_count = list_count + ob[list_count + topfileref].xattrsNum;
-        xattrOffset += ob[list_count + topfileref].xattrsNum;
+      if (el[(list_count + lineStart)].entryLineType == ET_OBJECT){
+        printEntry(displaypos, hlinklen, ownerlen, grouplen, authorlen, sizelen, majorlen, minorlen, datelen, namelen, contextlen, printSelect, list_count, currentItem, ob);
+        // mvprintw(displaystart + list_count, 0, "%i - THIS SHOULDN'T BE HERE! - %s", printSelect, ob[el[(list_count + lineStart)].fileRef].name);
+      } else if (el[(list_count + lineStart)].entryLineType == ET_ACL) {
+        // Not implemented yet
+      } else if (el[(list_count + lineStart)].entryLineType == ET_XATTR) {
+        // Not implemented yet
+        mvprintw(displaystart + list_count, 0, "            %s        %s", "uk.me.robertianhawdon.test", "27");
+      } else {
+        mvprintw(displaystart + list_count, 0, "THIS SHOULDN'T BE HERE! - entryLineType: %d", el[(list_count + lineStart)].entryLineType);
       }
+
+      // if (showXAttrs && ob[list_count + topfileref].xattrsNum > 0){
+      //   // displaysize = displaysize - ob[list_count + topfileref].xattrsNum;
+      //   // displaycount = displaycount + ob[list_count + topfileref].xattrsNum;
+      //   // list_count = list_count + ob[list_count + topfileref].xattrsNum;
+      //   xattrOffset += ob[list_count + topfileref].xattrsNum;
+      // }
 
       //list_count++;
     } else {
@@ -2750,16 +2836,16 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
 
 void resizeDisplayDir(results* ob){
   displaysize = (LINES - 5);
-  if ( (selected - topfileref) > (LINES - 6 )) {
-    topfileref = selected - (LINES - 6);
-  } else if ( topfileref + (LINES - 6) > totalfilecount ) {
+  if ( (selected - lineStart) > (LINES - 6 )) {
+    lineStart = selected - (LINES - 6);
+  } else if ( lineStart + (LINES - 6) > totalfilecount ) {
     if (totalfilecount < (LINES - 6)){
-      topfileref = 0;
+      lineStart = 0;
     } else {
-      topfileref = totalfilecount - (LINES - 5);
+      lineStart = totalfilecount - (LINES - 5);
     }
   }
-  refreshDirectory(sortmode, topfileref, selected, -1);
-  // display_dir(currentpwd, ob, topfileref, selected);
+  refreshDirectory(sortmode, lineStart, selected, -1);
+  // display_dir(currentpwd, ob, lineStart, selected);
 }
 

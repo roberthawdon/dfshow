@@ -71,6 +71,7 @@ extern int historyref;
 extern int sessionhistory;
 extern int selected;
 extern int topfileref;
+extern int lineStart;
 extern int bottomFileRef;
 extern int visibleObjects;
 extern int hpos;
@@ -113,6 +114,10 @@ extern xattrList *xa;
 extern int xattrPos;
 
 extern int visibleOffset;
+
+extern entryLines *el;
+
+extern int listLen;
 
 menuDef *globalMenu;
 int globalMenuSize = 0;
@@ -270,28 +275,22 @@ void unloadMenuLabels(){
 
 int sanitizeTopFileRef(int topfileref)
 {
-  if (((topfileref + visibleObjects) < totalfilecount + 1 ) && ((selected) > topfileref + 1) && (selected < (topfileref + visibleObjects))) {
+  if (((topfileref + displaysize) < totalfilecount + 1 ) && ((selected) > topfileref + 1) && (selected < (topfileref + displaysize))) {
     // If we're already good, we don't need to adjust the topfileref
   } else if ( (topfileref > totalfilecount) ){
     // If the top file ref exceeds the number of files, we'll want to do something about that
-    topfileref = totalfilecount - (visibleObjects);
+    topfileref = totalfilecount - (displaysize);
   } else if ( (selected - topfileref) < 0 ) {
     // We certainly don't want the top file ref in the negatives
     topfileref = 0;
-  } else if ((topfileref + visibleObjects) > totalfilecount){
+  } else if ((topfileref + displaysize) > totalfilecount){
     // If we end up with the top file ref in a position where the list of files ends before the end of the screen, we need to sort that too.
-    topfileref = totalfilecount - (visibleObjects);
+    topfileref = totalfilecount - (displaysize);
   }
-  if ( topfileref > bottomFileRef ){
-    topfileref = selected - visibleObjects + 1;
+  if ( (selected - topfileref ) > displaysize ){
+    // We don't want the selected item off the bottom of the screen
+    topfileref = selected - displaysize + 1;
   }
-  if ( selected > bottomFileRef) {
-    topfileref = selected - visibleObjects + 1;
-  }
-  // if ( (selected - topfileref ) > visibleObjects ){
-  //   // We don't want the selected item off the bottom of the screen
-  //   topfileref = selected - visibleObjects + 1;
-  // }
   if ( selected == 0 ) {
     // Just in case we're thrust to the top of the list - like when in a hidden directory and hidden files are switched off
     topfileref = 0;
@@ -300,22 +299,15 @@ int sanitizeTopFileRef(int topfileref)
     // Likewise, we don't want the topfileref < 0 here either
     topfileref = 0;
   }
-  if ( totalfilecount < visibleObjects ){
-    // Finally, to override all of the above, if we have less files than display, reset top file ref to 0.
-    topfileref = 0;
-  }
   if ( totalfilecount < displaysize ){
     // Finally, to override all of the above, if we have less files than display, reset top file ref to 0.
     topfileref = 0;
   }
 
-  // endwin();
-  // printf("%i - %i\n", selected, topfileref);
-  // exit(1);
   return topfileref;
 }
 
-void refreshDirectory(char *sortmode, int origtopfileref, int origselected, int destructive)
+void refreshDirectory(char *sortmode, int origlineStart, int origselected, int destructive)
 {
   char currentselectname[512];
   int i;
@@ -366,9 +358,9 @@ void refreshDirectory(char *sortmode, int origtopfileref, int origselected, int 
       global_menu();
     }
   }
-  topfileref = sanitizeTopFileRef(origtopfileref);
+  // topfileref = sanitizeTopFileRef(origtopfileref);
   if (dirAbort == 1){
-    topfileref = hs[historyref].topfileref;
+    lineStart = hs[historyref].lineStart;
     selected = hs[historyref].selected;
     dirAbort = 0;
   }
@@ -389,7 +381,7 @@ void refreshDirectory(char *sortmode, int origtopfileref, int origselected, int 
       selected = 0;
     }
   }
-  display_dir(currentpwd, ob, topfileref, selected);
+  display_dir(currentpwd, ob, lineStart, selected);
 }
 
 void directory_view_menu_inputs(); // Needed to allow menu inputs to switch between each other
@@ -435,9 +427,9 @@ void show_directory_input()
         // invalidstart = 0;
         set_history(currentpwd, "", "", 0, 0);
       } else {
-        set_history(currentpwd, objectWild, ob[selected].name, topfileref, selected);
+        set_history(currentpwd, objectWild, ob[selected].name, lineStart, selected);
       }
-      topfileref = 0;
+      lineStart = 0;
       selected = 0;
       chdir(currentpwd);
       refreshDirectory(sortmode, 0, selected, -2);
@@ -670,7 +662,7 @@ void edit_file_input()
   readline(filepath, 4096, "");
   curs_set(FALSE);
   SendToEditor(filepath);
-  refreshDirectory(sortmode, topfileref, selected, 1);
+  refreshDirectory(sortmode, lineStart, selected, 1);
 }
 
 void rename_file_input(char *file)
@@ -1040,7 +1032,7 @@ void delete_file_confirm_input(char *file)
         {
         case 'y':
           delete_file(file);
-          refreshDirectory(sortmode, topfileref, selected, 1);
+          refreshDirectory(sortmode, lineStart, selected, 1);
           // Not breaking here, intentionally dropping through to the default
         default:
           directory_view_menu_inputs();
@@ -1064,7 +1056,7 @@ void delete_directory_confirm_input(char *directory)
             sprintf(errmessage, "Error: %s", strerror(errno));
             topLineMessage(errmessage);
           }
-          refreshDirectory(sortmode, topfileref, selected, 1);
+          refreshDirectory(sortmode, lineStart, selected, 1);
           // Not breaking here, intentionally dropping through to the default
         default:
           directory_view_menu_inputs();
@@ -1158,7 +1150,7 @@ void sort_view_inputs()
         strcpy(sortmode, "size");
         reverse = 1;
       }
-      refreshDirectory(sortmode, topfileref, selected, 0);
+      refreshDirectory(sortmode, lineStart, selected, 0);
       directory_view_menu_inputs();
     }
 }
@@ -1239,7 +1231,7 @@ void modify_group_input()
         }
         free(ofile);
       }
-      refreshDirectory(sortmode, topfileref, selected, 0);
+      refreshDirectory(sortmode, lineStart, selected, 0);
 
       directory_view_menu_inputs();
     }
@@ -1337,7 +1329,7 @@ void modify_permissions_input()
       chmod(pfile, newperm);
       free(pfile);
     }
-    refreshDirectory(sortmode, topfileref, selected, 0);
+    refreshDirectory(sortmode, lineStart, selected, 0);
   }
 
   directory_view_menu_inputs();
@@ -1521,7 +1513,7 @@ void directory_view_menu_inputs()
       } else if (*pc == menuHotkeyLookup(fileMenu, "f_delete", fileMenuSize)){
         if ( (CheckMarked(ob) > 0) ) {
           delete_multi_file_confirm_input(ob);
-          refreshDirectory(sortmode, topfileref, selected, 1);
+          refreshDirectory(sortmode, lineStart, selected, 1);
           directory_view_menu_inputs();
         } else {
           strcpy(selfile, currentpwd);
@@ -1543,7 +1535,7 @@ void directory_view_menu_inputs()
         strcat(chpwd, ob[selected].name);
         if (!check_dir(chpwd)){
           SendToEditor(chpwd);
-          refreshDirectory(sortmode, topfileref, selected, 1);
+          refreshDirectory(sortmode, lineStart, selected, 1);
         }
       } else if (*pc == menuHotkeyLookup(fileMenu, "f_hidden", fileMenuSize)){
         strcpy(currentfilename, ob[selected].name);
@@ -1566,7 +1558,7 @@ void directory_view_menu_inputs()
             selected = 0;
           }
         }
-        refreshDirectory(sortmode, topfileref, selected, 0);
+        refreshDirectory(sortmode, lineStart, selected, 0);
       } else if (*pc == menuHotkeyLookup(fileMenu, "f_link", fileMenuSize)){
         if ( !(CheckMarked(ob) > 0) ) {
           link_key_menu_inputs();
@@ -1598,11 +1590,12 @@ void directory_view_menu_inputs()
                   selected = 0;
                 }
               }
-              visibleObjects = hs[historyref].visibleObjects;
-              topfileref = sanitizeTopFileRef(hs[historyref].topfileref);
+              // visibleObjects = hs[historyref].visibleObjects;
+              // topfileref = sanitizeTopFileRef(hs[historyref].topfileref);
               // topfileref = hs[historyref].topfileref;
+              lineStart = hs[historyref].lineStart;
               clear_workspace();
-              display_dir(currentpwd, ob, topfileref, selected);
+              display_dir(currentpwd, ob, lineStart, selected);
             } else {
               // Skip removed directories
               historyref--;
@@ -1641,28 +1634,28 @@ void directory_view_menu_inputs()
                 chpwd[strlen(chpwd) - 1] = '\0';
                 goto testSlash;
               }
-              set_history(chpwd, objectWild, ob[selected].name, topfileref, selected);
-              topfileref = 0;
+              set_history(chpwd, objectWild, ob[selected].name, lineStart, selected);
+              lineStart = 0;
               selected = 0;
               strcpy(currentpwd, chpwd);
               chdir(currentpwd);
-              refreshDirectory(sortmode, topfileref, selected, -2);
+              refreshDirectory(sortmode, lineStart, selected, -2);
             }
           } else if (!strcmp(ob[selected].name, ".")) {
             // Do nothing
           } else {
             if (check_dir(chpwd)){
               objectWild = "";
-              set_history(chpwd, objectWild, ob[selected].name, topfileref, selected);
-              topfileref = 0;
+              set_history(chpwd, objectWild, ob[selected].name, lineStart, selected);
+              lineStart = 0;
               selected = 0;
               strcpy(currentpwd, chpwd);
               chdir(currentpwd);
-              refreshDirectory(sortmode, topfileref, selected, -2);
+              refreshDirectory(sortmode, lineStart, selected, -2);
             } else {
               e = SendToPager(chpwd);
-              refreshDirectory(sortmode, topfileref, selected, 1);
-              // display_dir(currentpwd, ob, topfileref, selected);
+              refreshDirectory(sortmode, lineStart, selected, 1);
+              // display_dir(currentpwd, ob, lineStart, selected);
             }
           }
       } else if (*pc == menuHotkeyLookup(fileMenu, "f_touch", fileMenuSize)){
@@ -1694,14 +1687,14 @@ void directory_view_menu_inputs()
             abortinput = 0;
           }
         }
-        refreshDirectory(sortmode, topfileref, selected, 0);
+        refreshDirectory(sortmode, lineStart, selected, 0);
       } else if (*pc == menuHotkeyLookup(fileMenu, "f_uhunt", fileMenuSize)){
         e = huntCaseSelectInput();
         if (e != -1){
           huntInput(selected, e);
         }
         abortinput = 0;
-        display_dir(currentpwd, ob, topfileref, selected);
+        display_dir(currentpwd, ob, lineStart, selected);
       } else if (*pc == menuHotkeyLookup(fileMenu, "f_xexec", fileMenuSize)){
         strcpy(chpwd, currentpwd);
         if (!check_last_char(chpwd, "/")){
@@ -1715,55 +1708,66 @@ void directory_view_menu_inputs()
             free(execArgs);
           }
           abortinput = 0;
-          display_dir(currentpwd, ob, topfileref, selected);
+          display_dir(currentpwd, ob, lineStart, selected);
         } else {
           topLineMessage("Error: Permission denied");
         }
       } else if (*pc == menuHotkeyLookup(functionMenu, "f_01", functionMenuSize) || *pc == 338){
         if (selected < (totalfilecount - 1) ) {
           clear_workspace();
-          topfileref = topfileref + displaycount;
-          if (topfileref > (totalfilecount - visibleObjects)){
-            topfileref = totalfilecount - visibleObjects;
+          for (i = lineStart; i < listLen; i++){
+            if (el[i].fileRef == selected) {
+              if ((i + displaysize) < listLen){
+                selected = el[i + displaysize].fileRef;
+              } else {
+                selected = totalfilecount - 1;
+              }
+              break;
+            }
           }
-          // if (topfileref > (totalfilecount - displaycount)){
-          //   topfileref = totalfilecount - displaycount;
-          // }
-          selected = selected + displaycount;
-          if (selected > totalfilecount - 1){
-            selected = totalfilecount - 1;
+          lineStart = lineStart + displaysize;
+          if (lineStart > (listLen - displaysize)){
+            lineStart = listLen - displaysize;
           }
         }
-        display_dir(currentpwd, ob, topfileref, selected);
+        display_dir(currentpwd, ob, lineStart, selected);
       } else if (*pc == menuHotkeyLookup(functionMenu, "f_02", functionMenuSize) || *pc == 339){
         if (selected > 0){
           clear_workspace();
-          topfileref = topfileref - displaysize;
-          if (topfileref < 0){
-            topfileref = 0;
+          lineStart = lineStart - displaysize;
+          if (lineStart < 0){
+            lineStart = 0;
           }
-          selected = selected - displaysize;
-          if (selected < 0){
-            selected = 0;
+          for (i = 0; i < listLen; i++){
+            if ((el[i].fileRef == selected) && (el[i].entryLineType == ET_OBJECT)){
+              if ((i - displaysize) < 0) {
+                selected = 0;
+              } else {
+                selected = el[i - displaysize].fileRef;
+                if (el[i - displaysize].entryLineType != ET_OBJECT){
+                  selected++;
+                }
+              }
+            }
           }
         }
-        display_dir(currentpwd, ob, topfileref, selected);
+        display_dir(currentpwd, ob, lineStart, selected);
       } else if (*pc == menuHotkeyLookup(functionMenu, "f_03", functionMenuSize)){
         clear_workspace();
         selected = 0;
-        topfileref =0;
-        display_dir(currentpwd, ob, topfileref, selected);
+        lineStart = 0;
+        display_dir(currentpwd, ob, lineStart, selected);
       } else if (*pc == menuHotkeyLookup(functionMenu, "f_04", functionMenuSize)){
         clear_workspace();
         selected = totalfilecount - 1;
-        if (totalfilecount > displaysize){
-          topfileref = totalfilecount - displaysize;
+        if (totalfilecount > bottomFileRef){
+          lineStart = listLen - displaysize;
         } else {
-          topfileref = 0;
+          lineStart = 0;
         }
-        display_dir(currentpwd, ob, topfileref, selected);
+        display_dir(currentpwd, ob, lineStart, selected);
       } else if (*pc == menuHotkeyLookup(functionMenu, "f_05", functionMenuSize)){
-        refreshDirectory(sortmode, topfileref, selected, 0);
+        refreshDirectory(sortmode, lineStart, selected, 0);
       } else if (*pc == menuHotkeyLookup(functionMenu, "f_06", functionMenuSize)){
         strcpy(selfile, currentpwd);
         if (!check_last_char(selfile, "/")){
@@ -1779,19 +1783,19 @@ void directory_view_menu_inputs()
           }
           if (selected < (totalfilecount - 1)) {
             selected++;
-            if (selected > ((topfileref + displaysize) - 1)){
-              topfileref++;
+            if (selected > bottomFileRef){
+              lineStart = lineStartFromBottomFileRef(selected, el, listLen, displaysize);
               if (markedinfo == 2 && automark == 0){
-                topfileref++;
+                lineStart++;
               }
             }
           } else {
             if (markedinfo == 2 && automark == 0){
-              topfileref++;
+              lineStart++;
             }
           }
           clear_workspace();
-          display_dir(currentpwd, ob, topfileref, selected);
+          display_dir(currentpwd, ob, lineStart, selected);
         }
       } else if (*pc == menuHotkeyLookup(functionMenu, "f_07", functionMenuSize)){
         markall = 1;
@@ -1802,7 +1806,7 @@ void directory_view_menu_inputs()
         clear_workspace();
         reorder_ob(ob, sortmode);
         generateEntryLineIndex(ob);
-        display_dir(currentpwd, ob, topfileref, selected);
+        display_dir(currentpwd, ob, lineStart, selected);
       } else if (*pc == menuHotkeyLookup(functionMenu, "f_08", functionMenuSize)){
         markall = 0;
         freeResults(ob, totalfilecount);
@@ -1811,7 +1815,7 @@ void directory_view_menu_inputs()
         clear_workspace();
         reorder_ob(ob, sortmode);
         generateEntryLineIndex(ob);
-        display_dir(currentpwd, ob, topfileref, selected);
+        display_dir(currentpwd, ob, lineStart, selected);
       } else if (*pc == menuHotkeyLookup(functionMenu, "f_09", functionMenuSize)){
         sort_view_inputs();
       } else if (*pc == menuHotkeyLookup(functionMenu, "f_10", functionMenuSize)){
@@ -1828,19 +1832,19 @@ void directory_view_menu_inputs()
               }
               if (selected < (totalfilecount - 1)) {
                 selected++;
-                if (selected > ((topfileref + displaysize) - 1)){
-                  topfileref++;
+                if (selected > bottomFileRef){
+                  lineStart = lineStartFromBottomFileRef(selected, el, listLen, displaysize);
                   if (markedinfo == 2 && automark == 0){
-                    topfileref++;
+                    lineStart++;
                   }
                 }
               } else {
                 if (markedinfo == 2 && automark == 0){
-                  topfileref++;
+                  lineStart++;
                 }
               }
               clear_workspace();
-              display_dir(currentpwd, ob, topfileref, selected);
+              display_dir(currentpwd, ob, lineStart, selected);
             } else {
               blockend = selected;
               if (blockstart > blockend){
@@ -1859,7 +1863,7 @@ void directory_view_menu_inputs()
                 }
               }
               blockstart = blockend = -1;
-              display_dir(currentpwd, ob, topfileref, selected);
+              display_dir(currentpwd, ob, lineStart, selected);
               }
             }
       } else if (*pc == 10){
@@ -1876,49 +1880,59 @@ void directory_view_menu_inputs()
         // Down Arrow
       moveDown:
         if (selected < (totalfilecount - 1)) {
-          selected++;
-          if (selected > (topfileref + visibleObjects) - 1){
-            topfileref = selected - visibleObjects + 1;
-            // topfileref++;
-            // clear_workspace();
+          if (selected != bottomFileRef){
+            selected++;
+          } else {
+            if (el[lineStart + displaysize].fileRef == el[lineStart + displaysize - 1].fileRef){
+              lineStart++;
+            } else {
+              selected++;
+              lineStart++;
+            }
           }
           clear_workspace();
-          display_dir(currentpwd, ob, topfileref, selected);
+          display_dir(currentpwd, ob, lineStart, selected);
         }
       } else if (*pc == 259){
         // Up Arrow
         if (selected > 0){
-          selected--;
-          if (selected < topfileref){
-            topfileref--;
-            // clear_workspace();
+          //topfileref is correct here.
+          if (selected == topfileref){
+            if (el[lineStart - 1].entryLineType != ET_OBJECT){
+              lineStart--;
+            } else {
+              selected--;
+              lineStart--;
+            }
+          } else {
+            selected--;
           }
           clear_workspace();
-          display_dir(currentpwd, ob, topfileref, selected);
+          display_dir(currentpwd, ob, lineStart, selected);
         }
       } else if (*pc == 260){
         // Left Arrow
         if (hpos > 0){
           hpos--;
           clear_workspace();
-          display_dir(currentpwd, ob, topfileref, selected);
+          display_dir(currentpwd, ob, lineStart, selected);
         }
       } else if (*pc == 261){
         // Right Arrow
         if (hpos < (maxdisplaywidth - COLS)){
           hpos++;
           clear_workspace();
-          display_dir(currentpwd, ob, topfileref, selected);
+          display_dir(currentpwd, ob, lineStart, selected);
         }
       } else if (*pc == 262){
         // Home Key
-        selected = topfileref;
-        display_dir(currentpwd, ob, topfileref, selected);
+        selected = el[lineStart].fileRef;
+        display_dir(currentpwd, ob, lineStart, selected);
       } else if (*pc == 360){
         // End Key
         // selected = topfileref + (displaycount - 1);
-        selected = topfileref + (visibleObjects - 1);
-        display_dir(currentpwd, ob, topfileref, selected);
+        selected = bottomFileRef;
+        display_dir(currentpwd, ob, lineStart, selected);
       } else if (*pc == 276){
         // F12 Key
         endwin();
@@ -1929,19 +1943,18 @@ void directory_view_menu_inputs()
         printf("bottomFileRef: %i\n", bottomFileRef);
         printf("DIFFERENCE: %i\n\n", bottomFileRef - topfileref);
 
-        printf("visibleObjects: %i\n", visibleObjects);
-        printf("visibleOffset: %i\n", visibleOffset);
         printf("displaysize: %i\n", displaysize);
-
-        if ((visibleObjects + visibleOffset) == displaysize){
-          printf("Visible matches display: %i\n",(visibleObjects + visibleOffset));
-        } else {
-          printf("Visible DOES NOT match display: %i\n",(visibleObjects + visibleOffset));
-        }
 
         printf("\nTotal Files (objects): %i\n", totalfilecount);
         printf("Total xattr lines: %i\n", xattrPos);
         printf("Total lines: %i\n", (totalfilecount + xattrPos));
+
+        printf("\nBottom File Ref + 0: %i\n", el[lineStart + displaysize - 1].fileRef);
+        printf("Bottom File Ref + 1: %i\n", el[lineStart + displaysize].fileRef);
+
+        printf("\nlineStart: %i\n", lineStart);
+
+        printf("\nlistLen: %i\n", listLen);
         exit(3);
       }
     }
@@ -1965,8 +1978,8 @@ void global_menu_inputs()
           clear();
           global_menu_inputs();
         } else {
-          refreshDirectory(sortmode, topfileref, selected, 0);
-          display_dir(currentpwd, ob, topfileref, selected);
+          refreshDirectory(sortmode, lineStart, selected, 0);
+          // display_dir(currentpwd, ob, topfileref, selected);
           wPrintMenu(LINES-1, 0, functionMenuLabel);
           // printMenu(LINES-1, 0, functionMenuText); // Global menu inputs doesn't include this. Even though it isn't used.
           global_menu_inputs();
@@ -1977,8 +1990,8 @@ void global_menu_inputs()
           clear();
           global_menu_inputs();
         } else {
-          refreshDirectory(sortmode, topfileref, selected, 0);
-          display_dir(currentpwd, ob, topfileref, selected);
+          refreshDirectory(sortmode, lineStart, selected, 0);
+          // display_dir(currentpwd, ob, lineStart, selected);
           wPrintMenu(LINES-1, 0, functionMenuLabel);
           global_menu_inputs();
         }
@@ -1989,7 +2002,7 @@ void global_menu_inputs()
           // printMenu(0, 0, globalMenuText);
         } else {
           // display_dir(currentpwd, ob, topfileref, selected);
-          refreshDirectory(sortmode, topfileref, selected, 1);
+          refreshDirectory(sortmode, lineStart, selected, 1);
           directory_view_menu_inputs();
         }
       } else if (*pc == menuHotkeyLookup(globalMenu, "g_edit", globalMenuSize)) {
@@ -1998,7 +2011,7 @@ void global_menu_inputs()
           wPrintMenu(0,0,globalMenuLabel);
         } else {
           //   display_dir(currentpwd, ob, topfileref, selected);
-          refreshDirectory(sortmode, topfileref, selected, 1);
+          refreshDirectory(sortmode, lineStart, selected, 1);
           directory_view_menu_inputs();
         }
       } else if (*pc == menuHotkeyLookup(globalMenu, "g_help", globalMenuSize)) {

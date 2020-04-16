@@ -88,6 +88,7 @@ extern int * pc;
 
 extern history *hs;
 extern int topfileref;
+extern int lineStart;
 extern int selected;
 extern int totalfilecount;
 extern int showhidden;
@@ -537,7 +538,8 @@ int directory_view(char * currentpwd)
     strcpy(objectWild, "");
   }
 
-  topfileref = 0;
+  // topfileref = 0;
+  lineStart = 0;
   clear();
   setColors(COMMAND_PAIR);
 
@@ -558,7 +560,7 @@ int directory_view(char * currentpwd)
     selected = 0;
   }
 
-  display_dir(currentpwd, ob, topfileref, selected);
+  display_dir(currentpwd, ob, lineStart, selected);
 
   // function_key_menu();
 

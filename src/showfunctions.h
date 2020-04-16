@@ -21,6 +21,13 @@
 #define COL_DATE    6
 #define COL_NAME    7
 
+#define ET_OBJECT 0
+#define ET_ACL    1
+#define ET_XATTR  2
+
+#define V_TOP    0;
+#define V_BOTTOM 1;
+
 typedef struct {
   int marked[1];
   mode_t mode;
@@ -52,7 +59,7 @@ typedef struct {
   char *path;
   char *name;
   char *objectWild;
-  int topfileref;
+  int lineStart;
   int selected;
   int visibleObjects;
 } history;
@@ -72,11 +79,12 @@ typedef struct {
 
 typedef struct {
   int fileRef;
-  bool object;
-  bool xattr;
+  int entryLineType;
   int subIndex;
 } entryLines;
 
+void adjustViewForSelected(int selected, entryLines* el, int listLen, int displaysize);
+int lineStartFromBottomFileRef(int fileRef, entryLines* el, int listLen, int displaySize);
 int checkRunningEnv();
 void freeResults(results *ob, int count);
 void freeHistory(history *hs, int count);
@@ -98,8 +106,8 @@ int cmp_dflist_date(const void *lhs, const void *rhs);
 int cmp_dflist_size(const void *lhs, const void *rhs);
 results* get_dir(char *pwd);
 results* reorder_ob(results* ob, char *order);
-void display_dir(char *pwd, results* ob, int topfileref, int selected);
-void set_history(char *pwd, char *objectWild, char *name, int topfileref, int selected);
+void display_dir(char *pwd, results* ob);
+void set_history(char *pwd, char *objectWild, char *name, int lineStart, int selected);
 size_t GetAvailableSpace(const char* path);
 long GetUsedSpace(const char* path);
 int SendToPager(char* object);
@@ -112,7 +120,7 @@ int RenameObject(char* source, char* dest);
 int CheckMarked(results* ob);
 wchar_t *wWriteSegment(int segLen, wchar_t *text, int align);
 char *writeSegment(int segLen, char *text, int align);
-void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorlen, int sizelen, int majorlen, int minorlen, int datelen, int namelen, int contextlen, int selected, int listref, int topref, int offset, results* ob);
+void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorlen, int sizelen, int majorlen, int minorlen, int datelen, int namelen, int contextlen, int selected, int listref, int currentitem, results* ob);
 void padstring(char *str, int len, char c);
 char *genPadding(int num_of_spaces);
 void resizeDisplayDir(results* ob);
