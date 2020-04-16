@@ -1725,9 +1725,13 @@ void directory_view_menu_inputs()
               break;
             }
           }
-          lineStart = lineStart + displaysize;
-          if (lineStart > (listLen - displaysize)){
-            lineStart = listLen - displaysize;
+          if (listLen < displaysize){
+            lineStart = 0;
+          } else {
+            lineStart = lineStart + displaysize;
+            if (lineStart > (listLen - displaysize)){
+              lineStart = listLen - displaysize;
+            }
           }
         }
         display_dir(currentpwd, ob);
