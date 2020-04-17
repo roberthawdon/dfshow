@@ -43,6 +43,7 @@ AS_IF([test "x$with_selinux" = "xyes"], [
 
 AM_CONDITIONAL([DARWIN], [test $(uname) = "Darwin"])
 AM_CONDITIONAL([LINUX], [test $(uname) = "Linux"])
+AM_CONDITIONAL([HURD], [test $(uname) = "GNU"])
 AM_CONDITIONAL([SELINUX], [test "x$with_selinux" = "xyes"])
 
 AC_CONFIG_FILES([Makefile])

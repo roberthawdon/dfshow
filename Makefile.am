@@ -17,6 +17,10 @@ if LINUX
 LDADD += -lacl -ltinfo
 endif
 
+if HURD
+LDADD += -lacl -ltinfo
+endif
+
 if SELINUX
 LDADD += -lselinux
 endif
