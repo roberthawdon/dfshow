@@ -79,6 +79,7 @@ int namelen;
 int slinklen;
 int contextlen;
 int nameSegLen;
+int xattrKeyLen;
 
 int nameAndSLink = 0;
 
@@ -841,6 +842,8 @@ char *writeSegment(int segLen, char *text, int align){
 void printXattr(int start, int selected, int listref, int currentItem, int subIndex, xattrList* xa, results* ob){
   int i;
 
+  int maxlen = COLS - start - 1;
+
   char *tmpXattrAt;
   int xattrAtPos;
   bool hasXattr = false;
@@ -849,6 +852,15 @@ void printXattr(int start, int selected, int listref, int currentItem, int subIn
   char *tmpXattrSize;
   int tmpXattrSizeLen;
   char *tmpXattrPadding;
+  int linepadding;
+  int xattrKeySegmentLen;
+  char *xattrKeySegment;
+  int xattrSizeSegmentLen;
+  char *xattrSizeSegment;
+  char xattrPrePad[13] = "            ";
+  char *paddingE0;
+
+  charPos = 0;
 
   // Setting highlight
   if (selected) {
@@ -871,18 +883,39 @@ void printXattr(int start, int selected, int listref, int currentItem, int subIn
     tmpXattrSize = malloc(sizeof(char) * tmpXattrSizeLen);
     sprintf(tmpXattrSize, "%zu", xa[xattrAtPos + subIndex].xattrSize);
   }
+
+  xattrKeySegment = writeSegment(xattrKeyLen, xa[xattrAtPos + subIndex].xattr, LEFT);
+
   tmpXattrPrint = calloc(COLS, sizeof(char));
-  tmpXattrDataLen = snprintf(NULL, 0, "            %s        %s", xa[xattrAtPos + subIndex].xattr, tmpXattrSize);
-  tmpXattrPadding = genPadding(COLS - tmpXattrDataLen);
-  sprintf(tmpXattrPrint, "            %s        %s%s", xa[xattrAtPos + subIndex].xattr, tmpXattrSize, tmpXattrPadding);
-  for (i = 0; i < strlen(tmpXattrPrint); i++){
-    mvprintw(displaystart + listref, i, "%c", tmpXattrPrint[i]);
+  // tmpXattrDataLen = snprintf(NULL, 0, "            %s        %s", xa[xattrAtPos + subIndex].xattr, tmpXattrSize);
+  // tmpXattrPadding = genPadding(COLS - tmpXattrDataLen);
+  sprintf(tmpXattrPrint, "%s%s%s", xattrPrePad, xattrKeySegment, tmpXattrSize);
+  for (i = 0; i < maxlen; i++){
+    mvprintw(displaystart + listref, start + charPos, "%c", tmpXattrPrint[i]);
+    charPos++;
+    if (i == strlen(tmpXattrPrint) - 1){
+      break;
+    }
   }
   // mvprintw(displaystart + listref + offset + i, start + charPos, "            %s", xa[(xattrAtPos + (i - 1))].xattr);
   free(tmpXattrPrint);
   free(tmpXattrSize);
   free(tmpXattrPadding);
 
+  free(xattrKeySegment);
+
+  linepadding = COLS - charPos - start;
+
+  if (linepadding > 0){
+    if ((charPos + start) > 0){
+      paddingE0 = genPadding(linepadding);
+      mvprintw(displaystart + listref, charPos + start, "%s", paddingE0);
+    } else {
+      paddingE0 = genPadding(COLS);
+      mvprintw(displaystart + listref, 0, "%s", paddingE0);
+    }
+    free(paddingE0);
+  }
   // mvprintw(displaystart + listref + start, 0, "            %s        %s", "uk.me.robertianhawdon.test", "27");
 }
 
@@ -1411,13 +1444,12 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   free(nameSegmentData[0].padding);
   free(nameSegmentData);
 
-  linepadding = COLS - charPos;
-
+  linepadding = COLS - charPos - start;
 
   if (linepadding > 0){
-    if (charPos > 0){
+    if ((charPos + start) > 0){
       paddingE0 = genPadding(linepadding);
-      mvprintw(displaystart + listref, charPos, "%s", paddingE0);
+      mvprintw(displaystart + listref, charPos + start, "%s", paddingE0);
     } else {
       paddingE0 = genPadding(COLS);
       mvprintw(displaystart + listref, 0, "%s", paddingE0);
@@ -2320,6 +2352,14 @@ results* get_dir(char *pwd)
   // nameSegLen = namelen + slinklen + 4; // The 4 is the length of " -> "
   nameSegLen = seglength(ob, "nameSegBlock", count);
 
+  xattrKeyLen = 0;
+
+  for (i = 0; i < xattrPos; i++){
+    if (xattrKeyLen < strlen(xa[i].xattr)){
+      xattrKeyLen = strlen(xa[i].xattr);
+    }
+  }
+
   free(dirError);
   free(res);
   return ob;
@@ -2549,6 +2589,7 @@ void display_dir(char *pwd, results* ob){
 
   // selected = selected - topfileref;
 
+
   pwdPrintSize = (strlen(pwd) + strlen(objectWild) + 2);
 
   pwdPrint = realloc(pwdPrint, (sizeof(wchar_t) * pwdPrintSize));
@@ -2681,6 +2722,10 @@ void display_dir(char *pwd, results* ob){
         mvprintw(displaystart + list_count, 0, "THIS SHOULDN'T BE HERE! - entryLineType: %d", el[(list_count + lineStart)].entryLineType);
       }
 
+      if (charPos > maxdisplaywidth){
+        maxdisplaywidth = charPos;
+      }
+
       // if (showXAttrs && ob[list_count + topfileref].xattrsNum > 0){
       //   // displaysize = displaysize - ob[list_count + topfileref].xattrsNum;
       //   // displaycount = displaycount + ob[list_count + topfileref].xattrsNum;
@@ -2694,7 +2739,6 @@ void display_dir(char *pwd, results* ob){
     }
   }
 
-  maxdisplaywidth = charPos;
 
   // if (slinklen == 0){
   //   maxdisplaywidth = charPos + namelen;

@@ -239,6 +239,13 @@ void readConfig(const char * confFile)
           skipToFirstFile = 1;
         }
       }
+      // Check Showing XAttrs
+      setting = config_setting_get_member(group, "showXAttrs");
+      if (setting){
+        if (config_setting_get_int(setting)){
+          showXAttrs = 1;
+        }
+      }
     }
     // Check owner column
     group = config_lookup(&cfg, "show.owner");
@@ -311,6 +318,8 @@ void saveConfig(const char * confFile, settingIndex **settings, t1CharValues **v
         config_setting_set_int(setting, showContext);
       } else if (!strcmp((*settings)[i].refLabel, "skip-to-first")){
         config_setting_set_int(setting, skipToFirstFile);
+      } else if (!strcmp((*settings)[i].refLabel, "showXAttrs")){
+        config_setting_set_int(setting, showXAttrs);
       }
     } else if ((*settings)[i].type == 1){
       //
@@ -384,6 +393,8 @@ void applySettings(settingIndex **settings, t1CharValues **values, int items, in
       }
     } else if (!strcmp((*settings)[i].refLabel, "owner")){
       ogavis = (*settings)[i].intSetting;
+    } else if (!strcmp((*settings)[i].refLabel, "showXAttrs")){
+      showXAttrs = (*settings)[i].intSetting;
     }
   }
 }
@@ -447,6 +458,9 @@ void settingsMenuView(){
   importSetting(&settingIndex, &items, "owner",          L"Owner Column", 2, ogavis, ownerCount, 0);
   importSetting(&settingIndex, &items, "context",        L"Show security context of files", 0, showContext, -1, 0);
   importSetting(&settingIndex, &items, "skip-to-first",  L"Skip to the first object", 0, skipToFirstFile, -1, 0);
+#ifdef HAVE_ACL_TYPE_EXTENDED
+  importSetting(&settingIndex, &items, "showXAttrs",     L"Display extended attribute keys and sizes", 0, showXAttrs, -1, 0);
+#endif
 
   populateBool(&binValues, "owner", ogavis, binValuesCount);
 
@@ -684,8 +698,11 @@ void printHelp(char* programName){
 Sorts objects alphabetically if -St is not set.\n\
 "), stdout);
   fputs (("\n\
-Options shared with ls:\n\
-  -a, --all                    do not ignore entries starting with .\n\
+Options shared with ls:\n"), stdout);
+#ifdef HAVE_ACL_TYPE_EXTENDED
+  fputs(("  -@                           display extended attribute keys and sizes\n"), stdout);
+#endif
+  fputs(("  -a, --all                    do not ignore entries starting with .\n\
       --author                 prints the author of each file\n\
   -B, --ignore-backups         do not list implied entries ending with ~\n\
       --color[=WHEN]           colorize the output, see the color section below\n\
@@ -740,6 +757,13 @@ int main(int argc, char *argv[])
   uid_t uid=getuid(), euid=geteuid();
   int c;
   char * tmpPwd;
+  char options[20];
+
+#ifdef HAVE_ACL_TYPE_EXTENDED
+  strcpy(options, "@aABfgGhlrStUZ1");
+#else
+  strcpy(options, "aABfgGhlrStUZ1");
+#endif
 
   showProcesses = checkRunningEnv() + 1;
 
@@ -793,7 +817,7 @@ int main(int argc, char *argv[])
         };
       int option_index = 0;
 
-      c = getopt_long(argc, argv, "aABfgGhlrStUZ1@", long_options, &option_index);
+      c = getopt_long(argc, argv, options, long_options, &option_index);
 
       if ( c == -1 ){
         break;
