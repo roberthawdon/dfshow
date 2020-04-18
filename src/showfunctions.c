@@ -172,6 +172,7 @@ extern int showContext;
 extern int oneLine;
 extern int skipToFirstFile;
 extern int showXAttrs;
+extern int showAcls;
 
 extern char sortmode[9];
 
@@ -197,6 +198,7 @@ void freeResults(results *ob, int count)
     free(ob[i].datedisplay);
     free(ob[i].contextText);
     free(ob[i].xattrs);
+    // free(ob[i].acl);
   }
   free(ob);
   free(el);
@@ -593,16 +595,16 @@ void writeResultStruct(results* ob, const char * filename, struct stat buffer, i
   ob[count].xattr = xattr;
   ob[count].xattrsNum = xattrsNum;
 
+  if (seLinuxCon > 0){
+    axFlag = ACL_SELINUX;
+  }
+
   if (acl != NULL){
     axFlag = ACL_TRUE;
   }
 
   if (xattr > 0){
     axFlag = ACL_XATTR;
-  }
-
-  if (seLinuxCon > 0){
-    axFlag = ACL_SELINUX;
   }
 
   ob[count].xattrs = malloc(sizeof(char) * xattr);
@@ -2226,13 +2228,15 @@ results* get_dir(char *pwd)
               // endwin();
               // printf("%s - %zu - %i\n", res->d_name, count, xattrPos);
             #else
-              xattrs = malloc(sizeof(char) * 1);
-              strcpy(xattrs, "");
-              acl = acl_get_file(res->d_name, ACL_TYPE_ACCESS);
-              if (errno == ENODATA) {
-                acl_free(acl);
-                acl = NULL;
-              }
+              #ifdef HAVE_SYS_ACL_H
+                xattrs = malloc(sizeof(char) * 1);
+                strcpy(xattrs, "");
+                acl = acl_get_file(res->d_name, ACL_TYPE_ACCESS);
+                if (errno == ENODATA) {
+                  acl_free(acl);
+                  acl = NULL;
+                }
+              #endif
               #ifdef HAVE_SELINUX_SELINUX_H
               seLinuxCon = lgetfilecon(res->d_name, &context);
               if (seLinuxCon > 0){
@@ -2416,6 +2420,14 @@ void generateEntryLineIndex(results *ob){
           el[n].fileRef = i;
           n++;
         }
+      }
+    }
+    if (showAcls){
+      if (ob[i].acl != NULL){
+        el[n].entryLineType = ET_ACL;
+        el[n].subIndex = 0;
+        el[n].fileRef = i;
+        n++;
       }
     }
   }

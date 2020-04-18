@@ -71,6 +71,8 @@ int showContext = 0;
 
 int showXAttrs = 0;
 
+int showAcls = 0;
+
 char *objectWild;
 
 results *ob;
