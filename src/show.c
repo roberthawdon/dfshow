@@ -76,6 +76,9 @@ char *objectWild;
 
 results *ob;
 
+int segOrder[8] = {COL_MARK, COL_ATTR, COL_HLINK, COL_OWNER, COL_CONTEXT, COL_SIZE, COL_DATE, COL_NAME};
+// int segOrder[8] = {COL_MARK, COL_NAME, COL_SIZE, COL_DATE, COL_ATTR}; // Emulating NET-DF-EDIT's XENIX layout
+
 extern int skippable;
 
 extern int settingsPos;
@@ -122,6 +125,7 @@ void readConfig(const char * confFile)
   config_t cfg;
   config_setting_t *root, *setting, *group, *array; //probably don't need the array, but it may be used in the future.
   char markedParam[8];
+  int i, n;
   config_init(&cfg);
   if (config_read_file(&cfg, confFile)){
     // Deal with the globals first
@@ -245,6 +249,17 @@ void readConfig(const char * confFile)
       if (setting){
         if (config_setting_get_int(setting)){
           showXAttrs = 1;
+        }
+      }
+      // Check Layout
+      array = config_setting_get_member(group, "layout");
+      if (array){
+        for (i = 0; i < 8; i++){
+          if (config_setting_get_elem(array, i) != NULL){
+            segOrder[i] = config_setting_get_int_elem(array, i);
+          } else {
+            segOrder[i] = -1;
+          }
         }
       }
     }

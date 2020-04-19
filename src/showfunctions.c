@@ -132,9 +132,6 @@ history *hs;
 
 time_t currenttime;
 
-int segOrder[] = {COL_MARK, COL_ATTR, COL_HLINK, COL_OWNER, COL_CONTEXT, COL_SIZE, COL_DATE, COL_NAME};
-// int segOrder[] = {COL_MARK, COL_NAME, COL_SIZE, COL_DATE, COL_ATTR}; // Emulating NET-DF-EDIT's XENIX layout
-
 int skippable = 0;
 
 xattrList *xa;
@@ -150,6 +147,8 @@ int listLen;
 entryLines *el;
 
 extern DIR *folder;
+
+extern int segOrder[8];
 
 extern int messageBreak;
 extern char currentpwd[4096];
@@ -1429,13 +1428,13 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
         setColors(DISPLAY_PAIR);
       }
 
-      // for ( i = 0; i < maxlen; i++){
-      //   mvprintw(displaystart + listref, start + charPos, "%c", nameSegmentData[0].padding[i]);
-      //   charPos++;
-      //   if ( i == strlen(nameSegmentData[0].padding) - 1 ){
-      //     break;
-      //   }
-      // }
+      for ( i = 0; i < maxlen; i++){
+        mvprintw(displaystart + listref, start + charPos, "%c", nameSegmentData[0].padding[i]);
+        charPos++;
+        if ( i == strlen(nameSegmentData[0].padding) - 1 ){
+          break;
+        }
+      }
 
       printNameSegment = 0;
     }
