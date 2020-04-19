@@ -58,7 +58,6 @@ int launchSettingsMenu = 0;
 int oneLine = 0;
 int skipToFirstFile = 0;
 
-
 int plugins = 0; // Not yet implemented
 
 int enterAsShow = 0;
@@ -71,7 +70,7 @@ int showContext = 0;
 
 int showXAttrs = 0;
 
-int showAcls = 0;
+int showAcls = 0; // Might end up not implementing this.
 
 char *objectWild;
 

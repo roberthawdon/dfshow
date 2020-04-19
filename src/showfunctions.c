@@ -198,7 +198,7 @@ void freeResults(results *ob, int count)
     free(ob[i].datedisplay);
     free(ob[i].contextText);
     free(ob[i].xattrs);
-    // free(ob[i].acl);
+    // acl_free(ob[i].acl);
   }
   free(ob);
   free(el);
@@ -567,12 +567,12 @@ int writePermsEntry(char * perms, mode_t mode, int axFlag, int sLinkCheck){
     perms[9] = '-';
   }
 
-  if (axFlag == ACL_TRUE){
+  if (axFlag == ACL_XATTR){
+    perms[10] = '@';
+  } else if (axFlag == ACL_TRUE){
     perms[10] = '+';
   } else if (axFlag == ACL_SELINUX){
     perms[10] = '.';
-  } else if (axFlag == ACL_XATTR){
-    perms[10] = '@';
   } else {
     perms[10] = ' ';
   }
@@ -2138,7 +2138,8 @@ results* get_dir(char *pwd)
   #ifdef HAVE_SELINUX_SELINUX_H
     security_context_t context;
   #endif
-    char *contextText;
+  char *contextText;
+  char *fullFilePath;
 
   results *ob = malloc(sizeof(results)); // Allocating a tiny amount of memory. We'll expand this on each file found.
   // xattrList *xa = malloc(sizeof(xattrList));
@@ -2172,6 +2173,8 @@ results* get_dir(char *pwd)
     if (access ( path, F_OK ) != -1 ){
       if ( folder ){
         while ( ( res = readdir ( folder ) ) != NULL ){
+          fullFilePath = calloc((strlen(pwd) + 2 + (strlen(res->d_name))), sizeof(char));
+          sprintf(fullFilePath, "%s/%s", pwd, res->d_name);
           acl = NULL; // Resetting
           xattr = 0; // Resetting
           seLinuxCon = 0; //Resetting
@@ -2207,7 +2210,8 @@ results* get_dir(char *pwd)
             // axFlag = 0;
 
             #ifdef HAVE_ACL_TYPE_EXTENDED
-              acl = acl_get_file(res->d_name, ACL_TYPE_EXTENDED);
+            // acl = acl_get_file(res->d_name, ACL_TYPE_EXTENDED);
+              acl = acl_get_link_np(fullFilePath, ACL_TYPE_EXTENDED);
               if (acl && acl_get_entry(acl, ACL_FIRST_ENTRY, &dummy) == -1) {
                 acl_free(acl);
                 acl = NULL;
@@ -2263,6 +2267,7 @@ results* get_dir(char *pwd)
 
             free(contextText);
             free(xattrs);
+            free(fullFilePath);
 
             sused = sused + buffer.st_size; // Adding the size values
 
@@ -2398,6 +2403,7 @@ results* reorder_ob(results* ob, char *order){
 
 void generateEntryLineIndex(results *ob){
   int i, n, t;
+  acl_entry_t	entry = NULL;
 
   listLen = totalfilecount;
 
@@ -2408,6 +2414,7 @@ void generateEntryLineIndex(results *ob){
   el = calloc(listLen, sizeof(entryLines));
   n = 0;
   for (i = 0; i < totalfilecount; i++){
+    entry = NULL;
     el[n].entryLineType = ET_OBJECT;
     el[n].subIndex = 0;
     el[n].fileRef = i;
@@ -2422,14 +2429,21 @@ void generateEntryLineIndex(results *ob){
         }
       }
     }
-    if (showAcls){
-      if (ob[i].acl != NULL){
-        el[n].entryLineType = ET_ACL;
-        el[n].subIndex = 0;
-        el[n].fileRef = i;
-        n++;
-      }
-    }
+    // if (showAcls){
+    //   if (ob[i].acl != NULL){
+    //     entry = NULL;
+    //     //endwin();
+    //     //printf("%i - %i: %s\n", acl_get_entry(ob[i].acl, entry == NULL ? ACL_FIRST_ENTRY : ACL_NEXT_ENTRY, &entry), errno, strerror(errno));
+    //     for (t = 0; acl_get_entry(ob[i].acl, entry == NULL ? ACL_FIRST_ENTRY : ACL_NEXT_ENTRY, &entry) == 0; t++) {
+    //       listLen++;
+    //       el = realloc(el, sizeof(entryLines) * listLen);
+    //       el[n].entryLineType = ET_ACL;
+    //       el[n].subIndex = t;
+    //       el[n].fileRef = i;
+    //       n++;
+    //     }
+    //   }
+    // }
   }
 
   // // Test
