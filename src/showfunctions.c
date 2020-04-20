@@ -1500,7 +1500,7 @@ void LaunchShell()
 
 void LaunchExecutable(const char* object, const char* args)
 {
-  char *command = malloc(sizeof(char) * (strlen(object) + strlen(args) + 2));
+  char *command = malloc(sizeof(char) * (strlen(object) + strlen(args) + 4));
   sprintf(command, "'%s' %s", object, args);
   system("clear"); // Just to be sure
   system(command);
