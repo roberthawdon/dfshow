@@ -274,7 +274,11 @@ int processXAttrs(xattrList **xa, char *name, unsigned char *xattrs, size_t xatt
     #ifdef HAVE_ACL_TYPE_EXTENDED
       (*xa)[pos].xattrSize = getxattr(name, xattrTmp, NULL, 0, 0, XATTR_NOFOLLOW);
     #else
-      (*xa)[pos].xattrSize = lgetxattr(name, xattrTmp, NULL, 0);
+      #ifdef HAVE_SYS_XATTR_H
+        (*xa)[pos].xattrSize = lgetxattr(name, xattrTmp, NULL, 0);
+      #else
+        (*xa)[pos].xattrSize = 0;
+      #endif
     #endif
       // endwin();
       // printf("%s - %s - %zu\n", (*xa)[pos].name, (*xa)[pos].xattr, (*xa)[pos].xattrSize);
