@@ -2242,7 +2242,7 @@ results* get_dir(char *pwd)
                 xattrs = malloc(sizeof(char) * 1);
                 strcpy(xattrs, "");
                 acl = acl_get_file(res->d_name, ACL_TYPE_ACCESS);
-                if (errno == ENODATA) {
+                if (errno == ENOENT) {
                   acl_free(acl);
                   acl = NULL;
                 }
