@@ -37,7 +37,6 @@
 #include <wchar.h>
 #include <math.h>
 #include <regex.h>
-#include <sys/xattr.h>
 #include <sys/acl.h>
 #include "common.h"
 #include "config.h"
@@ -57,6 +56,10 @@
 #if HAVE_SELINUX_SELINUX_H
 # include <selinux/selinux.h>
 # else
+#endif
+
+#if HAVE_SYS_XATTR_H
+# include <sys/xattr.h>
 #endif
 
 // It turns out most systems don't have an ST_AUTHOR, so for those systems, we set the author as the owner. Yup, `ls` does this too.
