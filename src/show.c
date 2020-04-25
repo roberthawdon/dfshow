@@ -309,7 +309,7 @@ void saveConfig(const char * confFile, settingIndex **settings, t1CharValues **v
 
   for (i = 0; i < items; i++){
     config_setting_remove(group, (*settings)[i].refLabel);
-    if ((*settings)[i].type == 0){
+    if ((*settings)[i].type == SETTING_BOOL){
       setting = config_setting_add(group, (*settings)[i].refLabel, CONFIG_TYPE_INT);
 
       if (!strcmp((*settings)[i].refLabel, "color")){
@@ -337,7 +337,7 @@ void saveConfig(const char * confFile, settingIndex **settings, t1CharValues **v
       } else if (!strcmp((*settings)[i].refLabel, "showXAttrs")){
         config_setting_set_int(setting, showXAttrs);
       }
-    } else if ((*settings)[i].type == 1){
+    } else if ((*settings)[i].type == SETTING_SELECT){
       //
       setting = config_setting_add(group, (*settings)[i].refLabel, CONFIG_TYPE_STRING);
       if (!strcmp((*settings)[i].refLabel, "marked")){
@@ -351,7 +351,7 @@ void saveConfig(const char * confFile, settingIndex **settings, t1CharValues **v
       } else if (!strcmp((*settings)[i].refLabel, "timestyle")){
         config_setting_set_string(setting, timestyle);
       }
-    } else if ((*settings)[i].type == 2){
+    } else if ((*settings)[i].type == SETTING_MULTI){
       if (!strcmp((*settings)[i].refLabel, "owner")){
         subgroup = config_setting_add(group, "owner", CONFIG_TYPE_GROUP);
         for (v = 0; v < binIndex; v++){
@@ -457,25 +457,25 @@ void settingsMenuView(){
   sortmodeInt = textValueLookup(&charValues, &charValuesCount, "sortmode", sortmode);
   timestyleInt = textValueLookup(&charValues, &charValuesCount, "timestyle", timestyle);
 
-  importSetting(&settingIndex, &items, "color",          L"Display file colors", 0, filecolors, -1, 0);
-  importSetting(&settingIndex, &items, "marked",         L"Show marked file info", 1, markedinfo, markedCount, 0);
-  importSetting(&settingIndex, &items, "sortmode",       L"Sorting mode", 1, sortmodeInt, sortmodeCount, 0);
-  importSetting(&settingIndex, &items, "reverse",        L"Reverse sorting order", 0, reverse, -1, 0);
-  importSetting(&settingIndex, &items, "timestyle",      L"Time style", 1, timestyleInt, timestyleCount, 0);
-  importSetting(&settingIndex, &items, "hidden",         L"Show hidden files", 0, showhidden, -1, 0);
-  importSetting(&settingIndex, &items, "ignore-backups", L"Hide backup files", 0, showbackup, -1, 1);
-  importSetting(&settingIndex, &items, "no-sf",          L"Use 3rd party pager over SF", 0, useEnvPager, -1, 0);
+  importSetting(&settingIndex, &items, "color",          L"Display file colors", SETTING_BOOL, filecolors, -1, 0);
+  importSetting(&settingIndex, &items, "marked",         L"Show marked file info", SETTING_SELECT, markedinfo, markedCount, 0);
+  importSetting(&settingIndex, &items, "sortmode",       L"Sorting mode", SETTING_SELECT, sortmodeInt, sortmodeCount, 0);
+  importSetting(&settingIndex, &items, "reverse",        L"Reverse sorting order", SETTING_BOOL, reverse, -1, 0);
+  importSetting(&settingIndex, &items, "timestyle",      L"Time style", SETTING_SELECT, timestyleInt, timestyleCount, 0);
+  importSetting(&settingIndex, &items, "hidden",         L"Show hidden files", SETTING_BOOL, showhidden, -1, 0);
+  importSetting(&settingIndex, &items, "ignore-backups", L"Hide backup files", SETTING_BOOL, showbackup, -1, 1);
+  importSetting(&settingIndex, &items, "no-sf",          L"Use 3rd party pager over SF", SETTING_BOOL, useEnvPager, -1, 0);
   if (uid == 0 || euid == 0){
-    importSetting(&settingIndex, &items, "no-danger",      L"Hide danger lines as root", 0, danger, -1, 1);
+    importSetting(&settingIndex, &items, "no-danger",      L"Hide danger lines as root", SETTING_BOOL, danger, -1, 1);
   }
-  importSetting(&settingIndex, &items, "si",             L"Use SI units", 0, si, -1, 0);
-  importSetting(&settingIndex, &items, "human-readable", L"Human readable sizes", 0, human, -1, 0);
-  importSetting(&settingIndex, &items, "show-on-enter",  L"Enter key acts like Show", 0, enterAsShow, -1, 0);
-  importSetting(&settingIndex, &items, "owner",          L"Owner Column", 2, ogavis, ownerCount, 0);
-  importSetting(&settingIndex, &items, "context",        L"Show security context of files", 0, showContext, -1, 0);
-  importSetting(&settingIndex, &items, "skip-to-first",  L"Skip to the first object", 0, skipToFirstFile, -1, 0);
+  importSetting(&settingIndex, &items, "si",             L"Use SI units", SETTING_BOOL, si, -1, 0);
+  importSetting(&settingIndex, &items, "human-readable", L"Human readable sizes", SETTING_BOOL, human, -1, 0);
+  importSetting(&settingIndex, &items, "show-on-enter",  L"Enter key acts like Show", SETTING_BOOL, enterAsShow, -1, 0);
+  importSetting(&settingIndex, &items, "owner",          L"Owner Column", SETTING_MULTI, ogavis, ownerCount, 0);
+  importSetting(&settingIndex, &items, "context",        L"Show security context of files", SETTING_BOOL, showContext, -1, 0);
+  importSetting(&settingIndex, &items, "skip-to-first",  L"Skip to the first object", SETTING_BOOL, skipToFirstFile, -1, 0);
 #ifdef HAVE_ACL_TYPE_EXTENDED
-  importSetting(&settingIndex, &items, "showXAttrs",     L"Display extended attribute keys and sizes", 0, showXAttrs, -1, 0);
+  importSetting(&settingIndex, &items, "showXAttrs",     L"Display extended attribute keys and sizes", SETTING_BOOL, showXAttrs, -1, 0);
 #endif
 
   populateBool(&binValues, "owner", ogavis, binValuesCount);
