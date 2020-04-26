@@ -178,6 +178,12 @@ extern int showAcls;
 
 extern char sortmode[9];
 
+#ifdef HAVE_MOVE_BETWEEN_DEVICES
+bool moveBetweenDevices = true;
+#else
+bool moveBetweenDevices = false;
+#endif
+
 /* Formatting time in a similar fashion to `ls` */
 static char const *long_time_format[2] =
   {
@@ -1978,9 +1984,15 @@ int RenameObject(char* source, char* dest)
     } else {
       // Destination is NOT in the same filesystem, the file will need copying then deleting.
       //mvprintw(0,66,"FAIL: %s:%s", sourceDevId, destDevId); // test fail
-      topLineMessage("Error: Unable to move file between mount points");
-      free(destPath);
-      return 1;
+      if (moveBetweenDevices){
+        // To Do
+        copy_file(source, dest, 0755);
+        return 0;
+      } else {
+        topLineMessage("Error: Unable to move file between mount points");
+        free(destPath);
+        return 1;
+      }
     }
   } else {
     // Destination directory not found

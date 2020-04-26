@@ -36,15 +36,19 @@ AC_CHECK_HEADERS(ncurses.h, , AC_MSG_ERROR(ncurses header (ncurses.h) not found.
 AC_CHECK_HEADERS(libconfig.h, , AC_MSG_ERROR(libconfig header (libconfig.h) not found. You may need to install a libconfig development package.))
 
 AC_ARG_WITH([selinux], AS_HELP_STRING([--with-selinux], [Build with selinux library (default: disabled)]))
+AC_ARG_ENABLE([move-between-devices], AS_HELP_STRING([--enable-move-between-devices], [Enable moving objects between mounted devices (default: disabled)]))
 
 AS_IF([test "x$with_selinux" = "xyes"], [
   AC_CHECK_HEADERS(selinux/selinux.h, , AC_MSG_ERROR(selinux header (selinux/selinux.h) not found. You may need to install an selinux development package.))
+])
+
+AS_IF([test "x$enable_move_between_devices" = "xyes"], [
+  AC_DEFINE(HAVE_MOVE_BETWEEN_DEVICES, 1, [True for enable-move-between-devices])
 ])
 
 AM_CONDITIONAL([DARWIN], [test $(uname) = "Darwin"])
 AM_CONDITIONAL([LINUX], [test $(uname) = "Linux"])
 AM_CONDITIONAL([HURD], [test $(uname) = "GNU"])
 AM_CONDITIONAL([SELINUX], [test "x$with_selinux" = "xyes"])
-
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
