@@ -31,6 +31,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <time.h>
+#include <utime.h>
 #include <sys/statvfs.h>
 #include <libgen.h>
 #include <errno.h>
@@ -1961,6 +1962,7 @@ int RenameObject(char* source, char* dest)
   char *destPath;
   struct stat sourcebuffer;
   struct stat destbuffer;
+  struct utimbuf touchDate;
   int e;
 
   destPath = dirFromPath(dest);
@@ -1986,8 +1988,17 @@ int RenameObject(char* source, char* dest)
       //mvprintw(0,66,"FAIL: %s:%s", sourceDevId, destDevId); // test fail
       if (moveBetweenDevices){
         // To Do
-        copy_file(source, dest, 0755);
-        return 0;
+        copy_file(source, dest, sourcebuffer.st_mode);
+        touchDate.actime = sourcebuffer.st_atime;
+        touchDate.modtime = sourcebuffer.st_mtime;
+        e = utime(dest, &touchDate);
+        if (e == 0){
+          e = chown(dest, sourcebuffer.st_uid, sourcebuffer.st_gid);
+        }
+        if (e == 0){
+          e = remove(source);
+        }
+        return e;
       } else {
         topLineMessage("Error: Unable to move file between mount points");
         free(destPath);
