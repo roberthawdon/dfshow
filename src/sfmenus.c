@@ -32,6 +32,8 @@ int * pc = &c;
 
 int abortinput = 0;
 
+bool findSet = false;
+
 menuDef *fileMenu;
 int fileMenuSize = 0;
 wchar_t *fileMenuLabel;
@@ -102,28 +104,32 @@ void unloadMenuLabels(){
   free(settingsMenuLabel);
 }
 
-void show_file_find(int charcase)
+void show_file_find(bool charcase, bool useLast)
 {
   int regexcase;
   int result;
   char inputmessage[32];
   char errormessage[1024];
-  if (charcase){
-    regexcase = 0;
-    strcpy(inputmessage, "Match Case - Enter string:");
-  } else {
-    regexcase = REG_ICASE;
-    strcpy(inputmessage, "Ignore Case - Enter string:");
+  if (!useLast){
+    if (charcase){
+      regexcase = 0;
+      strcpy(inputmessage, "Match Case - Enter string:");
+    } else {
+      regexcase = REG_ICASE;
+      strcpy(inputmessage, "Ignore Case - Enter string:");
+    }
+    move(0,0);
+    clrtoeol();
+    mvprintw(0, 0, inputmessage);
+    curs_set(TRUE);
+    move(0, strlen(inputmessage) + 1);
+    curs_set(FALSE);
+    if (readline(regexinput, 1024, regexinput) == -1 ){
+      abortinput = 1;
+    }
   }
-  move(0,0);
-  clrtoeol();
-  mvprintw(0, 0, inputmessage);
-  curs_set(TRUE);
-  move(0, strlen(inputmessage) + 1);
-  curs_set(FALSE);
-  if (readline(regexinput, 1024, regexinput) == -1 ){
-    abortinput = 1;
-  } else {
+  if (abortinput != 1) {
+    findSet = true;
     result = findInFile(fileName, regexinput, regexcase);
     if ( result > 0 ){
       topline = result;
@@ -211,9 +217,14 @@ void show_file_inputs()
       if (*pc == menuHotkeyLookup(fileMenu,"f_find", fileMenuSize)){
         e = show_file_find_case_input();
         if (e != -1){
-          show_file_find(e);
+          show_file_find(e, false);
         } else {
           abortinput = 0;
+        }
+        wPrintMenu(0, 0, fileMenuLabel);
+      } else if (*pc == 6){
+        if (findSet){
+          show_file_find(false, true);
         }
         wPrintMenu(0, 0, fileMenuLabel);
       } else if (*pc == menuHotkeyLookup(fileMenu, "f_help", fileMenuSize)){
