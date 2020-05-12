@@ -756,7 +756,7 @@ Options specific to show:\n\
       --running                display number of parent show processes\n\
       --settings-menu          launch settings menu\n\
       --edit-themes            launchs directly into the theme editor\n\
-      --skip-to-first          skips naviation items if at the top of list\n"), stdout);
+      --skip-to-first          skips navigation items if at the top of list\n"), stdout);
   fputs (("\n\
 The THEME argument can be:\n"), stdout);
   listThemes();
