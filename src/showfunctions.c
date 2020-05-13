@@ -608,16 +608,16 @@ void writeResultStruct(results* ob, const char * filename, struct stat buffer, i
   ob[count].xattr = xattr;
   ob[count].xattrsNum = xattrsNum;
 
-  if (seLinuxCon > 0){
-    axFlag = ACL_SELINUX;
-  }
-
   if (acl != NULL){
     axFlag = ACL_TRUE;
   }
 
   if (xattr > 0){
     axFlag = ACL_XATTR;
+  }
+
+  if (seLinuxCon > 0){
+    axFlag = ACL_SELINUX;
   }
 
   ob[count].xattrs = malloc(sizeof(char) * xattr);
