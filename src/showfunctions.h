@@ -31,7 +31,7 @@
 typedef struct {
   int marked[1];
   mode_t mode;
-  acl_t acl;
+  bool xAcl;
   ssize_t xattr;
   int seLinuxCon;
   char *contextText;
@@ -127,7 +127,7 @@ char *genPadding(int num_of_spaces);
 void resizeDisplayDir(results* ob);
 char *readableSize(double size, char *buf, int si);
 int writePermsEntry(char * perms, mode_t mode, int axFlag, int sLinkCheck);
-void writeResultStruct(results* ob, const char * filename, struct stat buffer, int count, acl_t acl, ssize_t xattr, int seLinuxCon, char * contextText, char * xattrs, const int xattrsNum);
+void writeResultStruct(results* ob, const char * filename, struct stat buffer, int count, bool xAcl, ssize_t xattr, int seLinuxCon, char * contextText, char * xattrs, const int xattrsNum);
 char *markedDisplay(results* ob);
 int huntFile(const char * file, const char * search, int charcase);
 

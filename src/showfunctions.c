@@ -594,7 +594,7 @@ int writePermsEntry(char * perms, mode_t mode, int axFlag, int sLinkCheck){
 
 }
 
-void writeResultStruct(results* ob, const char * filename, struct stat buffer, int count, acl_t acl, ssize_t xattr, int seLinuxCon, char * contextText, char * xattrs, const int xattrsNum){
+void writeResultStruct(results* ob, const char * filename, struct stat buffer, int count, bool xAcl, ssize_t xattr, int seLinuxCon, char * contextText, char * xattrs, const int xattrsNum){
   char perms[12] = {0};
   struct group *gr;
   struct passwd *pw;
@@ -604,11 +604,11 @@ void writeResultStruct(results* ob, const char * filename, struct stat buffer, i
   int axFlag = 0;
   int i;
 
-  ob[count].acl = acl;
+  ob[count].xAcl = xAcl;
   ob[count].xattr = xattr;
   ob[count].xattrsNum = xattrsNum;
 
-  if (acl != NULL){
+  if (xAcl){
     axFlag = ACL_TRUE;
   }
 
@@ -2159,6 +2159,7 @@ results* get_dir(char *pwd)
   // char filename[256];
   acl_t acl;
   acl_entry_t dummy;
+  int haveAcl;
   ssize_t xattr;
   char *xattrs;
   unsigned char *uXattrs;
@@ -2208,6 +2209,7 @@ results* get_dir(char *pwd)
           xattr = 0; // Resetting
           seLinuxCon = 0; //Resetting
           xattrsNum = 0;
+          haveAcl = 0;
           contextText = malloc(sizeof(char) * 2);
           if ( showhidden == 0 && check_first_char(res->d_name, ".") && strcmp(res->d_name, ".") && strcmp(res->d_name, "..") ) {
             continue; // Skipping hidden files
@@ -2245,6 +2247,9 @@ results* get_dir(char *pwd)
                 acl_free(acl);
                 acl = NULL;
               }
+              if (acl != NULL) {
+                haveAcl = 1;
+              }
               xattr = listxattr(res->d_name, NULL, 0, XATTR_NOFOLLOW);
               if (xattr < 0){
                 xattr = 0;
@@ -2264,11 +2269,15 @@ results* get_dir(char *pwd)
               #ifdef HAVE_SYS_ACL_H
                 xattrs = malloc(sizeof(char) * 1);
                 strcpy(xattrs, "");
-                acl = acl_get_file(res->d_name, ACL_TYPE_ACCESS);
-                if (errno == ENOENT) {
-                  acl_free(acl);
-                  acl = NULL;
+                haveAcl = acl_extended_file(res->d_name);
+                if (haveAcl == -1){
+                  haveAcl = 0;
                 }
+                // acl = acl_get_file(res->d_name, ACL_TYPE_ACCESS);
+                // if (errno == ENOENT) {
+                //   acl_free(acl);
+                //   acl = NULL;
+                // }
               #endif
               #ifdef HAVE_SELINUX_SELINUX_H
               seLinuxCon = lgetfilecon(res->d_name, &context);
@@ -2290,7 +2299,7 @@ results* get_dir(char *pwd)
               sprintf(contextText, "?");
             }
 
-            writeResultStruct(ob, res->d_name, buffer, count, acl, xattr, seLinuxCon, contextText, xattrs, xattrsNum);
+            writeResultStruct(ob, res->d_name, buffer, count, haveAcl, xattr, seLinuxCon, contextText, xattrs, xattrsNum);
 
             acl_free(acl);
 
