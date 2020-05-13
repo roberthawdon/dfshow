@@ -46,6 +46,10 @@
 #include "colors.h"
 #include "show.h"
 
+#if HAVE_ACL_LIBACL_H
+# include <acl/libacl.h>
+#endif
+
 #if HAVE_SYS_SYSMACROS_H
 # include <sys/sysmacros.h>
 #endif
@@ -2269,10 +2273,12 @@ results* get_dir(char *pwd)
               #ifdef HAVE_SYS_ACL_H
                 xattrs = malloc(sizeof(char) * 1);
                 strcpy(xattrs, "");
-                haveAcl = acl_extended_file(res->d_name);
-                if (haveAcl == -1){
-                  haveAcl = 0;
-                }
+                #if HAVE_ACL_LIBACL_H
+                  haveAcl = acl_extended_file(res->d_name);
+                  if (haveAcl == -1){
+                    haveAcl = 0;
+                  }
+               #endif
                 // acl = acl_get_file(res->d_name, ACL_TYPE_ACCESS);
                 // if (errno == ENOENT) {
                 //   acl_free(acl);

@@ -31,7 +31,7 @@ AC_CHECK_FUNCS(acl_get facl_get acl_set facl_set)
 
 
 AC_CHECK_MEMBERS([struct stat.st_author])
-AC_CHECK_HEADERS([stdio.h limits.h signal.h ctype.h wctype.h getopt.h sys/types.h sys/stat.h dirent.h fcntl.h pwd.h string.h stdlib.h unistd.h time.h sys/statvfs.h libgen.h errno.h wchar.h hurd.h math.h sys/sysmacros.h regex.h utime.h sys/xattr.h])
+AC_CHECK_HEADERS([stdio.h limits.h signal.h ctype.h wctype.h getopt.h sys/types.h sys/stat.h dirent.h fcntl.h pwd.h string.h stdlib.h unistd.h time.h sys/statvfs.h libgen.h errno.h wchar.h hurd.h math.h sys/sysmacros.h regex.h utime.h sys/xattr.h acl/libacl.h])
 AC_CHECK_HEADERS(ncurses.h, , AC_MSG_ERROR(ncurses header (ncurses.h) not found. You may need to install an ncurses development package.))
 AC_CHECK_HEADERS(libconfig.h, , AC_MSG_ERROR(libconfig header (libconfig.h) not found. You may need to install a libconfig development package.))
 AC_CHECK_HEADERS(sys/acl.h, , AC_MSG_ERROR(libacl header (sys/acl.h) not found. You may need to install a libacl development package.))
