@@ -1,7 +1,7 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "SHOW" "1" "January 2020" "" ""
+.TH "SHOW" "1" "May 2020" "" ""
 .
 .SH "NAME"
 \fBshow\fR \- An interactive directory/file browser written for Unix\-like systems\.
@@ -15,108 +15,99 @@ DF\-SHOW: An interactive directory/file browser written for Unix\-like systems\.
 .SH "OPTIONS"
 The following options are shared with \fBls\fR:
 .
-.TP
-\fB\-a\fR, \fB\-\-all\fR
-Does not ignore files or directories starting with \fB\.\fR\. The \fB\.\fR and \fB\.\.\fR objects are never hidden due to their navigational functions in \fBshow\fR\.
+.IP "\(bu" 4
+\fB\-@\fR Displays extended atributes keys and sizes (macOS only)\.
 .
-.TP
-\fB\-\-author\fR
-Prints the author of the file in the output\.
+.IP "\(bu" 4
+\fB\-a\fR, \fB\-\-all\fR: Does not ignore files or directories starting with \fB\.\fR\. The \fB\.\fR and \fB\.\.\fR objects are never hidden due to their navigational functions in \fBshow\fR\.
 .
-.TP
-\fB\-B\fR, \fB\-\-ignore\-backups\fR
-Hides files ending in \fB~\fR, often used as backup files\.
+.IP "\(bu" 4
+\fB\-\-author\fR: Prints the author of the file in the output\.
 .
-.TP
-\fB\-\-color\fR[=\fICOLOR\fR]
-Sets colorizing of files and directories\. Can be set to \fBalways\fR or \fBnever\fR\.
+.IP "\(bu" 4
+\fB\-B\fR, \fB\-\-ignore\-backups\fR: Hides files ending in \fB~\fR, often used as backup files\.
 .
-.TP
-\fB\-f\fR
-Does not sort the output, this is equivilent to running \fBshow\fR with \fB\-aU\fR\.
+.IP "\(bu" 4
+\fB\-\-color\fR[=\fICOLOR\fR]: Sets colorizing of files and directories\. Can be set to \fBalways\fR or \fBnever\fR\.
 .
-.TP
-\fB\-\-full\-time\fR
-Sets the Time/Date format to \fBfull\-iso\fR\.
+.IP "\(bu" 4
+\fB\-f\fR: Does not sort the output, this is equivilent to running \fBshow\fR with \fB\-aU\fR\.
 .
-.TP
-\fB\-g\fR
-Only displays the group of each object\. Can be paired with \fB\-\-author\fR\.
+.IP "\(bu" 4
+\fB\-\-full\-time\fR: Sets the Time/Date format to \fBfull\-iso\fR\.
 .
-.TP
-\fB\-G\fR, \fB\-\-no\-group\fR
-Omits the group of each object in the output\.
+.IP "\(bu" 4
+\fB\-g\fR: Only displays the group of each object\. Can be paired with \fB\-\-author\fR\.
 .
-.TP
-\fB\-h\fR, \fB\-\-human\-readable\fR
-Displays the file sizes in a human readable format\. For example, 1024 Bytes will be represented as 1M\.
+.IP "\(bu" 4
+\fB\-G\fR, \fB\-\-no\-group\fR: Omits the group of each object in the output\.
 .
-.TP
-\fB\-\-si\fR
-As above, but uses powers of 1000\. (1000 = 1m)
+.IP "\(bu" 4
+\fB\-h\fR, \fB\-\-human\-readable\fR: Displays the file sizes in a human readable format\. For example, 1024 Bytes will be represented as 1M\.
 .
-.TP
-\fB\-r\fR, \fB\-\-reverse\fR
-Reverse the order of sorting\. Can be paired with \fB\-S\fR or \fB\-t\fR
+.IP "\(bu" 4
+\fB\-\-si\fR: As above, but uses powers of 1000\. (1000 = 1m)
 .
-.TP
-\fB\-S\fR
-Sorts files and directories by size, largest first\.
+.IP "\(bu" 4
+\fB\-r\fR, \fB\-\-reverse\fR: Reverse the order of sorting\. Can be paired with \fB\-S\fR or \fB\-t\fR
 .
-.TP
-\fB\-\-time\-style\fR=[\fITIME_STYLE\fR]
-Time/Date format\. Can be set to \fBfull\-iso\fR, \fBlong\-iso\fR, \fBiso\fR, or \fBlocale\fR\.
+.IP "\(bu" 4
+\fB\-S\fR: Sorts files and directories by size, largest first\.
 .
-.TP
-\fB\-t\fR
-Sorts by modification time, newest first\.
+.IP "\(bu" 4
+\fB\-\-time\-style\fR=[\fITIME_STYLE\fR]: Time/Date format\. Can be set to \fBfull\-iso\fR, \fBlong\-iso\fR, \fBiso\fR, or \fBlocale\fR\.
 .
-.TP
-\fB\-U\fR
-Displays output in the order they\'re found\.
+.IP "\(bu" 4
+\fB\-t\fR: Sorts by modification time, newest first\.
 .
-.TP
-\fB\-\-help\fR
-Displays help message, then exits\.
+.IP "\(bu" 4
+\fB\-U\fR: Displays output in the order they\'re found\.
 .
-.TP
-\fB\-\-version\fR
-Displays program version, then exits\.
+.IP "\(bu" 4
+\fB\-Z\fR, \fB\-\-context\fR Shows the secuirty context of each file, if one is defined\.
+.
+.IP "\(bu" 4
+\fB\-1\fR Only shows the file name on display\.
+.
+.IP "\(bu" 4
+\fB\-\-help\fR: Displays help message, then exits\.
+.
+.IP "\(bu" 4
+\fB\-\-version\fR: Displays program version, then exits\.
+.
+.IP "" 0
 .
 .P
 The following options are specific to \fBshow\fR:
 .
-.TP
-\fB\-\-theme\fR=[\fITHEME\fR]
-Color themes\. Passing this argument without an option will display available themes\.
+.IP "\(bu" 4
+\fB\-\-theme\fR=[\fITHEME\fR]: Color themes\. Passing this argument without an option will display available themes\.
 .
-.TP
-\fB\-\-no\-danger\fR
-Disables the danger color scheme when running with elevated privileges\.
+.IP "\(bu" 4
+\fB\-\-no\-danger\fR: Disables the danger color scheme when running with elevated privileges\.
 .
-.TP
-\fB\-\-marked\fR=[\fIMARKED\fR]
-Displays information about marked files\. Can be set to \fBalways\fR, \fBnever\fR, or \fBauto\fR\.
+.IP "\(bu" 4
+\fB\-\-marked\fR=[\fIMARKED\fR]: Displays information about marked files\. Can be set to \fBalways\fR, \fBnever\fR, or \fBauto\fR\.
 .
-.TP
-\fB\-\-no\-sf\fR
-Doesn\'t display files using \fBsf\fR (if installed) and defaults to the user\'s PAGER setting\.
+.IP "\(bu" 4
+\fB\-\-no\-sf\fR: Doesn\'t display files using \fBsf\fR (if installed) and defaults to the user\'s PAGER setting\.
 .
-.TP
-\fB\-\-show\-on\-enter\fR
-Sets the enter key to launch the show command instead of moving the selection down by one\.
+.IP "\(bu" 4
+\fB\-\-show\-on\-enter\fR: Sets the enter key to launch the show command instead of moving the selection down by one\.
 .
-.TP
-\fB\-\-running\fR
-Checks for parent instances of \fBshow\fR, this is useful when using the Run Command option\.
+.IP "\(bu" 4
+\fB\-\-running\fR: Checks for parent instances of \fBshow\fR, this is useful when using the Run Command option\.
 .
-.TP
-\fB\-\-settings\-menu\fR
-Launch \fBshow\fR directly into the settings menu\.
+.IP "\(bu" 4
+\fB\-\-settings\-menu\fR: Launch \fBshow\fR directly into the settings menu\.
 .
-.TP
-\fB\-\-edit\-themes\fR
-Launches \fBshow\fR directly into the theme editor\. (colors)
+.IP "\(bu" 4
+\fB\-\-edit\-themes\fR: Launches \fBshow\fR directly into the theme editor\. (colors)
+.
+.IP "\(bu" 4
+\fB\-\-skip\-to\-first\fR Sets the highlighted item to the first object that isn\'t \fB\.\fR or \fB\.\.\fR
+.
+.IP "" 0
 .
 .SH "OVERVIEW"
 The \fBshow\fR application lets users view the names of files and directories on a disk with information about the files\. Files can be copied, moved, viewed, and edited (in your system\'s default editor)\. The application is run using the show command\. The output is similar to the \fBls\fR command\.
@@ -763,6 +754,7 @@ The following screen is displayed\.
   [ ] Human readable sizes
   [ ] Enter key acts like Show
   < > Owner Column: <owner> <group> <author>
+  [ ] Skip to the first object
 .
 .fi
 .

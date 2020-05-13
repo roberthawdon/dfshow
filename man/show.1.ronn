@@ -13,6 +13,9 @@ DF-SHOW: An interactive directory/file browser written for Unix-like systems. Ba
 
 The following options are shared with `ls`:
 
+* `-@`
+Displays extended atributes keys and sizes (macOS only).
+
 * `-a`, `--all`:
 Does not ignore files or directories starting with `.`.
 The `.` and `..` objects are never hidden due to their navigational functions in `show`.
@@ -59,6 +62,12 @@ Sorts by modification time, newest first.
 * `-U`:
 Displays output in the order they're found.
 
+* `-Z`, `--context`
+Shows the secuirty context of each file, if one is defined.
+
+* `-1`
+Only shows the file name on display.
+
 * `--help`:
 Displays help message, then exits.
 
@@ -90,6 +99,9 @@ Launch `show` directly into the settings menu.
 
 * `--edit-themes`:
 Launches `show` directly into the theme editor. (colors)
+
+* `--skip-to-first`
+Sets the highlighted item to the first object that isn't `.` or `..`
 
 ## OVERVIEW
 The `show` application lets users view the names of files and directories on a disk with information about the files. Files can be copied, moved, viewed, and edited (in your system's default editor). The application is run using the show command. The output is similar to the `ls` command.
@@ -555,6 +567,7 @@ The following screen is displayed.
       [ ] Human readable sizes
       [ ] Enter key acts like Show
       < > Owner Column: <owner> <group> <author>
+      [ ] Skip to the first object
 
 There are three types of configuration items, each denoted with a different symbol:
 
