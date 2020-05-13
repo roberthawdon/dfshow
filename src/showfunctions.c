@@ -2297,7 +2297,7 @@ results* get_dir(char *pwd)
               #endif
             #endif
 
-            if (acl != NULL || seLinuxCon != 0 || xattr != 0){
+            if (haveAcl != 0 || seLinuxCon != 0 || xattr != 0){
               axDisplay = 1;
             }
 
