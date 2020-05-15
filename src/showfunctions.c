@@ -39,6 +39,7 @@
 #include <math.h>
 #include <regex.h>
 #include <sys/acl.h>
+#include <stdint.h>
 #include "common.h"
 #include "config.h"
 #include "showfunctions.h"
