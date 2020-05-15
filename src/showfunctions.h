@@ -1,5 +1,6 @@
 #include <sys/stat.h>
 #include <sys/acl.h>
+#include <sys/statvfs.h>
 
 #define MULTICHAR '*'
 #define ONECHAR '?'
