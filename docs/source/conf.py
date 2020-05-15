@@ -24,9 +24,9 @@ copyright = '2020, Robert Ian Hawdon'
 author = 'Robert Ian Hawdon'
 
 # The short X.Y version
-version = ''
+version = '0.9'
 # The full version, including alpha/beta/rc tags
-release = '0.9.0-beta'
+release = '0.9.0'
 
 
 # -- General configuration ---------------------------------------------------
