@@ -3,12 +3,26 @@ AUTOMAKE_OPTIONS = foreign
 dfshowconfdir = $(sysconfdir)
 dfshowdatadir = $(datadir)/dfshow
 
-AM_CFLAGS = -DSYSCONFIG=\"$(dfshowconfdir)\" -DDATADIR=\"$(dfshowdatadir)\" -D_XOPEN_SOURCE_EXTENDED
+AM_CFLAGS = -DSYSCONFIG=\"$(dfshowconfdir)\" -DDATADIR=\"$(dfshowdatadir)\" -D_XOPEN_SOURCE_EXTENDED -fno-common
+
+LDADD = -lm -lconfig
 
 if DARWIN
-LDADD = -lncurses -lm -lconfig
+LDADD += -lncurses
 else
-LDADD = -lncursesw -lm -lconfig -ltinfo
+LDADD += -lncursesw
+endif
+
+if LINUX
+LDADD += -lacl -ltinfo
+endif
+
+if HURD
+LDADD += -lacl -ltinfo
+endif
+
+if SELINUX
+LDADD += -lselinux
 endif
 
 bin_PROGRAMS = $(top_builddir)/bin/show $(top_builddir)/bin/sf

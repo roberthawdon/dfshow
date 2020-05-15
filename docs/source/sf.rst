@@ -90,6 +90,9 @@ Further information can be found in the `configuring sf <#configuring-sf>`__ sec
 
   ``Ignore Case - Enter string:``
 
+  After a search has been made, the keybinding ``CTRL + F`` will repeat the search
+  to find further occurrences.
+
 ``Help``
   Launches the ``man`` pages for ``sf``.
 

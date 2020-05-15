@@ -1,6 +1,7 @@
 /*
-  DF-SHOW - A clone of 'SHOW' directory browser from DF-EDIT by Larry Kroeker
-  Copyright (C) 2018-2019  Robert Ian Hawdon
+  DF-SHOW: An interactive directory/file browser written for Unix-like systems.
+  Based on the applications from the PC-DOS DF-EDIT suite by Larry Kroeker.
+  Copyright (C) 2018-2020  Robert Ian Hawdon
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -30,18 +31,24 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <time.h>
+#include <utime.h>
 #include <sys/statvfs.h>
 #include <libgen.h>
 #include <errno.h>
 #include <wchar.h>
 #include <math.h>
 #include <regex.h>
+#include <sys/acl.h>
 #include "common.h"
 #include "config.h"
 #include "showfunctions.h"
 #include "showmenus.h"
 #include "colors.h"
 #include "show.h"
+
+#if HAVE_ACL_LIBACL_H
+# include <acl/libacl.h>
+#endif
 
 #if HAVE_SYS_SYSMACROS_H
 # include <sys/sysmacros.h>
@@ -51,13 +58,22 @@
 # include <hurd.h>
 #endif
 
+#if HAVE_SELINUX_SELINUX_H
+# include <selinux/selinux.h>
+# else
+#endif
+
+#if HAVE_SYS_XATTR_H
+# include <sys/xattr.h>
+#endif
+
 // It turns out most systems don't have an ST_AUTHOR, so for those systems, we set the author as the owner. Yup, `ls` does this too.
 #if ! HAVE_STRUCT_STAT_ST_AUTHOR
 # define st_author st_uid
 #endif
 
 char hlinkstr[6], sizestr[32], majorstr[6], minorstr[6];
-char headAttrs[12], headOG[25], headSize[14], headDT[18], headName[13];
+char headAttrs[12], headOG[25], headSize[14], headDT[18], headName[13], headContext[14];
 
 int hlinklen;
 int ownerlen;
@@ -69,9 +85,14 @@ int minorlen;
 int datelen;
 int namelen;
 int slinklen;
+int contextlen;
+int nameSegLen;
+int xattrKeyLen;
+
 int nameAndSLink = 0;
 
 int entryMetaLen, entryNameLen, entrySLinkLen = 0;
+int charPos = 0;
 
 int ogalen;
 
@@ -90,6 +111,7 @@ int totalfilecount;
 
 int selected;
 int topfileref = 0;
+int lineStart = 0;
 int hpos = 0;
 int maxdisplaywidth;
 int displaysize; // Calculate area to print
@@ -107,14 +129,34 @@ int mmMode = 0;
 
 int dirAbort = 0;
 
-unsigned long int savailable = 0;
+int axDisplay = 0;
+
+int markedSegmentLen, attrSegmentLen, hlinkSegmentLen, ownerSegmentLen, contextSegmentLen, sizeSegmentLen, dateSegmentLen, nameSegmentDataLen, linkSegmentLen, tmpSegmentLen;
+
+uintmax_t savailable = 0;
 unsigned long int sused = 0;
 
 history *hs;
 
 time_t currenttime;
 
+int skippable = 0;
+
+xattrList *xa;
+int xattrPos;
+
+int lineCount;
+int bottomFileRef;
+int visibleObjects;
+
+int visibleOffset;
+
+int listLen;
+entryLines *el;
+
 extern DIR *folder;
+
+extern int segOrder[8];
 
 extern int messageBreak;
 extern char currentpwd[4096];
@@ -133,8 +175,19 @@ extern int markedinfo;
 extern int useEnvPager;
 extern int showProcesses;
 extern int exitCode;
+extern int showContext;
+extern int oneLine;
+extern int skipToFirstFile;
+extern int showXAttrs;
+extern int showAcls;
 
 extern char sortmode[9];
+
+#ifdef HAVE_MOVE_BETWEEN_DEVICES
+bool moveBetweenDevices = true;
+#else
+bool moveBetweenDevices = false;
+#endif
 
 /* Formatting time in a similar fashion to `ls` */
 static char const *long_time_format[2] =
@@ -156,8 +209,12 @@ void freeResults(results *ob, int count)
     free(ob[i].author);
     free(ob[i].slink);
     free(ob[i].datedisplay);
+    free(ob[i].contextText);
+    free(ob[i].xattrs);
+    // acl_free(ob[i].acl);
   }
   free(ob);
+  free(el);
 }
 
 void freeHistory(history *hs, int count)
@@ -171,6 +228,16 @@ void freeHistory(history *hs, int count)
   free(hs);
 }
 
+void freeXAttrs(xattrList *xa, int count)
+{
+  int i;
+  for (i = 0; i < (count - 1); i++){
+    free(xa[i].name);
+    free(xa[i].xattr);
+  }
+  free(xa);
+}
+
 int checkRunningEnv(){
   int i;
   if (!getenv("DFS_RUNNING")){
@@ -179,6 +246,61 @@ int checkRunningEnv(){
     i = atoi(getenv("DFS_RUNNING"));
   }
   return i;
+}
+
+int processXAttrs(xattrList **xa, char *name, unsigned char *xattrs, size_t xattrLen, int pos, int *xattrsNum)
+{
+  char *xattrTmp;
+  int i, n;
+  bool reset = false; //To-Do, swap all 0/1 ints to bools
+  xattrList *tmp;
+
+  xattrTmp = malloc(sizeof(char));
+
+  for (i = 0; i < xattrLen + 1; i++){
+    if (i == 0 || reset == true){
+      n = 0;
+      free(xattrTmp);
+      xattrTmp = calloc(xattrLen, sizeof(char));
+      if (pos == 0){
+        tmp = malloc(sizeof(xattrList) * 2);
+      } else {
+        tmp = realloc(*xa, (pos + 1) * (sizeof(xattrList) + 1) );
+      }
+      if (tmp){
+        *xa = tmp;
+      }
+      reset = false;
+    }
+    if (xattrs[i] != '\0'){
+      xattrTmp[n] = xattrs[i];
+      n++;
+    }
+    if (xattrs[i] == '\0' && xattrTmp[0] != '\0'){
+      (*xa)[pos].name = calloc(strlen(name) + 1, sizeof(char));
+      strcpy((*xa)[pos].name, name);
+      (*xa)[pos].xattr = calloc(strlen(xattrTmp) + 1, sizeof(char));
+      strcpy((*xa)[pos].xattr, xattrTmp);
+      // (*xa)[pos].xattrSize = strlen((*xa)[pos].xattr);
+    #ifdef HAVE_ACL_TYPE_EXTENDED
+      (*xa)[pos].xattrSize = getxattr(name, xattrTmp, NULL, 0, 0, XATTR_NOFOLLOW);
+    #else
+      #ifdef HAVE_SYS_XATTR_H
+        (*xa)[pos].xattrSize = lgetxattr(name, xattrTmp, NULL, 0);
+      #else
+        (*xa)[pos].xattrSize = 0;
+      #endif
+    #endif
+      // endwin();
+      // printf("%s - %s - %zu\n", (*xa)[pos].name, (*xa)[pos].xattr, (*xa)[pos].xattrSize);
+      reset = true;
+      pos++;
+      ++*xattrsNum;
+    }
+  }
+  free(xattrTmp);
+
+  return pos;
 }
 
 char *getRelativePath(char *file, char *target)
@@ -357,7 +479,7 @@ int wildcard(const char *value, char *wcard)
     return match;
 }
 
-int writePermsEntry(char * perms, mode_t mode){
+int writePermsEntry(char * perms, mode_t mode, int axFlag, int sLinkCheck){
 
   typecolor = DISPLAY_PAIR;
 
@@ -367,14 +489,18 @@ int writePermsEntry(char * perms, mode_t mode){
     perms[0] = 'd';
     typecolor = DIR_PAIR;
   } else if (S_ISCHR(mode)){
-    mmMode = 1;
+    if (!sLinkCheck){
+      mmMode = 1;
+    }
     perms[0] = 'c';
   } else if (S_ISLNK(mode)){
     perms[0] = 'l';
   } else if (S_ISFIFO(mode)){
     perms[0] = 'p';
   } else if (S_ISBLK(mode)){
-    mmMode = 1;
+    if (!sLinkCheck){
+      mmMode = 1;
+    }
     perms[0] = 'b';
   } else if (S_ISSOCK(mode)){
     perms[0] = 's';
@@ -458,19 +584,53 @@ int writePermsEntry(char * perms, mode_t mode){
     perms[9] = '-';
   }
 
+  if (axFlag == ACL_XATTR){
+    perms[10] = '@';
+  } else if (axFlag == ACL_TRUE){
+    perms[10] = '+';
+  } else if (axFlag == ACL_SELINUX){
+    perms[10] = '.';
+  } else {
+    perms[10] = ' ';
+  }
+
   return typecolor;
 
 }
 
-void writeResultStruct(results* ob, const char * filename, struct stat buffer, int count){
-  char perms[11] = {0};
+void writeResultStruct(results* ob, const char * filename, struct stat buffer, int count, bool xAcl, ssize_t xattr, int seLinuxCon, char * contextText, char * xattrs, const int xattrsNum){
+  char perms[12] = {0};
   struct group *gr;
   struct passwd *pw;
   struct passwd *au;
   char *filedate;
   ssize_t cslinklen = 0, datedisplayLen = 0;
+  int axFlag = 0;
+  int i;
 
-  writePermsEntry(perms, buffer.st_mode);
+  ob[count].xAcl = xAcl;
+  ob[count].xattr = xattr;
+  ob[count].xattrsNum = xattrsNum;
+
+  if (xAcl){
+    axFlag = ACL_TRUE;
+  }
+
+  if (xattr > 0){
+    axFlag = ACL_XATTR;
+  }
+
+  if (seLinuxCon > 0){
+    axFlag = ACL_SELINUX;
+  }
+
+  ob[count].xattrs = malloc(sizeof(char) * xattr);
+  // strcpy(ob[count].xattrs, xattrs);
+  for ( i = 0; i < xattr; i++ ){
+    ob[count].xattrs[i] = xattrs[i];
+  }
+
+  writePermsEntry(perms, buffer.st_mode, axFlag, 0);
 
   // Writing our structure
   if ( markall && !(buffer.st_mode & S_IFDIR) ) {
@@ -551,6 +711,9 @@ void writeResultStruct(results* ob, const char * filename, struct stat buffer, i
     strcpy(ob[count].slink, "");
   }
 
+  ob[count].contextText = malloc(sizeof(char) * (strlen(contextText) + 1));
+  strcpy(ob[count].contextText, contextText);
+
   ob[count].color = typecolor;
 
   free(filedate);
@@ -567,7 +730,12 @@ int findResultByName(results *ob, char *name)
     i++;
   }
   //If there's no match, we'll fall back to the top item in the list
-  return 0;
+  // if (skipToFirstFile == 1 && skippable == 1){
+  //   return 2;
+  // } else {
+  //   return 0;
+  // }
+  return -1;
 }
 
 char *dateString(time_t date, char *style)
@@ -648,20 +816,144 @@ char *genPadding(int num_of_spaces) {
   return dest;
 }
 
-void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorlen, int sizelen, int majorlen, int minorlen, int datelen, int namelen, int selected, int listref, int topref, results* ob){
-
+wchar_t *wWriteSegment(int segLen, wchar_t *text, int align){
+  wchar_t *segment;
+  int paddingLen;
+  char *padding;
+  int textLen;
   int i;
 
+  textLen = wcslen(text);
+  paddingLen = segLen - textLen;
+
+  segment = calloc((segLen + 2), sizeof(wchar_t));
+
+  if (align == LEFT){
+    padding = genPadding(paddingLen);
+    swprintf(segment, (segLen + 2), L"%ls%s ", text, padding);
+  } else {
+    if (paddingLen < 0){
+      padding = genPadding(paddingLen - 1);
+    } else {
+      padding = genPadding(paddingLen);
+    }
+    swprintf(segment, (segLen + 2), L"%s%ls ", padding, text);
+  }
+  free(padding);
+  return(segment);
+}
+
+char *writeSegment(int segLen, char *text, int align){
+  // Another wrapper for char to wchar_t
+  char *segment;
+  wchar_t *inputText;
+  wchar_t *wWriteSegmentString;
+  inputText = calloc((strlen(text) + 1), sizeof(wchar_t));
+  swprintf(inputText, (strlen(text) + 1), L"%s", text);
+  segment = calloc((segLen + 2), sizeof(char));
+  wWriteSegmentString = wWriteSegment(segLen, inputText, align);
+  free(inputText);
+  sprintf(segment, "%ls", wWriteSegmentString);
+  free(wWriteSegmentString);
+  return(segment);
+}
+
+void printXattr(int start, int selected, int listref, int currentItem, int subIndex, xattrList* xa, results* ob){
+  int i;
+
+  int maxlen = COLS - start - 1;
+
+  char *tmpXattrAt;
+  int xattrAtPos;
+  bool hasXattr = false;
+  int tmpXattrDataLen;
+  char *tmpXattrPrint;
+  char *tmpXattrSize;
+  int tmpXattrSizeLen;
+  char *tmpXattrPadding;
+  int linepadding;
+  int xattrKeySegmentLen;
+  char *xattrKeySegment;
+  int xattrSizeSegmentLen;
+  char *xattrSizeSegment;
+  char xattrPrePad[13] = "            ";
+  char *paddingE0;
+
+  charPos = 0;
+
+  // Setting highlight
+  if (selected) {
+    setColors(SELECT_PAIR);
+  } else {
+    setColors(DISPLAY_PAIR);
+  }
+
+  for (i = 0; i < xattrPos; i++){
+    if (!strcmp(xa[i].name, ob[currentItem].name)) {
+      xattrAtPos = i;
+      break;
+    }
+  }
+  if (human){
+    tmpXattrSize = malloc(sizeof(char) * 10);
+    readableSize(xa[xattrAtPos + subIndex].xattrSize, tmpXattrSize, si);
+  } else {
+    tmpXattrSizeLen = snprintf(NULL, 0, "%zu", xa[xattrAtPos + subIndex].xattrSize);
+    tmpXattrSize = malloc(sizeof(char) * tmpXattrSizeLen);
+    sprintf(tmpXattrSize, "%zu", xa[xattrAtPos + subIndex].xattrSize);
+  }
+
+  xattrKeySegment = writeSegment(xattrKeyLen, xa[xattrAtPos + subIndex].xattr, LEFT);
+
+  tmpXattrPrint = calloc(COLS, sizeof(char));
+  // tmpXattrDataLen = snprintf(NULL, 0, "            %s        %s", xa[xattrAtPos + subIndex].xattr, tmpXattrSize);
+  // tmpXattrPadding = genPadding(COLS - tmpXattrDataLen);
+  sprintf(tmpXattrPrint, "%s%s%s", xattrPrePad, xattrKeySegment, tmpXattrSize);
+  for (i = 0; i < maxlen; i++){
+    mvprintw(displaystart + listref, start + charPos, "%c", tmpXattrPrint[i]);
+    charPos++;
+    if (i == strlen(tmpXattrPrint) - 1){
+      break;
+    }
+  }
+  // mvprintw(displaystart + listref + offset + i, start + charPos, "            %s", xa[(xattrAtPos + (i - 1))].xattr);
+  free(tmpXattrPrint);
+  free(tmpXattrSize);
+  free(tmpXattrPadding);
+
+  free(xattrKeySegment);
+
+  linepadding = COLS - charPos - start;
+
+  if (linepadding > 0){
+    if ((charPos + start) > 0){
+      paddingE0 = genPadding(linepadding);
+      mvprintw(displaystart + listref, charPos + start, "%s", paddingE0);
+    } else {
+      paddingE0 = genPadding(COLS);
+      mvprintw(displaystart + listref, 0, "%s", paddingE0);
+    }
+    free(paddingE0);
+  }
+  // mvprintw(displaystart + listref + start, 0, "            %s        %s", "uk.me.robertianhawdon.test", "27");
+}
+
+void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorlen, int sizelen, int majorlen, int minorlen, int datelen, int namelen, int contextlen, int selected, int listref, int currentitem, results* ob){
+
+  int i, n, t;
+
   char marked[2];
-  wchar_t *entryMeta  = malloc(sizeof(wchar_t) + 1);
+  // wchar_t *entryMeta  = malloc(sizeof(wchar_t) + 1);
   wchar_t *entryName  = malloc(sizeof(wchar_t) + 1);
   wchar_t *entrySLink = malloc(sizeof(wchar_t) + 1);
   int maxlen = COLS - start - 1;
 
-  int currentitem = listref + topref;
+  // int currentitem = listref + topref;
+  int nameminlen = strlen(headName); // Length of "Name" heading
   int ogminlen = strlen(headOG); // Length of "Owner & Group" heading
   int sizeminlen = strlen(headSize); // Length of "Size" heading
   int dateminlen = strlen(headDT); // Length of "Date" heading
+  int contextminlen = strlen(headContext); // Length of "Context" heading
 
   int oggap, gagap = 0;
 
@@ -669,22 +961,48 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
 
   char *ogaval;
 
+  int hlinkCharLen;
+  char *hlinkChar;
+
   int ogseglen = ogalen + ogapad;
 
   int ogpad = 0;
   int sizepad = 0;
   int mmpad = 0;
+  int contextpad = 0;
 
   int datepad = 0;
 
-  char *s1, *s2, *s3, *s4;
+  // char *s1, *s2, *s3, *s4, *s5, *s6;
+
+  char *sizePadding;
 
   char *sizestring;
+
+  char *contextText;
+
+  int printSegment, printNameSegment = 0;
+
+  int nameCombineLen, nameFullSegPadding;
+
+  char *markedSegment;
+  char *attrSegment;
+  char *hlinkSegment;
+  char *ownerSegment;
+  char *contextSegment;
+  char *sizeSegment;
+  wchar_t *dateSegment;
+  wchar_t *linkSegment;
+  nameStruct *nameSegmentData;
+
+  wchar_t *tmpSegment;
 
   int linepadding;
   int colpos;
 
-  char tmpperms[11];
+  char tmpperms[12];
+
+  char *printPerm;
 
   struct stat buffer;
   int status;
@@ -694,6 +1012,8 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   char *paddingG0, *paddingG1, *paddingE0;
 
   strcpy(slinkpoint, " -> \0");
+
+  charPos = 0;
 
   // Owner, Group, Author
   switch(ogavis){
@@ -762,12 +1082,36 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
 
   if (!ogavis){
     ogpad = 0;
+    ownerSegment = malloc(sizeof(char));
+    sprintf(ownerSegment, "");
   } else {
     if ( (ogminlen - ogseglen) > 0 ) {
-      ogpad = ogminlen - strlen(ogaval);
+      ownerSegmentLen = ogminlen;
     } else {
-      ogpad = ogseglen - strlen(ogaval);
+      ownerSegmentLen = ogseglen;
     }
+    ownerSegment = writeSegment(ownerSegmentLen, ogaval, LEFT);
+  }
+
+
+  if (showContext){
+    // Test
+    // endwin();
+    // printf("%s - %s\n", ob[currentitem].name, ob[currentitem].contextText);
+    contextText = malloc(sizeof(char) * (strlen(ob[currentitem].contextText) + 1));
+    sprintf(contextText, "%s", ob[currentitem].contextText);
+    if (contextlen < contextminlen) {
+      contextSegmentLen = contextminlen;
+    } else {
+      contextSegmentLen = contextlen;
+    }
+    contextSegment = writeSegment(contextSegmentLen, contextText, LEFT);
+  } else {
+    contextSegmentLen = 1;
+    contextText = malloc(sizeof(char) * contextSegmentLen);
+    sprintf(contextText, "");
+    contextSegment = malloc(sizeof(char) * contextSegmentLen);
+    sprintf(contextSegment, "");
   }
 
   if (ob[currentitem].minor > 1){
@@ -777,13 +1121,15 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   }
 
   if (mmpad > 0 ){
-    s4 = genPadding(mmpad);
+    sizePadding = genPadding(mmpad);
   }
 
   if ((ob[currentitem].major > 0) || (ob[currentitem].minor > 0)){
     // If either of these are not 0, then we're dealing with a Character or Block device.
-    sizestring = malloc (sizeof (char) * (sizelen + 5));
-    sprintf(sizestring, "%i,%s%i", ob[currentitem].major, s4, ob[currentitem].minor);
+    // sizestring = malloc (sizeof (char) * (sizelen + 5));
+    sizelen = snprintf(NULL, 0, "%i,%s%i", ob[currentitem].major, sizePadding, ob[currentitem].minor);
+    sizestring = malloc (sizeof (char) * (sizelen + 1));
+    sprintf(sizestring, "%i,%s%i", ob[currentitem].major, sizePadding, ob[currentitem].minor);
   } else {
     if (human){
       sizestring = malloc (sizeof (char) * 10);
@@ -799,37 +1145,107 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
     sizelen = sizeminlen;
   }
 
-  sizepad = (sizelen - strlen(sizestring)) + ogpad + 1;
+  sizeSegmentLen = sizelen; // this is a mess
+
+  sizepad = (sizelen - strlen(sizestring));
+
+  // Experemental segment
+  sizeSegment = writeSegment(sizeSegmentLen, sizestring, RIGHT);
 
   if ( (dateminlen - datelen) > 0 ) {
-    datepad = dateminlen - wcslen(ob[currentitem].datedisplay);
+    dateSegmentLen = dateminlen;
   } else {
-    datepad = datelen - wcslen(ob[currentitem].datedisplay);
+    dateSegmentLen = datelen;
   }
+  dateSegment = wWriteSegment(dateSegmentLen, ob[currentitem].datedisplay, LEFT);
 
-  if (hlinkstart > -1){
-    s1 = genPadding(hlinkstart);
-  }
-  if (sizepad > -1){
-    s2 = genPadding(sizepad);
-  }
-  if (datepad > -1){
-    s3 = genPadding(datepad);
-  }
+  // if (hlinkstart > -1){
+  //   s1 = genPadding(hlinkstart);
+  // }
+  // if (sizepad > -1){
+  //   s2 = genPadding(sizepad);
+  // }
+  // if (datepad > -1){
+  //   s3 = genPadding(datepad);
+  // }
+
+  markedSegmentLen = 3;
 
   if ( *ob[currentitem].marked ){
-    strcpy(marked, "*");
+    markedSegment = writeSegment(markedSegmentLen, "*", RIGHT);
   } else {
-    strcpy(marked, " ");
+    markedSegment = writeSegment(markedSegmentLen, " ", RIGHT);
   }
 
-  entryMetaLen = snprintf(NULL, 0, "  %s %s%s%i %s%s%s %ls%s ", marked, ob[currentitem].perm, s1, *ob[currentitem].hlink, ogaval, s2, sizestring, ob[currentitem].datedisplay, s3);
+  if (axDisplay){
+    attrSegmentLen = 11;
+  } else {
+    attrSegmentLen = 10;
+  }
 
-  entryMeta = realloc(entryMeta, sizeof(wchar_t) * (entryMetaLen + 1));
+  if (*ob[currentitem].hlink > 0){
+    hlinkCharLen = (log10(*ob[currentitem].hlink) + 2);
+  } else {
+    hlinkCharLen = 2;
+  }
 
-  swprintf(entryMeta, (entryMetaLen + 1), L"  %s %s%s%i %s%s%s %ls%s ", marked, ob[currentitem].perm, s1, *ob[currentitem].hlink, ogaval, s2, sizestring, ob[currentitem].datedisplay, s3);
+  hlinkChar = malloc(sizeof(char) * (hlinkCharLen));
 
-  entryMetaLen = wcslen(entryMeta);
+  sprintf(hlinkChar, "%i", *ob[currentitem].hlink);
+
+  hlinkSegmentLen = hlinklen; // messy
+
+  hlinkSegment = writeSegment(hlinkSegmentLen, hlinkChar, RIGHT);
+
+  free(hlinkChar);
+
+  printPerm = malloc(sizeof(char) * attrSegmentLen + 1);
+  for (i = 0; i < attrSegmentLen; i++){
+    printPerm[i] = ob[currentitem].perm[i];
+    printPerm[attrSegmentLen] = '\0';
+  }
+
+  attrSegment = writeSegment(attrSegmentLen, printPerm, LEFT);
+
+  // entryMetaLen = snprintf(NULL, 0, "%s%s%s%s%s%s%ls", markedSegment, attrSegment, hlinkSegment, ownerSegment, contextSegment, sizeSegment, dateSegment);
+
+  // entryMeta = realloc(entryMeta, sizeof(wchar_t) * (entryMetaLen + 1));
+
+  // swprintf(entryMeta, (entryMetaLen + 1), L"%s%s%s%s%s%s%ls", markedSegment, attrSegment, hlinkSegment, ownerSegment, contextSegment, sizeSegment, dateSegment);
+
+  free(printPerm);
+
+  // entryMetaLen = wcslen(entryMeta);
+
+  // Writing Name Segment Data
+  nameSegmentData = malloc(sizeof(nameStruct));
+  nameSegmentData[0].name = malloc(sizeof(wchar_t) * (strlen(ob[currentitem].name) + 1));
+  swprintf(nameSegmentData[0].name, (strlen(ob[currentitem].name) + 1), L"%s", ob[currentitem].name);
+  if ( !strcmp(ob[currentitem].slink, "") ){
+    nameSegmentData[0].linkStat = 0;
+    nameSegmentData[0].link = malloc(sizeof(wchar_t));
+  } else {
+    nameSegmentData[0].linkStat = 1;
+    nameSegmentData[0].link = malloc(sizeof(wchar_t) * (strlen(ob[currentitem].slink) + 1));
+    swprintf(nameSegmentData[0].link, (strlen(ob[currentitem].slink) + 1), L"%s", ob[currentitem].slink);
+  }
+  if ( nameSegmentData[0].linkStat ){
+    nameCombineLen = (wcslen(nameSegmentData[0].name) + wcslen(nameSegmentData[0].link) + 4);
+  } else {
+    nameCombineLen = wcslen(nameSegmentData[0].name);
+  }
+  if (nameSegLen > nameminlen){
+    nameFullSegPadding = nameSegLen - nameCombineLen + 1;
+    nameSegmentDataLen = nameSegLen;
+  } else {
+    nameFullSegPadding = nameminlen - nameCombineLen + 1;
+    nameSegmentDataLen = nameminlen;
+  }
+  if ( nameFullSegPadding < 1 ){
+    nameFullSegPadding = 1;
+  }
+  nameSegmentData[0].padding = genPadding(nameFullSegPadding);
+
 
   entryNameLen = snprintf(NULL, 0, "%s", ob[currentitem].name) + 1;
 
@@ -861,76 +1277,198 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
     setColors(DISPLAY_PAIR);
   }
 
-  for ( i = 0; i < maxlen; i++ ){
-    mvprintw(displaystart + listref, start + i,"%lc", entryMeta[i]);
-    if ( i == entryMetaLen ){
-      break;
-    }
-  }
+  // // Temp
+  // if (showXAttrs){
+  //   hasXattr = false;
+  //   xattrAtPos = 0;
+  //   for(i = 0; i < xattrPos; i++){
+  //     if (!strcmp(ob[currentitem].name, xa[i].name)){
+  //       xattrAtPos = i;
+  //       hasXattr = true;
+  //       break;
+  //     }
+  //   }
+  //   // endwin();
+  //   // printf("\n%s:\n", ob[currentitem].name);
+  //   for(i = 0; i < ob[currentitem].xattrsNum + 1; i++){
+  //     // printf("%lu < %i\n", (listref - (ob[currentitem].xattrsNum - i)), visibleObjects);
+  //     if ((listref - (ob[currentitem].xattrsNum - i)) < (visibleObjects + visibleOffset)){
+  //       if (hasXattr && i != 0){
+  //         if (human){
+  //           tmpXattrSize = malloc(sizeof(char) * 10);
+  //           readableSize(xa[xattrAtPos + (i - 1)].xattrSize, tmpXattrSize, si);
+  //         } else {
+  //           tmpXattrSizeLen = snprintf(NULL, 0, "%zu", xa[xattrAtPos + (i - 1)].xattrSize);
+  //           tmpXattrSize = malloc(sizeof(char) * tmpXattrSizeLen);
+  //           sprintf(tmpXattrSize, "%zu", xa[xattrAtPos + (i - 1)].xattrSize);
+  //         }
+  //         tmpXattrPrint = calloc(COLS, sizeof(char));
+  //         tmpXattrDataLen = snprintf(NULL, 0, "            %s        %s", xa[(xattrAtPos + (i - 1))].xattr, tmpXattrSize);
+  //         tmpXattrPadding = genPadding(COLS - tmpXattrDataLen);
+  //         sprintf(tmpXattrPrint, "            %s        %s%s", xa[(xattrAtPos + (i - 1))].xattr, tmpXattrSize, tmpXattrPadding);
+  //         for (n = 0; n < strlen(tmpXattrPrint); n++){
+  //           mvprintw(displaystart + listref + offset + i, start + charPos + n, "%c", tmpXattrPrint[n]);
+  //         }
+  //         // mvprintw(displaystart + listref + offset + i, start + charPos, "            %s", xa[(xattrAtPos + (i - 1))].xattr);
+  //         free(tmpXattrPrint);
+  //         free(tmpXattrSize);
+  //         free(tmpXattrPadding);
+  //       }
+  //     }
+  //   }
+  // }
 
-  if (filecolors && !selected){
-    if ( strcmp(ob[currentitem].slink, "" )) {
-      if (check_file(ob[currentitem].slink)){
-        setColors(SLINK_PAIR);
-      } else {
-        setColors(DEADLINK_PAIR);
+  for ( n = 0; n < (sizeof(segOrder) / sizeof(segOrder[0])); n++){
+    t = segOrder[n];
+    switch(t){
+    case COL_MARK:
+      printSegment = 1;
+      tmpSegmentLen = markedSegmentLen + 2;
+      tmpSegment = malloc(sizeof(wchar_t) * tmpSegmentLen);
+      swprintf(tmpSegment, tmpSegmentLen, L"%s", markedSegment);
+      break;
+    case COL_ATTR:
+      printSegment = 1;
+      tmpSegmentLen = attrSegmentLen + 2;
+      tmpSegment = malloc(sizeof(wchar_t) * tmpSegmentLen);
+      swprintf(tmpSegment, tmpSegmentLen, L"%s", attrSegment);
+      break;
+    case COL_HLINK:
+      printSegment = 1;
+      tmpSegmentLen = hlinkSegmentLen + 2;
+      tmpSegment = malloc(sizeof(wchar_t) * tmpSegmentLen);
+      swprintf(tmpSegment, tmpSegmentLen, L"%s", hlinkSegment);
+      break;
+    case COL_OWNER:
+      if (ogavis){
+        printSegment = 1;
+        tmpSegmentLen = ownerSegmentLen + 2;
+        tmpSegment = malloc(sizeof(wchar_t) * tmpSegmentLen);
+        swprintf(tmpSegment, tmpSegmentLen, L"%s", ownerSegment);
       }
-    } else {
-      setColors(ob[currentitem].color);
-    }
-  }
-
-  for ( i = 0; i < maxlen; i++ ){
-    mvprintw(displaystart + listref, (entryMetaLen + start) + i,"%lc", entryName[i]);
-    if ( i == entryNameLen ){
-      colpos = (entryMetaLen + start) + i;
+      break;
+    case COL_CONTEXT:
+      if (showContext){
+        printSegment = 1;
+        tmpSegmentLen = contextSegmentLen + 2;
+        tmpSegment = malloc(sizeof(wchar_t) * tmpSegmentLen);
+        swprintf(tmpSegment, tmpSegmentLen, L"%s", contextSegment);
+      }
+      break;
+    case COL_SIZE:
+      printSegment = 1;
+      tmpSegmentLen = sizeSegmentLen + 2;
+      tmpSegment = malloc(sizeof(wchar_t) * tmpSegmentLen);
+      swprintf(tmpSegment, tmpSegmentLen, L"%s", sizeSegment);
+      break;
+    case COL_DATE:
+      printSegment = 1;
+      tmpSegmentLen = dateSegmentLen + 2;
+      tmpSegment = malloc(sizeof(wchar_t) * tmpSegmentLen);
+      swprintf(tmpSegment, tmpSegmentLen, L"%ls", dateSegment);
+      break;
+    case COL_NAME:
+      printSegment = 0;
+      printNameSegment = 1;
+      break;
+    default:
+      printSegment = 0;
       break;
     }
-  }
 
-  if ( strcmp(ob[currentitem].slink, "") ){
-    if (!selected){
-      setColors(DISPLAY_PAIR);
-    }
-
-    for ( i = 0; i < strlen(slinkpoint); i++) {
-      mvprintw(displaystart + listref, (entryMetaLen + entryNameLen + start) + i, "%c", slinkpoint[i]);
-    }
-
-    if (filecolors && !selected){
-      if ( strcmp(ob[currentitem].slink, "" )) {
-        if ( check_dir(ob[currentitem].slink) ){
-          setColors(DIR_PAIR);
-        } else if ( !check_file(ob[currentitem].slink) ){
-          setColors(DEADLINK_PAIR);
-        } else {
-          // setColors(ob[currentitem].color);
-          status = lstat(ob[currentitem].slink, &buffer);
-          setColors(writePermsEntry(tmpperms, buffer.st_mode));
+    if (printSegment){
+      for ( i = 0; i < maxlen; i++ ){
+        mvprintw(displaystart + listref, start + charPos, "%lc", tmpSegment[i]);
+        charPos++;
+        if (i == tmpSegmentLen - 2){
+          break;
         }
       }
+      free(tmpSegment);
+      printSegment = 0;
     }
 
-    for ( i = 0; i < maxlen; i++ ){
-      mvprintw(displaystart + listref, (entryMetaLen + entryNameLen + 4 + start) + i,"%lc", entrySLink[i]);
-      if ( i == entrySLinkLen ){
-        colpos = (entryMetaLen + entryNameLen + 4 + start) + i;
-        break;
+    if (printNameSegment){
+      if (filecolors && !selected){
+        if ( strcmp(ob[currentitem].slink, "" )) {
+          if (check_file(ob[currentitem].slink)){
+            setColors(SLINK_PAIR);
+          } else {
+            setColors(DEADLINK_PAIR);
+          }
+        } else {
+          setColors(ob[currentitem].color);
+        }
       }
+
+      for ( i = 0; i < maxlen; i++ ){
+        mvprintw(displaystart + listref, start + charPos, "%lc", nameSegmentData[0].name[i]);
+        charPos++;
+        if ( i == wcslen(nameSegmentData[0].name) - 1 ){
+          break;
+        }
+      }
+
+      if ( nameSegmentData[0].linkStat ){
+        if (!selected){
+          setColors(DISPLAY_PAIR);
+        }
+
+        for ( i = 0; i < strlen(slinkpoint); i++) {
+          mvprintw(displaystart + listref, start + charPos, "%c", slinkpoint[i]);
+          charPos++;
+        }
+
+        if (filecolors && !selected){
+          if ( nameSegmentData[0].linkStat ) {
+            if ( check_dir(ob[currentitem].slink) ){
+              setColors(DIR_PAIR);
+            } else if ( !check_file(ob[currentitem].slink) ){
+              setColors(DEADLINK_PAIR);
+            } else {
+              // setColors(ob[currentitem].color);
+              status = lstat(ob[currentitem].slink, &buffer);
+              setColors(writePermsEntry(tmpperms, buffer.st_mode, -1, 1));
+            }
+          }
+        }
+
+          for ( i = 0; i < maxlen; i++ ){
+            mvprintw(displaystart + listref, start + charPos,"%lc", nameSegmentData[0].link[i]);
+            charPos++;
+            if ( i == wcslen(nameSegmentData[0].link) - 1 ){
+              break;
+            }
+          }
+        }
+
+      if (filecolors && !selected){
+        setColors(DISPLAY_PAIR);
+      }
+
+      for ( i = 0; i < maxlen; i++){
+        mvprintw(displaystart + listref, start + charPos, "%c", nameSegmentData[0].padding[i]);
+        charPos++;
+        if ( i == strlen(nameSegmentData[0].padding) - 1 ){
+          break;
+        }
+      }
+
+      printNameSegment = 0;
     }
   }
 
-  if (filecolors && !selected){
-    setColors(DISPLAY_PAIR);
-  }
+  free(nameSegmentData[0].name);
+  free(nameSegmentData[0].link);
+  free(nameSegmentData[0].padding);
+  free(nameSegmentData);
 
-  linepadding = COLS - colpos;
-
+  linepadding = COLS - charPos - start;
 
   if (linepadding > 0){
-    if (colpos > -1){
+    if ((charPos + start) > 0){
       paddingE0 = genPadding(linepadding);
-      mvprintw(displaystart + listref, colpos, "%s", paddingE0);
+      mvprintw(displaystart + listref, charPos + start, "%s", paddingE0);
     } else {
       paddingE0 = genPadding(COLS);
       mvprintw(displaystart + listref, 0, "%s", paddingE0);
@@ -938,12 +1476,24 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
     free(paddingE0);
   }
 
-  free(s1);
-  free(s2);
-  free(s3);
-  free(s4);
+  // Free segments
+  free(markedSegment);
+  free(attrSegment);
+  free(hlinkSegment);
+  free(ownerSegment);
+  free(contextSegment);
+  free(sizeSegment);
+  free(dateSegment);
+
+  // free(s1);
+  // free(s2);
+  // free(s3);
+  // free(s4);
+  // free(s5);
+  // free(s6);
   free(sizestring);
-  free(entryMeta);
+  free(sizePadding);
+  // free(entryMeta);
   free(entryName);
   free(entrySLink);
   free(ogaval);
@@ -955,19 +1505,21 @@ void LaunchShell()
   sprintf(c, "%i", showProcesses);
   setenv("DFS_RUNNING", c, 1);
   clear();
+  def_prog_mode();
   endwin();
   // system("clear"); // Not exactly sure if I want this yet.
   // printf("\nUse 'exit' to return to Show.\n\n");
   write(STDOUT_FILENO, "\nUse 'exit' to return to Show.\n\n", 32);
   system(getenv("SHELL"));
+  reset_prog_mode();
   initscr();
   refreshScreen();
 }
 
 void LaunchExecutable(const char* object, const char* args)
 {
-  char *command = malloc(sizeof(char) * (strlen(object) + strlen(args) + 2));
-  sprintf(command, "%s %s", object, args);
+  char *command = malloc(sizeof(char) * (strlen(object) + strlen(args) + 4));
+  sprintf(command, "'%s' %s", object, args);
   system("clear"); // Just to be sure
   system(command);
   free(command);
@@ -1027,10 +1579,12 @@ int SendToPager(char* object)
   char *escObject = str_replace(object, "'", "'\"'\"'");
 
   if (can_run_command("sf")){
-    setenv("DFS_THEME_OVERRIDE", "TRUE", 1);
-    page = realloc(page, (sizeof(char) * 3));
-    sprintf(page, "sf");
-    pset = 1;
+    if (!useEnvPager){
+      setenv("DFS_THEME_OVERRIDE", "TRUE", 1);
+      page = realloc(page, (sizeof(char) * 3));
+      sprintf(page, "sf");
+      pset = 1;
+    }
   } else {
     useEnvPager = 1;
   }
@@ -1050,7 +1604,10 @@ int SendToPager(char* object)
     if (access(object, R_OK) == 0){
       // clear();
       // endwin();
+      def_prog_mode();
+      endwin();
       e = system(pagerCommand);
+      reset_prog_mode();
       // initscr();
       refreshScreen();
       return e;
@@ -1090,7 +1647,10 @@ int SendToEditor(char* object)
     if (access(object, R_OK) == 0){
       clear();
       // endwin();
+      def_prog_mode();
+      endwin();
       e = system(editorCommand);
+      reset_prog_mode();
       // initscr();
       refreshScreen();
       return e;
@@ -1105,22 +1665,31 @@ int SendToEditor(char* object)
   return 0;
 }
 
-size_t GetAvailableSpace(const char* path)
+uintmax_t GetAvailableSpace(const char* path)
 {
   struct statvfs stat;
+  uintmax_t bavail;
+  uintmax_t frsize;
+  uintmax_t result;
 
   if (statvfs(path, &stat) != 0) {
     // error happens, just quits here, but returns 0
     return 0;
   }
 
+  bavail = stat.f_bavail;
+  frsize = stat.f_frsize;
+  result = bavail * frsize;
+
   // the available size is f_bsize * f_bavail
-  //return stat.f_bsize * stat.f_bavail;
-  // // endwin();
-  // // clear();
-  // // printf("f_bavail: %i\nf_frsize: %i\n", stat.f_bavail, stat.f_frsize);
+  // return stat.f_bsize * stat.f_bavail;
+  // endwin();
+  // clear();
+  // printf("f_bavail: %jd\nf_frsize: %jd\n", (uintmax_t) bavail, (uintmax_t) frsize);
+  // printf("f_bavail * f_frsize: %jd\n", (uintmax_t) (bavail * frsize));
+  // printf("f_bfree: %li\n", stat.f_bfree);
   // // exit(0);
-  return stat.f_bavail * stat.f_frsize;
+  return result;
 }
 
 long GetUsedSpace(const char* path)
@@ -1147,49 +1716,57 @@ int seglength(const void *seg, char *segname, int LEN)
 
   size_t i;
 
-  if (!strcmp(segname, "owner")) {
-    longest = strlen(dfseg[0].owner);
-  }
-  else if (!strcmp(segname, "group")) {
-    longest = strlen(dfseg[0].group);
-  }
-  else if (!strcmp(segname, "author")) {
-    longest = strlen(dfseg[0].author);
-  }
-  else if (!strcmp(segname, "hlink")) {
-    sprintf(hlinkstr, "%d", *dfseg[0].hlink);
-    longest = strlen(hlinkstr);
-  }
-  else if (!strcmp(segname, "size")) {
-    if (human){
-      readableSize(dfseg[0].size, sizestr, si);
-    } else {
-      sprintf(sizestr, "%lu", dfseg[0].size);
-    }
-    longest = strlen(sizestr);
-  }
-  else if (!strcmp(segname, "major")) {
-    sprintf(majorstr, "%d", dfseg[0].major);
-    longest = strlen(majorstr);
-  }
-  else if (!strcmp(segname, "minor")) {
-    sprintf(minorstr, "%d", dfseg[0].minor);
-    longest = strlen(minorstr);
-  }
-  else if (!strcmp(segname, "datedisplay")) {
-    longest = wcslen(dfseg[0].datedisplay);
-  }
-  else if (!strcmp(segname, "name")) {
-    longest = strlen(dfseg[0].name);
-  }
-  else if (!strcmp(segname, "slink")) {
-    longest = strlen(dfseg[0].slink);
-  }
-  else {
-    longest = 0;
-  }
+  // This seems unnessessary, what was I thinking?
 
-  for(i = 1; i < LEN; i++)
+
+  // if (!strcmp(segname, "owner")) {
+  //   longest = strlen(dfseg[0].owner);
+  // }
+  // else if (!strcmp(segname, "group")) {
+  //   longest = strlen(dfseg[0].group);
+  // }
+  // else if (!strcmp(segname, "author")) {
+  //   longest = strlen(dfseg[0].author);
+  // }
+  // else if (!strcmp(segname, "hlink")) {
+  //   sprintf(hlinkstr, "%d", *dfseg[0].hlink);
+  //   longest = strlen(hlinkstr);
+  // }
+  // else if (!strcmp(segname, "size")) {
+  //   if (human){
+  //     readableSize(dfseg[0].size, sizestr, si);
+  //   } else {
+  //     sprintf(sizestr, "%lu", dfseg[0].size);
+  //   }
+  //   longest = strlen(sizestr);
+  // }
+  // else if (!strcmp(segname, "major")) {
+  //   sprintf(majorstr, "%d", dfseg[0].major);
+  //   longest = strlen(majorstr);
+  // }
+  // else if (!strcmp(segname, "minor")) {
+  //   sprintf(minorstr, "%d", dfseg[0].minor);
+  //   longest = strlen(minorstr);
+  // }
+  // else if (!strcmp(segname, "datedisplay")) {
+  //   longest = wcslen(dfseg[0].datedisplay);
+  // }
+  // else if (!strcmp(segname, "name")) {
+  //   longest = strlen(dfseg[0].name);
+  // }
+  // else if (!strcmp(segname, "slink")) {
+  //   longest = strlen(dfseg[0].slink);
+  // }
+  // else if (!strcmp(segname, "contextText")) {
+  //   longest = strlen(dfseg[0].contextText);
+  // }
+  // else {
+  //   longest = 0;
+  // }
+
+  longest = 0;
+
+  for(i = 0; i < LEN; i++)
     {
       if (!strcmp(segname, "owner")) {
         len = strlen(dfseg[i].owner);
@@ -1228,6 +1805,16 @@ int seglength(const void *seg, char *segname, int LEN)
       }
       else if (!strcmp(segname, "slink")) {
         len = strlen(dfseg[i].slink);
+      }
+      else if (!strcmp(segname, "contextText")) {
+        len = strlen(dfseg[i].contextText);
+      }
+      else if (!strcmp(segname, "nameSegBlock")) {
+        if (strlen(dfseg[i].slink) > 0){
+          len = (strlen(dfseg[i].name) + strlen(dfseg[i].slink) + 4);
+        } else {
+          len = strlen(dfseg[i].name);
+        }
       }
       else {
         len = 0;
@@ -1388,6 +1975,7 @@ int RenameObject(char* source, char* dest)
   char *destPath;
   struct stat sourcebuffer;
   struct stat destbuffer;
+  struct utimbuf touchDate;
   int e;
 
   destPath = dirFromPath(dest);
@@ -1411,9 +1999,24 @@ int RenameObject(char* source, char* dest)
     } else {
       // Destination is NOT in the same filesystem, the file will need copying then deleting.
       //mvprintw(0,66,"FAIL: %s:%s", sourceDevId, destDevId); // test fail
-      topLineMessage("Error: Unable to move file between mount points");
-      free(destPath);
-      return 1;
+      if (moveBetweenDevices){
+        // To Do
+        copy_file(source, dest, sourcebuffer.st_mode);
+        touchDate.actime = sourcebuffer.st_atime;
+        touchDate.modtime = sourcebuffer.st_mtime;
+        e = utime(dest, &touchDate);
+        if (e == 0){
+          e = chown(dest, sourcebuffer.st_uid, sourcebuffer.st_gid);
+        }
+        if (e == 0){
+          e = remove(source);
+        }
+        return e;
+      } else {
+        topLineMessage("Error: Unable to move file between mount points");
+        free(destPath);
+        return 1;
+      }
     }
   } else {
     // Destination directory not found
@@ -1440,7 +2043,7 @@ int CheckMarked(results* ob)
   return(result);
 }
 
-void set_history(char *pwd, char *objectWild, char *name, int topfileref, int selected)
+void set_history(char *pwd, char *objectWild, char *name, int lineStart, int selected)
 {
   if (sessionhistory == 0){
     history *hs = malloc(sizeof(history));
@@ -1461,8 +2064,9 @@ void set_history(char *pwd, char *objectWild, char *name, int topfileref, int se
   strcpy(hs[historyref].path, pwd);
   strcpy(hs[historyref].objectWild, objectWild);
   strcpy(hs[historyref].name, name);
-  hs[historyref].topfileref = topfileref;
+  hs[historyref].lineStart = lineStart;
   hs[historyref].selected = selected;
+  hs[historyref].visibleObjects = visibleObjects;
   historyref++;
 
 }
@@ -1527,7 +2131,7 @@ char *markedDisplay(results* ob)
     if (markedSize == 0){
       markedSizeString = malloc (sizeof (char) * 1);
     } else {
-      markedSizeString = malloc (sizeof (char) * (log10(markedSize) + 1));
+      markedSizeString = malloc (sizeof (char) * (log10(markedSize) + 2));
     }
     sprintf(markedSizeString, "%lu", markedSize);
   }
@@ -1552,6 +2156,7 @@ char *markedDisplay(results* ob)
 results* get_dir(char *pwd)
 {
   //sused = GetUsedSpace(pwd); // Original DF-EDIT added the sizes to show what was used in that directory, rather than the whole disk.
+  int i;
   size_t count = 0;
   size_t file_count = 0;
   size_t dirErrorSize = 0;
@@ -1561,11 +2166,29 @@ results* get_dir(char *pwd)
   struct stat buffer;
   int         status;
   int         pass = 0;
+  int axFlag = 0;
   char *dirError = malloc(sizeof(char) + 1);
   // char direrror[1024];
   // char filename[256];
+  acl_t acl;
+  acl_entry_t dummy;
+  int haveAcl;
+  ssize_t xattr;
+  char *xattrs;
+  unsigned char *uXattrs;
+  int seLinuxCon = 0;
+  int xattrsNum;
+  #ifdef HAVE_SELINUX_SELINUX_H
+    security_context_t context;
+  #endif
+  char *contextText;
+  char *fullFilePath;
 
   results *ob = malloc(sizeof(results)); // Allocating a tiny amount of memory. We'll expand this on each file found.
+  // xattrList *xa = malloc(sizeof(xattrList));
+  // int xattrPos = 0;
+  xa = malloc(sizeof(xattrList));
+  xattrPos = 0;
 
   fetch:
 
@@ -1574,6 +2197,16 @@ results* get_dir(char *pwd)
   time ( &currenttime );
   savailable = GetAvailableSpace(pwd);
   sused = 0; // Resetting used value
+  axDisplay = 0;
+
+
+  if (oneLine){
+    segOrder[0] = COL_MARK;
+    segOrder[1] = COL_NAME;
+    for (i = 2; i < (sizeof(segOrder) / sizeof(segOrder[0])); i++){
+      segOrder[i] = -1;
+    }
+  }
 
   //if (stat(path, &sb) == 0 && S_ISDIR(sb.st_mode)){
   if (check_object(path) == 1){
@@ -1583,6 +2216,14 @@ results* get_dir(char *pwd)
     if (access ( path, F_OK ) != -1 ){
       if ( folder ){
         while ( ( res = readdir ( folder ) ) != NULL ){
+          fullFilePath = calloc((strlen(pwd) + 2 + (strlen(res->d_name))), sizeof(char));
+          sprintf(fullFilePath, "%s/%s", pwd, res->d_name);
+          acl = NULL; // Resetting
+          xattr = 0; // Resetting
+          seLinuxCon = 0; //Resetting
+          xattrsNum = 0;
+          haveAcl = 0;
+          contextText = malloc(sizeof(char) * 2);
           if ( showhidden == 0 && check_first_char(res->d_name, ".") && strcmp(res->d_name, ".") && strcmp(res->d_name, "..") ) {
             continue; // Skipping hidden files
           }
@@ -1607,7 +2248,79 @@ results* get_dir(char *pwd)
             sprintf(hlinkstr, "%d", buffer.st_nlink);
             sprintf(sizestr, "%lld", (long long)buffer.st_size);
 
-            writeResultStruct(ob, res->d_name, buffer, count);
+            // axflag here
+
+            // axDisplay = 1;
+            // axFlag = 0;
+
+            #ifdef HAVE_ACL_TYPE_EXTENDED
+            // acl = acl_get_file(res->d_name, ACL_TYPE_EXTENDED);
+              acl = acl_get_link_np(fullFilePath, ACL_TYPE_EXTENDED);
+              if (acl && acl_get_entry(acl, ACL_FIRST_ENTRY, &dummy) == -1) {
+                acl_free(acl);
+                acl = NULL;
+              }
+              if (acl != NULL) {
+                haveAcl = 1;
+              }
+              xattr = listxattr(res->d_name, NULL, 0, XATTR_NOFOLLOW);
+              if (xattr < 0){
+                xattr = 0;
+              }
+              xattrs = malloc(sizeof(char) * xattr);
+              listxattr(res->d_name, xattrs, xattr, XATTR_NOFOLLOW);
+              uXattrs = calloc(xattr, sizeof(unsigned char));
+              memcpy(uXattrs, xattrs, xattr);
+              // endwin();
+              // printf("%s\n", uXattrs);
+              // xa = realloc(xa, (count +1) * sizeof(xattrList));
+              xattrPos = processXAttrs(&xa, res->d_name, uXattrs, xattr, xattrPos, &xattrsNum);
+              free(uXattrs);
+              // endwin();
+              // printf("%s - %zu - %i\n", res->d_name, count, xattrPos);
+            #else
+              #ifdef HAVE_SYS_ACL_H
+                xattrs = malloc(sizeof(char) * 1);
+                strcpy(xattrs, "");
+                #if HAVE_ACL_LIBACL_H
+                  haveAcl = acl_extended_file(res->d_name);
+                  if (haveAcl == -1){
+                    haveAcl = 0;
+                  }
+               #endif
+                // acl = acl_get_file(res->d_name, ACL_TYPE_ACCESS);
+                // if (errno == ENOENT) {
+                //   acl_free(acl);
+                //   acl = NULL;
+                // }
+              #endif
+              #ifdef HAVE_SELINUX_SELINUX_H
+              seLinuxCon = lgetfilecon(res->d_name, &context);
+              if (seLinuxCon > 0){
+                contextText = realloc(contextText, sizeof(char) * seLinuxCon);
+                strcpy(contextText, context);
+              } else {
+                seLinuxCon = 0;
+              }
+              freecon(context);
+              #endif
+            #endif
+
+            if (haveAcl != 0 || seLinuxCon != 0 || xattr != 0){
+              axDisplay = 1;
+            }
+
+            if (seLinuxCon == 0){
+              sprintf(contextText, "?");
+            }
+
+            writeResultStruct(ob, res->d_name, buffer, count, haveAcl, xattr, seLinuxCon, contextText, xattrs, xattrsNum);
+
+            acl_free(acl);
+
+            free(contextText);
+            free(xattrs);
+            free(fullFilePath);
 
             sused = sused + buffer.st_size; // Adding the size values
 
@@ -1696,6 +2409,18 @@ results* get_dir(char *pwd)
   datelen = seglength(ob, "datedisplay", count);
   namelen = seglength(ob, "name", count);
   slinklen = seglength(ob, "slink", count);
+  contextlen = seglength(ob, "contextText", count);
+
+  // nameSegLen = namelen + slinklen + 4; // The 4 is the length of " -> "
+  nameSegLen = seglength(ob, "nameSegBlock", count);
+
+  xattrKeyLen = 0;
+
+  for (i = 0; i < xattrPos; i++){
+    if (xattrKeyLen < strlen(xa[i].xattr)){
+      xattrKeyLen = strlen(xa[i].xattr);
+    }
+  }
 
   free(dirError);
   free(res);
@@ -1706,35 +2431,150 @@ results* reorder_ob(results* ob, char *order){
   //mvprintw(2,66,"%i",*ob[0].sys);
   int count = totalfilecount;
 
+  skippable = 0;
+
   if ( !strcmp(order, "name")){
     qsort(ob, count, sizeof(results), cmp_dflist_name);
   }
   else if ( !strcmp(order, "date")){
+    qsort(ob, count, sizeof(results), cmp_dflist_name);
     qsort(ob, count, sizeof(results), cmp_dflist_date);
   }
   else if ( !strcmp(order, "size")){
+    qsort(ob, count, sizeof(results), cmp_dflist_name);
     qsort(ob, count, sizeof(results), cmp_dflist_size);
+  }
+
+  if (count > 2){
+    if (!strcmp(ob[0].name, ".") && !strcmp(ob[1].name, "..")){
+      skippable = 1;
+    }
   }
 
   return ob;
 }
 
-void display_dir(char *pwd, results* ob, int topfileref, int selected){
+void generateEntryLineIndex(results *ob){
+  int i, n, t;
+  acl_entry_t	entry = NULL;
 
+  listLen = totalfilecount;
+
+  if (showXAttrs) {
+    listLen = totalfilecount + xattrPos;
+  }
+
+  el = calloc(listLen, sizeof(entryLines));
+  n = 0;
+  for (i = 0; i < totalfilecount; i++){
+    entry = NULL;
+    el[n].entryLineType = ET_OBJECT;
+    el[n].subIndex = 0;
+    el[n].fileRef = i;
+    n++;
+    if (showXAttrs){
+      if (ob[i].xattrsNum > 0){
+        for (t = 0; t < ob[i].xattrsNum; t++){
+          el[n].entryLineType = ET_XATTR;
+          el[n].subIndex = t;
+          el[n].fileRef = i;
+          n++;
+        }
+      }
+    }
+    // if (showAcls){
+    //   if (ob[i].acl != NULL){
+    //     entry = NULL;
+    //     //endwin();
+    //     //printf("%i - %i: %s\n", acl_get_entry(ob[i].acl, entry == NULL ? ACL_FIRST_ENTRY : ACL_NEXT_ENTRY, &entry), errno, strerror(errno));
+    //     for (t = 0; acl_get_entry(ob[i].acl, entry == NULL ? ACL_FIRST_ENTRY : ACL_NEXT_ENTRY, &entry) == 0; t++) {
+    //       listLen++;
+    //       el = realloc(el, sizeof(entryLines) * listLen);
+    //       el[n].entryLineType = ET_ACL;
+    //       el[n].subIndex = t;
+    //       el[n].fileRef = i;
+    //       n++;
+    //     }
+    //   }
+    // }
+  }
+
+  // // Test
+  // endwin();
+  // for (i = 0; i < listLen; i++){
+  //   printf("I: %d, F: %d, T: %d, S: %d\n", i, el[i].fileRef, el[i].entryLineType, el[i].subIndex);
+  // }
+  // exit(4);
+}
+
+void adjustViewForSelected(int selected, entryLines* el, int listLen, int displaysize){
+  int i;
+
+  for (i = 0; i < listLen; i++){
+    if ((el[i].fileRef == selected) && (el[i].entryLineType == ET_OBJECT)){
+      if (listLen < displaysize) {
+        lineStart = 0;
+      } else if ((i + displaysize) > listLen){
+        lineStart = listLen - displaysize;
+      } else {
+        lineStart = i;
+      }
+      topfileref = el[lineStart].fileRef;
+      if ((lineStart + displaysize) > listLen){
+        bottomFileRef = el[listLen - 1].fileRef;
+      } else {
+        bottomFileRef = el[(lineStart + displaysize) - 1].fileRef;
+      }
+      break;
+    }
+  }
+
+}
+
+int lineStartFromBottomFileRef(int fileRef, entryLines* el, int listLen, int displaySize){
+  int i;
+  int output = 0;
+
+  for (i = 0; i < listLen; i++){
+    if ((el[i].fileRef == fileRef) &&(el[i].entryLineType == ET_OBJECT)){
+      if ((i - displaySize) > -1){
+        output = i - displaySize + 1;
+      } else {
+        output = 0;
+      }
+      break;
+    }
+  }
+  return output;
+}
+
+void display_dir(char *pwd, results* ob){
+
+  int i, n, t;
   size_t list_count = 0;
-  int count = totalfilecount;
+  // int count = totalfilecount;
+  int count = listLen;
   int printSelect = 0;
   //char sizeHeader[256], headings[256];
   char *sizeHeader = malloc(sizeof(char) + 1);
   char *headings = malloc(sizeof(char) + 1);
   size_t sizeHeaderLen;
   size_t headingsLen;
-  int i, s1, s2, s3;
+  int padIntHeadOG, padIntHeadContext, padIntHeadSize, padIntHeadDT;
   int headerpos, displaypos;
   char *susedString, *savailableString;
   wchar_t *pwdPrint = malloc(sizeof(wchar_t) + 1);
   size_t pwdPrintSize;
-  char *markedInfoLine, *padding0, *padding1, *padding2, *padding3;
+  char *markedInfoLine;
+  // char *padCharHeadAttrs, *padCharHeadOG, *padCharHeadContext, *padCharHeadSize, *padCharHeadDT;
+  char *headerCombined = malloc(sizeof(char) + 1);
+  int headerCombinedLen = 1;
+  char *markedHeadSeg, *attrHeadSeg, *hlinkHeadSeg, *ownerHeadSeg, *contextHeadSeg, *sizeHeadSeg, *dateHeadSeg, *nameHeadSeg;
+  int xattrOffset = 0;
+  int origTopFileRef;
+  int currentItem;
+
+  topfileref = el[lineStart].fileRef;
 
   if (markedinfo == 2 && (CheckMarked(ob) > 0)){
     automark = 1;
@@ -1748,14 +2588,86 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
   } else{
     displaysize = LINES - 5;
     displaystart = 4;
-    if ((totalfilecount >= displaysize) && (topfileref + (displaysize ) > totalfilecount )){
-      topfileref--;
-    }
+    // TO DO: REFACTOR
+    // if ((totalfilecount >= displaysize) && (lineStart + (displaysize ) > totalfilecount )){
+    //   lineStart--;
+    // }
   }
 
-  topfileref = sanitizeTopFileRef(topfileref);
+  // endwin();
+  if ((lineStart + displaysize) > listLen){
+    bottomFileRef = el[listLen - 1].fileRef;
+  } else {
+    bottomFileRef = el[(lineStart + displaysize) - 1].fileRef;
+  }
 
-  selected = selected - topfileref;
+  // Replacement to "sanitizeTopFileRef" - should be simpler with the lookup table.
+  if ((selected > bottomFileRef) || ((selected < topfileref + 1))){
+    adjustViewForSelected(selected, el, listLen, displaysize);
+  }
+
+  i = 0;
+
+ rerunCalc:
+
+  // Hacky, but this will stop show hanging if the topfileref check fails after 50 times. It's in place as if CTRL-C is disabled, then this lock can't be exited without killing show from another terminal.
+  if (i > 50){
+    exit(27);
+  }
+
+  lineCount = 0;
+  // bottomFileRef = 0;
+  visibleOffset = 0;
+
+  // origTopFileRef = topfileref;
+
+  // for(list_count = topfileref; list_count < totalfilecount; list_count++ ){
+  //   lineCount++;
+
+  //   if (showXAttrs){
+  //     lineCount += ob[list_count].xattrsNum;
+  //     // visibleOffset += ob[list_count].xattrsNum;
+  //   }
+
+  //   if (lineCount > displaysize){
+  //     // lineCount--;
+  //     break;
+  //   }
+  //   // bottomFileRef = list_count;
+  // }
+
+  // visibleObjects = bottomFileRef - topfileref + 1;
+
+  // // Hacky, but it works.
+  // if ((visibleObjects + visibleOffset) > displaysize){
+  //   visibleOffset -= (visibleObjects + visibleOffset) - displaysize;
+  // }
+
+  if (displaysize > count){
+    displaycount = count + 1;
+  } else {
+    displaycount = displaysize;
+  }
+
+  // displaycount = visibleObjects;
+
+  if (displaycount < 0){
+    displaycount = 0;
+  }
+
+  // topfileref = sanitizeTopFileRef(topfileref);
+  // endwin();
+  // printf("OTFR: %i, NTFR: %i\n", origTopFileRef, topfileref);
+
+  // if (topfileref != origTopFileRef){
+  //   i++;
+  //   goto rerunCalc;
+  // }
+
+  // printf("\n");
+
+  // selected = selected - topfileref;
+
 
   pwdPrintSize = (strlen(pwd) + strlen(objectWild) + 2);
 
@@ -1776,18 +2688,24 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
     if (sused == 0){
       susedString = malloc (sizeof (char) * 1);
     } else {
-      susedString = malloc (sizeof (char) * (log10(sused) + 1));
+      susedString = malloc (sizeof (char) * (log10(sused) + 2));
     }
     if (savailable == 0){
       savailableString = malloc (sizeof (char) * 1);
     } else {
-      savailableString = malloc (sizeof (char) * (log10(savailable) + 1));
+      savailableString = malloc (sizeof (char) * (log10(savailable) + 2));
     }
     sprintf(susedString, "%lu", sused);
-    sprintf(savailableString, "%lu", savailable);
+    sprintf(savailableString, "%ju", (uintmax_t) savailable);
   }
 
   strcpy(headAttrs, "---Attrs---");
+
+  if (showContext){
+    strcpy(headContext, "---Context---");
+  } else {
+    strcpy(headContext, "");
+  }
 
   if ( mmMode ){
     strcpy(headSize, "-Driver/Size-");
@@ -1836,34 +2754,63 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
     break;
   }
 
-  if (displaysize > count){
-    displaycount = count;
-  } else {
-    displaycount = displaysize;
+  // mvprintw(LINES-1, 0, "bottomFileRef: %i", bottomFileRef);
+  // mvprintw(LINES-1, 0, "visibleObjects: %i", visibleObjects);
+  // if (showXAttrs){
+  //   if (display)
+  // } else {
+  // }
+
+  if (el[lineStart].entryLineType != ET_OBJECT){
+    topfileref++;
   }
 
-  if (displaycount < 0){
-    displaycount = 0;
-  }
-
-  for(list_count = 0; list_count < displaycount; list_count++ ){
-    if (list_count < totalfilecount){
+  for(list_count = 0; list_count < displaycount + 1; list_count++ ){
+    // endwin();
+    // printf("%zu, %i, %i, - %i\n", list_count, lineStart, listLen, displaycount + 1);
+    if ((list_count + lineStart) < listLen){
       // Setting highlight
-      if (list_count == selected) {
+      // if (list_count == selected) {
+      if (el[(list_count + lineStart)].fileRef == selected) {
         printSelect = 1;
       } else {
         printSelect = 0;
       }
 
-      ownstart = hlinklen + 2;
-      hlinkstart = ownstart - 1 - *ob[list_count + topfileref].hlinklens;
+      // ownstart = hlinklen + 2;
+      // hlinkstart = ownstart - 1 - *ob[list_count + lineStart].hlinklens;
 
       displaypos = 0 - hpos;
+
+      currentItem = el[(list_count + lineStart)].fileRef;
 
       // endwin();
       // printf("LC: %i, TFR: %i, DC: %i\n", list_count, topfileref, displaycount);
 
-      printEntry(displaypos, hlinklen, ownerlen, grouplen, authorlen, sizelen, majorlen, minorlen, datelen, namelen, printSelect, list_count, topfileref, ob);
+      // printf("DP: %i, HL: %i, OL: %i, GL: %i, AL: %i, SL: %i, MaL: %i, MiL: %i, DL: %i, NL: %i, CL: %i, PS: %i, LC: %i, TF: %i, XO: %i\n", displaypos, hlinklen, ownerlen, grouplen, authorlen, sizelen, majorlen, minorlen, datelen, namelen, contextlen, printSelect, list_count, topfileref, xattrOffset);
+      // mvprintw(list_count + 4, 0, "DP: %i, HL: %i, OL: %i, GL: %i, AL: %i, SL: %i, MaL: %i, MiL: %i, DL: %i, NL: %i, CL: %i, PS: %i, LC: %i, TF: %i, XO: %i", displaypos, hlinklen, ownerlen, grouplen, authorlen, sizelen, majorlen, minorlen, datelen, namelen, contextlen, printSelect, list_count, topfileref, xattrOffset);
+      if (el[(list_count + lineStart)].entryLineType == ET_OBJECT){
+        printEntry(displaypos, hlinklen, ownerlen, grouplen, authorlen, sizelen, majorlen, minorlen, datelen, namelen, contextlen, printSelect, list_count, currentItem, ob);
+        // mvprintw(displaystart + list_count, 0, "%i - THIS SHOULDN'T BE HERE! - %s", printSelect, ob[el[(list_count + lineStart)].fileRef].name);
+      } else if (el[(list_count + lineStart)].entryLineType == ET_ACL) {
+        // Not implemented yet
+      } else if (el[(list_count + lineStart)].entryLineType == ET_XATTR) {
+        // Not implemented yet
+        printXattr(displaypos, printSelect, list_count, currentItem, el[(list_count + lineStart)].subIndex, xa, ob);
+      } else {
+        mvprintw(displaystart + list_count, 0, "THIS SHOULDN'T BE HERE! - entryLineType: %d", el[(list_count + lineStart)].entryLineType);
+      }
+
+      if (charPos > maxdisplaywidth){
+        maxdisplaywidth = charPos;
+      }
+
+      // if (showXAttrs && ob[list_count + topfileref].xattrsNum > 0){
+      //   // displaysize = displaysize - ob[list_count + topfileref].xattrsNum;
+      //   // displaycount = displaycount + ob[list_count + topfileref].xattrsNum;
+      //   // list_count = list_count + ob[list_count + topfileref].xattrsNum;
+      //   xattrOffset += ob[list_count + topfileref].xattrsNum;
+      // }
 
       //list_count++;
     } else {
@@ -1871,60 +2818,145 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
     }
   }
 
-  if (slinklen == 0){
-    maxdisplaywidth = entryMetaLen + namelen;
-  } else {
-    // maxdisplaywidth = entryMetaLen + namelen + slinklen + 4;
-    maxdisplaywidth = entryMetaLen + nameAndSLink;
-  }
+
+  // if (slinklen == 0){
+  //   maxdisplaywidth = charPos + namelen;
+  // } else {
+  //   // maxdisplaywidth = entryMetaLen + namelen + slinklen + 4;
+  //   maxdisplaywidth = charPos + nameAndSLink;
+  // }
 
   //mvprintw(0, 66, "%d %d", historyref, sessionhistory);
 
   // the space between the largest owner and largest group should always end up being 1... in theory.
   // 2018-07-05: That assumption was solid, until we added a third element (Owner, Group, and Author)
   if (!ogavis){
-    s1 = 1;
+    padIntHeadOG = 0;
   } else {
     if ( (ogalen + ogapad) > strlen(headOG)){
-      s1 = (ogalen + ogapad) - strlen(headOG) + 1;
+      padIntHeadOG = (ogalen + ogapad) - strlen(headOG) + 1;
     } else {
-      s1 = 1;
+      padIntHeadOG = 1;
     }
   }
 
-  if ( sizelen > strlen(headSize)) {
-    s2 = sizelen - strlen(headSize);
+  if ( showContext ){
+    if ( contextlen > strlen(headContext)){
+      padIntHeadContext = ((contextlen - strlen(headContext)) + 1 );
+    } else {
+      padIntHeadContext = 1;
+    }
   } else {
-    s2 = 0;
+    padIntHeadContext = 0;
+  }
+
+  if ( sizelen > strlen(headSize)) {
+    padIntHeadSize = sizelen - strlen(headSize);
+  } else {
+    padIntHeadSize = 0;
   }
 
   if ( datelen > strlen(headDT)) {
-    s3 = (datelen - strlen(headDT)) + 1;
+    padIntHeadDT = (datelen - strlen(headDT)) + 1;
   } else {
-    s3 = 1;
+    padIntHeadDT = 1;
   }
 
-  sizeHeaderLen = snprintf(NULL, 0, "%i Objects   %s Used %s Available", count, susedString, savailableString);
+  sizeHeaderLen = snprintf(NULL, 0, "%i Objects   %s Used %s Available", totalfilecount, susedString, savailableString);
 
   sizeHeader = realloc(sizeHeader, sizeof(char) * (sizeHeaderLen + 1));
 
-  sprintf(sizeHeader, "%i Objects   %s Used %s Available", count, susedString, savailableString);
+  sprintf(sizeHeader, "%i Objects   %s Used %s Available", totalfilecount, susedString, savailableString);
 
-  padding0 = genPadding(hlinklen + 1);
-  padding1 = genPadding(s1);
-  padding2 = genPadding(s2);
-  padding3 = genPadding(s3);
+  // padCharHeadAttrs = genPadding(hlinklen + 1 + axDisplay);
+  // padCharHeadOG = genPadding(padIntHeadOG);
+  // padCharHeadContext = genPadding(padIntHeadContext);
+  // padCharHeadSize = genPadding(padIntHeadSize);
+  // padCharHeadDT = genPadding(padIntHeadDT);
 
-  headingsLen = snprintf(NULL, 0, "%s%s%s%s%s%s%s%s%s%s", headAttrs, padding0, headOG, padding1, padding2, headSize, " ", headDT, padding3, headName);
+  // headingsLen = snprintf(NULL, 0, "%s%s%s%s%s%s%s%s%s%s%s%s", headAttrs, padCharHeadAttrs, headOG, padCharHeadOG, headContext, padCharHeadContext, padCharHeadSize, headSize, " ", headDT, padCharHeadDT, headName);
 
-  headings = realloc(headings, sizeof(char) * (headingsLen + 1));
+  // headings = realloc(headings, sizeof(char) * (headingsLen + 1));
 
-  sprintf(headings, "%s%s%s%s%s%s%s%s%s%s", headAttrs, padding0, headOG, padding1, padding2, headSize, " ", headDT, padding3, headName);
+  // sprintf(headings, "%s%s%s%s%s%s%s%s%s%s%s%s", headAttrs, padCharHeadAttrs, headOG, padCharHeadOG, headContext, padCharHeadContext, padCharHeadSize, headSize, " ", headDT, padCharHeadDT, headName);
 
-  free(padding0);
-  free(padding1);
-  free(padding2);
-  free(padding3);
+  markedHeadSeg = writeSegment(3, "", RIGHT);
+  attrHeadSeg = writeSegment(attrSegmentLen, headAttrs, LEFT);
+  hlinkHeadSeg = writeSegment(hlinkSegmentLen, "", RIGHT);
+  ownerHeadSeg = writeSegment(ownerSegmentLen, headOG, LEFT);
+  contextHeadSeg = writeSegment(contextSegmentLen, headContext, LEFT);
+  sizeHeadSeg = writeSegment(sizeSegmentLen, headSize, RIGHT);
+  dateHeadSeg = writeSegment(dateSegmentLen, headDT, LEFT);
+  nameHeadSeg = writeSegment(nameSegmentDataLen, headName, LEFT);
+
+  sprintf(headerCombined, "");
+  for ( n = 0; n < (sizeof(segOrder) / sizeof(segOrder[0])); n++){
+    t = segOrder[n];
+    switch(t){
+    case COL_MARK:
+      headerCombinedLen = (headerCombinedLen + strlen(markedHeadSeg));
+      headerCombined = realloc(headerCombined, sizeof(char) * headerCombinedLen);
+      strcat(headerCombined, markedHeadSeg);
+      break;
+    case COL_ATTR:
+      headerCombinedLen = (headerCombinedLen + strlen(attrHeadSeg));
+      headerCombined = realloc(headerCombined, sizeof(char) * headerCombinedLen);
+      strcat(headerCombined, attrHeadSeg);
+      break;
+    case COL_HLINK:
+      headerCombinedLen = (headerCombinedLen + strlen(hlinkHeadSeg));
+      headerCombined = realloc(headerCombined, sizeof(char) * headerCombinedLen);
+      strcat(headerCombined, hlinkHeadSeg);
+      break;
+    case COL_OWNER:
+      if (ogavis){
+        headerCombinedLen = (headerCombinedLen + strlen(ownerHeadSeg));
+        headerCombined = realloc(headerCombined, sizeof(char) * headerCombinedLen);
+        strcat(headerCombined, ownerHeadSeg);
+      }
+      break;
+    case COL_CONTEXT:
+      if (showContext){
+        headerCombinedLen = (headerCombinedLen + strlen(contextHeadSeg));
+        headerCombined = realloc(headerCombined, sizeof(char) * headerCombinedLen);
+        strcat(headerCombined, contextHeadSeg);
+      }
+      break;
+    case COL_SIZE:
+      headerCombinedLen = (headerCombinedLen + strlen(sizeHeadSeg));
+      headerCombined = realloc(headerCombined, sizeof(char) * headerCombinedLen);
+      strcat(headerCombined, sizeHeadSeg);
+      break;
+    case COL_DATE:
+      headerCombinedLen = (headerCombinedLen + strlen(dateHeadSeg));
+      headerCombined = realloc(headerCombined, sizeof(char) * headerCombinedLen);
+      strcat(headerCombined, dateHeadSeg);
+      break;
+    case COL_NAME:
+      headerCombinedLen = (headerCombinedLen + strlen(nameHeadSeg));
+      headerCombined = realloc(headerCombined, sizeof(char) * headerCombinedLen);
+      strcat(headerCombined, nameHeadSeg);
+      break;
+    default:
+      break;
+    }
+  }
+
+  // Freeing Segments
+  free(markedHeadSeg);
+  free(attrHeadSeg);
+  free(hlinkHeadSeg);
+  free(ownerHeadSeg);
+  free(contextHeadSeg);
+  free(sizeHeadSeg);
+  free(dateHeadSeg);
+  free(nameHeadSeg);
+
+  // free(padCharHeadAttrs);
+  // free(padCharHeadOG);
+  // free(padCharHeadContext);
+  // free(padCharHeadSize);
+  // free(padCharHeadDT);
 
   if ( danger ) {
     setColors(DANGER_PAIR);
@@ -1950,32 +2982,35 @@ void display_dir(char *pwd, results* ob, int topfileref, int selected){
     setColors(HEADING_PAIR);
   }
 
-  headerpos = 4 - hpos;
+  // headerpos = 4 - hpos;
 
   if (markedinfo == 1 || (markedinfo == 2 && (CheckMarked(ob) > 0))){
-    printLine (4, headerpos, headings);
+    // printLine (4, headerpos, headings);
+    printLine (4, (0 - hpos), headerCombined);
   } else {
-    printLine (3, headerpos, headings);
+    // printLine (3, headerpos, headings);
+    printLine (3, (0 - hpos), headerCombined);
   }
   setColors(COMMAND_PAIR);
   free(susedString);
   free(savailableString);
   free(sizeHeader);
   free(headings);
+  free(headerCombined);
 }
 
 void resizeDisplayDir(results* ob){
   displaysize = (LINES - 5);
-  if ( (selected - topfileref) > (LINES - 6 )) {
-    topfileref = selected - (LINES - 6);
-  } else if ( topfileref + (LINES - 6) > totalfilecount ) {
+  if ( (selected - lineStart) > (LINES - 6 )) {
+    lineStart = selected - (LINES - 6);
+  } else if ( lineStart + (LINES - 6) > totalfilecount ) {
     if (totalfilecount < (LINES - 6)){
-      topfileref = 0;
+      lineStart = 0;
     } else {
-      topfileref = totalfilecount - (LINES - 5);
+      lineStart = totalfilecount - (LINES - 5);
     }
   }
-  refreshDirectory(sortmode, topfileref, selected, -1);
-  // display_dir(currentpwd, ob, topfileref, selected);
+  refreshDirectory(sortmode, lineStart, selected, -1);
+  // display_dir(currentpwd, ob);
 }
 

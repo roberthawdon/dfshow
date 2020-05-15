@@ -28,5 +28,5 @@ void copy_multi_file(results* ob, char *dest);
 void rename_multi_file_input(results* ob, char *input);
 int huntCaseSelectInput();
 void huntInput(int selected, int charcase);
-void refreshDirectory(char *sortmode, int origtopfileref, int origselected, int destructive);
+void refreshDirectory(char *sortmode, int origlineStart, int origselected, int destructive);
 int sanitizeTopFileRef(int topfileref);

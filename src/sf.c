@@ -1,6 +1,7 @@
 /*
-  DF-SHOW - A clone of 'SHOW' directory browser from DF-EDIT by Larry Kroeker
-  Copyright (C) 2018-2019  Robert Ian Hawdon
+  DF-SHOW: An interactive directory/file browser written for Unix-like systems.
+  Based on the applications from the PC-DOS DF-EDIT suite by Larry Kroeker.
+  Copyright (C) 2018-2020  Robert Ian Hawdon
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -374,15 +375,15 @@ void saveConfig(const char * confFile, settingIndex **settings, t1CharValues **v
 
   for (i = 0; i < items; i++){
     config_setting_remove(group, (*settings)[i].refLabel);
-    if ((*settings)[i].type == 0){
+    if ((*settings)[i].type == SETTING_BOOL){
       setting = config_setting_add(group, (*settings)[i].refLabel, CONFIG_TYPE_INT);
 
       if (!strcmp((*settings)[i].refLabel, "wrap")){
         config_setting_set_int(setting, wrap);
       }
-    } else if ((*settings)[i].type == 1){
+    } else if ((*settings)[i].type == SETTING_SELECT){
       // None of those in SF (yet?)
-    } else if ((*settings)[i].type == 2){
+    } else if ((*settings)[i].type == SETTING_MULTI){
       // None of those in SF (yet?)
     }
   }
@@ -421,7 +422,7 @@ void settingsMenuView()
   clear();
   wPrintMenu(0,0,settingsMenuLabel);
 
-  importSetting(&settingIndex, &items, "wrap", L"Enable text wrapping", 0, wrap, -1, 0);
+  importSetting(&settingIndex, &items, "wrap", L"Enable text wrapping", SETTING_BOOL, wrap, -1, 0);
 
   while(1)
     {

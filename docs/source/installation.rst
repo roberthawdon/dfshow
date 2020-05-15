@@ -110,6 +110,8 @@ Download the project and prepare sources.
     ./bootstrap
     ./configure
 
+On systems with SELinux, you can enable support for this by passing the ``--with-selinux`` option to configure.
+
 On some BSD systems, you may need to pass extra parameters to configure and build DF-SHOW:
 
 .. code-block:: bash

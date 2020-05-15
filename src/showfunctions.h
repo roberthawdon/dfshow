@@ -1,8 +1,40 @@
 #include <sys/stat.h>
+#include <sys/acl.h>
+
+#define MULTICHAR '*'
+#define ONECHAR '?'
+
+#define ACL_NONE    0
+#define ACL_TRUE    1
+#define ACL_SELINUX 2 // Linux Specific
+#define ACL_XATTR   3 // macOS Specific
+
+#define LEFT  0
+#define RIGHT 1
+
+#define COL_MARK    0
+#define COL_ATTR    1
+#define COL_HLINK   2
+#define COL_OWNER   3
+#define COL_CONTEXT 4
+#define COL_SIZE    5
+#define COL_DATE    6
+#define COL_NAME    7
+
+#define ET_OBJECT 0
+#define ET_ACL    1
+#define ET_XATTR  2
+
+#define V_TOP    0;
+#define V_BOTTOM 1;
 
 typedef struct {
   int marked[1];
   mode_t mode;
+  bool xAcl;
+  ssize_t xattr;
+  int seLinuxCon;
+  char *contextText;
   char *perm;
   int hlink[4];
   int hlinklens[5];
@@ -19,19 +51,46 @@ typedef struct {
   char *name;
   char *slink;
   int color;
+  char *xattrs;
+  int xattrsNum;
 } results;
 
 typedef struct {
   char *path;
   char *name;
   char *objectWild;
-  int topfileref;
+  int lineStart;
   int selected;
+  int visibleObjects;
 } history;
 
+typedef struct {
+  char *name;
+  char *xattr;
+  size_t xattrSize;
+} xattrList;
+
+typedef struct {
+  wchar_t *name;
+  int linkStat;
+  wchar_t *link;
+  char *padding;
+} nameStruct;
+
+typedef struct {
+  int fileRef;
+  int entryLineType;
+  int subIndex;
+} entryLines;
+
+void adjustViewForSelected(int selected, entryLines* el, int listLen, int displaysize);
+int lineStartFromBottomFileRef(int fileRef, entryLines* el, int listLen, int displaySize);
 int checkRunningEnv();
 void freeResults(results *ob, int count);
 void freeHistory(history *hs, int count);
+void freeXAttrs(xattrList *xa, int count);
+int processXAttrs(xattrList **xa, char *name, unsigned char *xattrs, size_t xattrLen, int pos, int *xattrsNum);
+void generateEntryLineIndex(results *ob);
 char *getRelativePath(char *file, char *target);
 int wildcard(const char *value, char *wcard);
 int findResultByName(results *ob, char *name);
@@ -47,9 +106,9 @@ int cmp_dflist_date(const void *lhs, const void *rhs);
 int cmp_dflist_size(const void *lhs, const void *rhs);
 results* get_dir(char *pwd);
 results* reorder_ob(results* ob, char *order);
-void display_dir(char *pwd, results* ob, int topfileref, int selected);
-void set_history(char *pwd, char *objectWild, char *name, int topfileref, int selected);
-size_t GetAvailableSpace(const char* path);
+void display_dir(char *pwd, results* ob);
+void set_history(char *pwd, char *objectWild, char *name, int lineStart, int selected);
+uintmax_t GetAvailableSpace(const char* path);
 long GetUsedSpace(const char* path);
 int SendToPager(char* object);
 int SendToEditor(char* object);
@@ -59,15 +118,16 @@ void LaunchExecutable(const char* object, const char* args);
 int UpdateOwnerGroup(const char* object, const char* pwdstr, const char* grpstr);
 int RenameObject(char* source, char* dest);
 int CheckMarked(results* ob);
-void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorlen, int sizelen, int majorlen, int minorlen, int datelen, int namelen, int selected, int listref, int topref, results* ob);
+wchar_t *wWriteSegment(int segLen, wchar_t *text, int align);
+char *writeSegment(int segLen, char *text, int align);
+void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorlen, int sizelen, int majorlen, int minorlen, int datelen, int namelen, int contextlen, int selected, int listref, int currentitem, results* ob);
+void printXattr(int start, int selected, int listref, int currentItem, int subIndex, xattrList* xa, results* ob);
 void padstring(char *str, int len, char c);
 char *genPadding(int num_of_spaces);
 void resizeDisplayDir(results* ob);
 char *readableSize(double size, char *buf, int si);
-int writePermsEntry(char * perms, mode_t mode);
-void writeResultStruct(results* ob, const char * filename, struct stat buffer, int count);
+int writePermsEntry(char * perms, mode_t mode, int axFlag, int sLinkCheck);
+void writeResultStruct(results* ob, const char * filename, struct stat buffer, int count, bool xAcl, ssize_t xattr, int seLinuxCon, char * contextText, char * xattrs, const int xattrsNum);
 char *markedDisplay(results* ob);
 int huntFile(const char * file, const char * search, int charcase);
 
-#define MULTICHAR '*'
-#define ONECHAR '?'

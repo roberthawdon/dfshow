@@ -92,40 +92,73 @@
 
 <p>The following options are shared with <code>ls</code>:</p>
 
-<dl>
-<dt><code>-a</code>, <code>--all</code></dt><dd><p>Does not ignore files or directories starting with <code>.</code>.
-The <code>.</code> and <code>..</code> objects are never hidden due to their navigational functions in <code>show</code>.</p></dd>
-<dt><code>--author</code></dt><dd><p>Prints the author of the file in the output.</p></dd>
-<dt><code>-B</code>, <code>--ignore-backups</code></dt><dd><p>Hides files ending in <code>~</code>, often used as backup files.</p></dd>
-<dt><code>--color</code>[=<var>COLOR</var>]</dt><dd><p>Sets colorizing of files and directories. Can be set to <code>always</code> or <code>never</code>.</p></dd>
-<dt class="flush"><code>-f</code></dt><dd><p>Does not sort the output, this is equivilent to running <code>show</code> with <code>-aU</code>.</p></dd>
-<dt><code>--full-time</code></dt><dd><p>Sets the Time/Date format to <code>full-iso</code>.</p></dd>
-<dt class="flush"><code>-g</code></dt><dd><p>Only displays the group of each object. Can be paired with <code>--author</code>.</p></dd>
-<dt><code>-G</code>, <code>--no-group</code></dt><dd><p>Omits the group of each object in the output.</p></dd>
-<dt><code>-h</code>, <code>--human-readable</code></dt><dd><p>Displays the file sizes in a human readable format. For example, 1024 Bytes will be represented as 1M.</p></dd>
-<dt class="flush"><code>--si</code></dt><dd><p>As above, but uses powers of 1000. (1000 = 1m)</p></dd>
-<dt><code>-r</code>, <code>--reverse</code></dt><dd><p>Reverse the order of sorting. Can be paired with <code>-S</code> or <code>-t</code></p></dd>
-<dt class="flush"><code>-S</code></dt><dd><p>Sorts files and directories by size, largest first.</p></dd>
-<dt><code>--time-style</code>=[<var>TIME_STYLE</var>]</dt><dd><p>Time/Date format. Can be set to <code>full-iso</code>, <code>long-iso</code>, <code>iso</code>, or <code>locale</code>.</p></dd>
-<dt class="flush"><code>-t</code></dt><dd><p>Sorts by modification time, newest first.</p></dd>
-<dt class="flush"><code>-U</code></dt><dd><p>Displays output in the order they're found.</p></dd>
-<dt class="flush"><code>--help</code></dt><dd><p>Displays help message, then exits.</p></dd>
-<dt><code>--version</code></dt><dd><p>Displays program version, then exits.</p></dd>
-</dl>
+<ul>
+<li><p><code>-@</code>
+Displays extended atributes keys and sizes (macOS only).</p></li>
+<li><p><code>-a</code>, <code>--all</code>:
+Does not ignore files or directories starting with <code>.</code>.
+The <code>.</code> and <code>..</code> objects are never hidden due to their navigational functions in <code>show</code>.</p></li>
+<li><p><code>--author</code>:
+Prints the author of the file in the output.</p></li>
+<li><p><code>-B</code>, <code>--ignore-backups</code>:
+Hides files ending in <code>~</code>, often used as backup files.</p></li>
+<li><p><code>--color</code>[=<var>COLOR</var>]:
+Sets colorizing of files and directories. Can be set to <code>always</code> or <code>never</code>.</p></li>
+<li><p><code>-f</code>:
+Does not sort the output, this is equivilent to running <code>show</code> with <code>-aU</code>.</p></li>
+<li><p><code>--full-time</code>:
+Sets the Time/Date format to <code>full-iso</code>.</p></li>
+<li><p><code>-g</code>:
+Only displays the group of each object. Can be paired with <code>--author</code>.</p></li>
+<li><p><code>-G</code>, <code>--no-group</code>:
+Omits the group of each object in the output.</p></li>
+<li><p><code>-h</code>, <code>--human-readable</code>:
+Displays the file sizes in a human readable format. For example, 1024 Bytes will be represented as 1M.</p></li>
+<li><p><code>--si</code>:
+As above, but uses powers of 1000. (1000 = 1m)</p></li>
+<li><p><code>-r</code>, <code>--reverse</code>:
+Reverse the order of sorting. Can be paired with <code>-S</code> or <code>-t</code></p></li>
+<li><p><code>-S</code>:
+Sorts files and directories by size, largest first.</p></li>
+<li><p><code>--time-style</code>=[<var>TIME_STYLE</var>]:
+Time/Date format. Can be set to <code>full-iso</code>, <code>long-iso</code>, <code>iso</code>, or <code>locale</code>.</p></li>
+<li><p><code>-t</code>:
+Sorts by modification time, newest first.</p></li>
+<li><p><code>-U</code>:
+Displays output in the order they're found.</p></li>
+<li><p><code>-Z</code>, <code>--context</code>
+Shows the secuirty context of each file, if one is defined.</p></li>
+<li><p><code>-1</code>
+Only shows the file name on display.</p></li>
+<li><p><code>--help</code>:
+Displays help message, then exits.</p></li>
+<li><p><code>--version</code>:
+Displays program version, then exits.</p></li>
+</ul>
 
 
 <p>The following options are specific to <code>show</code>:</p>
 
-<dl>
-<dt><code>--theme</code>=[<var>THEME</var>]</dt><dd><p>Color themes. Passing this argument without an option will display available themes.</p></dd>
-<dt><code>--no-danger</code></dt><dd><p>Disables the danger color scheme when running with elevated privileges.</p></dd>
-<dt><code>--marked</code>=[<var>MARKED</var>]</dt><dd><p>Displays information about marked files. Can be set to <code>always</code>, <code>never</code>, or <code>auto</code>.</p></dd>
-<dt class="flush"><code>--no-sf</code></dt><dd><p>Doesn't display files using <code>sf</code> (if installed) and defaults to the user's PAGER setting.</p></dd>
-<dt><code>--show-on-enter</code></dt><dd><p>Sets the enter key to launch the show command instead of moving the selection down by one.</p></dd>
-<dt><code>--running</code></dt><dd><p>Checks for parent instances of <code>show</code>, this is useful when using the Run Command option.</p></dd>
-<dt><code>--settings-menu</code></dt><dd><p>Launch <code>show</code> directly into the settings menu.</p></dd>
-<dt><code>--edit-themes</code></dt><dd><p>Launches <code>show</code> directly into the theme editor. (colors)</p></dd>
-</dl>
+<ul>
+<li><p><code>--theme</code>=[<var>THEME</var>]:
+Color themes. Passing this argument without an option will display available themes.</p></li>
+<li><p><code>--no-danger</code>:
+Disables the danger color scheme when running with elevated privileges.</p></li>
+<li><p><code>--marked</code>=[<var>MARKED</var>]:
+Displays information about marked files. Can be set to <code>always</code>, <code>never</code>, or <code>auto</code>.</p></li>
+<li><p><code>--no-sf</code>:
+Doesn't display files using <code>sf</code> (if installed) and defaults to the user's PAGER setting.</p></li>
+<li><p><code>--show-on-enter</code>:
+Sets the enter key to launch the show command instead of moving the selection down by one.</p></li>
+<li><p><code>--running</code>:
+Checks for parent instances of <code>show</code>, this is useful when using the Run Command option.</p></li>
+<li><p><code>--settings-menu</code>:
+Launch <code>show</code> directly into the settings menu.</p></li>
+<li><p><code>--edit-themes</code>:
+Launches <code>show</code> directly into the theme editor. (colors)</p></li>
+<li><p><code>--skip-to-first</code>
+Sets the highlighted item to the first object that isn't <code>.</code> or <code>..</code></p></li>
+</ul>
 
 
 <h2 id="OVERVIEW">OVERVIEW</h2>
@@ -466,6 +499,7 @@ The <code>.</code> and <code>..</code> objects are never hidden due to their nav
   [ ] Human readable sizes
   [ ] Enter key acts like Show
   &lt; > Owner Column: &lt;owner> &lt;group> &lt;author>
+  [ ] Skip to the first object
 </code></pre>
 
 <p>There are three types of configuration items, each denoted with a different symbol:</p>
@@ -496,7 +530,7 @@ The <code>.</code> and <code>..</code> objects are never hidden due to their nav
 
 <h2 id="COPYRIGHT">COPYRIGHT</h2>
 
-<p>Copyright (C) 2019 License GPLv3+: GNU GPL version 3 or later <a href="https://gnu.org/licenses/gpl.html" data-bare-link="true">https://gnu.org/licenses/gpl.html</a>.</p>
+<p>Copyright (C) 2020 License GPLv3+: GNU GPL version 3 or later <a href="https://gnu.org/licenses/gpl.html" data-bare-link="true">https://gnu.org/licenses/gpl.html</a>.</p>
 
 <p>This program comes with ABSOLUTELY NO WARRANTY. This is free software, and you are welcome to redistribute it under certain conditions.</p>
 
@@ -509,7 +543,7 @@ The <code>.</code> and <code>..</code> objects are never hidden due to their nav
 
   <ol class='man-decor man-foot man foot'>
     <li class='tl'></li>
-    <li class='tc'>September 2019</li>
+    <li class='tc'>May 2020</li>
     <li class='tr'>show(1)</li>
   </ol>
 

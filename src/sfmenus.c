@@ -1,6 +1,7 @@
 /*
-  DF-SHOW - A clone of 'SHOW' directory browser from DF-EDIT by Larry Kroeker
-  Copyright (C) 2018-2019  Robert Ian Hawdon
+  DF-SHOW: An interactive directory/file browser written for Unix-like systems.
+  Based on the applications from the PC-DOS DF-EDIT suite by Larry Kroeker.
+  Copyright (C) 2018-2020  Robert Ian Hawdon
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -30,6 +31,8 @@ int c;
 int * pc = &c;
 
 int abortinput = 0;
+
+bool findSet = false;
 
 menuDef *fileMenu;
 int fileMenuSize = 0;
@@ -101,28 +104,32 @@ void unloadMenuLabels(){
   free(settingsMenuLabel);
 }
 
-void show_file_find(int charcase)
+void show_file_find(bool charcase, bool useLast)
 {
   int regexcase;
   int result;
   char inputmessage[32];
   char errormessage[1024];
-  if (charcase){
-    regexcase = 0;
-    strcpy(inputmessage, "Match Case - Enter string:");
-  } else {
-    regexcase = REG_ICASE;
-    strcpy(inputmessage, "Ignore Case - Enter string:");
+  if (!useLast){
+    if (charcase){
+      regexcase = 0;
+      strcpy(inputmessage, "Match Case - Enter string:");
+    } else {
+      regexcase = REG_ICASE;
+      strcpy(inputmessage, "Ignore Case - Enter string:");
+    }
+    move(0,0);
+    clrtoeol();
+    mvprintw(0, 0, inputmessage);
+    curs_set(TRUE);
+    move(0, strlen(inputmessage) + 1);
+    curs_set(FALSE);
+    if (readline(regexinput, 1024, regexinput) == -1 ){
+      abortinput = 1;
+    }
   }
-  move(0,0);
-  clrtoeol();
-  mvprintw(0, 0, inputmessage);
-  curs_set(TRUE);
-  move(0, strlen(inputmessage) + 1);
-  curs_set(FALSE);
-  if (readline(regexinput, 1024, regexinput) == -1 ){
-    abortinput = 1;
-  } else {
+  if (abortinput != 1) {
+    findSet = true;
     result = findInFile(fileName, regexinput, regexcase);
     if ( result > 0 ){
       topline = result;
@@ -210,9 +217,14 @@ void show_file_inputs()
       if (*pc == menuHotkeyLookup(fileMenu,"f_find", fileMenuSize)){
         e = show_file_find_case_input();
         if (e != -1){
-          show_file_find(e);
+          show_file_find(e, false);
         } else {
           abortinput = 0;
+        }
+        wPrintMenu(0, 0, fileMenuLabel);
+      } else if (*pc == 6){
+        if (findSet){
+          show_file_find(false, true);
         }
         wPrintMenu(0, 0, fileMenuLabel);
       } else if (*pc == menuHotkeyLookup(fileMenu, "f_help", fileMenuSize)){

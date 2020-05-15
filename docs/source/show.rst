@@ -17,6 +17,9 @@ Command line arguments
 
 The following options are shared with ``ls``:
 
+``-@``
+  Displays extended atributes keys and sizes (macOS only).
+
 ``-a``, ``--all``
   Does not ignore files or directories starting with ``.``. The
   ``.`` and ``..`` objects are never hidden due to their
@@ -69,6 +72,12 @@ The following options are shared with ``ls``:
 ``-U``
   Displays output in the order they're found.
 
+``-Z``, ``--context``
+  Shows the secuirty context of each file, if one is defined.
+
+``-1``
+  Only shows the file name on display.
+
 ``--help``
   Displays help message, then exits.
 
@@ -106,6 +115,9 @@ The following options are specific to ``show``:
 
 ``--edit-themes``
   Launches ``show`` directly into the theme editor. (colors)
+
+``--skip-to-first``
+  Sets the highlighted item to the first object that isn't ``.`` or ``..``
 
 Commands
 --------
@@ -615,6 +627,7 @@ The following screen is displayed.
       [ ] Human readable sizes
       [ ] Enter key acts like Show
       < > Owner Column: <owner> <group> <author>
+      [ ] Skip to the first object
 
 There are three types of configuration items, each denoted with a different
 symbol:

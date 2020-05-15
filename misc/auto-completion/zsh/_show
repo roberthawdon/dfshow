@@ -1,0 +1,40 @@
+#compdef show
+
+zstyle ':completion:*:show:*' file-patterns '*(/):directories'
+setopt localoptions noshwordsplit noksharrays
+local -a args
+args=(
+    '(-@)-@[Display extended attribute keys and sizes]'
+    '(-a --all)'{-a,--all}"["'Do not ignore entries starting with .'"]"
+    '(--author)--author[Prints the author of each file]'
+    '(-B --ignore-backups)'{-B,--ignore-backups}"["'Do not list implied entries ending with ~'"]"
+    '(--color)--color[Colorize the output]'
+    '(-f)-f[Do not sort, enables -aU]'
+    '(--full-time)--full-time[Display time as full-iso format]'
+    '(-g)-g[Only show group]'
+    '(-G --no-group)'{-G,--no-group}"["'Do not show group'"]"
+    '(-h --human-readable)'{-h,--human-readable}"["'Print sizes like 1K 234M 2G etc.'"]"
+    '(--si)--si[As above, but use powers of 1000 not 1024]'
+    '(-r --reverse)'{-r,--reverse}"["'Reverse order while sorting'"]"
+    '(-S)-S[Sort file by size, largest first]'
+    '(--time-style)--time-style[Time/date format]'
+    '(-t)-t[Sort by modification time, newset first]'
+    '(-U)-U[Do not sort; lists objects in directory order]'
+    '(-Z --context)'{-Z,--context}"["'Show security context of each file, if any'"]"
+    '(-1)-1[Only show file name, one per line]'
+    '(--help)--help[Displays help message, then exits]'
+    '(--version)--version[Displays version, then exits]'
+    '(--theme)--theme[Color themes]'
+    '(--no-danger)--no-danger[Turns off danger colors when running with elevated privileges]'
+    '(--marked)--marked[Shows information about marked objects]'
+    '(--no-sf)--no-sf[Does not display files in sf]'
+    '(--show-on-enter)--show-on-enter[Repurposes the Enter key to launch the show command]'
+    '(--running)--running[Display number of parent show processes]'
+    '(--settings-menu)--settings-menu[Launch settings menu]'
+    '(--edit-themes)--edit-themes[Launches directly into the theme editor]'
+    '(--skip-to-first)--skip-to-first[Skips navigation items if at the top of list]'
+    '*:filename:_files'
+    )
+
+_arguments -S -s $args
+

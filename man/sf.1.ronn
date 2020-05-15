@@ -71,6 +71,8 @@ Searches for a string provided in the form of a Regex. Case sensitivity is reque
 
   `Ignore Case - Enter string:`
 
+  After a search has been made, the keybinding ``CTRL + F`` will repeat the search to find further occurrences.
+
 * `Help`:
 Launches the `man` pages for `sf`.
 
@@ -120,7 +122,7 @@ Saves settings for future sessions.
 Written by Robert Ian Hawdon.
 
 ## COPYRIGHT
-Copyright (C) 2019 License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.
+Copyright (C) 2020 License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.
 
 This program comes with ABSOLUTELY NO WARRANTY. This is free software, and you are welcome to redistribute it under certain conditions.
 

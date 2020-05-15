@@ -1,6 +1,7 @@
 /*
-  DF-SHOW - A clone of 'SHOW' directory browser from DF-EDIT by Larry Kroeker
-  Copyright (C) 2018-2019  Robert Ian Hawdon
+  DF-SHOW: An interactive directory/file browser written for Unix-like systems.
+  Based on the applications from the PC-DOS DF-EDIT suite by Larry Kroeker.
+  Copyright (C) 2018-2020  Robert Ian Hawdon
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -54,7 +55,8 @@ int markedinfo = 0;
 int useEnvPager = 0;
 int launchThemeEditor = 0;
 int launchSettingsMenu = 0;
-
+int oneLine = 0;
+int skipToFirstFile = 0;
 
 int plugins = 0; // Not yet implemented
 
@@ -64,9 +66,20 @@ int messageBreak = 0;
 
 int showProcesses;
 
+int showContext = 0;
+
+int showXAttrs = 0;
+
+int showAcls = 0; // Might end up not implementing this.
+
 char *objectWild;
 
 results *ob;
+
+int segOrder[8] = {COL_MARK, COL_ATTR, COL_HLINK, COL_OWNER, COL_CONTEXT, COL_SIZE, COL_DATE, COL_NAME};
+// int segOrder[8] = {COL_MARK, COL_NAME, COL_SIZE, COL_DATE, COL_ATTR}; // Emulating NET-DF-EDIT's XENIX layout
+
+extern int skippable;
 
 extern int settingsPos;
 extern int settingsBinPos;
@@ -79,6 +92,7 @@ extern int * pc;
 
 extern history *hs;
 extern int topfileref;
+extern int lineStart;
 extern int selected;
 extern int totalfilecount;
 extern int showhidden;
@@ -100,6 +114,9 @@ extern wchar_t *modifyMenuLabel;
 extern wchar_t *sortMenuLabel;
 extern wchar_t *linkMenuLabel;
 
+extern xattrList *xa;
+extern int xattrPos;
+
 int setMarked(char* markedinput);
 int checkStyle(char* styleinput);
 
@@ -108,6 +125,7 @@ void readConfig(const char * confFile)
   config_t cfg;
   config_setting_t *root, *setting, *group, *array; //probably don't need the array, but it may be used in the future.
   char markedParam[8];
+  int i, n;
   config_init(&cfg);
   if (config_read_file(&cfg, confFile)){
     // Deal with the globals first
@@ -212,6 +230,38 @@ void readConfig(const char * confFile)
           enterAsShow = 1;
         }
       }
+      // Check Security Context
+      setting = config_setting_get_member(group, "context");
+      if (setting){
+        if (config_setting_get_int(setting)){
+          showContext = 1;
+        }
+      }
+      // Check Skip To First Object
+      setting = config_setting_get_member(group, "skip-to-first");
+      if (setting){
+        if (config_setting_get_int(setting)){
+          skipToFirstFile = 1;
+        }
+      }
+      // Check Showing XAttrs
+      setting = config_setting_get_member(group, "showXAttrs");
+      if (setting){
+        if (config_setting_get_int(setting)){
+          showXAttrs = 1;
+        }
+      }
+      // Check Layout
+      array = config_setting_get_member(group, "layout");
+      if (array){
+        for (i = 0; i < 8; i++){
+          if (config_setting_get_elem(array, i) != NULL){
+            segOrder[i] = config_setting_get_int_elem(array, i);
+          } else {
+            segOrder[i] = -1;
+          }
+        }
+      }
     }
     // Check owner column
     group = config_lookup(&cfg, "show.owner");
@@ -259,7 +309,7 @@ void saveConfig(const char * confFile, settingIndex **settings, t1CharValues **v
 
   for (i = 0; i < items; i++){
     config_setting_remove(group, (*settings)[i].refLabel);
-    if ((*settings)[i].type == 0){
+    if ((*settings)[i].type == SETTING_BOOL){
       setting = config_setting_add(group, (*settings)[i].refLabel, CONFIG_TYPE_INT);
 
       if (!strcmp((*settings)[i].refLabel, "color")){
@@ -280,8 +330,14 @@ void saveConfig(const char * confFile, settingIndex **settings, t1CharValues **v
         config_setting_set_int(setting, human);
       } else if (!strcmp((*settings)[i].refLabel, "show-on-enter")){
         config_setting_set_int(setting, enterAsShow);
+      } else if (!strcmp((*settings)[i].refLabel, "context")){
+        config_setting_set_int(setting, showContext);
+      } else if (!strcmp((*settings)[i].refLabel, "skip-to-first")){
+        config_setting_set_int(setting, skipToFirstFile);
+      } else if (!strcmp((*settings)[i].refLabel, "showXAttrs")){
+        config_setting_set_int(setting, showXAttrs);
       }
-    } else if ((*settings)[i].type == 1){
+    } else if ((*settings)[i].type == SETTING_SELECT){
       //
       setting = config_setting_add(group, (*settings)[i].refLabel, CONFIG_TYPE_STRING);
       if (!strcmp((*settings)[i].refLabel, "marked")){
@@ -295,7 +351,7 @@ void saveConfig(const char * confFile, settingIndex **settings, t1CharValues **v
       } else if (!strcmp((*settings)[i].refLabel, "timestyle")){
         config_setting_set_string(setting, timestyle);
       }
-    } else if ((*settings)[i].type == 2){
+    } else if ((*settings)[i].type == SETTING_MULTI){
       if (!strcmp((*settings)[i].refLabel, "owner")){
         subgroup = config_setting_add(group, "owner", CONFIG_TYPE_GROUP);
         for (v = 0; v < binIndex; v++){
@@ -335,6 +391,10 @@ void applySettings(settingIndex **settings, t1CharValues **values, int items, in
       enterAsShow = (*settings)[i].intSetting;
     } else if (!strcmp((*settings)[i].refLabel, "marked")){
       markedinfo = (*settings)[i].intSetting;
+    } else if (!strcmp((*settings)[i].refLabel, "context")){
+      showContext = (*settings)[i].intSetting;
+    } else if (!strcmp((*settings)[i].refLabel, "skip-to-first")){
+      skipToFirstFile = (*settings)[i].intSetting;
     } else if (!strcmp((*settings)[i].refLabel, "sortmode")){
       for (j = 0; j < valuesCount; j++){
         if (!strcmp((*values)[j].refLabel, "sortmode") && ((*values)[j].index == (*settings)[i].intSetting)){
@@ -349,6 +409,8 @@ void applySettings(settingIndex **settings, t1CharValues **values, int items, in
       }
     } else if (!strcmp((*settings)[i].refLabel, "owner")){
       ogavis = (*settings)[i].intSetting;
+    } else if (!strcmp((*settings)[i].refLabel, "showXAttrs")){
+      showXAttrs = (*settings)[i].intSetting;
     }
   }
 }
@@ -395,21 +457,26 @@ void settingsMenuView(){
   sortmodeInt = textValueLookup(&charValues, &charValuesCount, "sortmode", sortmode);
   timestyleInt = textValueLookup(&charValues, &charValuesCount, "timestyle", timestyle);
 
-  importSetting(&settingIndex, &items, "color",          L"Display file colors", 0, filecolors, -1, 0);
-  importSetting(&settingIndex, &items, "marked",         L"Show marked file info", 1, markedinfo, markedCount, 0);
-  importSetting(&settingIndex, &items, "sortmode",       L"Sorting mode", 1, sortmodeInt, sortmodeCount, 0);
-  importSetting(&settingIndex, &items, "reverse",        L"Reverse sorting order", 0, reverse, -1, 0);
-  importSetting(&settingIndex, &items, "timestyle",      L"Time style", 1, timestyleInt, timestyleCount, 0);
-  importSetting(&settingIndex, &items, "hidden",         L"Show hidden files", 0, showhidden, -1, 0);
-  importSetting(&settingIndex, &items, "ignore-backups", L"Hide backup files", 0, showbackup, -1, 1);
-  importSetting(&settingIndex, &items, "no-sf",          L"Use 3rd party pager over SF", 0, useEnvPager, -1, 0);
+  importSetting(&settingIndex, &items, "color",          L"Display file colors", SETTING_BOOL, filecolors, -1, 0);
+  importSetting(&settingIndex, &items, "marked",         L"Show marked file info", SETTING_SELECT, markedinfo, markedCount, 0);
+  importSetting(&settingIndex, &items, "sortmode",       L"Sorting mode", SETTING_SELECT, sortmodeInt, sortmodeCount, 0);
+  importSetting(&settingIndex, &items, "reverse",        L"Reverse sorting order", SETTING_BOOL, reverse, -1, 0);
+  importSetting(&settingIndex, &items, "timestyle",      L"Time style", SETTING_SELECT, timestyleInt, timestyleCount, 0);
+  importSetting(&settingIndex, &items, "hidden",         L"Show hidden files", SETTING_BOOL, showhidden, -1, 0);
+  importSetting(&settingIndex, &items, "ignore-backups", L"Hide backup files", SETTING_BOOL, showbackup, -1, 1);
+  importSetting(&settingIndex, &items, "no-sf",          L"Use 3rd party pager over SF", SETTING_BOOL, useEnvPager, -1, 0);
   if (uid == 0 || euid == 0){
-    importSetting(&settingIndex, &items, "no-danger",      L"Hide danger lines as root", 0, danger, -1, 1);
+    importSetting(&settingIndex, &items, "no-danger",      L"Hide danger lines as root", SETTING_BOOL, danger, -1, 1);
   }
-  importSetting(&settingIndex, &items, "si",             L"Use SI units", 0, si, -1, 0);
-  importSetting(&settingIndex, &items, "human-readable", L"Human readable sizes", 0, human, -1, 0);
-  importSetting(&settingIndex, &items, "show-on-enter",  L"Enter key acts like Show", 0, enterAsShow, -1, 0);
-  importSetting(&settingIndex, &items, "owner",          L"Owner Column", 2, ogavis, ownerCount, 0);
+  importSetting(&settingIndex, &items, "si",             L"Use SI units", SETTING_BOOL, si, -1, 0);
+  importSetting(&settingIndex, &items, "human-readable", L"Human readable sizes", SETTING_BOOL, human, -1, 0);
+  importSetting(&settingIndex, &items, "show-on-enter",  L"Enter key acts like Show", SETTING_BOOL, enterAsShow, -1, 0);
+  importSetting(&settingIndex, &items, "owner",          L"Owner Column", SETTING_MULTI, ogavis, ownerCount, 0);
+  importSetting(&settingIndex, &items, "context",        L"Show security context of files", SETTING_BOOL, showContext, -1, 0);
+  importSetting(&settingIndex, &items, "skip-to-first",  L"Skip to the first object", SETTING_BOOL, skipToFirstFile, -1, 0);
+#ifdef HAVE_ACL_TYPE_EXTENDED
+  importSetting(&settingIndex, &items, "showXAttrs",     L"Display extended attribute keys and sizes", SETTING_BOOL, showXAttrs, -1, 0);
+#endif
 
   populateBool(&binValues, "owner", ogavis, binValuesCount);
 
@@ -501,7 +568,8 @@ int directory_view(char * currentpwd)
     strcpy(objectWild, "");
   }
 
-  topfileref = 0;
+  // topfileref = 0;
+  lineStart = 0;
   clear();
   setColors(COMMAND_PAIR);
 
@@ -511,20 +579,30 @@ int directory_view(char * currentpwd)
 
   set_history(currentpwd, "", "", 0, 0);
   freeResults(ob, totalfilecount);
+  freeXAttrs(xa, xattrPos);
   ob = get_dir(currentpwd);
   reorder_ob(ob, sortmode);
-  display_dir(currentpwd, ob, topfileref, 0);
+  generateEntryLineIndex(ob);
+
+  if (skipToFirstFile == 1 && skippable == 1){
+    selected = 2;
+  } else {
+    selected = 0;
+  }
+
+  display_dir(currentpwd, ob);
 
   // function_key_menu();
 
   //printMenu(LINES-1, 0, functionMenuText);
-  wPrintMenu(LINES-1, 0, functionMenuLabel);
+  // wPrintMenu(LINES-1, 0, functionMenuLabel);
 
   refresh();
 
   directory_view_menu_inputs();
 
   freeResults(ob, totalfilecount); //freeing memory
+  freeXAttrs(xa, xattrPos);
   return 0;
 }
 
@@ -636,8 +714,11 @@ void printHelp(char* programName){
 Sorts objects alphabetically if -St is not set.\n\
 "), stdout);
   fputs (("\n\
-Options shared with ls:\n\
-  -a, --all                    do not ignore entries starting with .\n\
+Options shared with ls:\n"), stdout);
+#ifdef HAVE_ACL_TYPE_EXTENDED
+  fputs(("  -@                           display extended attribute keys and sizes\n"), stdout);
+#endif
+  fputs(("  -a, --all                    do not ignore entries starting with .\n\
       --author                 prints the author of each file\n\
   -B, --ignore-backups         do not list implied entries ending with ~\n\
       --color[=WHEN]           colorize the output, see the color section below\n\
@@ -652,6 +733,8 @@ Options shared with ls:\n\
       --time-style=TIME_STYLE  time/date format, see TIME_STYLE section below\n\
   -t                           sort by modification time, newest first\n\
   -U                           do not sort; lists objects in directory order\n\
+  -Z, --context                show security context of each file, if any\n\
+  -1                           only show file name, one per line\n\
       --help                   displays help message, then exits\n\
       --version                displays version, then exits\n"), stdout);
   fputs (("\n\
@@ -672,7 +755,8 @@ Options specific to show:\n\
                                command\n\
       --running                display number of parent show processes\n\
       --settings-menu          launch settings menu\n\
-      --edit-themes            launchs directly into the theme editor\n"), stdout);
+      --edit-themes            launchs directly into the theme editor\n\
+      --skip-to-first          skips navigation items if at the top of list\n"), stdout);
   fputs (("\n\
 The THEME argument can be:\n"), stdout);
   listThemes();
@@ -689,6 +773,13 @@ int main(int argc, char *argv[])
   uid_t uid=getuid(), euid=geteuid();
   int c;
   char * tmpPwd;
+  char options[20];
+
+#ifdef HAVE_ACL_TYPE_EXTENDED
+  strcpy(options, "@aABfgGhlrStUZ1");
+#else
+  strcpy(options, "aABfgGhlrStUZ1");
+#endif
 
   showProcesses = checkRunningEnv() + 1;
 
@@ -736,11 +827,13 @@ int main(int argc, char *argv[])
          {"full-time",      no_argument,       0, GETOPT_FULLTIME_CHAR},
          {"edit-themes",    no_argument,       0, GETOPT_THEMEEDIT_CHAR},
          {"settings-menu",  no_argument,       0, GETOPT_OPTIONSMENU_CHAR},
+         {"contect",        no_argument,       0, 'Z'},
+         {"skip-to-first",  no_argument,       0, GETOPT_SKIPTOFIRST_CHAR},
          {0, 0, 0, 0}
         };
       int option_index = 0;
 
-      c = getopt_long(argc, argv, "aABfgGhrStU", long_options, &option_index);
+      c = getopt_long(argc, argv, options, long_options, &option_index);
 
       if ( c == -1 ){
         break;
@@ -789,6 +882,8 @@ Valid arguments are:\n\
       strcpy(sortmode, "unsorted"); // This needs to be set to "unsorted" to allow the settings menu to render correctly.
       showhidden = 1;
       break;
+    case 'l':
+      break; // Allows for accidental -l from `ls` muscle memory commands. Does nothing.
     case 'S':
       strcpy(sortmode, "size");
       break;
@@ -876,6 +971,18 @@ Valid arguments are:\n\
       break;
     case GETOPT_OPTIONSMENU_CHAR:
       launchSettingsMenu = 1;
+      break;
+    case 'Z':
+      showContext = 1;
+      break;
+    case '1':
+      oneLine = 1;
+      break;
+    case GETOPT_SKIPTOFIRST_CHAR:
+      skipToFirstFile = 1;
+      break;
+    case '@':
+      showXAttrs = 1;
       break;
     default:
       // abort();

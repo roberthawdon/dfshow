@@ -1,6 +1,7 @@
 /*
-  DF-SHOW - A clone of 'SHOW' directory browser from DF-EDIT by Larry Kroeker
-  Copyright (C) 2018-2019  Robert Ian Hawdon
+  DF-SHOW: An interactive directory/file browser written for Unix-like systems.
+  Based on the applications from the PC-DOS DF-EDIT suite by Larry Kroeker.
+  Copyright (C) 2018-2020  Robert Ian Hawdon
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -389,7 +390,7 @@ char * objectFromPath(const char *myStr){
 void printVersion(char* programName){
   printf (("Directory File Show (DF-SHOW) - %s %s\n"), programName, VERSION);
   fputs (("\
-Copyright (C) 2019 Robert Ian Hawdon\n\
+Copyright (C) 2020 Robert Ian Hawdon\n\
 License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.\n\
 This program comes with ABSOLUTELY NO WARRANTY. This is free software, and you\n\
 are welcome to redistribute it under certain conditions.\n"), stdout);

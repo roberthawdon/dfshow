@@ -1,6 +1,12 @@
 #define PROGRAM_DESC "\nDF-SHOW: An interactive directory/file browser written for Unix-like systems.\nBased on the applications from the PC-DOS DF-EDIT suite by Larry Kroeker.\n"
 #define CONF_NAME "dfshow.conf"
 #define HOME_CONF_DIR ".dfshow"
+
+#define SETTING_BOOL   0
+#define SETTING_SELECT 1
+#define SETTING_MULTI  2
+#define SETTING_FREE   3
+
 #include <wchar.h>
 
 typedef struct {
@@ -36,6 +42,11 @@ typedef struct {
   int value;
   int boolVal;
 } t2BinValues;
+
+typedef struct node {
+  int val;
+  struct node * next;
+} node_t;
 
 int getch10th (void);
 int cmp_menu_ref(const void *lhs, const void *rhs);
