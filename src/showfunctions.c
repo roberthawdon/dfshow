@@ -133,7 +133,7 @@ int axDisplay = 0;
 
 int markedSegmentLen, attrSegmentLen, hlinkSegmentLen, ownerSegmentLen, contextSegmentLen, sizeSegmentLen, dateSegmentLen, nameSegmentDataLen, linkSegmentLen, tmpSegmentLen;
 
-unsigned long int savailable = 0;
+uintmax_t savailable = 0;
 unsigned long int sused = 0;
 
 history *hs;
@@ -1665,22 +1665,31 @@ int SendToEditor(char* object)
   return 0;
 }
 
-size_t GetAvailableSpace(const char* path)
+uintmax_t GetAvailableSpace(const char* path)
 {
   struct statvfs stat;
+  uintmax_t bavail;
+  uintmax_t frsize;
+  uintmax_t result;
 
   if (statvfs(path, &stat) != 0) {
     // error happens, just quits here, but returns 0
     return 0;
   }
 
+  bavail = stat.f_bavail;
+  frsize = stat.f_frsize;
+  result = bavail * frsize;
+
   // the available size is f_bsize * f_bavail
-  //return stat.f_bsize * stat.f_bavail;
-  // // endwin();
-  // // clear();
-  // // printf("f_bavail: %i\nf_frsize: %i\n", stat.f_bavail, stat.f_frsize);
+  // return stat.f_bsize * stat.f_bavail;
+  // endwin();
+  // clear();
+  // printf("f_bavail: %jd\nf_frsize: %jd\n", (uintmax_t) bavail, (uintmax_t) frsize);
+  // printf("f_bavail * f_frsize: %jd\n", (uintmax_t) (bavail * frsize));
+  // printf("f_bfree: %li\n", stat.f_bfree);
   // // exit(0);
-  return stat.f_bavail * stat.f_frsize;
+  return result;
 }
 
 long GetUsedSpace(const char* path)
@@ -2687,7 +2696,7 @@ void display_dir(char *pwd, results* ob){
       savailableString = malloc (sizeof (char) * (log10(savailable) + 2));
     }
     sprintf(susedString, "%lu", sused);
-    sprintf(savailableString, "%lu", savailable);
+    sprintf(savailableString, "%ju", (uintmax_t) savailable);
   }
 
   strcpy(headAttrs, "---Attrs---");

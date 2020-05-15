@@ -108,7 +108,7 @@ results* get_dir(char *pwd);
 results* reorder_ob(results* ob, char *order);
 void display_dir(char *pwd, results* ob);
 void set_history(char *pwd, char *objectWild, char *name, int lineStart, int selected);
-size_t GetAvailableSpace(const char* path);
+uintmax_t GetAvailableSpace(const char* path);
 long GetUsedSpace(const char* path);
 int SendToPager(char* object);
 int SendToEditor(char* object);
