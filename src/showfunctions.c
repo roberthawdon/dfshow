@@ -2575,6 +2575,8 @@ void display_dir(char *pwd, results* ob){
   int origTopFileRef;
   int currentItem;
 
+  maxdisplaywidth = 0;
+
   topfileref = el[lineStart].fileRef;
 
   if (markedinfo == 2 && (CheckMarked(ob) > 0)){
