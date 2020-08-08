@@ -2575,6 +2575,8 @@ void display_dir(char *pwd, results* ob){
   int origTopFileRef;
   int currentItem;
 
+  maxdisplaywidth = 0;
+
   topfileref = el[lineStart].fileRef;
 
   if (markedinfo == 2 && (CheckMarked(ob) > 0)){
@@ -2603,7 +2605,7 @@ void display_dir(char *pwd, results* ob){
   }
 
   // Replacement to "sanitizeTopFileRef" - should be simpler with the lookup table.
-  if ((selected > bottomFileRef) || ((selected < topfileref + 1))){
+  if ((selected > bottomFileRef) || ((selected < topfileref + 1)) || ((bottomFileRef - topfileref - 1) > displaysize)){
     adjustViewForSelected(selected, el, listLen, displaysize);
   }
 

@@ -1937,29 +1937,29 @@ void directory_view_menu_inputs()
         // selected = topfileref + (displaycount - 1);
         selected = bottomFileRef;
         display_dir(currentpwd, ob);
-      } else if (*pc == 276){
-        // F12 Key
-        endwin();
-        printf("Debug Exit Triggered.\n\n");
-        printf("selected: %i\n\n", selected);
+      // } else if (*pc == 276){
+      //   // F12 Key
+      //   endwin();
+      //   printf("Debug Exit Triggered.\n\n");
+      //   printf("selected: %i\n\n", selected);
 
-        printf("topfileref: %i\n", topfileref);
-        printf("bottomFileRef: %i\n", bottomFileRef);
-        printf("DIFFERENCE: %i\n\n", bottomFileRef - topfileref);
+      //   printf("topfileref: %i\n", topfileref);
+      //   printf("bottomFileRef: %i\n", bottomFileRef);
+      //   printf("DIFFERENCE: %i\n\n", bottomFileRef - topfileref);
 
-        printf("displaysize: %i\n", displaysize);
+      //   printf("displaysize: %i\n", displaysize);
 
-        printf("\nTotal Files (objects): %i\n", totalfilecount);
-        printf("Total xattr lines: %i\n", xattrPos);
-        printf("Total lines: %i\n", (totalfilecount + xattrPos));
+      //   printf("\nTotal Files (objects): %i\n", totalfilecount);
+      //   printf("Total xattr lines: %i\n", xattrPos);
+      //   printf("Total lines: %i\n", (totalfilecount + xattrPos));
 
-        printf("\nBottom File Ref + 0: %i\n", el[lineStart + displaysize - 1].fileRef);
-        printf("Bottom File Ref + 1: %i\n", el[lineStart + displaysize].fileRef);
+      //   printf("\nBottom File Ref + 0: %i\n", el[lineStart + displaysize - 1].fileRef);
+      //   printf("Bottom File Ref + 1: %i\n", el[lineStart + displaysize].fileRef);
 
-        printf("\nlineStart: %i\n", lineStart);
+      //   printf("\nlineStart: %i\n", lineStart);
 
-        printf("\nlistLen: %i\n", listLen);
-        exit(3);
+      //   printf("\nlistLen: %i\n", listLen);
+      //   exit(3);
       }
     }
 }
