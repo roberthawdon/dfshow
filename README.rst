@@ -176,6 +176,30 @@ The show file utility is invoked with the following command:
 
 The <file> parameter can be any file the current user has access to on the system. If the show file utility is invoked without specifing a file, then the user is prompted to load a file within the application.
 
+Donations
+---------
+
+To support this project, you can make a donation to its current maintainer:
+
+**PayPal**
+
+|PayPal|
+
+**Bitcoin**
+
+|Bitcoin|
+
+|Bitcoin QR|
+
+.. |PayPal| image:: https://user-images.githubusercontent.com/4301139/91666536-6fb15080-eaf5-11ea-974b-f0eb997615b4.gif
+   :target: https://paypal.me/RIHawdon
+
+.. |Bitcoin| image:: https://user-images.githubusercontent.com/4301139/91666685-a50a6e00-eaf6-11ea-91b6-e80012344dd1.png
+   :target: https://raw.githubusercontent.com/roberthawdon/dfshow/master/misc/donate/bitcoin-address.txt
+
+.. |Bitcoin QR| image:: https://user-images.githubusercontent.com/4301139/91666694-b784a780-eaf6-11ea-8bb1-67b101325424.png
+   :target: https://raw.githubusercontent.com/roberthawdon/dfshow/master/misc/donate/bitcoin-address.txt
+
 Screenshots
 -----------
 
