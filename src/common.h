@@ -10,13 +10,6 @@
 #include <wchar.h>
 
 typedef struct {
-  char refLabel[16];
-  wchar_t displayLabel[32];
-  int hotKey;
-  int displayLabelSize;
-} menuDef;
-
-typedef struct {
   char directories[256];
 } pathDirs;
 
@@ -49,22 +42,14 @@ typedef struct node {
 } node_t;
 
 int getch10th (void);
-int cmp_menu_ref(const void *lhs, const void *rhs);
 int splitPath(pathDirs **dirStruct, char *path);
 int createParentsInput(char *path);
 void createParentDirs(char *path);
-void addMenuItem(menuDef **dfMenu, int *pos, char* refLabel, wchar_t* displayLabel, int hotKey);
-void updateMenuItem(menuDef **dfMenu, int *menuSize, char* refLabel, wchar_t* displayLabel);
-wchar_t * genMenuDisplayLabel(wchar_t* preMenu, menuDef* dfMenu, int size, wchar_t* postMenu, int comma);
-int menuHotkeyLookup(menuDef* dfMenu, char* refLabel, int size);
-int altHotkey(int key);
 void mk_dir(char *path);
 void setConfLocations();
 void printVersion(char* programName);
 char * dirFromPath(const char* myStr);
 char * objectFromPath(const char* myStr);
-void wPrintMenu(int line, int col, wchar_t *menustring);
-void printMenu(int line, int col, char *menustring);
 void wPrintLine(int line, int col, wchar_t *textString);
 void printLine(int line, int col, char *textString);
 void topLineMessage(const char *message);

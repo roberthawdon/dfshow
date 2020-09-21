@@ -26,6 +26,7 @@
 #include <libconfig.h>
 #include <dirent.h>
 #include <errno.h>
+#include "menu.h"
 #include "common.h"
 #include "colors.h"
 

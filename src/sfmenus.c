@@ -23,6 +23,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <regex.h>
+#include "menu.h"
 #include "common.h"
 #include "sf.h"
 #include "colors.h"

@@ -32,6 +32,7 @@
 #include "config.h"
 #include "colors.h"
 #include "common.h"
+#include "menu.h"
 #include "sfmenus.h"
 #include "sf.h"
 

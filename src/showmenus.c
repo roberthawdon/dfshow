@@ -32,6 +32,7 @@
 #include <regex.h>
 #include <time.h>
 #include <utime.h>
+#include "menu.h"
 #include "common.h"
 #include "showfunctions.h"
 #include "show.h"
