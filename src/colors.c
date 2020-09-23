@@ -29,6 +29,7 @@
 #include "menu.h"
 #include "common.h"
 #include "colors.h"
+#include "input.h"
 
 int lightColorPair[256];
 // int commandL, infoL, inputL, selectL, displayL, dangerL, dirL, slinkL, exeL, suidL, sgidL, hiliteL = 0;

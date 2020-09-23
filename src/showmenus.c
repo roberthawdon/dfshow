@@ -37,6 +37,7 @@
 #include "showfunctions.h"
 #include "show.h"
 #include "colors.h"
+#include "input.h"
 
 int c;
 int * pc = &c;
