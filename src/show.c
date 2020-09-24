@@ -32,6 +32,7 @@
 #include "showmenus.h"
 #include "colors.h"
 #include "menu.h"
+#include "display.h"
 #include "common.h"
 #include "show.h"
 

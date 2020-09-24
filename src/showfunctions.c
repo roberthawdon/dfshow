@@ -41,6 +41,7 @@
 #include <sys/acl.h>
 #include <stdint.h>
 #include "common.h"
+#include "display.h"
 #include "config.h"
 #include "showfunctions.h"
 #include "showmenus.h"

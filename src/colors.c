@@ -27,6 +27,7 @@
 #include <dirent.h>
 #include <errno.h>
 #include "menu.h"
+#include "display.h"
 #include "common.h"
 #include "colors.h"
 #include "input.h"

@@ -33,6 +33,7 @@
 #include <time.h>
 #include <utime.h>
 #include "menu.h"
+#include "display.h"
 #include "common.h"
 #include "showfunctions.h"
 #include "show.h"

@@ -24,6 +24,7 @@
 #include <ctype.h>
 #include <regex.h>
 #include "menu.h"
+#include "display.h"
 #include "common.h"
 #include "sf.h"
 #include "colors.h"

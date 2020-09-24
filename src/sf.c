@@ -33,6 +33,7 @@
 #include "colors.h"
 #include "common.h"
 #include "menu.h"
+#include "display.h"
 #include "sfmenus.h"
 #include "sf.h"
 
