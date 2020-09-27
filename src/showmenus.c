@@ -34,6 +34,7 @@
 #include <utime.h>
 #include "menu.h"
 #include "display.h"
+#include "settings.h"
 #include "common.h"
 #include "showfunctions.h"
 #include "show.h"

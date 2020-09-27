@@ -28,6 +28,7 @@
 #include <errno.h>
 #include "menu.h"
 #include "display.h"
+#include "settings.h"
 #include "common.h"
 #include "colors.h"
 #include "input.h"

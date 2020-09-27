@@ -25,6 +25,7 @@
 #include <regex.h>
 #include "menu.h"
 #include "display.h"
+#include "settings.h"
 #include "common.h"
 #include "sf.h"
 #include "colors.h"

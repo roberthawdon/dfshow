@@ -40,6 +40,7 @@
 #include <regex.h>
 #include <sys/acl.h>
 #include <stdint.h>
+#include "settings.h"
 #include "common.h"
 #include "display.h"
 #include "config.h"

@@ -31,6 +31,7 @@
 #include <libconfig.h>
 #include "config.h"
 #include "colors.h"
+#include "settings.h"
 #include "common.h"
 #include "menu.h"
 #include "display.h"

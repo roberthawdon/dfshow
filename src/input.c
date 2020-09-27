@@ -23,6 +23,7 @@
 #include <ncurses.h>
 #include <string.h>
 #include <wchar.h>
+#include <wctype.h>
 #include "colors.h"
 
 int wReadLine(wchar_t *buffer, int buflen, wchar_t *oldbuf)
