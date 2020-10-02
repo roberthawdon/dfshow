@@ -61,6 +61,8 @@ int launchSettingsMenu = 0;
 int oneLine = 0;
 int skipToFirstFile = 0;
 
+bool dirOnly = 0;
+
 int plugins = 0; // Not yet implemented
 
 int enterAsShow = 0;
@@ -725,6 +727,7 @@ Options shared with ls:\n"), stdout);
       --author                 prints the author of each file\n\
   -B, --ignore-backups         do not list implied entries ending with ~\n\
       --color[=WHEN]           colorize the output, see the color section below\n\
+  -d, --directory              show only directories\n\
   -f                           do not sort, enables -aU\n\
       --full-time              display time as full-iso format\n\
   -g                           only show group\n\
@@ -779,9 +782,9 @@ int main(int argc, char *argv[])
   char options[20];
 
 #ifdef HAVE_ACL_TYPE_EXTENDED
-  strcpy(options, "@aABfgGhlrStUZ1");
+  strcpy(options, "@aABdfgGhlrStUZ1");
 #else
-  strcpy(options, "aABfgGhlrStUZ1");
+  strcpy(options, "aABdfgGhlrStUZ1");
 #endif
 
   showProcesses = checkRunningEnv() + 1;
@@ -813,6 +816,7 @@ int main(int argc, char *argv[])
          {"almost-all",     no_argument,       0, 'A'},
          {"author",         no_argument,       0, GETOPT_AUTHOR_CHAR},
          {"ignore-backups", no_argument,       0, 'B'},
+         {"directory",      no_argument,       0, 'd'},
          {"human-readable", no_argument,       0, 'h'},
          {"no-group",       no_argument,       0, 'G'},
          {"reverse",        no_argument,       0, 'r'},
@@ -880,6 +884,9 @@ Valid arguments are:\n\
         listThemes();
         exit(2);
       }
+      break;
+    case 'd':
+      dirOnly = 1;
       break;
     case 'f':
       strcpy(sortmode, "unsorted"); // This needs to be set to "unsorted" to allow the settings menu to render correctly.

@@ -12,6 +12,7 @@ _show()
            --author
            --ignore-backups
            --color
+	   --directroy
            -f
            --full-time
            -g

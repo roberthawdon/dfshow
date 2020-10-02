@@ -35,6 +35,9 @@ The following options are shared with ``ls``:
   Sets colorizing of files and directories. Can be set to ``always``
   or ``never``.
 
+``-d``, ``--directory``
+  Displays only directories, not files.
+
 ``-f``
   Does not sort the output, this is equivilent to running ``show``
   with ``-aU``.

@@ -183,6 +183,7 @@ extern int oneLine;
 extern int skipToFirstFile;
 extern int showXAttrs;
 extern int showAcls;
+extern bool dirOnly;
 
 extern char sortmode[9];
 
@@ -2227,11 +2228,17 @@ results* get_dir(char *pwd)
           xattrsNum = 0;
           haveAcl = 0;
           contextText = malloc(sizeof(char) * 2);
+          lstat(res->d_name, &sb);
           if ( showhidden == 0 && check_first_char(res->d_name, ".") && strcmp(res->d_name, ".") && strcmp(res->d_name, "..") ) {
             continue; // Skipping hidden files
           }
           if ( !showbackup && check_last_char(res->d_name, "~") ) {
             continue; // Skipping backup files
+          }
+          if ( dirOnly ) {
+            if (!S_ISDIR(sb.st_mode)){
+              continue;
+            }
           }
           if ( strcmp(objectWild, "")){
             if (!wildcard(res->d_name, objectWild) && strcmp(res->d_name, ".") && strcmp(res->d_name, "..")){
@@ -2245,7 +2252,6 @@ results* get_dir(char *pwd)
             if (count > totalfilecount){
               ob = realloc(ob, (count +1) * sizeof(results)); // Reallocating memory. Just in case a file is added between passes.
             }
-            lstat(res->d_name, &sb);
             status = lstat(res->d_name, &buffer);
 
             sprintf(hlinkstr, "%d", buffer.st_nlink);

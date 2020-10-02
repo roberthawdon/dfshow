@@ -9,6 +9,7 @@ args=(
     '(--author)--author[Prints the author of each file]'
     '(-B --ignore-backups)'{-B,--ignore-backups}"["'Do not list implied entries ending with ~'"]"
     '(--color)--color[Colorize the output]'
+    '(-d --directory)'{-d,--directory}"["'Show only directories'"]"
     '(-f)-f[Do not sort, enables -aU]'
     '(--full-time)--full-time[Display time as full-iso format]'
     '(-g)-g[Only show group]'
