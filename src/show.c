@@ -670,7 +670,8 @@ void refreshScreen()
   endwin();
   clear();
   refresh();
-  initscr();
+  // newterm(NULL, stderr, stdin); 
+  // initscr();
   //mvprintw(0,0,"%d:%d", LINES, COLS);
   unloadMenuLabels();
   refreshMenuLabels();
@@ -1015,7 +1016,8 @@ Valid arguments are:\n\
 
   setlocale(LC_ALL, "");
 
-  initscr();
+  newterm(NULL, stderr, stdin); 
+  // initscr();
   refreshMenuLabels();
 
   memset(&sa, 0, sizeof(struct sigaction));

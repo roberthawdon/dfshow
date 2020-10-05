@@ -1508,15 +1508,16 @@ void LaunchShell()
   char c[5];
   sprintf(c, "%i", showProcesses);
   setenv("DFS_RUNNING", c, 1);
-  clear();
-  def_prog_mode();
+  // clear();
+  // def_prog_mode();
   endwin();
   // system("clear"); // Not exactly sure if I want this yet.
   // printf("\nUse 'exit' to return to Show.\n\n");
   write(STDOUT_FILENO, "\nUse 'exit' to return to Show.\n\n", 32);
   system(getenv("SHELL"));
-  reset_prog_mode();
-  initscr();
+  // reset_prog_mode();
+  // newterm(NULL, stderr, stdin); 
+  // initscr();
   refreshScreen();
 }
 
@@ -1608,10 +1609,10 @@ int SendToPager(char* object)
     if (access(object, R_OK) == 0){
       // clear();
       // endwin();
-      def_prog_mode();
+      // def_prog_mode();
       endwin();
       e = system(pagerCommand);
-      reset_prog_mode();
+      // reset_prog_mode();
       // initscr();
       refreshScreen();
       return e;
@@ -1651,10 +1652,10 @@ int SendToEditor(char* object)
     if (access(object, R_OK) == 0){
       clear();
       // endwin();
-      def_prog_mode();
+      // def_prog_mode();
       endwin();
       e = system(editorCommand);
-      reset_prog_mode();
+      // reset_prog_mode();
       // initscr();
       refreshScreen();
       return e;

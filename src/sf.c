@@ -143,7 +143,8 @@ void refreshScreen()
   endwin();
   clear();
   refresh();
-  initscr();
+  // newterm(NULL, stderr, stdin); 
+  // initscr();
   displaysize = LINES - 2;
   unloadMenuLabels();
   refreshMenuLabels();
@@ -584,7 +585,8 @@ int main(int argc, char *argv[])
 
   setlocale(LC_ALL, "");
 
-  initscr();
+  newterm(NULL, stderr, stdin); 
+  // initscr();
 
   refreshMenuLabels();
 
