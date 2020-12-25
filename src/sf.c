@@ -38,6 +38,7 @@
 #include "sfmenus.h"
 #include "sf.h"
 
+SCREEN *dfterm;
 
 char regexinput[1024];
 
@@ -585,7 +586,7 @@ int main(int argc, char *argv[])
 
   setlocale(LC_ALL, "");
 
-  newterm(NULL, stderr, stdin); 
+  dfterm = newterm(NULL, stderr, stdin); 
   // initscr();
 
   refreshMenuLabels();

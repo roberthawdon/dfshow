@@ -938,12 +938,12 @@ char * execute_argument_input(const char *exec)
 int huntCaseSelectInput()
 {
   int result = 0;
-  char *message;
-  size_t messageLen;
-  messageLen = snprintf(NULL, 0, "Case Sensitive, !Yes/!No/<ESC> (enter = no)");
-  message = malloc(sizeof(char) * (messageLen + 1));
-  sprintf(message,"Case Sensitive, !Yes/!No/<ESC> (enter = no)");
-  printMenu(0,0, message);
+  // char *message;
+  // size_t messageLen;
+  // messageLen = snprintf(NULL, 0, "Case Sensitive, !Yes/!No/<ESC> (enter = no)");
+  // message = malloc(sizeof(char) * (messageLen + 1));
+  // sprintf(message,"Case Sensitive, !Yes/!No/<ESC> (enter = no)");
+  printMenu(0,0, "Case Sensitive, !Yes/!No/<ESC> (enter = no)");
   while(1)
     {
     huntCaseLoop:
@@ -965,7 +965,6 @@ int huntCaseSelectInput()
         }
       break;
     }
-  free(message);
   return(result);
 }
 

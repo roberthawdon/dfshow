@@ -38,8 +38,10 @@
 #include <wchar.h>
 #include <math.h>
 #include <regex.h>
+#include <stddef.h>
 #include <sys/acl.h>
 #include <stdint.h>
+// #include <signal.h>
 #include "settings.h"
 #include "common.h"
 #include "display.h"
@@ -1515,6 +1517,7 @@ void LaunchShell()
   // printf("\nUse 'exit' to return to Show.\n\n");
   write(STDOUT_FILENO, "\nUse 'exit' to return to Show.\n\n", 32);
   system(getenv("SHELL"));
+  fflush(stdout);
   // reset_prog_mode();
   // newterm(NULL, stderr, stdin); 
   // initscr();
@@ -2082,7 +2085,11 @@ int huntFile(const char * file, const char * search, int charcase)
   char *line;
   regex_t regex;
   int reti;
+  int returnValue = 0;
   char msgbuf[8192];
+  unsigned long tmp;
+
+  memset(line, 0xCD, sizeof(char));
 
   reti = regcomp(&regex, search, charcase);
 
@@ -2094,21 +2101,38 @@ int huntFile(const char * file, const char * search, int charcase)
 
   if ( fin ) {
     while (( line = read_line(fin) )) {
+    // while (( true )) {
+      // line = read_line(fin);
+
+      // tmp = sizeof(read_line(fin));
+
+      if (line == NULL){
+        break;
+      } else if (sizeof(line) < 1) {
+        break;
+      }
+    
+      // endwin();
+      // if (tmp != 8) {
+      //   printf("%lu\n", tmp);
+      // }
 
       reti = regexec(&regex, line, 0, NULL, 0);
       if (!reti) {
-        fclose(fin);
-        free(line);
-        regfree(&regex);
-        return(1);
+        // free(line);
+        // regfree(&regex);
+        // fclose(fin);
+        // return(1);
+        returnValue = 1;
+        break;
       }
     }
+    free(line);
+    regfree(&regex);
+    fclose(fin);
   }
 
-  free(line);
-  regfree(&regex);
-  fclose(fin);
-  return (0);
+  return (returnValue);
 }
 
 char *markedDisplay(results* ob)

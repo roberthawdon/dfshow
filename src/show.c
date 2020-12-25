@@ -37,6 +37,8 @@
 #include "common.h"
 #include "show.h"
 
+SCREEN *dfterm;
+
 char currentpwd[4096];
 
 int viewMode = 0;
@@ -1016,7 +1018,7 @@ Valid arguments are:\n\
 
   setlocale(LC_ALL, "");
 
-  newterm(NULL, stderr, stdin); 
+  dfterm = newterm(NULL, stderr, stdin); 
   // initscr();
   refreshMenuLabels();
 

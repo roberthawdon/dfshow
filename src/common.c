@@ -49,6 +49,8 @@ char themeName[128] = "default";
 
 char errmessage[256];
 
+extern SCREEN *dfterm;
+
 extern int * pc;
 
 extern int resized;
@@ -192,6 +194,7 @@ int exittoshell()
   clear();
   unloadMenuLabels();
   endwin();
+  delscreen(dfterm);
   exit(exitCode);
   return exitCode;
 }
@@ -373,7 +376,9 @@ char * read_line(FILE *fin) {
   char *tmp;
   int read_chars = 0;
   int bufsize = 8192;
-  char *line = malloc(bufsize);
+  char *line;
+
+  line = calloc(bufsize, sizeof(char));
 
   if ( !line ) {
     return NULL;
@@ -386,22 +391,28 @@ char * read_line(FILE *fin) {
 
     if ( line[read_chars - 1] == '\n' ) {
       line[read_chars - 1] = '\0';
+      // endwin();
+      // printf("Triggered \\n\n");
       return line;
-    }
-
-    else {
+    } else if ( line[read_chars - 1] == '\0' ) {
+      // endwin();
+      // printf("Triggered \\0\n");
+      return line;
+    } else {
       bufsize = 2 * bufsize;
       tmp = realloc(line, bufsize);
       if ( tmp ) {
         line = tmp;
         buffer = line + read_chars;
-      }
-      else {
+      } else {
         free(line);
-        return NULL;
+	return NULL;
       }
     }
   }
+  // endwin();
+  // printf("Triggered NULL\n");
+  // free(line);
   return NULL;
 }
 
