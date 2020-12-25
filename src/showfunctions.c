@@ -76,7 +76,7 @@
 #endif
 
 char hlinkstr[6], sizestr[32], majorstr[6], minorstr[6];
-char headAttrs[12], headOG[25], headSize[14], headDT[18], headName[13], headContext[14];
+char headAttrs[12], headOG[25], headSize[14], headDT[18], headName[13], headContext[14], headSizeBlocks[16];
 
 int hlinklen;
 int ownerlen;
@@ -179,6 +179,7 @@ extern int useEnvPager;
 extern int showProcesses;
 extern int exitCode;
 extern int showContext;
+extern int showSizeBlocks;
 extern int oneLine;
 extern int skipToFirstFile;
 extern int showXAttrs;
@@ -958,6 +959,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   int sizeminlen = strlen(headSize); // Length of "Size" heading
   int dateminlen = strlen(headDT); // Length of "Date" heading
   int contextminlen = strlen(headContext); // Length of "Context" heading
+  int sizeblockminlen = strlen(headSizeBlocks); // Length of "Size (Blocks)" heading
 
   int oggap, gagap = 0;
 
@@ -2717,6 +2719,12 @@ void display_dir(char *pwd, results* ob){
     strcpy(headContext, "---Context---");
   } else {
     strcpy(headContext, "");
+  }
+
+  if (showSizeBlocks){
+    strcpy(headSizeBlocks, "-Size (Blocks)-");
+  } else {
+    strcpy(headSizeBlocks, "");
   }
 
   if ( mmMode ){
