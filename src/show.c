@@ -494,8 +494,8 @@ void settingsMenuView(){
   importSetting(&settingIndex, &items, "skip-to-first",  L"Skip to the first object", SETTING_BOOL, skipToFirstFile, -1, 0);
 #ifdef HAVE_ACL_TYPE_EXTENDED
   importSetting(&settingIndex, &items, "showXAttrs",     L"Display extended attribute keys and sizes", SETTING_BOOL, showXAttrs, -1, 0);
-  importSetting(&settingIndex, &items, "only-dirs",      L"Display only directories", SETTING_BOOL, dirOnly, -1, 0);
 #endif
+  importSetting(&settingIndex, &items, "only-dirs",      L"Display only directories", SETTING_BOOL, dirOnly, -1, 0);
 
   populateBool(&binValues, "owner", ogavis, binValuesCount);
 
