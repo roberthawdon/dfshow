@@ -258,6 +258,13 @@ void readConfig(const char * confFile)
           showXAttrs = 1;
         }
       }
+      // Check Showing Only Directories
+      setting = config_setting_get_member(group, "only-dirs");
+      if (setting){
+        if (config_setting_get_int(setting)){
+          dirOnly = 1;
+        }
+      }
       // Check Layout
       array = config_setting_get_member(group, "layout");
       if (array){
@@ -343,6 +350,8 @@ void saveConfig(const char * confFile, settingIndex **settings, t1CharValues **v
         config_setting_set_int(setting, skipToFirstFile);
       } else if (!strcmp((*settings)[i].refLabel, "showXAttrs")){
         config_setting_set_int(setting, showXAttrs);
+      } else if (!strcmp((*settings)[i].refLabel, "only-dirs")){
+        config_setting_set_int(setting, dirOnly);
       }
     } else if ((*settings)[i].type == SETTING_SELECT){
       //
@@ -418,6 +427,8 @@ void applySettings(settingIndex **settings, t1CharValues **values, int items, in
       ogavis = (*settings)[i].intSetting;
     } else if (!strcmp((*settings)[i].refLabel, "showXAttrs")){
       showXAttrs = (*settings)[i].intSetting;
+    } else if (!strcmp((*settings)[i].refLabel, "only-dirs")){
+      dirOnly = (*settings)[i].intSetting;
     }
   }
 }
@@ -483,6 +494,7 @@ void settingsMenuView(){
   importSetting(&settingIndex, &items, "skip-to-first",  L"Skip to the first object", SETTING_BOOL, skipToFirstFile, -1, 0);
 #ifdef HAVE_ACL_TYPE_EXTENDED
   importSetting(&settingIndex, &items, "showXAttrs",     L"Display extended attribute keys and sizes", SETTING_BOOL, showXAttrs, -1, 0);
+  importSetting(&settingIndex, &items, "only-dirs",      L"Display only directories", SETTING_BOOL, dirOnly, -1, 0);
 #endif
 
   populateBool(&binValues, "owner", ogavis, binValuesCount);
