@@ -83,8 +83,8 @@ char *objectWild;
 
 results *ob;
 
-int segOrder[8] = {COL_MARK, COL_ATTR, COL_HLINK, COL_OWNER, COL_CONTEXT, COL_SIZE, COL_DATE, COL_NAME};
-// int segOrder[8] = {COL_MARK, COL_NAME, COL_SIZE, COL_DATE, COL_ATTR}; // Emulating NET-DF-EDIT's XENIX layout
+int segOrder[9] = {COL_MARK, COL_SIZEBLOCKS, COL_ATTR, COL_HLINK, COL_OWNER, COL_CONTEXT, COL_SIZE, COL_DATE, COL_NAME};
+// int segOrder[9] = {COL_MARK, COL_NAME, COL_SIZE, COL_DATE, COL_ATTR}; // Emulating NET-DF-EDIT's XENIX layout
 
 extern int skippable;
 
@@ -265,6 +265,13 @@ void readConfig(const char * confFile)
           dirOnly = 1;
         }
       }
+      // Check Show Size In Blocks
+      setting = config_setting_get_member(group, "sizeblocks");
+      if (setting){
+        if (config_setting_get_int(setting)){
+          dirOnly = 1;
+        }
+      }
       // Check Layout
       array = config_setting_get_member(group, "layout");
       if (array){
@@ -352,6 +359,8 @@ void saveConfig(const char * confFile, settingIndex **settings, t1CharValues **v
         config_setting_set_int(setting, showXAttrs);
       } else if (!strcmp((*settings)[i].refLabel, "only-dirs")){
         config_setting_set_int(setting, dirOnly);
+      } else if (!strcmp((*settings)[i].refLabel, "sizeblocks")){
+        config_setting_set_int(setting, showSizeBlocks);
       }
     } else if ((*settings)[i].type == SETTING_SELECT){
       //
@@ -429,6 +438,8 @@ void applySettings(settingIndex **settings, t1CharValues **values, int items, in
       showXAttrs = (*settings)[i].intSetting;
     } else if (!strcmp((*settings)[i].refLabel, "only-dirs")){
       dirOnly = (*settings)[i].intSetting;
+    } else if (!strcmp((*settings)[i].refLabel, "sizeblocks")){
+      showSizeBlocks = (*settings)[i].intSetting;
     }
   }
 }
@@ -496,6 +507,7 @@ void settingsMenuView(){
   importSetting(&settingIndex, &items, "showXAttrs",     L"Display extended attribute keys and sizes", SETTING_BOOL, showXAttrs, -1, 0);
 #endif
   importSetting(&settingIndex, &items, "only-dirs",      L"Display only directories", SETTING_BOOL, dirOnly, -1, 0);
+  importSetting(&settingIndex, &items, "sizeblocks",     L"Show allocated size in blocks", SETTING_BOOL, showSizeBlocks, -1, 0);
 
   populateBool(&binValues, "owner", ogavis, binValuesCount);
 
@@ -750,6 +762,7 @@ Options shared with ls:\n"), stdout);
   -h, --human-readable         print sizes like 1K 234M 2G etc.\n\
       --si                     as above, but use powers of 1000 not 1024\n\
   -r, --reverse                reverse order while sorting\n\
+  -s, --size                   display the allocated size of files, in blocks\n\
   -S                           sort file by size, largest first\n\
       --time-style=TIME_STYLE  time/date format, see TIME_STYLE section below\n\
   -t                           sort by modification time, newest first\n\
@@ -797,9 +810,9 @@ int main(int argc, char *argv[])
   char options[20];
 
 #ifdef HAVE_ACL_TYPE_EXTENDED
-  strcpy(options, "@aABdfgGhlrStUZ1");
+  strcpy(options, "@aABdfgGhlrsStUZ1");
 #else
-  strcpy(options, "aABdfgGhlrStUZ1");
+  strcpy(options, "aABdfgGhlrsStUZ1");
 #endif
 
   showProcesses = checkRunningEnv() + 1;
@@ -835,6 +848,7 @@ int main(int argc, char *argv[])
          {"human-readable", no_argument,       0, 'h'},
          {"no-group",       no_argument,       0, 'G'},
          {"reverse",        no_argument,       0, 'r'},
+         {"size",           no_argument,       0, 's'},
          {"time-style",     required_argument, 0, GETOPT_TIMESTYLE_CHAR},
          {"si",             no_argument,       0, GETOPT_SI_CHAR},
          {"help",           no_argument,       0, GETOPT_HELP_CHAR},
@@ -911,6 +925,9 @@ Valid arguments are:\n\
       break; // Allows for accidental -l from `ls` muscle memory commands. Does nothing.
     case 'S':
       strcpy(sortmode, "size");
+      break;
+    case 's':
+      showSizeBlocks = 1;
       break;
     case GETOPT_TIMESTYLE_CHAR:
       strcpy(timestyle, optarg);

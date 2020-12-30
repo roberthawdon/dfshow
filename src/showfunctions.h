@@ -14,14 +14,15 @@
 #define LEFT  0
 #define RIGHT 1
 
-#define COL_MARK    0
-#define COL_ATTR    1
-#define COL_HLINK   2
-#define COL_OWNER   3
-#define COL_CONTEXT 4
-#define COL_SIZE    5
-#define COL_DATE    6
-#define COL_NAME    7
+#define COL_MARK       0
+#define COL_SIZEBLOCKS 1
+#define COL_ATTR       2
+#define COL_HLINK      3
+#define COL_OWNER      4
+#define COL_CONTEXT    5
+#define COL_SIZE       6
+#define COL_DATE       7
+#define COL_NAME       8
 
 #define ET_OBJECT 0
 #define ET_ACL    1
@@ -122,7 +123,7 @@ int RenameObject(char* source, char* dest);
 int CheckMarked(results* ob);
 wchar_t *wWriteSegment(int segLen, wchar_t *text, int align);
 char *writeSegment(int segLen, char *text, int align);
-void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorlen, int sizelen, int majorlen, int minorlen, int datelen, int namelen, int contextlen, int selected, int listref, int currentitem, results* ob);
+void printEntry(int start, int hlinklen, int sizeblocklen, int ownerlen, int grouplen, int authorlen, int sizelen, int majorlen, int minorlen, int datelen, int namelen, int contextlen, int selected, int listref, int currentitem, results* ob);
 void printXattr(int start, int selected, int listref, int currentItem, int subIndex, xattrList* xa, results* ob);
 void padstring(char *str, int len, char c);
 char *genPadding(int num_of_spaces);

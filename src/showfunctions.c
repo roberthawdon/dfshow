@@ -134,7 +134,7 @@ int dirAbort = 0;
 
 int axDisplay = 0;
 
-int markedSegmentLen, attrSegmentLen, hlinkSegmentLen, ownerSegmentLen, contextSegmentLen, sizeSegmentLen, dateSegmentLen, nameSegmentDataLen, linkSegmentLen, tmpSegmentLen;
+int markedSegmentLen, sizeBlocksSegmentLen, attrSegmentLen, hlinkSegmentLen, ownerSegmentLen, contextSegmentLen, sizeSegmentLen, dateSegmentLen, nameSegmentDataLen, sizeBlocksSegmentLen, linkSegmentLen, tmpSegmentLen;
 
 uintmax_t savailable = 0;
 unsigned long int sused = 0;
@@ -159,7 +159,7 @@ entryLines *el;
 
 extern DIR *folder;
 
-extern int segOrder[8];
+extern int segOrder[9];
 
 extern int messageBreak;
 extern char currentpwd[4096];
@@ -943,7 +943,7 @@ void printXattr(int start, int selected, int listref, int currentItem, int subIn
   // mvprintw(displaystart + listref + start, 0, "            %s        %s", "uk.me.robertianhawdon.test", "27");
 }
 
-void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorlen, int sizelen, int majorlen, int minorlen, int datelen, int namelen, int contextlen, int selected, int listref, int currentitem, results* ob){
+void printEntry(int start, int hlinklen, int sizeblocklen, int ownerlen, int grouplen, int authorlen, int sizelen, int majorlen, int minorlen, int datelen, int namelen, int contextlen, int selected, int listref, int currentitem, results* ob){
 
   int i, n, t;
 
@@ -987,12 +987,15 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
 
   char *contextText;
 
+  char *sizeBlocksString;
+
   int printSegment, printNameSegment = 0;
 
   int nameCombineLen, nameFullSegPadding;
 
   char *markedSegment;
   char *attrSegment;
+  char *sizeBlocksSegment;
   char *hlinkSegment;
   char *ownerSegment;
   char *contextSegment;
@@ -1118,6 +1121,23 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
     sprintf(contextText, "");
     contextSegment = malloc(sizeof(char) * contextSegmentLen);
     sprintf(contextSegment, "");
+  }
+
+  if (showSizeBlocks){
+    if (sizeblocklen < sizeblockminlen) {
+      sizeBlocksSegmentLen = sizeblockminlen;
+    } else {
+      sizeBlocksSegmentLen = sizeblocklen;
+    }
+    sizeBlocksString = malloc(sizeof(char) * (sizeBlocksSegmentLen + 1));
+    sprintf(sizeBlocksString, "%s", "?");
+    sizeBlocksSegment = writeSegment(sizeBlocksSegmentLen, sizeBlocksString, RIGHT);
+  } else {
+    sizeBlocksSegmentLen = 1;
+    sizeBlocksString = malloc(sizeof(char) * sizeBlocksSegmentLen);
+    sprintf(sizeBlocksString, "");
+    sizeBlocksSegment = malloc(sizeof(char) * sizeBlocksSegmentLen);
+    sprintf(sizeBlocksSegment, "");
   }
 
   if (ob[currentitem].minor > 1){
@@ -1333,6 +1353,14 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
       tmpSegment = malloc(sizeof(wchar_t) * tmpSegmentLen);
       swprintf(tmpSegment, tmpSegmentLen, L"%s", markedSegment);
       break;
+    case COL_SIZEBLOCKS:
+      if (showSizeBlocks){
+        printSegment = 1;
+        tmpSegmentLen = sizeBlocksSegmentLen + 2;
+        tmpSegment = malloc(sizeof(wchar_t) * tmpSegmentLen);
+        swprintf(tmpSegment, tmpSegmentLen, L"%s", sizeBlocksSegment);
+      }
+      break;
     case COL_ATTR:
       printSegment = 1;
       tmpSegmentLen = attrSegmentLen + 2;
@@ -1484,6 +1512,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
 
   // Free segments
   free(markedSegment);
+  free(sizeBlocksSegment);
   free(attrSegment);
   free(hlinkSegment);
   free(ownerSegment);
@@ -2581,7 +2610,7 @@ void display_dir(char *pwd, results* ob){
   // char *padCharHeadAttrs, *padCharHeadOG, *padCharHeadContext, *padCharHeadSize, *padCharHeadDT;
   char *headerCombined = malloc(sizeof(char) + 1);
   int headerCombinedLen = 1;
-  char *markedHeadSeg, *attrHeadSeg, *hlinkHeadSeg, *ownerHeadSeg, *contextHeadSeg, *sizeHeadSeg, *dateHeadSeg, *nameHeadSeg;
+  char *markedHeadSeg, *attrHeadSeg, *hlinkHeadSeg, *ownerHeadSeg, *contextHeadSeg, *sizeHeadSeg, *dateHeadSeg, *nameHeadSeg, *sizeBlocksHeadSeg;
   int xattrOffset = 0;
   int origTopFileRef;
   int currentItem;
@@ -2810,7 +2839,7 @@ void display_dir(char *pwd, results* ob){
       // printf("DP: %i, HL: %i, OL: %i, GL: %i, AL: %i, SL: %i, MaL: %i, MiL: %i, DL: %i, NL: %i, CL: %i, PS: %i, LC: %i, TF: %i, XO: %i\n", displaypos, hlinklen, ownerlen, grouplen, authorlen, sizelen, majorlen, minorlen, datelen, namelen, contextlen, printSelect, list_count, topfileref, xattrOffset);
       // mvprintw(list_count + 4, 0, "DP: %i, HL: %i, OL: %i, GL: %i, AL: %i, SL: %i, MaL: %i, MiL: %i, DL: %i, NL: %i, CL: %i, PS: %i, LC: %i, TF: %i, XO: %i", displaypos, hlinklen, ownerlen, grouplen, authorlen, sizelen, majorlen, minorlen, datelen, namelen, contextlen, printSelect, list_count, topfileref, xattrOffset);
       if (el[(list_count + lineStart)].entryLineType == ET_OBJECT){
-        printEntry(displaypos, hlinklen, ownerlen, grouplen, authorlen, sizelen, majorlen, minorlen, datelen, namelen, contextlen, printSelect, list_count, currentItem, ob);
+        printEntry(displaypos, hlinklen, 1, ownerlen, grouplen, authorlen, sizelen, majorlen, minorlen, datelen, namelen, contextlen, printSelect, list_count, currentItem, ob);
         // mvprintw(displaystart + list_count, 0, "%i - THIS SHOULDN'T BE HERE! - %s", printSelect, ob[el[(list_count + lineStart)].fileRef].name);
       } else if (el[(list_count + lineStart)].entryLineType == ET_ACL) {
         // Not implemented yet
@@ -2907,6 +2936,7 @@ void display_dir(char *pwd, results* ob){
   contextHeadSeg = writeSegment(contextSegmentLen, headContext, LEFT);
   sizeHeadSeg = writeSegment(sizeSegmentLen, headSize, RIGHT);
   dateHeadSeg = writeSegment(dateSegmentLen, headDT, LEFT);
+  sizeBlocksHeadSeg = writeSegment(sizeBlocksSegmentLen, headSizeBlocks, RIGHT);
   nameHeadSeg = writeSegment(nameSegmentDataLen, headName, LEFT);
 
   sprintf(headerCombined, "");
@@ -2917,6 +2947,13 @@ void display_dir(char *pwd, results* ob){
       headerCombinedLen = (headerCombinedLen + strlen(markedHeadSeg));
       headerCombined = realloc(headerCombined, sizeof(char) * headerCombinedLen);
       strcat(headerCombined, markedHeadSeg);
+      break;
+    case COL_SIZEBLOCKS:
+      if (showSizeBlocks){
+        headerCombinedLen = (headerCombinedLen + strlen(sizeBlocksHeadSeg));
+        headerCombined = realloc(headerCombined, sizeof(char) * headerCombinedLen);
+        strcat(headerCombined, sizeBlocksHeadSeg);
+      }
       break;
     case COL_ATTR:
       headerCombinedLen = (headerCombinedLen + strlen(attrHeadSeg));
@@ -2971,6 +3008,7 @@ void display_dir(char *pwd, results* ob){
   free(sizeHeadSeg);
   free(dateHeadSeg);
   free(nameHeadSeg);
+  free(sizeBlocksHeadSeg);
 
   // free(padCharHeadAttrs);
   // free(padCharHeadOG);
