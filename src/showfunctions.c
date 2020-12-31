@@ -75,14 +75,15 @@
 # define st_author st_uid
 #endif
 
-char hlinkstr[6], sizestr[32], majorstr[6], minorstr[6];
-char headAttrs[12], headOG[25], headSize[14], headDT[18], headName[13], headContext[14], headSizeBlocks[16];
+char hlinkstr[6], sizestr[32], sizeblocksstr[32], majorstr[6], minorstr[6];
+char headAttrs[12], headOG[25], headSize[14], headDT[18], headName[13], headContext[14], headSizeBlocks[9];
 
 int hlinklen;
 int ownerlen;
 int grouplen;
 int authorlen;
 int sizelen;
+int sizeblockslen;
 int majorlen;
 int minorlen;
 int datelen;
@@ -681,6 +682,8 @@ void writeResultStruct(results* ob, const char * filename, struct stat buffer, i
   ob[count].size = buffer.st_size;
   *ob[count].sizelens = strlen(sizestr);
 
+  ob[count].sizeBlocks = buffer.st_blocks;
+
   if (S_ISCHR(buffer.st_mode) || S_ISBLK(buffer.st_mode)){
     ob[count].major = major(buffer.st_rdev);
     ob[count].minor = minor(buffer.st_rdev);
@@ -1124,13 +1127,14 @@ void printEntry(int start, int hlinklen, int sizeblocklen, int ownerlen, int gro
   }
 
   if (showSizeBlocks){
+    sprintf(sizeblocksstr, "%lld", ob[currentitem].sizeBlocks);
     if (sizeblocklen < sizeblockminlen) {
       sizeBlocksSegmentLen = sizeblockminlen;
     } else {
       sizeBlocksSegmentLen = sizeblocklen;
     }
     sizeBlocksString = malloc(sizeof(char) * (sizeBlocksSegmentLen + 1));
-    sprintf(sizeBlocksString, "%s", "?");
+    sprintf(sizeBlocksString, "%s", sizeblocksstr);
     sizeBlocksSegment = writeSegment(sizeBlocksSegmentLen, sizeBlocksString, RIGHT);
   } else {
     sizeBlocksSegmentLen = 1;
@@ -1817,6 +1821,10 @@ int seglength(const void *seg, char *segname, int LEN)
         sprintf(hlinkstr, "%d", *dfseg[i].hlink);
         len = strlen(hlinkstr);
       }
+      else if (!strcmp(segname, "sizeBlocks")) {
+        sprintf(sizeblocksstr, "%lld", dfseg[i].sizeBlocks);
+        len = strlen(sizeblocksstr);
+      }
       else if (!strcmp(segname, "size")) {
         if (human){
           readableSize(dfseg[i].size, sizestr, si);
@@ -2445,6 +2453,7 @@ results* get_dir(char *pwd)
   grouplen = seglength(ob, "group", count);
   authorlen = seglength(ob, "author", count);
   sizelen = seglength(ob, "size", count);
+  sizeblockslen = seglength(ob, "sizeBlocks", count);
   majorlen = seglength(ob, "major", count);
   minorlen = seglength(ob, "minor", count);
   datelen = seglength(ob, "datedisplay", count);
@@ -2751,7 +2760,7 @@ void display_dir(char *pwd, results* ob){
   }
 
   if (showSizeBlocks){
-    strcpy(headSizeBlocks, "-Size (Blocks)-");
+    strcpy(headSizeBlocks, "-Blocks-");
   } else {
     strcpy(headSizeBlocks, "");
   }
@@ -2839,7 +2848,7 @@ void display_dir(char *pwd, results* ob){
       // printf("DP: %i, HL: %i, OL: %i, GL: %i, AL: %i, SL: %i, MaL: %i, MiL: %i, DL: %i, NL: %i, CL: %i, PS: %i, LC: %i, TF: %i, XO: %i\n", displaypos, hlinklen, ownerlen, grouplen, authorlen, sizelen, majorlen, minorlen, datelen, namelen, contextlen, printSelect, list_count, topfileref, xattrOffset);
       // mvprintw(list_count + 4, 0, "DP: %i, HL: %i, OL: %i, GL: %i, AL: %i, SL: %i, MaL: %i, MiL: %i, DL: %i, NL: %i, CL: %i, PS: %i, LC: %i, TF: %i, XO: %i", displaypos, hlinklen, ownerlen, grouplen, authorlen, sizelen, majorlen, minorlen, datelen, namelen, contextlen, printSelect, list_count, topfileref, xattrOffset);
       if (el[(list_count + lineStart)].entryLineType == ET_OBJECT){
-        printEntry(displaypos, hlinklen, 1, ownerlen, grouplen, authorlen, sizelen, majorlen, minorlen, datelen, namelen, contextlen, printSelect, list_count, currentItem, ob);
+        printEntry(displaypos, hlinklen, sizeblockslen, ownerlen, grouplen, authorlen, sizelen, majorlen, minorlen, datelen, namelen, contextlen, printSelect, list_count, currentItem, ob);
         // mvprintw(displaystart + list_count, 0, "%i - THIS SHOULDN'T BE HERE! - %s", printSelect, ob[el[(list_count + lineStart)].fileRef].name);
       } else if (el[(list_count + lineStart)].entryLineType == ET_ACL) {
         // Not implemented yet

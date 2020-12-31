@@ -45,6 +45,7 @@ typedef struct {
   char *group;
   char *author;
   size_t size;
+  blkcnt_t sizeBlocks;
   int sizelens[32];
   int major;
   int minor;
