@@ -146,6 +146,8 @@ time_t currenttime;
 
 int skippable = 0;
 
+int block_size = 1024;
+
 xattrList *xa;
 int xattrPos;
 
@@ -682,7 +684,8 @@ void writeResultStruct(results* ob, const char * filename, struct stat buffer, i
   ob[count].size = buffer.st_size;
   *ob[count].sizelens = strlen(sizestr);
 
-  ob[count].sizeBlocks = buffer.st_blocks;
+  // ob[count].sizeBlocks = buffer.st_blocks;
+  ob[count].sizeBlocks = (buffer.st_blocks * 512) / block_size;
 
   if (S_ISCHR(buffer.st_mode) || S_ISBLK(buffer.st_mode)){
     ob[count].major = major(buffer.st_rdev);
