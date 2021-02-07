@@ -79,6 +79,8 @@ int showXAttrs = 0;
 
 int showAcls = 0; // Might end up not implementing this.
 
+int block_size = 1024;
+
 char *objectWild;
 
 results *ob;
@@ -691,6 +693,27 @@ int setColor(char* colorinput)
   }
 }
 
+int setBlockSize(const char * arg){
+    char *endptr;
+    int numarg;
+    int returnCode = 1;
+
+    numarg = strtol(arg, &endptr, 10);
+
+    if (*endptr != '\0' || endptr == arg) {
+      returnCode = 1;
+    } else {
+      if (numarg < 1){
+        returnCode = 1;
+      } else {
+        block_size = numarg;
+        returnCode = 0;
+      }
+    }
+
+    return returnCode;
+}
+
 void refreshScreen()
 {
   endwin();
@@ -752,6 +775,7 @@ Options shared with ls:\n"), stdout);
 #endif
   fputs(("  -a, --all                    do not ignore entries starting with .\n\
       --author                 prints the author of each file\n\
+      --block-size=SIZE        scale sizes by SIZE\n\
   -B, --ignore-backups         do not list implied entries ending with ~\n\
       --color[=WHEN]           colorize the output, see the color section below\n\
   -d, --directory              show only directories\n\
@@ -843,6 +867,7 @@ int main(int argc, char *argv[])
          {"all",            no_argument,       0, 'a'},
          {"almost-all",     no_argument,       0, 'A'},
          {"author",         no_argument,       0, GETOPT_AUTHOR_CHAR},
+         {"block-size",     required_argument, 0, GETOPT_BLOCKSIZE_CHAR},
          {"ignore-backups", no_argument,       0, 'B'},
          {"directory",      no_argument,       0, 'd'},
          {"human-readable", no_argument,       0, 'h'},
@@ -883,6 +908,12 @@ int main(int argc, char *argv[])
       break;
     case GETOPT_AUTHOR_CHAR:
       ogavis = ogavis + 4;
+      break;
+    case GETOPT_BLOCKSIZE_CHAR:
+      if (setBlockSize(optarg)){
+          printf("%s: invalid argument '%s' for 'block-size'\n", argv[0], optarg);
+          exit(2);
+      };
       break;
     case 'B':
       showbackup = 0;

@@ -146,8 +146,6 @@ time_t currenttime;
 
 int skippable = 0;
 
-int block_size = 1024;
-
 xattrList *xa;
 int xattrPos;
 
@@ -163,6 +161,8 @@ entryLines *el;
 extern DIR *folder;
 
 extern int segOrder[9];
+
+extern int block_size;
 
 extern int messageBreak;
 extern char currentpwd[4096];
