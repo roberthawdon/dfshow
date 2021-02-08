@@ -79,7 +79,11 @@ int showXAttrs = 0;
 
 int showAcls = 0; // Might end up not implementing this.
 
+#ifdef HAVE_GNU_BLOCKSIZE
 int block_size = 1024;
+#else
+int block_size = 512;
+#endif
 
 char *objectWild;
 

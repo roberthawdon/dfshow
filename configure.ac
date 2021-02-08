@@ -47,6 +47,14 @@ AS_IF([test "x$enable_move_between_devices" = "xyes"], [
   AC_DEFINE(HAVE_MOVE_BETWEEN_DEVICES, 1, [True for enable-move-between-devices])
 ])
 
+AS_IF([test $(uname) = "Linux"], [
+  AC_DEFINE(HAVE_GNU_BLOCKSIZE, 1, [True for Linux or Hurd systems])
+])
+
+AS_IF([test $(uname) = "GNU"], [
+  AC_DEFINE(HAVE_GNU_BLOCKSIZE, 1, [True for Linux or Hurd systems])
+])
+
 AM_CONDITIONAL([DARWIN], [test $(uname) = "Darwin"])
 AM_CONDITIONAL([LINUX], [test $(uname) = "Linux"])
 AM_CONDITIONAL([HURD], [test $(uname) = "GNU"])
