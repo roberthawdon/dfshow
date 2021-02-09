@@ -171,21 +171,23 @@ void wPrintMenu(int line, int col, wchar_t *menustring)
   for (i = 0; i < len; i++)
     {
       if ( menustring[i] == '!' ) {
-        i++;
         setColors(HILITE_PAIR);
+        i++;
         mvprintw(line, col + charcount, "%lc", menustring[i]);
         setColors(COMMAND_PAIR);
         charcount++;
       } else if ( menustring[i] == '<' ) {
-        i++;
         setColors(HILITE_PAIR);
+        i++;
         mvprintw(line, col + charcount, "%lc", menustring[i]);
         charcount++;
       } else if ( menustring[i] == '>' ) {
-        i++;
         setColors(COMMAND_PAIR);
-        mvprintw(line, col + charcount, "%lc", menustring[i]);
-        charcount++;
+        if (i < (len - 1)){
+          i++;
+          mvprintw(line, col + charcount, "%lc", menustring[i]);
+          charcount++;
+        }
       } else if ( menustring[i] == '\\' ) {
         i++;
         mvprintw(line, col + charcount, "%lc", menustring[i]);
