@@ -162,7 +162,7 @@ int altHotkey(int key)
 
 void wPrintMenu(int line, int col, wchar_t *menustring)
 {
-  int i, len, charcount;
+  int i, len, charcount, pad;
   charcount = 0;
   move(line, col);
   clrtoeol();
@@ -194,6 +194,12 @@ void wPrintMenu(int line, int col, wchar_t *menustring)
         mvprintw(line, col + charcount, "%lc", menustring[i]);
         charcount++;
       }
+    }
+  pad = COLS - charcount;
+  for (i = 0; i < pad; i++)
+    {
+      mvprintw(line, col + charcount, " ");
+      charcount++;
     }
 }
 
