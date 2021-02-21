@@ -62,6 +62,7 @@ int oneLine = 0;
 int skipToFirstFile = 0;
 
 bool dirOnly = 0;
+bool scaleSize = 0;
 
 int plugins = 0; // Not yet implemented
 
@@ -918,6 +919,7 @@ int main(int argc, char *argv[])
           printf("%s: invalid argument '%s' for 'block-size'\n", argv[0], optarg);
           exit(2);
       };
+      scaleSize = 1;
       break;
     case 'B':
       showbackup = 0;

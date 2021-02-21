@@ -188,6 +188,7 @@ extern int skipToFirstFile;
 extern int showXAttrs;
 extern int showAcls;
 extern bool dirOnly;
+extern bool scaleSize;
 
 extern char sortmode[9];
 
@@ -1164,12 +1165,16 @@ void printEntry(int start, int hlinklen, int sizeblocklen, int ownerlen, int gro
     sizestring = malloc (sizeof (char) * (sizelen + 1));
     sprintf(sizestring, "%i,%s%i", ob[currentitem].major, sizePadding, ob[currentitem].minor);
   } else {
-    if (human){
+    if ((human) && (!scaleSize)){
       sizestring = malloc (sizeof (char) * 10);
       readableSize(ob[currentitem].size, sizestring, si);
     } else {
       sizestring = malloc (sizeof (char) * (sizelen + 1));
-      sprintf(sizestring, "%lu", ob[currentitem].size);
+      if (scaleSize){
+        sprintf(sizestring, "%lu", (ob[currentitem].size / block_size + 1));
+      } else {
+        sprintf(sizestring, "%lu", ob[currentitem].size);
+      }
     }
   }
 
