@@ -17,6 +17,7 @@ args=(
     '(-h --human-readable)'{-h,--human-readable}"["'Print sizes like 1K 234M 2G etc.'"]"
     '(--si)--si[As above, but use powers of 1000 not 1024]'
     '(-r --reverse)'{-r,--reverse}"["'Reverse order while sorting'"]"
+    '(-s --size)'{-s,--size}"["'Display the allocated size of files, in blocks'"]"
     '(-S)-S[Sort file by size, largest first]'
     '(--time-style)--time-style[Time/date format]'
     '(-t)-t[Sort by modification time, newset first]'

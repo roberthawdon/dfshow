@@ -20,6 +20,7 @@ _show()
            --human-readable
            --si
            --reverse
+           --size
            -S
            --time-style
            -t
