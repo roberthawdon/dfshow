@@ -36,6 +36,9 @@
 #include "settings.h"
 #include "common.h"
 #include "show.h"
+#include "input.h"
+
+char * testTextSetting;
 
 char currentpwd[4096];
 
@@ -97,6 +100,8 @@ extern int skippable;
 
 extern int settingsPos;
 extern int settingsBinPos;
+extern int settingsFreePos;
+extern bool settingsFreeEdit;
 
 extern menuDef *settingsMenu;
 extern int settingsMenuSize;
@@ -463,6 +468,8 @@ void settingsMenuView(){
   int charValuesCount;
   int binValuesCount;
   int sortmodeInt, timestyleInt;
+  int e;
+  char charTempValue[1024];
 
  reloadSettings:
 
@@ -493,28 +500,29 @@ void settingsMenuView(){
   sortmodeInt = textValueLookup(&charValues, &charValuesCount, "sortmode", sortmode);
   timestyleInt = textValueLookup(&charValues, &charValuesCount, "timestyle", timestyle);
 
-  importSetting(&settingIndex, &items, "color",          L"Display file colors", SETTING_BOOL, filecolors, -1, 0);
-  importSetting(&settingIndex, &items, "marked",         L"Show marked file info", SETTING_SELECT, markedinfo, markedCount, 0);
-  importSetting(&settingIndex, &items, "sortmode",       L"Sorting mode", SETTING_SELECT, sortmodeInt, sortmodeCount, 0);
-  importSetting(&settingIndex, &items, "reverse",        L"Reverse sorting order", SETTING_BOOL, reverse, -1, 0);
-  importSetting(&settingIndex, &items, "timestyle",      L"Time style", SETTING_SELECT, timestyleInt, timestyleCount, 0);
-  importSetting(&settingIndex, &items, "hidden",         L"Show hidden files", SETTING_BOOL, showhidden, -1, 0);
-  importSetting(&settingIndex, &items, "ignore-backups", L"Hide backup files", SETTING_BOOL, showbackup, -1, 1);
-  importSetting(&settingIndex, &items, "no-sf",          L"Use 3rd party pager over SF", SETTING_BOOL, useEnvPager, -1, 0);
+  importSetting(&settingIndex, &items, "color",          L"Display file colors", SETTING_BOOL, NULL, filecolors, -1, 0);
+  importSetting(&settingIndex, &items, "marked",         L"Show marked file info", SETTING_SELECT, NULL, markedinfo, markedCount, 0);
+  importSetting(&settingIndex, &items, "sortmode",       L"Sorting mode", SETTING_SELECT, NULL, sortmodeInt, sortmodeCount, 0);
+  importSetting(&settingIndex, &items, "reverse",        L"Reverse sorting order", SETTING_BOOL, NULL, reverse, -1, 0);
+  importSetting(&settingIndex, &items, "timestyle",      L"Time style", SETTING_SELECT, NULL, timestyleInt, timestyleCount, 0);
+  importSetting(&settingIndex, &items, "hidden",         L"Show hidden files", SETTING_BOOL, NULL, showhidden, -1, 0);
+  importSetting(&settingIndex, &items, "ignore-backups", L"Hide backup files", SETTING_BOOL, NULL, showbackup, -1, 1);
+  importSetting(&settingIndex, &items, "no-sf",          L"Use 3rd party pager over SF", SETTING_BOOL, NULL, useEnvPager, -1, 0);
   if (uid == 0 || euid == 0){
-    importSetting(&settingIndex, &items, "no-danger",      L"Hide danger lines as root", SETTING_BOOL, danger, -1, 1);
+    importSetting(&settingIndex, &items, "no-danger",      L"Hide danger lines as root", SETTING_BOOL, NULL, danger, -1, 1);
   }
-  importSetting(&settingIndex, &items, "si",             L"Use SI units", SETTING_BOOL, si, -1, 0);
-  importSetting(&settingIndex, &items, "human-readable", L"Human readable sizes", SETTING_BOOL, human, -1, 0);
-  importSetting(&settingIndex, &items, "show-on-enter",  L"Enter key acts like Show", SETTING_BOOL, enterAsShow, -1, 0);
-  importSetting(&settingIndex, &items, "owner",          L"Owner Column", SETTING_MULTI, ogavis, ownerCount, 0);
-  importSetting(&settingIndex, &items, "context",        L"Show security context of files", SETTING_BOOL, showContext, -1, 0);
-  importSetting(&settingIndex, &items, "skip-to-first",  L"Skip to the first object", SETTING_BOOL, skipToFirstFile, -1, 0);
+  importSetting(&settingIndex, &items, "si",             L"Use SI units", SETTING_BOOL, NULL, si, -1, 0);
+  importSetting(&settingIndex, &items, "human-readable", L"Human readable sizes", SETTING_BOOL, NULL, human, -1, 0);
+  importSetting(&settingIndex, &items, "show-on-enter",  L"Enter key acts like Show", SETTING_BOOL, NULL, enterAsShow, -1, 0);
+  importSetting(&settingIndex, &items, "owner",          L"Owner Column", SETTING_MULTI, NULL, ogavis, ownerCount, 0);
+  importSetting(&settingIndex, &items, "context",        L"Show security context of files", SETTING_BOOL, NULL, showContext, -1, 0);
+  importSetting(&settingIndex, &items, "skip-to-first",  L"Skip to the first object", SETTING_BOOL, NULL, skipToFirstFile, -1, 0);
 #ifdef HAVE_ACL_TYPE_EXTENDED
-  importSetting(&settingIndex, &items, "showXAttrs",     L"Display extended attribute keys and sizes", SETTING_BOOL, showXAttrs, -1, 0);
+  importSetting(&settingIndex, &items, "showXAttrs",     L"Display extended attribute keys and sizes", SETTING_BOOL, NULL, showXAttrs, -1, 0);
 #endif
-  importSetting(&settingIndex, &items, "only-dirs",      L"Display only directories", SETTING_BOOL, dirOnly, -1, 0);
-  importSetting(&settingIndex, &items, "sizeblocks",     L"Show allocated size in blocks", SETTING_BOOL, showSizeBlocks, -1, 0);
+  importSetting(&settingIndex, &items, "only-dirs",      L"Display only directories", SETTING_BOOL, NULL, dirOnly, -1, 0);
+  importSetting(&settingIndex, &items, "sizeblocks",     L"Show allocated size in blocks", SETTING_BOOL, NULL, showSizeBlocks, -1, 0);
+  importSetting(&settingIndex, &items, "testfree",       L"Test Free Text Setting", SETTING_FREE, testTextSetting, -1, -1, 0); // Test
 
   populateBool(&binValues, "owner", ogavis, binValuesCount);
 
@@ -556,13 +564,13 @@ void settingsMenuView(){
         }
       } else if (*pc == 32 || *pc == 260 || *pc == 261){
         // Adjust
-        if (settingIndex[settingsPos].type == 0){
+        if (settingIndex[settingsPos].type == SETTING_BOOL){
           if (settingIndex[settingsPos].intSetting > 0){
             updateSetting(&settingIndex, settingsPos, 0, 0);
           } else {
             updateSetting(&settingIndex, settingsPos, 0, 1);
           }
-        } else if (settingIndex[settingsPos].type == 1){
+        } else if (settingIndex[settingsPos].type == SETTING_SELECT){
           if (*pc == 32 || *pc == 261){
             if (settingIndex[settingsPos].intSetting < (settingIndex[settingsPos].maxValue) - 1){
               updateSetting(&settingIndex, settingsPos, 1, (settingIndex[settingsPos].intSetting) + 1);
@@ -576,7 +584,7 @@ void settingsMenuView(){
               updateSetting(&settingIndex, settingsPos, 1, (settingIndex[settingsPos].maxValue - 1));
             }
           }
-        } else if (settingIndex[settingsPos].type == 2){
+        } else if (settingIndex[settingsPos].type == SETTING_MULTI){
           if (*pc == 261 && (settingsBinPos < (settingIndex[settingsPos].maxValue -1))){
             settingsBinPos++;
           } else if (*pc == 260 && (settingsBinPos > -1)){
@@ -587,6 +595,38 @@ void settingsMenuView(){
               adjustBinSetting(&settingIndex, &binValues, "owner", &ogavis, binValuesCount);
             }
           }
+        } else if (settingIndex[settingsPos].type == SETTING_FREE){
+          if (*pc == 32 || *pc == 261) {
+            settingsFreePos = 0;
+            move(x + settingsPos, y + wcslen(settingIndex[settingsPos].textLabel) + 6);
+            // charTempValue = malloc(strlen(settingIndex[settingsPos].charSetting) * sizeof(char) + 1);
+            // strcpy(charTempValue, "1");
+            e = readline(charTempValue, 1024, settingIndex[settingsPos].charSetting);
+            if (strcmp(charTempValue, "")){
+              free(settingIndex[settingsPos].charSetting);
+              settingIndex[settingsPos].charSetting = malloc(sizeof(char) * strlen(charTempValue));
+              sprintf(settingIndex[settingsPos].charSetting, "%s", charTempValue);
+              // free(charTempValue);
+            }
+            move(x + settingsPos, 0);
+            clrtoeol();
+            // printSetting(2 + settingsPos, 3, &settingIndex, &charValues, &binValues, count, charValuesCount, binValuesCount, settingIndex[settingsPos].type, settingIndex[settingsPos].invert);
+            settingsFreePos = -1;
+
+          } else if (*pc == 260) {
+          }
+          // if (*pc == 261) {
+          //   settingsFreePos++;
+          //   if (settingsFreePos > -1) {
+          //     settingsFreeEdit = true;
+          //   }
+          // } else if (*pc == 260) {
+          //   settingsFreePos--;
+          //   if (settingsFreePos < 0) {
+          //     settingsFreePos = -1;
+          //     settingsFreeEdit = false;
+          //   }
+          // }
         }
       } else if (*pc == 259){
         if (settingsPos > 0){
@@ -843,6 +883,9 @@ int main(int argc, char *argv[])
 #else
   strcpy(options, "aABdfgGhlrsStUZ1");
 #endif
+
+  testTextSetting = calloc(10, sizeof(char));
+  sprintf(testTextSetting, "%s", "Test Text");
 
   showProcesses = checkRunningEnv() + 1;
 

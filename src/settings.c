@@ -28,6 +28,7 @@
 #include "menu.h"
 #include "settings.h"
 #include "colors.h"
+#include "input.h"
 
 menuDef *settingsMenu;
 int settingsMenuSize = 0;
@@ -35,6 +36,8 @@ wchar_t *settingsMenuLabel;
 
 int settingsPos = 0;
 int settingsBinPos = -1;
+int settingsFreePos = -1;
+bool settingsFreeEdit = 0;
 
 void updateSetting(settingIndex **settings, int index, int type, int intSetting)
 {
@@ -112,7 +115,7 @@ void addT2BinValue(t2BinValues **values, int *totalItems, int *maxItem, char *re
 
 }
 
-void importSetting(settingIndex **settings, int *items, char *refLabel, wchar_t *textLabel, int type, int intSetting, int maxValue, int invert)
+void importSetting(settingIndex **settings, int *items, char *refLabel, wchar_t *textLabel, int type, char *charSetting, int intSetting, int maxValue, int invert)
 {
   settingIndex *tmp;
   int currentItem = *items;
@@ -133,6 +136,11 @@ void importSetting(settingIndex **settings, int *items, char *refLabel, wchar_t 
   (*settings)[currentItem].intSetting = intSetting;
   (*settings)[currentItem].maxValue = maxValue;
   (*settings)[currentItem].invert = invert;
+
+  if (charSetting){
+    (*settings)[currentItem].charSetting = malloc(sizeof(char) * (strlen(charSetting) + 1));
+    sprintf((*settings)[currentItem].charSetting, "%s", charSetting);
+  }
 
   ++*items;
 }
@@ -275,6 +283,28 @@ void printSetting(int line, int col, settingIndex **settings, t1CharValues **val
       setColors(COMMAND_PAIR);
       itemAdjust = itemAdjust + valueLen;
     }
+  } else if (type == 3){
+    // To Do: Add Free Text logic
+    setColors(HILITE_PAIR);
+    mvprintw(line, col, " ");
+    if (settingsPos == index && settingsFreePos < 0){
+      attron(A_REVERSE);
+    }
+    mvprintw(line, col + 1, "-");
+    attroff(A_REVERSE);
+    mvprintw(line, col + 2, ">");
+    setColors(COMMAND_PAIR);
+    mvprintw(line, col + 4, "%ls:", (*settings)[index].textLabel);
+    if ( settingsFreeEdit ){
+      setColors(INPUT_PAIR);
+    } else {
+      setColors(HILITE_PAIR);
+    }
+    move(line, (col + 4 + labelLen + itemAdjust));
+    mvprintw(line, (col + 4 + labelLen + itemAdjust), "%s", (*settings)[index].charSetting); // To Do
+    // testChar = malloc(strlen((*settings)[index].charSetting) * sizeof(char));
+    // e = readline((*settings)[index].charSetting, 1024, testChar);
+    setColors(COMMAND_PAIR);
   }
 }
 

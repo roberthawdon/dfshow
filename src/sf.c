@@ -426,7 +426,7 @@ void settingsMenuView()
   clear();
   wPrintMenu(0,0,settingsMenuLabel);
 
-  importSetting(&settingIndex, &items, "wrap", L"Enable text wrapping", SETTING_BOOL, wrap, -1, 0);
+  importSetting(&settingIndex, &items, "wrap", L"Enable text wrapping", SETTING_BOOL, NULL, wrap, -1, 0);
 
   while(1)
     {
