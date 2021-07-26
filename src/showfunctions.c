@@ -189,6 +189,7 @@ extern int showXAttrs;
 extern int showAcls;
 extern bool dirOnly;
 extern bool scaleSize;
+extern char * visualPath;
 
 extern char sortmode[9];
 
@@ -1686,6 +1687,10 @@ int SendToEditor(char* object)
   } else if ( getenv("VISUAL")) {
     editor = realloc(editor, (sizeof(char) * (strlen(getenv("VISUAL")) + 1 )));
     sprintf(editor, "%s", getenv("VISUAL"));
+    eset = 1;
+  } else if ( can_run_command(visualPath) ) {
+    editor = realloc(editor, (sizeof(char) * (strlen(visualPath) + 1 )));
+    sprintf(editor, "%s", visualPath);
     eset = 1;
   }
   if ( eset ){

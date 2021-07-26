@@ -37,10 +37,11 @@ wchar_t *settingsMenuLabel;
 int settingsPos = 0;
 int settingsBinPos = -1;
 int settingsFreePos = -1;
-bool settingsFreeEdit = 0;
 
 void updateSetting(settingIndex **settings, int index, int type, int intSetting)
 {
+  // To-Do, do a verification on the type
+
   (*settings)[index].intSetting = intSetting;
 }
 
@@ -295,15 +296,9 @@ void printSetting(int line, int col, settingIndex **settings, t1CharValues **val
     mvprintw(line, col + 2, ">");
     setColors(COMMAND_PAIR);
     mvprintw(line, col + 4, "%ls:", (*settings)[index].textLabel);
-    if ( settingsFreeEdit ){
-      setColors(INPUT_PAIR);
-    } else {
-      setColors(HILITE_PAIR);
-    }
+    setColors(HILITE_PAIR);
     move(line, (col + 4 + labelLen + itemAdjust));
     mvprintw(line, (col + 4 + labelLen + itemAdjust), "%s", (*settings)[index].charSetting); // To Do
-    // testChar = malloc(strlen((*settings)[index].charSetting) * sizeof(char));
-    // e = readline((*settings)[index].charSetting, 1024, testChar);
     setColors(COMMAND_PAIR);
   }
 }

@@ -38,7 +38,7 @@
 #include "show.h"
 #include "input.h"
 
-char * testTextSetting;
+char * visualPath;
 
 char currentpwd[4096];
 
@@ -101,7 +101,6 @@ extern int skippable;
 extern int settingsPos;
 extern int settingsBinPos;
 extern int settingsFreePos;
-extern bool settingsFreeEdit;
 
 extern menuDef *settingsMenu;
 extern int settingsMenuSize;
@@ -284,6 +283,15 @@ void readConfig(const char * confFile)
           dirOnly = 1;
         }
       }
+      // Check visualPath
+      setting = config_setting_get_member(group, "visualPath");
+      if (setting){
+        if (visualPath){
+          free(visualPath);
+        }
+        visualPath = calloc(strlen(config_setting_get_string(setting)) + 1, sizeof(char));
+        strcpy(visualPath, config_setting_get_string(setting));
+      }
       // Check Layout
       array = config_setting_get_member(group, "layout");
       if (array){
@@ -396,6 +404,11 @@ void saveConfig(const char * confFile, settingIndex **settings, t1CharValues **v
           config_setting_set_int(setting, (*bins)[v].boolVal);
         }
       }
+    } else if ((*settings)[i].type == SETTING_FREE){
+      setting = config_setting_add(group, (*settings)[i].refLabel, CONFIG_TYPE_STRING);
+      if (!strcmp((*settings)[i].refLabel, "visualPath")){
+        config_setting_set_string(setting, (*settings)[i].charSetting);
+      }
     }
   }
 
@@ -452,6 +465,10 @@ void applySettings(settingIndex **settings, t1CharValues **values, int items, in
       dirOnly = (*settings)[i].intSetting;
     } else if (!strcmp((*settings)[i].refLabel, "sizeblocks")){
       showSizeBlocks = (*settings)[i].intSetting;
+    } else if (!strcmp((*settings)[i].refLabel, "visualPath")){
+      free(visualPath);
+      visualPath = calloc(strlen((*settings)[i].charSetting + 1), sizeof(char));
+      sprintf(visualPath, "%s", (*settings)[i].charSetting);
     }
   }
 }
@@ -522,7 +539,7 @@ void settingsMenuView(){
 #endif
   importSetting(&settingIndex, &items, "only-dirs",      L"Display only directories", SETTING_BOOL, NULL, dirOnly, -1, 0);
   importSetting(&settingIndex, &items, "sizeblocks",     L"Show allocated size in blocks", SETTING_BOOL, NULL, showSizeBlocks, -1, 0);
-  importSetting(&settingIndex, &items, "testfree",       L"Test Free Text Setting", SETTING_FREE, testTextSetting, -1, -1, 0); // Test
+  importSetting(&settingIndex, &items, "visualPath",     L"Path to editor (VISUAL)", SETTING_FREE, visualPath, -1, -1, 0);
 
   populateBool(&binValues, "owner", ogavis, binValuesCount);
 
@@ -599,34 +616,16 @@ void settingsMenuView(){
           if (*pc == 32 || *pc == 261) {
             settingsFreePos = 0;
             move(x + settingsPos, y + wcslen(settingIndex[settingsPos].textLabel) + 6);
-            // charTempValue = malloc(strlen(settingIndex[settingsPos].charSetting) * sizeof(char) + 1);
-            // strcpy(charTempValue, "1");
             e = readline(charTempValue, 1024, settingIndex[settingsPos].charSetting);
             if (strcmp(charTempValue, "")){
               free(settingIndex[settingsPos].charSetting);
               settingIndex[settingsPos].charSetting = malloc(sizeof(char) * strlen(charTempValue));
               sprintf(settingIndex[settingsPos].charSetting, "%s", charTempValue);
-              // free(charTempValue);
             }
             move(x + settingsPos, 0);
             clrtoeol();
-            // printSetting(2 + settingsPos, 3, &settingIndex, &charValues, &binValues, count, charValuesCount, binValuesCount, settingIndex[settingsPos].type, settingIndex[settingsPos].invert);
             settingsFreePos = -1;
-
-          } else if (*pc == 260) {
           }
-          // if (*pc == 261) {
-          //   settingsFreePos++;
-          //   if (settingsFreePos > -1) {
-          //     settingsFreeEdit = true;
-          //   }
-          // } else if (*pc == 260) {
-          //   settingsFreePos--;
-          //   if (settingsFreePos < 0) {
-          //     settingsFreePos = -1;
-          //     settingsFreeEdit = false;
-          //   }
-          // }
         }
       } else if (*pc == 259){
         if (settingsPos > 0){
@@ -884,8 +883,10 @@ int main(int argc, char *argv[])
   strcpy(options, "aABdfgGhlrsStUZ1");
 #endif
 
-  testTextSetting = calloc(10, sizeof(char));
-  sprintf(testTextSetting, "%s", "Test Text");
+  visualPath = calloc(12, sizeof(char));
+  sprintf(visualPath, "%s", "/usr/bin/vi");
+  // visualPath = calloc(19, sizeof(char));
+  // sprintf(visualPath, "%s", "/usr/local/bin/vim");
 
   showProcesses = checkRunningEnv() + 1;
 
