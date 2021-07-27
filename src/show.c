@@ -467,7 +467,7 @@ void applySettings(settingIndex **settings, t1CharValues **values, int items, in
       showSizeBlocks = (*settings)[i].intSetting;
     } else if (!strcmp((*settings)[i].refLabel, "visualPath")){
       free(visualPath);
-      visualPath = calloc(strlen((*settings)[i].charSetting + 1), sizeof(char));
+      visualPath = calloc((strlen((*settings)[i].charSetting) + 1), sizeof(char));
       sprintf(visualPath, "%s", (*settings)[i].charSetting);
     }
   }
@@ -619,7 +619,7 @@ void settingsMenuView(){
             e = readline(charTempValue, 1024, settingIndex[settingsPos].charSetting);
             if (strcmp(charTempValue, "")){
               free(settingIndex[settingsPos].charSetting);
-              settingIndex[settingsPos].charSetting = malloc(sizeof(char) * strlen(charTempValue));
+              settingIndex[settingsPos].charSetting = malloc(sizeof(char) * (strlen(charTempValue) + 1));
               sprintf(settingIndex[settingsPos].charSetting, "%s", charTempValue);
             }
             move(x + settingsPos, 0);
