@@ -1712,7 +1712,7 @@ int SendToEditor(char* object)
     }
     free(editorCommand);
   } else {
-    topLineMessage("Please export a VISUAL environment variable to define the utility program name.");
+    topLineMessage("Please set a valid editor utility program command in settings.");
   }
   free(editor);
   return 0;

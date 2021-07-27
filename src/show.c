@@ -539,7 +539,7 @@ void settingsMenuView(){
 #endif
   importSetting(&settingIndex, &items, "only-dirs",      L"Display only directories", SETTING_BOOL, NULL, dirOnly, -1, 0);
   importSetting(&settingIndex, &items, "sizeblocks",     L"Show allocated size in blocks", SETTING_BOOL, NULL, showSizeBlocks, -1, 0);
-  importSetting(&settingIndex, &items, "visualPath",     L"Path to editor (VISUAL)", SETTING_FREE, visualPath, -1, -1, 0);
+  importSetting(&settingIndex, &items, "visualPath",     L"Editor utility program command", SETTING_FREE, visualPath, -1, -1, 0);
 
   populateBool(&binValues, "owner", ogavis, binValuesCount);
 
@@ -883,8 +883,9 @@ int main(int argc, char *argv[])
   strcpy(options, "aABdfgGhlrsStUZ1");
 #endif
 
-  visualPath = calloc(12, sizeof(char));
-  sprintf(visualPath, "%s", "/usr/bin/vi");
+  // Setting the default editor
+  visualPath = calloc(3, sizeof(char));
+  sprintf(visualPath, "%s", "vi");
   // visualPath = calloc(19, sizeof(char));
   // sprintf(visualPath, "%s", "/usr/local/bin/vim");
 
