@@ -57,6 +57,8 @@ void refreshScreen(); // This reference needs to exist to allow getch10th to be 
 
 void unloadMenuLabels();
 
+void freeSettingVars();
+
 int getch10th (void) {
   int ch;
   do {
@@ -191,6 +193,7 @@ int exittoshell()
 {
   clear();
   unloadMenuLabels();
+  freeSettingVars();
   endwin();
   exit(exitCode);
   return exitCode;

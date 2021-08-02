@@ -24,3 +24,4 @@ int findInFile(const char * currentfile, const char * search, int charcase);
 void refreshScreen();
 void applySettings(settingIndex **settings, t1CharValues **values, int items, int valuesCount);
 void settingsMenuView();
+void freeSettingVars();

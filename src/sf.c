@@ -505,6 +505,10 @@ void settingsMenuView()
     }
 }
 
+void freeSettingVars()
+{
+  return;
+}
 
 int main(int argc, char *argv[])
 {

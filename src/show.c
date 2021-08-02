@@ -870,6 +870,12 @@ Exit status:\n\
   printf ("\nPlease report any bugs to: <%s>\n", PACKAGE_BUGREPORT);
 }
 
+void freeSettingVars()
+{
+  free(visualPath);
+  return;
+}
+
 int main(int argc, char *argv[])
 {
   uid_t uid=getuid(), euid=geteuid();
