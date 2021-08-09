@@ -31,6 +31,7 @@
 #include <wchar.h>
 #include <signal.h>
 #include <math.h>
+#include <sys/wait.h>
 #include "menu.h"
 #include "colors.h"
 #include "config.h"
