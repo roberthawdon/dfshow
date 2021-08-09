@@ -447,6 +447,84 @@ int can_run_command(const char *cmd) {
   return 0;
 }
 
+char * commandFromPath(const char *cmd) {
+  const char *path = getenv("PATH");
+  char *outStr;
+  char *p;
+  if(strchr(cmd, '/')) {
+      outStr = malloc(strlen(cmd)+1);
+      sprintf(outStr, "%s", cmd);
+      return outStr;
+  }
+  if(!path){
+    return NULL; // something is horribly wrong...
+  }
+  outStr = malloc(strlen(path)+strlen(cmd)+3);
+  for(; *path; ++path) {
+    p = outStr;
+    for(; *path && *path!=':'; ++path,++p) {
+        *p = *path;
+    }
+    if(p==outStr) *p++='.';
+    if(p[-1]!='/') *p++='/';
+    strcpy(p, cmd);
+    if(access(outStr, X_OK)==0) {
+        return outStr;
+    }
+    if(!*path) break;
+  }
+  free(outStr);
+  return NULL;
+}
+
+int launchExternalCommand(char *cmd, char* args, ushort_t mode)
+{
+  sigset_t newMask, oldMask;
+  pid_t parent = getpid();
+  pid_t pid;
+
+  sigemptyset(&newMask);
+  sigemptyset(&oldMask);
+
+  char *arguments[] = {cmd, args, NULL};
+
+  if (mode & M_NORMAL){
+    curs_set(TRUE);
+    echo();
+    nocbreak();
+    keypad(stdscr, FALSE);
+    endwin();
+  }
+
+  pid = fork();
+  if (pid == -1){
+    // Catch error
+    return -1;
+  } else if ( pid == 0) {
+    execv(cmd, arguments);
+    _exit(EXIT_FAILURE);
+  } else if ( pid > 0 ) {
+    clear();
+    refresh();
+    int status;
+    sigaddset(&newMask, SIGWINCH);
+    sigprocmask(SIG_BLOCK, &newMask, &oldMask);
+    waitpid(pid, &status, 0);
+    sigprocmask(SIG_SETMASK, &oldMask, NULL);
+  }
+  // endwin();
+  // reset_prog_mode();
+  // clear();
+  // cbreak();
+  // noecho();
+  // curs_set(FALSE);
+  // keypad(stdscr, TRUE);
+  // refresh();
+  // initscr();
+  refreshScreen();
+  return 0;
+}
+
 void sigintHandle(int sig){
   // Does nothing
 }

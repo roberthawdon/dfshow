@@ -1552,13 +1552,14 @@ void LaunchShell()
   char c[5];
   sprintf(c, "%i", showProcesses);
   setenv("DFS_RUNNING", c, 1);
-  // clear();
+  clear();
   // def_prog_mode();
   endwin();
   // system("clear"); // Not exactly sure if I want this yet.
   // printf("\nUse 'exit' to return to Show.\n\n");
   write(STDOUT_FILENO, "\nUse 'exit' to return to Show.\n\n", 32);
   system(getenv("SHELL"));
+  // launchExternalCommand(getenv("SHELL"), NULL, M_NORMAL);
   // reset_prog_mode();
   // newterm(NULL, stderr, stdin); 
   // initscr();
@@ -1630,8 +1631,10 @@ int SendToPager(char* object)
   if (can_run_command("sf")){
     if (!useEnvPager){
       setenv("DFS_THEME_OVERRIDE", "TRUE", 1);
-      page = realloc(page, (sizeof(char) * 3));
-      sprintf(page, "sf");
+      // page = realloc(page, (sizeof(char) * 3));
+      // sprintf(page, "sf");
+      free(page);
+      page = commandFromPath("sf");
       pset = 1;
     }
   } else {
@@ -1649,20 +1652,12 @@ int SendToPager(char* object)
   if ( pset ) {
     pagerCommand = malloc(sizeof(char) * (strlen(page) + strlen(escObject) + 4));
     sprintf(pagerCommand, "%s '%s'", page, escObject);
-    free(escObject);
     if (access(object, R_OK) == 0){
-      // clear();
-      // endwin();
-      // def_prog_mode();
-      endwin();
-      e = system(pagerCommand);
-      // reset_prog_mode();
-      // initscr();
-      refreshScreen();
-      return e;
+      launchExternalCommand(page, escObject, M_NONE);
     } else {
       topLineMessage("Error: Permission denied");
     }
+    free(escObject);
     free(pagerCommand);
   } else {
     topLineMessage("Please export a PAGER environment variable to define the utility program name.");
@@ -1689,27 +1684,21 @@ int SendToEditor(char* object)
     sprintf(editor, "%s", getenv("VISUAL"));
     eset = 1;
   } else if ( can_run_command(visualPath) ) {
-    editor = realloc(editor, (sizeof(char) * (strlen(visualPath) + 1 )));
-    sprintf(editor, "%s", visualPath);
+    free(editor);
+    // editor = realloc(editor, (sizeof(char) * (strlen(visualPath) + 1 )));
+    // sprintf(editor, "%s", visualPath);
+    editor = commandFromPath(visualPath);
     eset = 1;
   }
   if ( eset ){
     editorCommand = malloc(sizeof(char) * (strlen(editor) + strlen(escObject) + 4));
     sprintf(editorCommand, "%s '%s'", editor, escObject);
-    free(escObject);
     if (access(object, R_OK) == 0){
-      clear();
-      // endwin();
-      // def_prog_mode();
-      endwin();
-      e = system(editorCommand);
-      // reset_prog_mode();
-      // initscr();
-      refreshScreen();
-      return e;
+      launchExternalCommand(editor, escObject, M_NONE);
     } else {
       topLineMessage("Error: Permission denied");
     }
+    free(escObject);
     free(editorCommand);
   } else {
     topLineMessage("Please set a valid editor utility program command in settings.");

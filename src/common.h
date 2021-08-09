@@ -2,6 +2,15 @@
 #define CONF_NAME "dfshow.conf"
 #define HOME_CONF_DIR ".dfshow"
 
+#define M_NONE 0x00
+#define M_NORMAL 0x01
+
+/* TYPE DEFINITIONS */
+typedef unsigned int uint_t;
+typedef unsigned char uchar_t;
+typedef unsigned short ushort_t;
+typedef unsigned long long ullong_t;
+
 typedef struct {
   char directories[256];
 } pathDirs;
@@ -30,5 +39,7 @@ char *str_replace(char *orig, char *rep, char *with);
 char * read_line(FILE *fin);
 void showManPage(const char * prog);
 int can_run_command(const char *cmd);
+char * commandFromPath(const char *cmd);
+int launchExternalCommand(char *cmd, char* args, ushort_t mode);
 void sigintHandle(int sig);
 int exittoshell();

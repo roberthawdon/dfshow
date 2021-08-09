@@ -762,6 +762,10 @@ void refreshScreen()
 {
   endwin();
   clear();
+  cbreak();
+  noecho();
+  curs_set(FALSE);
+  keypad(stdscr, TRUE);
   refresh();
   // newterm(NULL, stderr, stdin); 
   // initscr();
@@ -1147,7 +1151,7 @@ Valid arguments are:\n\
   }
 
   start_color();
-  cbreak(); //Added for new method
+  // cbreak(); //Added for new method
   setDefaultTheme();
   loadAppTheme(themeName);
   bkgd(COLOR_PAIR(DISPLAY_PAIR));
