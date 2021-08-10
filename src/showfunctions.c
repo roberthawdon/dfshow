@@ -1675,15 +1675,21 @@ int SendToEditor(char* object)
   int e = 0;
   char *escObject = str_replace(object, "'", "'\"'\"'");
 
-  if ( getenv("EDITOR")) {
-    editor = realloc(editor, (sizeof(char) * (strlen(getenv("EDITOR")) + 1 )));
-    sprintf(editor, "%s", getenv("EDITOR"));
-    eset = 1;
-  } else if ( getenv("VISUAL")) {
-    editor = realloc(editor, (sizeof(char) * (strlen(getenv("VISUAL")) + 1 )));
-    sprintf(editor, "%s", getenv("VISUAL"));
-    eset = 1;
-  } else if ( can_run_command(visualPath) ) {
+  if ( !eset && getenv("EDITOR")) {
+    if ( can_run_command(getenv("EDITOR"))) {
+      editor = realloc(editor, (sizeof(char) * (strlen(getenv("EDITOR")) + 1 )));
+      sprintf(editor, "%s", getenv("EDITOR"));
+      eset = 1;
+    }
+  }
+  if ( !eset && getenv("VISUAL")) {
+    if ( can_run_command(getenv("VISUAL"))) {
+      editor = realloc(editor, (sizeof(char) * (strlen(getenv("VISUAL")) + 1 )));
+      sprintf(editor, "%s", getenv("VISUAL"));
+      eset = 1;
+    }
+  }
+  if ( !eset && can_run_command(visualPath) ) {
     free(editor);
     // editor = realloc(editor, (sizeof(char) * (strlen(visualPath) + 1 )));
     // sprintf(editor, "%s", visualPath);
