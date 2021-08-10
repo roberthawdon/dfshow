@@ -1643,8 +1643,9 @@ int SendToPager(char* object)
 
   if (useEnvPager){
     if ( getenv("PAGER")) {
-      page = realloc(page, (sizeof(char) * (strlen(getenv("PAGER")) + 1)));
-      sprintf(page, "%s", getenv("PAGER"));
+      // page = realloc(page, (sizeof(char) * (strlen(getenv("PAGER")) + 1)));
+      // sprintf(page, "%s", getenv("PAGER"));
+      page = commandFromPath(getenv("PAGER"));
       pset = 1;
     }
   }
@@ -1677,22 +1678,18 @@ int SendToEditor(char* object)
 
   if ( !eset && getenv("EDITOR")) {
     if ( can_run_command(getenv("EDITOR"))) {
-      editor = realloc(editor, (sizeof(char) * (strlen(getenv("EDITOR")) + 1 )));
-      sprintf(editor, "%s", getenv("EDITOR"));
+      editor = commandFromPath(getenv("EDITOR"));
       eset = 1;
     }
   }
   if ( !eset && getenv("VISUAL")) {
     if ( can_run_command(getenv("VISUAL"))) {
-      editor = realloc(editor, (sizeof(char) * (strlen(getenv("VISUAL")) + 1 )));
-      sprintf(editor, "%s", getenv("VISUAL"));
+      editor = commandFromPath(getenv("VISUAL"));
       eset = 1;
     }
   }
   if ( !eset && can_run_command(visualPath) ) {
     free(editor);
-    // editor = realloc(editor, (sizeof(char) * (strlen(visualPath) + 1 )));
-    // sprintf(editor, "%s", visualPath);
     editor = commandFromPath(visualPath);
     eset = 1;
   }
