@@ -63,6 +63,7 @@ int launchThemeEditor = 0;
 int launchSettingsMenu = 0;
 int oneLine = 0;
 int skipToFirstFile = 0;
+bool useDefinedEditor = 0;
 
 bool dirOnly = 0;
 bool scaleSize = 0;
@@ -283,6 +284,13 @@ void readConfig(const char * confFile)
           dirOnly = 1;
         }
       }
+      // Check use defined editor
+      setting = config_setting_get_member(group, "defined-editor");
+      if (setting){
+        if (config_setting_get_int(setting)){
+          useDefinedEditor = 1;
+        }
+      }
       // Check visualPath
       setting = config_setting_get_member(group, "visualPath");
       if (setting){
@@ -381,6 +389,8 @@ void saveConfig(const char * confFile, settingIndex **settings, t1CharValues **v
         config_setting_set_int(setting, dirOnly);
       } else if (!strcmp((*settings)[i].refLabel, "sizeblocks")){
         config_setting_set_int(setting, showSizeBlocks);
+      } else if (!strcmp((*settings)[i].refLabel, "defined-editor")){
+        config_setting_set_int(setting, useDefinedEditor);
       }
     } else if ((*settings)[i].type == SETTING_SELECT){
       //
@@ -465,6 +475,8 @@ void applySettings(settingIndex **settings, t1CharValues **values, int items, in
       dirOnly = (*settings)[i].intSetting;
     } else if (!strcmp((*settings)[i].refLabel, "sizeblocks")){
       showSizeBlocks = (*settings)[i].intSetting;
+    } else if (!strcmp((*settings)[i].refLabel, "defined-editor")){
+      useDefinedEditor = (*settings)[i].intSetting;
     } else if (!strcmp((*settings)[i].refLabel, "visualPath")){
       free(visualPath);
       visualPath = calloc((strlen((*settings)[i].charSetting) + 1), sizeof(char));
@@ -539,6 +551,7 @@ void settingsMenuView(){
 #endif
   importSetting(&settingIndex, &items, "only-dirs",      L"Display only directories", SETTING_BOOL, NULL, dirOnly, -1, 0);
   importSetting(&settingIndex, &items, "sizeblocks",     L"Show allocated size in blocks", SETTING_BOOL, NULL, showSizeBlocks, -1, 0);
+  importSetting(&settingIndex, &items, "defined-editor", L"Override default editor", SETTING_BOOL, NULL, useDefinedEditor, -1, 0);
   importSetting(&settingIndex, &items, "visualPath",     L"Editor utility program command", SETTING_FREE, visualPath, -1, -1, 0);
 
   populateBool(&binValues, "owner", ogavis, binValuesCount);

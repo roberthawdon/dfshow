@@ -189,6 +189,7 @@ extern int showXAttrs;
 extern int showAcls;
 extern bool dirOnly;
 extern bool scaleSize;
+extern bool useDefinedEditor;
 extern char * visualPath;
 
 extern char sortmode[9];
@@ -1676,13 +1677,13 @@ int SendToEditor(char* object)
   int e = 0;
   char *escObject = str_replace(object, "'", "'\"'\"'");
 
-  if ( !eset && getenv("EDITOR")) {
+  if ( !eset && getenv("EDITOR") && !useDefinedEditor ) {
     if ( can_run_command(getenv("EDITOR"))) {
       editor = commandFromPath(getenv("EDITOR"));
       eset = 1;
     }
   }
-  if ( !eset && getenv("VISUAL")) {
+  if ( !eset && getenv("VISUAL") && !useDefinedEditor) {
     if ( can_run_command(getenv("VISUAL"))) {
       editor = commandFromPath(getenv("VISUAL"));
       eset = 1;

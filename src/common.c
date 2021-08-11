@@ -495,6 +495,9 @@ int launchExternalCommand(char *cmd, char* args, ushort_t mode)
     nocbreak();
     keypad(stdscr, FALSE);
     endwin();
+  } else if (mode & M_NONE) {
+    clear();
+    refresh();
   }
 
   pid = fork();
@@ -505,8 +508,8 @@ int launchExternalCommand(char *cmd, char* args, ushort_t mode)
     execv(cmd, arguments);
     _exit(EXIT_FAILURE);
   } else if ( pid > 0 ) {
-    clear();
-    refresh();
+    // clear();
+    // refresh();
     int status;
     sigaddset(&newMask, SIGWINCH);
     sigprocmask(SIG_BLOCK, &newMask, &oldMask);
