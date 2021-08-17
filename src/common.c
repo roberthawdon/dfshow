@@ -456,7 +456,9 @@ char * commandFromPath(const char *cmd) {
   char *outStr;
   char *p;
   if (cmd[0] == '\0'){
-    return NULL;
+    outStr = malloc(sizeof(char) + 1);
+    outStr[0] = '\0';
+    return outStr;
   }
   if(strchr(cmd, '/')) {
       free(outStr);
