@@ -1658,15 +1658,14 @@ int SendToPager(char* object)
       char *args[countArguments(pagerCommand)];
       buildCommandArguments(pagerCommand, args, countArguments(pagerCommand));
       launchExternalCommand(args[0], args, M_NONE);
-      free(escObject);
-      free(pagerCommand);
     } else {
       topLineMessage("Please export a PAGER environment variable to define the utility program name.");
     }
-    free(page);
-    } else {
-      topLineMessage("Error: Permission denied");
-    }
+  } else {
+    topLineMessage("Error: Permission denied");
+  }
+  free(pagerCommand);
+  free(page);
   return 0;
 }
 
@@ -1720,7 +1719,6 @@ int SendToEditor(char* object)
       char *args[countArguments(editorCommand)];
       buildCommandArguments(editorCommand, args, countArguments(editorCommand));
       launchExternalCommand(args[0], args, M_NONE);
-      free(escObject);
       free(editorCommand);
     } else {
       topLineMessage("Please set a valid editor utility program command in settings.");
