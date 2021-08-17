@@ -423,6 +423,9 @@ int can_run_command(const char *cmd) {
   const char *path = getenv("PATH");
   char *buf;
   char *p;
+  if(cmd[0] == '\0'){
+    return 0;
+  }
   if(strchr(cmd, '/')) {
       return access(cmd, X_OK)==0;
   }
@@ -452,7 +455,11 @@ char * commandFromPath(const char *cmd) {
   const char *path = getenv("PATH");
   char *outStr;
   char *p;
+  if (cmd[0] == '\0'){
+    return NULL;
+  }
   if(strchr(cmd, '/')) {
+      free(outStr);
       outStr = malloc(strlen(cmd)+1);
       sprintf(outStr, "%s", cmd);
       return outStr;
@@ -475,19 +482,110 @@ char * commandFromPath(const char *cmd) {
     if(!*path) break;
   }
   free(outStr);
-  return NULL;
+  outStr = malloc(sizeof(char) + 1);
+  outStr[0] = '\0';
+  return outStr;
 }
 
-int launchExternalCommand(char *cmd, char* args, ushort_t mode)
+int countArguments(const char *cmd)
+{
+  int i, cmdLen, countArgs;
+  bool reset = true;
+
+  // Getting the length of the input
+  cmdLen = strlen(cmd);
+
+  countArgs = 1;
+
+  // First sweep to get the number of args, and length
+  for (i = 0; i < (cmdLen); i++){
+    if (cmd[i] == ' '){
+      if (!reset){
+        countArgs++;
+      }
+      reset = true;
+    } else {
+      reset = false;
+    }
+  }
+
+  return countArgs;
+
+}
+
+void buildCommandArguments(const char *cmd, char **args, size_t items)
+{
+  int j, k, cmdLen, countArgs;
+  int i, itemCount, argCharCount;
+  int cmdPos = 0;
+  int cmdOffset = 0;
+  int* itemLen = (int*) malloc(items * sizeof(int));
+  int* itemLen_copy = itemLen;
+  bool reset = true;
+  char *tempStr;
+
+  // Getting the length of the input
+  cmdLen = strlen(cmd);
+
+  // endwin();
+  // First sweep to get the number of args, and length
+  itemCount = 0;
+  argCharCount = 0;
+  itemLen[0] = 0;
+  for (i = 0; i < (cmdLen); i++){
+    if (cmd[i] == ' '){
+      if (!reset){
+        itemCount++;
+        argCharCount = 0;
+      }
+      reset = true;
+    } else {
+      argCharCount++;
+      // printf("Item: %i - CharCount %i\n", itemCount, argCharCount);
+      itemLen[itemCount] = argCharCount;
+      // printf("ItemCharCount for item %i: %i\n", itemCount, itemLen[itemCount]);
+      reset = false;
+    }
+  }
+
+  // We need one more as the last argument MUST be NULL
+  countArgs++;
+
+  for (i = 0; i < (itemCount + 1); i++){
+    tempStr = calloc(itemLen[i] + 1, sizeof(char));
+    args[i] = calloc(itemLen[i] + 1, sizeof(char));
+    for (k = 0; k < itemLen[i]; k++){
+      checkBlank:
+      if (cmd[cmdPos + cmdOffset + k] == ' ' && k == 0){
+        cmdOffset++;
+        goto checkBlank;
+      }
+      tempStr[k] = cmd[cmdPos + cmdOffset + k]; 
+    }
+    strcpy(args[i], tempStr);
+    cmdPos += itemLen[i];
+    free(tempStr);
+  }  
+
+  args[itemCount + 1] = NULL;
+
+  free(itemLen_copy);
+  return;
+
+}
+
+int launchExternalCommand(char *cmd, char **args, ushort_t mode)
 {
   sigset_t newMask, oldMask;
   pid_t parent = getpid();
   pid_t pid;
+  int i;
 
   sigemptyset(&newMask);
   sigemptyset(&oldMask);
 
-  char *arguments[] = {cmd, args, NULL};
+  // char *arguments[] = {cmd, *args, NULL};
+
 
   if (mode & M_NORMAL){
     curs_set(TRUE);
@@ -505,7 +603,7 @@ int launchExternalCommand(char *cmd, char* args, ushort_t mode)
     // Catch error
     return -1;
   } else if ( pid == 0) {
-    execv(cmd, arguments);
+    execv(cmd, args);
     _exit(EXIT_FAILURE);
   } else if ( pid > 0 ) {
     // clear();

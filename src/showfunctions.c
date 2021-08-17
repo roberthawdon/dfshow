@@ -1629,85 +1629,107 @@ int SendToPager(char* object)
   int e = 0;
   char *escObject = str_replace(object, "'", "'\"'\"'");
 
-  if (can_run_command("sf")){
-    if (!useEnvPager){
-      setenv("DFS_THEME_OVERRIDE", "TRUE", 1);
-      // page = realloc(page, (sizeof(char) * 3));
-      // sprintf(page, "sf");
-      free(page);
-      page = commandFromPath("sf");
-      pset = 1;
+  if (access(object, R_OK) == 0){
+    if (can_run_command("sf")){
+      if (!useEnvPager){
+        setenv("DFS_THEME_OVERRIDE", "TRUE", 1);
+        // page = realloc(page, (sizeof(char) * 3));
+        // sprintf(page, "sf");
+        free(page);
+        page = commandFromPath("sf");
+        pset = 1;
+      }
+    } else {
+      useEnvPager = 1;
     }
-  } else {
-    useEnvPager = 1;
-  }
-
-  if (useEnvPager){
-    if ( getenv("PAGER")) {
-      // page = realloc(page, (sizeof(char) * (strlen(getenv("PAGER")) + 1)));
-      // sprintf(page, "%s", getenv("PAGER"));
-      page = commandFromPath(getenv("PAGER"));
-      pset = 1;
+  
+    if (useEnvPager){
+      if ( getenv("PAGER")) {
+        // page = realloc(page, (sizeof(char) * (strlen(getenv("PAGER")) + 1)));
+        // sprintf(page, "%s", getenv("PAGER"));
+        page = commandFromPath(getenv("PAGER"));
+        pset = 1;
+      }
     }
-  }
-
-  if ( pset ) {
-    pagerCommand = malloc(sizeof(char) * (strlen(page) + strlen(escObject) + 4));
-    sprintf(pagerCommand, "%s '%s'", page, escObject);
-    if (access(object, R_OK) == 0){
-      launchExternalCommand(page, escObject, M_NONE);
+  
+    if ( pset ) {
+      pagerCommand = malloc(sizeof(char) * (strlen(page) + strlen(escObject) + 4));
+      sprintf(pagerCommand, "%s %s", page, escObject);
+      char *args[countArguments(pagerCommand)];
+      buildCommandArguments(pagerCommand, args, countArguments(pagerCommand));
+      launchExternalCommand(args[0], args, M_NONE);
+      free(escObject);
+      free(pagerCommand);
+    } else {
+      topLineMessage("Please export a PAGER environment variable to define the utility program name.");
+    }
+    free(page);
     } else {
       topLineMessage("Error: Permission denied");
     }
-    free(escObject);
-    free(pagerCommand);
-  } else {
-    topLineMessage("Please export a PAGER environment variable to define the utility program name.");
-  }
-  free(page);
   return 0;
 }
 
 int SendToEditor(char* object)
-
 {
-  char *editor = malloc(sizeof(char) * 2);
+  // char *editor = malloc(sizeof(char) * 2);
+  char *originalCmd;
+  char *editor;
   char *editorCommand;
+  char fullCommand[2048];
   int eset = 0;
   int e = 0;
+  int editorLen, escObjectLen, fullCommandLen;
   char *escObject = str_replace(object, "'", "'\"'\"'");
+  int i;
+  int noOfArgs = 0;
 
-  if ( !eset && getenv("EDITOR") && !useDefinedEditor ) {
-    if ( can_run_command(getenv("EDITOR"))) {
-      editor = commandFromPath(getenv("EDITOR"));
-      eset = 1;
+  if (access(object, R_OK) == 0){
+    originalCmd = malloc(sizeof(char) + 1);
+    if ( !eset ) {
+      if (!useDefinedEditor){
+        if (getenv("EDITOR")){
+          originalCmd = realloc(originalCmd, sizeof(char) * (strlen(getenv("EDITOR") + 1)));
+          strcpy(originalCmd, getenv("EDITOR"));
+        } else if (getenv("VISUAL")){
+          originalCmd = realloc(originalCmd, sizeof(char) * (strlen(getenv("VISUAL") + 1)));
+          strcpy(originalCmd, getenv("VISUAL"));
+        }
+          noOfArgs = countArguments(originalCmd);
+      } else {
+        originalCmd = realloc(originalCmd, sizeof(char) * (strlen(visualPath) + 1));
+        strcpy(originalCmd, visualPath);
+        noOfArgs = countArguments(originalCmd);
+      }
+      char *launchCommand[countArguments(originalCmd)];
+      buildCommandArguments(originalCmd, launchCommand, countArguments(originalCmd));
+      editor = commandFromPath(launchCommand[0]);
+      if (can_run_command(editor)){
+        sprintf(fullCommand, "%s", editor);
+        for (i = 1; i < (countArguments(originalCmd)); i++){
+          sprintf(fullCommand, "%s %s", fullCommand, launchCommand[i]);
+        }
+        eset = 1;
+      }
     }
-  }
-  if ( !eset && getenv("VISUAL") && !useDefinedEditor) {
-    if ( can_run_command(getenv("VISUAL"))) {
-      editor = commandFromPath(getenv("VISUAL"));
-      eset = 1;
-    }
-  }
-  if ( !eset && can_run_command(visualPath) ) {
-    free(editor);
-    editor = commandFromPath(visualPath);
-    eset = 1;
-  }
-  if ( eset ){
-    editorCommand = malloc(sizeof(char) * (strlen(editor) + strlen(escObject) + 4));
-    sprintf(editorCommand, "%s '%s'", editor, escObject);
-    if (access(object, R_OK) == 0){
-      launchExternalCommand(editor, escObject, M_NONE);
+    if ( eset ){
+      fullCommandLen = strlen(fullCommand);
+      escObjectLen = strlen(escObject);
+      editorCommand = malloc(sizeof(char) * (fullCommandLen + escObjectLen + 4));
+      sprintf(editorCommand, "%s %s", fullCommand, escObject);
+      char *args[countArguments(editorCommand)];
+      buildCommandArguments(editorCommand, args, countArguments(editorCommand));
+      launchExternalCommand(args[0], args, M_NONE);
+      free(escObject);
+      free(editorCommand);
     } else {
-      topLineMessage("Error: Permission denied");
+      topLineMessage("Please set a valid editor utility program command in settings.");
     }
-    free(escObject);
-    free(editorCommand);
+    free(originalCmd);
+    free(editor);
   } else {
-    topLineMessage("Please set a valid editor utility program command in settings.");
+    topLineMessage("Error: Permission denied");
   }
-  free(editor);
   return 0;
 }
 
