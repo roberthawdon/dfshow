@@ -552,7 +552,6 @@ void buildCommandArguments(const char *cmd, char **args, size_t items)
       } else {
         quote = false;
       }
-      argCharCount++;
     }
     if (cmd[i] == ' '){
       if (!quote){
@@ -561,7 +560,11 @@ void buildCommandArguments(const char *cmd, char **args, size_t items)
           argCharCount = 0;
         }
         reset = true;
+      } else {
+        argCharCount++;
       }
+    } else if (cmd[i] == '\'') {
+      // Skip
     } else {
       argCharCount++;
       itemLen[itemCount] = argCharCount;
