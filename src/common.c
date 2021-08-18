@@ -493,6 +493,7 @@ int countArguments(const char *cmd)
 {
   int i, cmdLen, countArgs;
   bool reset = true;
+  bool quote = false;
 
   // Getting the length of the input
   cmdLen = strlen(cmd);
@@ -501,11 +502,20 @@ int countArguments(const char *cmd)
 
   // First sweep to get the number of args, and length
   for (i = 0; i < (cmdLen); i++){
-    if (cmd[i] == ' '){
-      if (!reset){
-        countArgs++;
+    if (cmd[i] == '\''){
+      if (!quote){
+        quote = true;
+      } else {
+        quote = false;
       }
-      reset = true;
+    }
+    if (cmd[i] == ' '){
+      if (!quote){
+        if (!reset){
+          countArgs++;
+        }
+        reset = true;
+      }
     } else {
       reset = false;
     }
@@ -524,6 +534,7 @@ void buildCommandArguments(const char *cmd, char **args, size_t items)
   int* itemLen = (int*) malloc(items * sizeof(int));
   int* itemLen_copy = itemLen;
   bool reset = true;
+  bool quote = false;
   char *tempStr;
 
   // Getting the length of the input
@@ -535,17 +546,25 @@ void buildCommandArguments(const char *cmd, char **args, size_t items)
   argCharCount = 0;
   itemLen[0] = 0;
   for (i = 0; i < (cmdLen); i++){
-    if (cmd[i] == ' '){
-      if (!reset){
-        itemCount++;
-        argCharCount = 0;
+    if (cmd[i] == '\''){
+      if (!quote){
+        quote = true;
+      } else {
+        quote = false;
       }
-      reset = true;
+      argCharCount++;
+    }
+    if (cmd[i] == ' '){
+      if (!quote){
+        if (!reset){
+          itemCount++;
+          argCharCount = 0;
+        }
+        reset = true;
+      }
     } else {
       argCharCount++;
-      // printf("Item: %i - CharCount %i\n", itemCount, argCharCount);
       itemLen[itemCount] = argCharCount;
-      // printf("ItemCharCount for item %i: %i\n", itemCount, itemLen[itemCount]);
       reset = false;
     }
   }
@@ -561,6 +580,9 @@ void buildCommandArguments(const char *cmd, char **args, size_t items)
       if (cmd[cmdPos + cmdOffset + k] == ' ' && k == 0){
         cmdOffset++;
         goto checkBlank;
+      }
+      if (cmd[cmdPos + cmdOffset + k] == '\''){
+        cmdOffset++;
       }
       tempStr[k] = cmd[cmdPos + cmdOffset + k]; 
     }

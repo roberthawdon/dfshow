@@ -1654,7 +1654,7 @@ int SendToPager(char* object)
   
     if ( pset ) {
       pagerCommand = malloc(sizeof(char) * (strlen(page) + strlen(escObject) + 4));
-      sprintf(pagerCommand, "%s %s", page, escObject);
+      sprintf(pagerCommand, "%s '%s'", page, escObject);
       char *args[countArguments(pagerCommand)];
       buildCommandArguments(pagerCommand, args, countArguments(pagerCommand));
       launchExternalCommand(args[0], args, M_NONE);
@@ -1715,7 +1715,7 @@ int SendToEditor(char* object)
       fullCommandLen = strlen(fullCommand);
       escObjectLen = strlen(escObject);
       editorCommand = malloc(sizeof(char) * (fullCommandLen + escObjectLen + 4));
-      sprintf(editorCommand, "%s %s", fullCommand, escObject);
+      sprintf(editorCommand, "%s '%s'", fullCommand, escObject);
       char *args[countArguments(editorCommand)];
       buildCommandArguments(editorCommand, args, countArguments(editorCommand));
       launchExternalCommand(args[0], args, M_NONE);
