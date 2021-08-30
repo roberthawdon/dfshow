@@ -351,6 +351,13 @@ void refreshDirectory(char *sortmode, int origlineStart, int origselected, int d
       selected = findResultByName(ob, currentselectname);
 
     }
+    if (destructive == -2){
+      if (skipToFirstFile == 1 && skippable == 1){
+        selected = 2;
+      } else {
+        selected = 0;
+      }
+    }
   } else {
     if (historyref > 1){
       strcpy(currentpwd, hs[historyref - 2].path);
@@ -367,13 +374,6 @@ void refreshDirectory(char *sortmode, int origlineStart, int origselected, int d
     lineStart = hs[historyref].lineStart;
     selected = hs[historyref].selected;
     dirAbort = 0;
-  }
-  if (destructive == -2){
-    if (skipToFirstFile == 1 && skippable == 1){
-      selected = 2;
-    } else {
-      selected = 0;
-    }
   }
   // endwin();
   // printf("%i\n", selected);
