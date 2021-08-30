@@ -494,6 +494,7 @@ int countArguments(const char *cmd)
   int i, cmdLen, countArgs;
   bool reset = true;
   bool quote = false;
+  bool doubleQuote = true;
 
   // Getting the length of the input
   cmdLen = strlen(cmd);
@@ -502,7 +503,14 @@ int countArguments(const char *cmd)
 
   // First sweep to get the number of args, and length
   for (i = 0; i < (cmdLen); i++){
-    if (cmd[i] == '\''){
+    if (cmd[i] == '"'){
+      if (!doubleQuote){
+        doubleQuote = true;
+      } else {
+        doubleQuote = false;
+      }
+    }
+    if (cmd[i] == '\'' && !doubleQuote){
       if (!quote){
         quote = true;
       } else {
@@ -535,6 +543,7 @@ void buildCommandArguments(const char *cmd, char **args, size_t items)
   int* itemLen_copy = itemLen;
   bool reset = true;
   bool quote = false;
+  bool doubleQuote = false;
   char *tempStr;
 
   // Getting the length of the input
@@ -546,7 +555,14 @@ void buildCommandArguments(const char *cmd, char **args, size_t items)
   argCharCount = 0;
   itemLen[0] = 0;
   for (i = 0; i < (cmdLen); i++){
-    if (cmd[i] == '\''){
+    if (cmd[i] == '"'){
+      if (!doubleQuote){
+        doubleQuote = true;
+      } else {
+        doubleQuote = false;
+      }
+    }
+    if (cmd[i] == '\'' && !doubleQuote){
       if (!quote){
         quote = true;
       } else {
@@ -563,7 +579,9 @@ void buildCommandArguments(const char *cmd, char **args, size_t items)
       } else {
         argCharCount++;
       }
-    } else if (cmd[i] == '\'') {
+    } else if (cmd[i] == '\'' && !doubleQuote) {
+      // Skip
+    // } else if (cmd[i] == '"' && quote) {
       // Skip
     } else {
       argCharCount++;
@@ -579,12 +597,25 @@ void buildCommandArguments(const char *cmd, char **args, size_t items)
     tempStr = calloc(itemLen[i] + 1, sizeof(char));
     args[i] = calloc(itemLen[i] + 1, sizeof(char));
     for (k = 0; k < itemLen[i]; k++){
+      if ((cmdPos + cmdOffset + k) > cmdLen){
+        // Hacky workaround to avoid buffer overflow
+        break;
+      }
       checkBlank:
       if (cmd[cmdPos + cmdOffset + k] == ' ' && k == 0){
         cmdOffset++;
         goto checkBlank;
       }
-      if (cmd[cmdPos + cmdOffset + k] == '\''){
+      if (cmd[cmdPos + cmdOffset + k] == '\'' && !doubleQuote){
+        cmdOffset++;
+      }
+      if (cmd[cmdPos + cmdOffset + k] == '"'){
+        if (!doubleQuote){
+          doubleQuote = true;
+        } else {
+          doubleQuote = false;
+          cmdOffset++;
+        }
         cmdOffset++;
       }
       tempStr[k] = cmd[cmdPos + cmdOffset + k]; 

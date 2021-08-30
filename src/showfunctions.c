@@ -1656,6 +1656,9 @@ int SendToPager(char* object)
       pagerCommand = malloc(sizeof(char) * (strlen(page) + strlen(escObject) + 4));
       sprintf(pagerCommand, "%s '%s'", page, escObject);
       char *args[countArguments(pagerCommand)];
+      // endwin();
+      // printf("%s\n", pagerCommand);
+      // exit(123);
       buildCommandArguments(pagerCommand, args, countArguments(pagerCommand));
       launchExternalCommand(args[0], args, M_NONE);
       free(pagerCommand);
