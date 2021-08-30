@@ -1658,13 +1658,13 @@ int SendToPager(char* object)
       char *args[countArguments(pagerCommand)];
       buildCommandArguments(pagerCommand, args, countArguments(pagerCommand));
       launchExternalCommand(args[0], args, M_NONE);
+      free(pagerCommand);
     } else {
       topLineMessage("Please export a PAGER environment variable to define the utility program name.");
     }
   } else {
     topLineMessage("Error: Permission denied");
   }
-  free(pagerCommand);
   free(page);
   return 0;
 }
