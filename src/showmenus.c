@@ -1768,7 +1768,7 @@ void directory_view_menu_inputs()
       } else if (*pc == menuHotkeyLookup(functionMenu, "f_04", functionMenuSize)){
         clear_workspace();
         selected = totalfilecount - 1;
-        if (totalfilecount > bottomFileRef){
+        if ((totalfilecount - 1 ) > bottomFileRef){
           lineStart = listLen - displaysize;
         } else {
           lineStart = 0;
