@@ -39,6 +39,7 @@
 #include "input.h"
 
 char * visualPath;
+char * pagerPath;
 
 char currentpwd[4096];
 
@@ -64,6 +65,7 @@ int launchSettingsMenu = 0;
 int oneLine = 0;
 int skipToFirstFile = 0;
 bool useDefinedEditor = 0;
+bool useDefinedPager = 0;
 
 bool dirOnly = 0;
 bool scaleSize = 0;
@@ -300,6 +302,22 @@ void readConfig(const char * confFile)
         visualPath = calloc(strlen(config_setting_get_string(setting)) + 1, sizeof(char));
         strcpy(visualPath, config_setting_get_string(setting));
       }
+      // Check use defined pager
+      setting = config_setting_get_member(group, "defined-pager");
+      if (setting){
+        if (config_setting_get_int(setting)){
+          useDefinedPager = 1;
+        }
+      }
+      // Check pagerPath
+      setting = config_setting_get_member(group, "pagerPath");
+      if (setting){
+        if (pagerPath){
+          free(pagerPath);
+        }
+        pagerPath = calloc(strlen(config_setting_get_string(setting)) + 1, sizeof(char));
+        strcpy(pagerPath, config_setting_get_string(setting));
+      }
       // Check Layout
       array = config_setting_get_member(group, "layout");
       if (array){
@@ -391,6 +409,8 @@ void saveConfig(const char * confFile, settingIndex **settings, t1CharValues **v
         config_setting_set_int(setting, showSizeBlocks);
       } else if (!strcmp((*settings)[i].refLabel, "defined-editor")){
         config_setting_set_int(setting, useDefinedEditor);
+      } else if (!strcmp((*settings)[i].refLabel, "defined-pager")){
+        config_setting_set_int(setting, useDefinedPager);
       }
     } else if ((*settings)[i].type == SETTING_SELECT){
       //
@@ -417,6 +437,8 @@ void saveConfig(const char * confFile, settingIndex **settings, t1CharValues **v
     } else if ((*settings)[i].type == SETTING_FREE){
       setting = config_setting_add(group, (*settings)[i].refLabel, CONFIG_TYPE_STRING);
       if (!strcmp((*settings)[i].refLabel, "visualPath")){
+        config_setting_set_string(setting, (*settings)[i].charSetting);
+      } else if (!strcmp((*settings)[i].refLabel, "pagerPath")){
         config_setting_set_string(setting, (*settings)[i].charSetting);
       }
     }
@@ -481,6 +503,12 @@ void applySettings(settingIndex **settings, t1CharValues **values, int items, in
       free(visualPath);
       visualPath = calloc((strlen((*settings)[i].charSetting) + 1), sizeof(char));
       sprintf(visualPath, "%s", (*settings)[i].charSetting);
+    } else if (!strcmp((*settings)[i].refLabel, "defined-pager")){
+      useDefinedPager = (*settings)[i].intSetting;
+    } else if (!strcmp((*settings)[i].refLabel, "pagerPath")){
+      free(pagerPath);
+      pagerPath = calloc((strlen((*settings)[i].charSetting) + 1), sizeof(char));
+      sprintf(pagerPath, "%s", (*settings)[i].charSetting);
     }
   }
 }
@@ -553,6 +581,8 @@ void settingsMenuView(){
   importSetting(&settingIndex, &items, "sizeblocks",     L"Show allocated size in blocks", SETTING_BOOL, NULL, showSizeBlocks, -1, 0);
   importSetting(&settingIndex, &items, "defined-editor", L"Override default editor", SETTING_BOOL, NULL, useDefinedEditor, -1, 0);
   importSetting(&settingIndex, &items, "visualPath",     L"Editor utility program command", SETTING_FREE, visualPath, -1, -1, 0);
+  importSetting(&settingIndex, &items, "defined-pager",  L"Override default pager", SETTING_BOOL, NULL, useDefinedPager, -1, 0);
+  importSetting(&settingIndex, &items, "pagerPath",      L"Pager utility program command", SETTING_FREE, pagerPath, -1, -1, 0);
 
   populateBool(&binValues, "owner", ogavis, binValuesCount);
 
@@ -908,9 +938,13 @@ int main(int argc, char *argv[])
 
   // Setting the default editor
   visualPath = calloc(3, sizeof(char));
-  sprintf(visualPath, "%s", "vi");
+  sprintf(visualPath, "vi");
   // visualPath = calloc(19, sizeof(char));
   // sprintf(visualPath, "%s", "/usr/local/bin/vim");
+
+  // Setting the default pager (when not using SF)
+  pagerPath = calloc(5, sizeof(char));
+  sprintf(pagerPath, "more");
 
   showProcesses = checkRunningEnv() + 1;
 

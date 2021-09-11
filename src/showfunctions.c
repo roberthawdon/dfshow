@@ -190,7 +190,9 @@ extern int showAcls;
 extern bool dirOnly;
 extern bool scaleSize;
 extern bool useDefinedEditor;
+extern bool useDefinedPager;
 extern char * visualPath;
+extern char * pagerPath;
 
 extern char sortmode[9];
 
@@ -1623,20 +1625,29 @@ void delete_file(char *source_input)
 
 int SendToPager(char* object)
 {
-  char *page = malloc(sizeof(char) * 2);
+  char *originalCmd;
+  char *page;
   char *pagerCommand;
+  char fullCommand[2048];
   int pset = 0;
   int e = 0;
+  int i;
+  int pageLen, escObjectLen, fullCommandLen;
   char *escObject = str_replace(object, "'", "'\"'\"'");
+  int noOfArgs = 0;
 
   if (access(object, R_OK) == 0){
+    originalCmd = malloc(sizeof(char) + 1);
     if (can_run_command("sf")){
       if (!useEnvPager){
         setenv("DFS_THEME_OVERRIDE", "TRUE", 1);
+        originalCmd = realloc(originalCmd, sizeof(char) * 3);
+        strcpy(originalCmd, "sf");
+        noOfArgs = countArguments(originalCmd);
         // page = realloc(page, (sizeof(char) * 3));
         // sprintf(page, "sf");
-        free(page);
-        page = commandFromPath("sf");
+        // free(page);
+        // page = commandFromPath("sf");
         pset = 1;
       }
     } else {
@@ -1644,17 +1655,39 @@ int SendToPager(char* object)
     }
   
     if (useEnvPager){
-      if ( getenv("PAGER")) {
-        // page = realloc(page, (sizeof(char) * (strlen(getenv("PAGER")) + 1)));
-        // sprintf(page, "%s", getenv("PAGER"));
-        page = commandFromPath(getenv("PAGER"));
-        pset = 1;
+      if (!useDefinedPager){
+        if ( getenv("PAGER")) {
+          originalCmd = realloc(originalCmd, sizeof(char) * (strlen(getenv("PAGER") + 1)));
+          strcpy(originalCmd, getenv("PAGER"));
+          noOfArgs = countArguments(originalCmd);
+          // page = realloc(page, (sizeof(char) * (strlen(getenv("PAGER")) + 1)));
+          // sprintf(page, "%s", getenv("PAGER"));
+          // page = commandFromPath(getenv("PAGER"));
+          // pset = 1;
+        }
+      } else {
+        originalCmd = realloc(originalCmd, sizeof(char) * (strlen(pagerPath) + 1));
+        strcpy(originalCmd, pagerPath);
+        noOfArgs = countArguments(originalCmd);
       }
     }
   
+    char *launchCommand[noOfArgs];
+    buildCommandArguments(originalCmd, launchCommand, noOfArgs);
+    page = commandFromPath(launchCommand[0]);
+    if (can_run_command(page)){
+      sprintf(fullCommand, "%s", page);
+      for (i = 1; i < noOfArgs; i++){
+        sprintf(fullCommand, "%s %s", fullCommand, launchCommand[i]);
+      }
+      pset = 1;
+    }
+
     if ( pset ) {
-      pagerCommand = malloc(sizeof(char) * (strlen(page) + strlen(escObject) + 4));
-      sprintf(pagerCommand, "%s '%s'", page, escObject);
+      fullCommandLen = strlen(fullCommand);
+      escObjectLen = strlen(escObject);
+      pagerCommand = malloc(sizeof(char) * (fullCommandLen + escObjectLen + 4));
+      sprintf(pagerCommand, "%s '%s'", fullCommand, escObject);
       char *args[countArguments(pagerCommand)];
       // endwin();
       // printf("%s\n", pagerCommand);
@@ -1665,10 +1698,11 @@ int SendToPager(char* object)
     } else {
       topLineMessage("Please export a PAGER environment variable to define the utility program name.");
     }
+    // free(originalCmd);
+    free(page);
   } else {
     topLineMessage("Error: Permission denied");
   }
-  free(page);
   return 0;
 }
 
@@ -1693,22 +1727,23 @@ int SendToEditor(char* object)
         if (getenv("EDITOR")){
           originalCmd = realloc(originalCmd, sizeof(char) * (strlen(getenv("EDITOR") + 1)));
           strcpy(originalCmd, getenv("EDITOR"));
+          noOfArgs = countArguments(originalCmd);
         } else if (getenv("VISUAL")){
           originalCmd = realloc(originalCmd, sizeof(char) * (strlen(getenv("VISUAL") + 1)));
           strcpy(originalCmd, getenv("VISUAL"));
-        }
           noOfArgs = countArguments(originalCmd);
+        }
       } else {
         originalCmd = realloc(originalCmd, sizeof(char) * (strlen(visualPath) + 1));
         strcpy(originalCmd, visualPath);
         noOfArgs = countArguments(originalCmd);
       }
-      char *launchCommand[countArguments(originalCmd)];
-      buildCommandArguments(originalCmd, launchCommand, countArguments(originalCmd));
+      char *launchCommand[noOfArgs];
+      buildCommandArguments(originalCmd, launchCommand, noOfArgs);
       editor = commandFromPath(launchCommand[0]);
       if (can_run_command(editor)){
         sprintf(fullCommand, "%s", editor);
-        for (i = 1; i < (countArguments(originalCmd)); i++){
+        for (i = 1; i < noOfArgs; i++){
           sprintf(fullCommand, "%s %s", fullCommand, launchCommand[i]);
         }
         eset = 1;
