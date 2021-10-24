@@ -27,6 +27,8 @@
 #include <signal.h>
 #include <getopt.h>
 #include <libconfig.h>
+#include <ctype.h>
+#include <math.h>
 #include "config.h"
 #include "showfunctions.h"
 #include "showmenus.h"
@@ -782,19 +784,85 @@ int setColor(char* colorinput)
 
 int setBlockSize(const char * arg){
     char *endptr;
-    int numarg;
-    int returnCode = 1;
+    size_t numarg;
+    int returnCode = 0;
+    int multiplier = 1;
+    int power = 1;
+    int powerUnit = 1024;
 
-    numarg = strtol(arg, &endptr, 10);
+    int i1 = 1;
+    signed char c1;
+    signed char e1 = 0;
+    signed char e2 = 0;
 
-    if (*endptr != '\0' || endptr == arg) {
-      returnCode = 1;
+    if ( isdigit(arg[0]) ){
+      sscanf(arg, "%d%1c%1c%1c", &i1, &c1, &e1, &e2);
     } else {
-      if (numarg < 1){
+      sscanf(arg, "%1c%1c%1c", &c1, &e1, &e2);
+    }
+
+    if ( e1 == 66 || e1 == 98){
+      powerUnit = 1000;
+    } else if ( e1 != 0){
+      returnCode = 1;
+    }
+
+    if ( e2 != 0 ){
+      returnCode = 1;
+    }
+
+    // Deal with humans using lowercase
+    if ((c1 < 123) && (c1 > 96)){
+      c1 = c1 - 32;
+    }
+
+    switch (c1){
+      case 'K':
+        power = 1;
+        break;
+      case 'M':
+        power = 2;
+        break;
+      case 'G':
+        power = 3;
+        break;
+      case 'T':
+        power = 4;
+        break;
+      case 'P':
+        power = 5;
+        break;
+      case 'E':
+        power = 6;
+        break;
+      case 'Z':
+        power = 7;
+        break;
+      case 'Y':
+        power = 8;
+        break;
+      case '\0':
+        power = 0;
+        break;
+      default:
+        returnCode = 1;
+        break;
+    }
+
+    multiplier = pow(powerUnit, power);
+
+    // numarg = strtol(arg, &endptr, 10);
+    numarg = i1 * multiplier;
+    if (returnCode != 1){
+      if (*endptr != '\0' || endptr == arg) {
         returnCode = 1;
       } else {
-        block_size = numarg;
-        returnCode = 0;
+        if (numarg < 1){
+          returnCode = 1;
+        } else {
+          block_size = numarg;
+          returnCode = 0;
+        }
       }
     }
 
@@ -866,7 +934,8 @@ Options shared with ls:\n"), stdout);
 #endif
   fputs(("  -a, --all                    do not ignore entries starting with .\n\
       --author                 prints the author of each file\n\
-      --block-size=SIZE        scale sizes by SIZE\n\
+      --block-size=SIZE        scale sizes by SIZE, for example '--block-size=M'\n\
+                                 see SIZE format below\n\
   -B, --ignore-backups         do not list implied entries ending with ~\n\
       --color[=WHEN]           colorize the output, see the color section below\n\
   -d, --directory              show only directories\n\
@@ -887,6 +956,9 @@ Options shared with ls:\n"), stdout);
       --help                   displays help message, then exits\n\
       --version                displays version, then exits\n"), stdout);
   fputs (("\n\
+The SIZE agrument is an integer and optional unit (for example: 10K = 10*1024).\n\
+The units are K,M,G,T,P,E,Z,Y (powers of 1024) or KB,MB, etc. (powers of 1000).\n"), stdout);
+  fputs (("\n\
 The TIME_STYLE argument can be: full-iso; long-iso; iso; locale.\n"), stdout);
   fputs (("\n\
 Using color to highlight file attributes is disabled by default and with\n\
@@ -894,14 +966,14 @@ Using color to highlight file attributes is disabled by default and with\n\
   fputs (("\n\
 Options specific to show:\n\
       --theme=[THEME]          color themes, see the THEME section below for\n\
-                               valid themes\n\
+                                 valid themes\n\
       --no-danger              turns off danger colors when running with\n\
-                               elevated privileges\n\
+                                 elevated privileges\n\
       --marked=[MARKED]        shows information about marked objects. See\n\
-                               MARKED section below for valid options\n\
+                                 MARKED section below for valid options\n\
       --no-sf                  does not display files in sf\n\
       --show-on-enter          repurposes the Enter key to launch the show\n\
-                               command\n\
+                                 command\n\
       --running                display number of parent show processes\n\
       --settings-menu          launch settings menu\n\
       --edit-themes            launchs directly into the theme editor\n\
@@ -1009,7 +1081,7 @@ int main(int argc, char *argv[])
 
     switch(c){
     case 'A':
-      // Dropthourgh
+      // Dropthrough
     case 'a':
       showhidden = 1;
       break;

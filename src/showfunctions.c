@@ -692,6 +692,11 @@ void writeResultStruct(results* ob, const char * filename, struct stat buffer, i
   // ob[count].sizeBlocks = buffer.st_blocks;
   ob[count].sizeBlocks = (buffer.st_blocks * 512) / block_size;
 
+  // Hacky workaround to show a size of 1 if the size is negligible
+  if ( (ob[count].sizeBlocks == 0) && ((buffer.st_blocks * 512) != 0)) {
+    ob[count].sizeBlocks = 1;
+  } 
+
   if (S_ISCHR(buffer.st_mode) || S_ISBLK(buffer.st_mode)){
     ob[count].major = major(buffer.st_rdev);
     ob[count].minor = minor(buffer.st_rdev);
