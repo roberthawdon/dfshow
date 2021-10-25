@@ -1768,7 +1768,7 @@ int SendToEditor(char* object)
     } else {
       topLineMessage("Please set a valid editor utility program command in settings.");
     }
-    free(originalCmd);
+    // free(originalCmd);
     free(editor);
   } else {
     topLineMessage("Error: Permission denied");
