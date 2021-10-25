@@ -645,14 +645,14 @@ int launchExternalCommand(char *cmd, char **args, ushort_t mode)
   // char *arguments[] = {cmd, *args, NULL};
 
 
-  if (mode & M_NORMAL){
+  if (mode == M_NORMAL){
     curs_set(TRUE);
     echo();
     nocbreak();
     keypad(stdscr, FALSE);
     endwin();
-  } else if (mode & M_NONE) {
-    clear();
+  } else if (mode == M_NONE) {
+    erase();
     refresh();
   }
 
