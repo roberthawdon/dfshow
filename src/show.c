@@ -96,6 +96,8 @@ int block_size = 512;
 
 char *objectWild;
 
+char block_unit[4] = "\0\0\0\0";
+
 results *ob;
 
 int segOrder[9] = {COL_MARK, COL_SIZEBLOCKS, COL_ATTR, COL_HLINK, COL_OWNER, COL_CONTEXT, COL_SIZE, COL_DATE, COL_NAME};
@@ -815,6 +817,9 @@ int setBlockSize(const char * arg){
     if ((c1 < 123) && (c1 > 96)){
       c1 = c1 - 32;
     }
+
+    block_unit[0] = c1;
+    block_unit[1] = e1;
 
     switch (c1){
       case 'K':

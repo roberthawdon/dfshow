@@ -158,6 +158,8 @@ int visibleOffset;
 int listLen;
 entryLines *el;
 
+extern char block_unit[4];
+
 extern DIR *folder;
 
 extern int segOrder[9];
@@ -1146,8 +1148,8 @@ void printEntry(int start, int hlinklen, int sizeblocklen, int ownerlen, int gro
     } else {
       sizeBlocksSegmentLen = sizeblocklen;
     }
-    sizeBlocksString = malloc(sizeof(char) * (sizeBlocksSegmentLen + 1));
-    sprintf(sizeBlocksString, "%s", sizeblocksstr);
+    sizeBlocksString = malloc(sizeof(char) * (sizeBlocksSegmentLen + 1 + strlen(block_unit)));
+    sprintf(sizeBlocksString, "%s%s", sizeblocksstr, block_unit);
     sizeBlocksSegment = writeSegment(sizeBlocksSegmentLen, sizeBlocksString, RIGHT);
   } else {
     sizeBlocksSegmentLen = 1;
@@ -1178,9 +1180,9 @@ void printEntry(int start, int hlinklen, int sizeblocklen, int ownerlen, int gro
       sizestring = malloc (sizeof (char) * 10);
       readableSize(ob[currentitem].size, sizestring, si);
     } else {
-      sizestring = malloc (sizeof (char) * (sizelen + 1));
+      sizestring = malloc (sizeof (char) * (sizelen + 1 + strlen(block_unit)));
       if (scaleSize){
-        sprintf(sizestring, "%lu", (ob[currentitem].size / block_size + 1));
+        sprintf(sizestring, "%lu%s", (ob[currentitem].size / block_size + 1), block_unit);
       } else {
         sprintf(sizestring, "%lu", ob[currentitem].size);
       }
