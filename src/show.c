@@ -785,7 +785,6 @@ int setColor(char* colorinput)
 }
 
 int setBlockSize(const char * arg){
-    char *endptr;
     size_t numarg;
     int returnCode = 0;
     int multiplier = 1;
@@ -856,18 +855,13 @@ int setBlockSize(const char * arg){
 
     multiplier = pow(powerUnit, power);
 
-    // numarg = strtol(arg, &endptr, 10);
     numarg = i1 * multiplier;
     if (returnCode != 1){
-      if (*endptr != '\0' || endptr == arg) {
+      if (numarg < 1){
         returnCode = 1;
       } else {
-        if (numarg < 1){
-          returnCode = 1;
-        } else {
-          block_size = numarg;
-          returnCode = 0;
-        }
+        block_size = numarg;
+        returnCode = 0;
       }
     }
 
