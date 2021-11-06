@@ -1703,7 +1703,7 @@ int SendToPager(char* object)
       launchExternalCommand(args[0], args, M_NONE);
       free(pagerCommand);
     } else {
-      topLineMessage("Please export a PAGER environment variable to define the utility program name.");
+      topLineMessage("Please set a valid pager utility program command in settings.");
     }
     // free(originalCmd);
     free(page);
