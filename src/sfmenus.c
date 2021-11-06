@@ -151,8 +151,6 @@ int show_file_find_case_input()
   int result;
   move(0,0);
   clrtoeol();
-  // printMenu(0,0,"!Ignore-case !Case-sensitive !Regular-expression (enter = I)");
-  // printMenu(0,0,"!Ignore-case !Case-sensitive (enter = I)");
   wPrintMenu(0,0,caseMenuLabel);
   while(1)
     {

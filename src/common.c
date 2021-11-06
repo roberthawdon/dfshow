@@ -579,10 +579,6 @@ void buildCommandArguments(const char *cmd, char **args, size_t items)
       } else {
         argCharCount++;
       }
-    } else if (cmd[i] == '\'' && !doubleQuote) {
-      // Skip
-    // } else if (cmd[i] == '"' && quote) {
-      // Skip
     } else {
       argCharCount++;
       itemLen[itemCount] = argCharCount;
@@ -664,23 +660,12 @@ int launchExternalCommand(char *cmd, char **args, ushort_t mode)
     execv(cmd, args);
     _exit(EXIT_FAILURE);
   } else if ( pid > 0 ) {
-    // clear();
-    // refresh();
     int status;
     sigaddset(&newMask, SIGWINCH);
     sigprocmask(SIG_BLOCK, &newMask, &oldMask);
     waitpid(pid, &status, 0);
     sigprocmask(SIG_SETMASK, &oldMask, NULL);
   }
-  // endwin();
-  // reset_prog_mode();
-  // clear();
-  // cbreak();
-  // noecho();
-  // curs_set(FALSE);
-  // keypad(stdscr, TRUE);
-  // refresh();
-  // initscr();
   refreshScreen();
   return 0;
 }

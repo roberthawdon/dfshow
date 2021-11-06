@@ -369,15 +369,11 @@ void refreshDirectory(char *sortmode, int origlineStart, int origselected, int d
       global_menu();
     }
   }
-  // topfileref = sanitizeTopFileRef(origtopfileref);
   if (dirAbort == 1){
     lineStart = hs[historyref].lineStart;
     selected = hs[historyref].selected;
     dirAbort = 0;
   }
-  // endwin();
-  // printf("%i\n", selected);
-  // exit(123);
   if (selected == -1){
     if (skipToFirstFile == 1 && skippable == 1){
       selected = 2;
@@ -423,9 +419,6 @@ void show_directory_input()
       strcpy(currentpwd, rewrite);
       free(rewrite);
     }
-    // if (!check_dir(currentpwd)){
-    //   global_menu();
-    // }
     if (check_object(currentpwd) == 1){
       if ( invalidstart ){
         // invalidstart = 0;
@@ -729,7 +722,6 @@ void make_directory_input()
   move(0,0);
   clrtoeol();
   mvprintw(0, 0, "Make Directory - Enter pathname:");
-  // curs_set(TRUE);
   move (0,33);
   if (!check_last_char(currentpwd, "/")){
     strcat(currentpwd, "/");
@@ -759,7 +751,6 @@ void make_directory_input()
         topLineMessage(errmessage);
       }
     }
-    // curs_set(FALSE);
   testSlash:
     if (check_last_char(currentpwd, "/") && strcmp(currentpwd, "/")){
       currentpwd[strlen(currentpwd) - 1] = '\0';
@@ -789,7 +780,6 @@ time_t touchTimeInput(int type)
   mvprintw(0,0,menuTitle);
   move(0, strlen(menuTitle) + 1);
   if (readline(charTime, 64, "") != -1){
-    // Do something
     time(&tmpTime);
     gmtime_r(&tmpTime, &localTmp);
     if (strptime(charTime, "%Y-%m-%d %H:%M:%S", &tmp) != NULL){
@@ -863,9 +853,6 @@ void touch_file_input()
     if (*pc == menuHotkeyLookup(touchDateConfirmMenu, "t_1", touchDateConfirmMenuSize)){
       setDateFlag = touchType();
       touchTime = touchTimeInput(setDateFlag);
-      //topLineMessage("TODO: Needs implementing");
-    } else {
-      // Skip
     }
     if (strcmp(touchFile, currentpwd) && strcmp(touchFile, "")){
       if (check_first_char(touchFile, "~")){
@@ -874,7 +861,6 @@ void touch_file_input()
         free(rewrite);
       }
     }
-    // Do something
   touchFile:
     if (access(dirFromPath(touchFile), W_OK) == 0) {
       if (check_object(touchFile) == 0){
@@ -990,10 +976,8 @@ void huntInput(int selected, int charcase)
   move(0,0);
   clrtoeol();
   mvprintw(0, 0, inputmessage);
-  //curs_set(TRUE);
   move(0, strlen(inputmessage) + 1);
   free(inputmessage);
-  //curs_set(FALSE);
   if (readline(regexinput, 4096, "") == -1) {
     abortinput = 1;
   } else {
@@ -1126,7 +1110,6 @@ void delete_multi_file_confirm_input(results* ob)
 
 void sort_view_inputs()
 {
-  // printMenu(0, 0, sortMenuText);
   viewMode = 3;
   while(1)
     {
@@ -1308,7 +1291,6 @@ void modify_permissions_input()
     newperm = strtol(perms, &ptr, 8); // Convert string to Octal and then store it as an int. Yay, numbers.
 
     if ( (CheckMarked(ob) > 0) ) {
-      //topLineMessage("Multi file permissions coming soon");
       for (i = 0; i < totalfilecount; i++)
         {
           if ( *ob[i].marked )
@@ -1382,7 +1364,6 @@ void linktext_input(char *file, int symbolic)
   move(0,0);
   clrtoeol();
   mvprintw(0,0,inputmessage);
-  // curs_set(TRUE);
   move(0, strlen(inputmessage) + 1);
   if (readline(target, 4096, target) != -1){
 
@@ -1496,10 +1477,7 @@ void directory_view_menu_inputs()
   while(1)
     {
       wPrintMenu(0, 0, fileMenuLabel);
-      // printMenu(LINES-1, 0, functionMenuText);
       wPrintMenu(LINES-1, 0, functionMenuLabel);
-      //signal(SIGWINCH, refreshScreen );
-      //sigaction(SIGWINCH, &sa, NULL);
       *pc = getch10th();
       if (*pc == menuHotkeyLookup(fileMenu, "f_copy", fileMenuSize)){
         if ( (CheckMarked(ob) > 0) ) {
@@ -1594,9 +1572,6 @@ void directory_view_menu_inputs()
                   selected = 0;
                 }
               }
-              // visibleObjects = hs[historyref].visibleObjects;
-              // topfileref = sanitizeTopFileRef(hs[historyref].topfileref);
-              // topfileref = hs[historyref].topfileref;
               lineStart = hs[historyref].lineStart;
               clear_workspace();
               display_dir(currentpwd, ob);
@@ -1665,7 +1640,6 @@ void directory_view_menu_inputs()
       } else if (*pc == menuHotkeyLookup(fileMenu, "f_touch", fileMenuSize)){
         e = touchType();
         // Add what to do with result.
-        // topLineMessage("TODO: Needs implementing");
         if (e > -1){
           touchTime = touchTimeInput(e);
           if (abortinput == 0) {
@@ -1943,34 +1917,12 @@ void directory_view_menu_inputs()
         display_dir(currentpwd, ob);
       // } else if (*pc == 276){
       //   // F12 Key
-      //   endwin();
-      //   printf("Debug Exit Triggered.\n\n");
-      //   printf("selected: %i\n\n", selected);
-
-      //   printf("topfileref: %i\n", topfileref);
-      //   printf("bottomFileRef: %i\n", bottomFileRef);
-      //   printf("DIFFERENCE: %i\n\n", bottomFileRef - topfileref);
-
-      //   printf("displaysize: %i\n", displaysize);
-
-      //   printf("\nTotal Files (objects): %i\n", totalfilecount);
-      //   printf("Total xattr lines: %i\n", xattrPos);
-      //   printf("Total lines: %i\n", (totalfilecount + xattrPos));
-
-      //   printf("\nBottom File Ref + 0: %i\n", el[lineStart + displaysize - 1].fileRef);
-      //   printf("Bottom File Ref + 1: %i\n", el[lineStart + displaysize].fileRef);
-
-      //   printf("\nlineStart: %i\n", lineStart);
-
-      //   printf("\nlistLen: %i\n", listLen);
-      //   exit(3);
       }
     }
 }
 void global_menu_inputs()
 {
   wPrintMenu(0,0,globalMenuLabel);
-  // printMenu(0, 0, globalMenuText);
   if (historyref == 0){
     viewMode = 4;
   } else {
@@ -1987,9 +1939,7 @@ void global_menu_inputs()
           global_menu_inputs();
         } else {
           refreshDirectory(sortmode, lineStart, selected, 0);
-          // display_dir(currentpwd, ob, topfileref, selected);
           wPrintMenu(LINES-1, 0, functionMenuLabel);
-          // printMenu(LINES-1, 0, functionMenuText); // Global menu inputs doesn't include this. Even though it isn't used.
           global_menu_inputs();
         }
       } else if (*pc == menuHotkeyLookup(globalMenu, "g_config", globalMenuSize)) {
@@ -1999,7 +1949,6 @@ void global_menu_inputs()
           global_menu_inputs();
         } else {
           refreshDirectory(sortmode, lineStart, selected, 0);
-          // display_dir(currentpwd, ob);
           wPrintMenu(LINES-1, 0, functionMenuLabel);
           global_menu_inputs();
         }
@@ -2007,9 +1956,7 @@ void global_menu_inputs()
         LaunchShell();
         if (historyref == 0){
           wPrintMenu(0,0,globalMenuLabel);
-          // printMenu(0, 0, globalMenuText);
         } else {
-          // display_dir(currentpwd, ob, topfileref, selected);
           refreshDirectory(sortmode, lineStart, selected, 1);
           directory_view_menu_inputs();
         }
@@ -2018,7 +1965,6 @@ void global_menu_inputs()
         if (historyref == 0){
           wPrintMenu(0,0,globalMenuLabel);
         } else {
-          //   display_dir(currentpwd, ob, topfileref, selected);
           refreshDirectory(sortmode, lineStart, selected, 1);
           directory_view_menu_inputs();
         }
@@ -2027,9 +1973,7 @@ void global_menu_inputs()
         refreshScreen();
         if (historyref == 0){
           wPrintMenu(0,0,globalMenuLabel);
-          // printMenu(0, 0, globalMenuText);
         } else {
-          //   display_dir(currentpwd, ob, topfileref, selected);
           directory_view_menu_inputs();
         }
       } else if (*pc == menuHotkeyLookup(globalMenu, "g_mkdir", globalMenuSize)) {
@@ -2047,8 +1991,6 @@ void global_menu_inputs()
         show_directory_input();
       } else if (*pc == menuHotkeyLookup(globalMenu, "g_touch", globalMenuSize)) {
         touch_file_input();
-        //topLineMessage("TODO: Needs implementing");
-        //wPrintMenu(0,0,globalMenuLabel);
       } else if (*pc == 27) {
         if (historyref != 0){
           directory_view_menu_inputs();

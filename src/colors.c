@@ -34,7 +34,6 @@
 #include "input.h"
 
 int lightColorPair[256];
-// int commandL, infoL, inputL, selectL, displayL, dangerL, dirL, slinkL, exeL, suidL, sgidL, hiliteL = 0;
 
 int colorThemePos = 0;
 int totalItemCount = 16;
@@ -742,8 +741,6 @@ void setDefaultTheme(){
 
 void setColors(int pair)
 {
-  // endwin();
-  // printf("CP: %i\n", pair);
   attron(COLOR_PAIR(pair));
   if (lightColorPair[pair]){
     attron(A_BOLD);
@@ -837,8 +834,6 @@ void themeBuilder()
   setColors(DEFAULT_BOLD_PAIR);
   mvprintw(22, 22, "Select 0 to F for desired %s color", fgbgLabel);
 
-  // curs_set(TRUE);
-  // move(colorThemePos + 2, 1);
   attron(A_REVERSE);
   mvprintw(colorThemePos + 2, 1, " ");
   attroff(A_REVERSE);

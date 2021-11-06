@@ -592,11 +592,6 @@ void settingsMenuView(){
 
   while(1)
     {
-      // if (settingsBinPos < 0){
-      //   curs_set(TRUE);
-      // } else {
-      //   curs_set(FALSE);
-      // }
       for (count = 0; count < items; count++){
         printSetting(2 + count, 3, &settingIndex, &charValues, &binValues, count, charValuesCount, binValuesCount, settingIndex[count].type, settingIndex[count].invert);
       }
@@ -692,12 +687,10 @@ int directory_view(char * currentpwd)
     strcpy(objectWild, "");
   }
 
-  // topfileref = 0;
   lineStart = 0;
   clear();
   setColors(COMMAND_PAIR);
 
-  // directory_top_menu();
 
   wPrintMenu(0, 0, fileMenuLabel);
 
@@ -716,11 +709,6 @@ int directory_view(char * currentpwd)
 
   display_dir(currentpwd, ob);
 
-  // function_key_menu();
-
-  //printMenu(LINES-1, 0, functionMenuText);
-  // wPrintMenu(LINES-1, 0, functionMenuLabel);
-
   refresh();
 
   directory_view_menu_inputs();
@@ -733,13 +721,8 @@ int directory_view(char * currentpwd)
 int global_menu()
 {
   clear();
-
-  // printMenu(0, 0, globalMenuText);
-
   refresh();
-
   global_menu_inputs();
-
   return 0;
 }
 
@@ -773,9 +756,6 @@ int setColor(char* colorinput)
   if (!strcmp(colorinput, "always")){
     filecolors = 1;
     return 1;
-    // } else if (!strcmp(colorinput, "auto")){
-    //   filecolors = 0; // Need to make this autodetect
-    //   return 1;
   } else if (!strcmp(colorinput, "never")){
     filecolors = 0;
     return 1;
@@ -877,9 +857,6 @@ void refreshScreen()
   curs_set(FALSE);
   keypad(stdscr, TRUE);
   refresh();
-  // newterm(NULL, stderr, stdin); 
-  // initscr();
-  //mvprintw(0,0,"%d:%d", LINES, COLS);
   unloadMenuLabels();
   refreshMenuLabels();
   switch(viewMode)
@@ -917,7 +894,6 @@ void refreshScreen()
 
 void sigwinchHandle(int sig){
   resized = 1;
-  // refreshScreen();
 }
 
 void printHelp(char* programName){
@@ -1010,10 +986,7 @@ int main(int argc, char *argv[])
   // Setting the default editor
   visualPath = calloc(3, sizeof(char));
   sprintf(visualPath, "vi");
-  // visualPath = calloc(19, sizeof(char));
-  // sprintf(visualPath, "%s", "/usr/local/bin/vim");
 
-  // Setting the default pager (when not using SF)
   pagerPath = calloc(5, sizeof(char));
   sprintf(pagerPath, "more");
 
@@ -1253,12 +1226,10 @@ Valid arguments are:\n\
 
   generateDefaultMenus();
   set_escdelay(10);
-  //ESCDELAY = 10;
 
   setlocale(LC_ALL, "");
 
   newterm(NULL, stderr, stdin); 
-  // initscr();
   refreshMenuLabels();
 
   memset(&sa, 0, sizeof(struct sigaction));
@@ -1269,12 +1240,10 @@ Valid arguments are:\n\
   }
 
   start_color();
-  // cbreak(); //Added for new method
   setDefaultTheme();
   loadAppTheme(themeName);
   bkgd(COLOR_PAIR(DISPLAY_PAIR));
   cbreak();
-  // nodelay(stdscr, TRUE);
   noecho();
   curs_set(FALSE); // Hide Curser (Will want to bring it back later)
   keypad(stdscr, TRUE);
@@ -1305,7 +1274,6 @@ Valid arguments are:\n\
     }
 
     if (!check_dir(currentpwd)){
-      //strcpy(currentpwd, "/"); // If dir doesn't exist, default to root
       invalidstart = 1;
       exitCode = 1;
       global_menu();
