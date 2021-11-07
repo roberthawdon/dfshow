@@ -1592,7 +1592,6 @@ int SendToPager(char* object)
     } else {
       topLineMessage("Please set a valid pager utility program command in settings.");
     }
-    free(page);
   } else {
     topLineMessage("Error: Permission denied");
   }
@@ -1653,7 +1652,6 @@ int SendToEditor(char* object)
     } else {
       topLineMessage("Please set a valid editor utility program command in settings.");
     }
-    free(editor);
   } else {
     topLineMessage("Error: Permission denied");
   }
