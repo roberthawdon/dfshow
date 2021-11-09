@@ -535,7 +535,7 @@ int countArguments(const char *cmd)
 
 void buildCommandArguments(const char *cmd, char **args, size_t items)
 {
-  int j, k, cmdLen, countArgs;
+  int j, k, cmdLen; // , countArgs;
   int i, itemCount, argCharCount;
   int cmdPos = 0;
   int cmdOffset = 0;
@@ -587,7 +587,7 @@ void buildCommandArguments(const char *cmd, char **args, size_t items)
   }
 
   // We need one more as the last argument MUST be NULL
-  countArgs++;
+  // countArgs++;
 
   for (i = 0; i < (itemCount + 1); i++){
     tempStr = calloc(itemLen[i] + 1, sizeof(char));
@@ -615,6 +615,9 @@ void buildCommandArguments(const char *cmd, char **args, size_t items)
         cmdOffset++;
       }
       tempStr[k] = cmd[cmdPos + cmdOffset + k]; 
+      if (k == (itemLen[i] - 1)){
+        tempStr[k + 1] = '\0';
+      }
     }
     strcpy(args[i], tempStr);
     cmdPos += itemLen[i];

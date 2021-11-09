@@ -1533,7 +1533,7 @@ int SendToPager(char* object)
   char *originalCmd;
   char *page;
   char *pagerCommand;
-  char fullCommand[2048];
+  char *fullCommand;
   int pset = 0;
   int e = 0;
   int i;
@@ -1573,8 +1573,10 @@ int SendToPager(char* object)
     buildCommandArguments(originalCmd, launchCommand, noOfArgs);
     page = commandFromPath(launchCommand[0]);
     if (can_run_command(page)){
+      fullCommand = calloc((strlen(page) + 1), sizeof(char));
       sprintf(fullCommand, "%s", page);
       for (i = 1; i < noOfArgs; i++){
+        fullCommand = realloc(fullCommand, (strlen(fullCommand) + strlen(launchCommand[i]) + 2));
         sprintf(fullCommand, "%s %s", fullCommand, launchCommand[i]);
       }
       pset = 1;
@@ -1585,6 +1587,7 @@ int SendToPager(char* object)
       escObjectLen = strlen(escObject);
       pagerCommand = malloc(sizeof(char) * (fullCommandLen + escObjectLen + 4));
       sprintf(pagerCommand, "%s '%s'", fullCommand, escObject);
+      free(fullCommand);
       char *args[countArguments(pagerCommand)];
       buildCommandArguments(pagerCommand, args, countArguments(pagerCommand));
       launchExternalCommand(args[0], args, M_NONE);
@@ -1603,10 +1606,12 @@ int SendToEditor(char* object)
   char *originalCmd;
   char *editor;
   char *editorCommand;
-  char fullCommand[2048];
+  char *fullCommand;
   int eset = 0;
   int e = 0;
-  int editorLen, escObjectLen, fullCommandLen;
+  int editorLen = 0;
+  int escObjectLen = 0;
+  int fullCommandLen = 0;
   char *escObject = str_replace(object, "'", "'\"'\"'");
   int i;
   int noOfArgs = 0;
@@ -1633,8 +1638,10 @@ int SendToEditor(char* object)
       buildCommandArguments(originalCmd, launchCommand, noOfArgs);
       editor = commandFromPath(launchCommand[0]);
       if (can_run_command(editor)){
+        fullCommand = calloc((strlen(editor) + 1), sizeof(char));
         sprintf(fullCommand, "%s", editor);
         for (i = 1; i < noOfArgs; i++){
+          fullCommand = realloc(fullCommand, (strlen(fullCommand) + strlen(launchCommand[i]) + 2));
           sprintf(fullCommand, "%s %s", fullCommand, launchCommand[i]);
         }
         eset = 1;
@@ -1645,6 +1652,7 @@ int SendToEditor(char* object)
       escObjectLen = strlen(escObject);
       editorCommand = malloc(sizeof(char) * (fullCommandLen + escObjectLen + 4));
       sprintf(editorCommand, "%s '%s'", fullCommand, escObject);
+      free(fullCommand);
       char *args[countArguments(editorCommand)];
       buildCommandArguments(editorCommand, args, countArguments(editorCommand));
       launchExternalCommand(args[0], args, M_NONE);
