@@ -1534,11 +1534,10 @@ int SendToPager(char* object)
   char *page;
   char *pagerCommand;
   char *fullCommand;
-  int pset = 0;
+  char *fullObject;
   int e = 0;
   int i;
-  int pageLen, escObjectLen, fullCommandLen;
-  char *escObject = str_replace(object, "'", "'\"'\"'");
+  char *escObject;
   int noOfArgs = 0;
 
   if (access(object, R_OK) == 0){
@@ -1549,7 +1548,6 @@ int SendToPager(char* object)
         originalCmd = realloc(originalCmd, sizeof(char) * 3);
         strcpy(originalCmd, "sf");
         noOfArgs = countArguments(originalCmd);
-        pset = 1;
       }
     } else {
       useEnvPager = 1;
@@ -1575,23 +1573,20 @@ int SendToPager(char* object)
     if (can_run_command(page)){
       fullCommand = calloc((strlen(page) + 1), sizeof(char));
       sprintf(fullCommand, "%s", page);
+      escObject = str_replace(object, "'", "'\"'\"'");
+      fullObject = calloc((strlen(escObject) + 3), sizeof(char));
+      sprintf(fullObject, "'%s'", escObject);
       for (i = 1; i < noOfArgs; i++){
         fullCommand = realloc(fullCommand, (strlen(fullCommand) + strlen(launchCommand[i]) + 2));
         sprintf(fullCommand, "%s %s", fullCommand, launchCommand[i]);
       }
-      pset = 1;
-    }
-
-    if ( pset ) {
-      fullCommandLen = strlen(fullCommand);
-      escObjectLen = strlen(escObject);
-      pagerCommand = malloc(sizeof(char) * (fullCommandLen + escObjectLen + 4));
-      sprintf(pagerCommand, "%s '%s'", fullCommand, escObject);
-      free(fullCommand);
-      char *args[countArguments(pagerCommand)];
-      buildCommandArguments(pagerCommand, args, countArguments(pagerCommand));
+      fullCommand = realloc(fullCommand, (strlen(fullCommand) + strlen(fullObject) + 2));
+      sprintf(fullCommand, "%s %s", fullCommand, fullObject);
+      free(fullObject);
+      char *args[countArguments(fullCommand)];
+      buildCommandArguments(fullCommand, args, countArguments(fullCommand));
       launchExternalCommand(args[0], args, M_NONE);
-      free(pagerCommand);
+      free(fullCommand);
     } else {
       topLineMessage("Please set a valid pager utility program command in settings.");
     }
@@ -1607,12 +1602,9 @@ int SendToEditor(char* object)
   char *editor;
   char *editorCommand;
   char *fullCommand;
-  int e = 0;
-  int editorLen = 0;
-  int escObjectLen = 0;
-  int fullCommandLen = 0;
   char *escObject;
   char *fullObject;
+  int e = 0;
   int i;
   int noOfArgs = 0;
 
