@@ -36,6 +36,43 @@ AC_CHECK_HEADERS(ncurses.h, , AC_MSG_ERROR(ncurses header (ncurses.h) not found.
 AC_CHECK_HEADERS(libconfig.h, , AC_MSG_ERROR(libconfig header (libconfig.h) not found. You may need to install a libconfig development package.))
 AC_CHECK_HEADERS(sys/acl.h, , AC_MSG_ERROR(libacl header (sys/acl.h) not found. You may need to install a libacl development package.))
 
+AC_CHECK_PROG(VIM_CHECK,vim,yes)
+AS_IF([test "x$VIM_CHECK" = "xyes"], [
+  AC_DEFINE(HAVE_VIM, 1, [True for systems with Vim])
+])
+
+AC_CHECK_PROG(NANO_CHECK,nano,yes)
+AS_IF([test "x$NANO_CHECK" = "xyes"], [
+  AC_DEFINE(HAVE_NANO, 1, [True for systems with Nano])
+])
+
+AC_CHECK_PROG(VI_CHECK,vi,yes)
+AS_IF([test "x$VI_CHECK" = "xyes"], [
+  AC_DEFINE(HAVE_VI, 1, [True for systems with Vi])
+])
+
+AC_CHECK_PROG(EMACS_CHECK,emacs,yes)
+AS_IF([test "x$EMACS_CHECK" = "xyes"], [
+  AC_DEFINE(HAVE_EMACS, 1, [True for systems with Emacs])
+])
+
+AC_CHECK_PROG(JED_CHECK,jed,yes)
+AS_IF([test "x$JED_CHECK" = "xyes"], [
+  AC_DEFINE(HAVE_JED, 1, [True for systems with Jed])
+])
+
+
+AC_CHECK_PROG(LESS_CHECK,less,yes)
+AS_IF([test "x$LESS_CHECK" = "xyes"], [
+  AC_DEFINE(HAVE_LESS, 1, [True for systems with Less])
+])
+
+AC_CHECK_PROG(MORE_CHECK,more,yes)
+AS_IF([test "x$MORE_CHECK" = "xyes"], [
+  AC_DEFINE(HAVE_MORE, 1, [True for systems with More])
+])
+
+
 AC_ARG_WITH([selinux], AS_HELP_STRING([--with-selinux], [Build with selinux library (default: disabled)]))
 AC_ARG_ENABLE([move-between-devices], AS_HELP_STRING([--enable-move-between-devices], [Enable moving objects between mounted devices (default: disabled)]))
 

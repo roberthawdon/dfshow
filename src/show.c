@@ -984,11 +984,37 @@ int main(int argc, char *argv[])
 #endif
 
   // Setting the default editor
+#ifdef HAVE_NANO
+  visualPath = calloc(5, sizeof(char));
+  sprintf(visualPath, "nano");
+#elif HAVE_VIM
+  visualPath = calloc(4, sizeof(char));
+  sprintf(visualPath, "vim");
+#elif HAVE_VI
   visualPath = calloc(3, sizeof(char));
   sprintf(visualPath, "vi");
+#elif HAVE_EMACS
+  visualPath = calloc(6, sizeof(char));
+  sprintf(visualPath, "emacs");
+#elif HAVE_JED
+  visualPath = calloc(4, sizeof(char));
+  sprintf(visualPath, "jed");
+#else
+  visualPath = calloc(3, sizeof(char));
+  sprintf(visualPath, "vi");
+#endif
 
+  // Setting the default pager
+#ifdef HAVE_LESS
+  pagerPath = calloc(5, sizeof(char));
+  sprintf(pagerPath, "less");
+#elif HAVE_MORE
   pagerPath = calloc(5, sizeof(char));
   sprintf(pagerPath, "more");
+#else
+  pagerPath = calloc(5, sizeof(char));
+  sprintf(pagerPath, "more");
+#endif
 
   showProcesses = checkRunningEnv() + 1;
 
