@@ -1607,18 +1607,17 @@ int SendToEditor(char* object)
   char *editor;
   char *editorCommand;
   char *fullCommand;
-  int eset = 0;
   int e = 0;
   int editorLen = 0;
   int escObjectLen = 0;
   int fullCommandLen = 0;
-  char *escObject = str_replace(object, "'", "'\"'\"'");
+  char *escObject;
+  char *fullObject;
   int i;
   int noOfArgs = 0;
 
   if (access(object, R_OK) == 0){
     originalCmd = malloc(sizeof(char) + 1);
-    if ( !eset ) {
       if (!useDefinedEditor){
         if (getenv("EDITOR")){
           originalCmd = realloc(originalCmd, sizeof(char) * (strlen(getenv("EDITOR") + 1)));
@@ -1640,29 +1639,26 @@ int SendToEditor(char* object)
       if (can_run_command(editor)){
         fullCommand = calloc((strlen(editor) + 1), sizeof(char));
         sprintf(fullCommand, "%s", editor);
+        escObject = str_replace(object, "'", "'\"'\"'");
         for (i = 1; i < noOfArgs; i++){
           fullCommand = realloc(fullCommand, (strlen(fullCommand) + strlen(launchCommand[i]) + 2));
           sprintf(fullCommand, "%s %s", fullCommand, launchCommand[i]);
         }
-        eset = 1;
+        fullCommandLen = strlen(fullCommand);
+        escObjectLen = strlen(escObject);
+        editorCommand = malloc(sizeof(char) * (fullCommandLen + escObjectLen + 4));
+        sprintf(editorCommand, "%s '%s'", fullCommand, escObject);
+        free(fullCommand);
+        char *args[countArguments(editorCommand)];
+        buildCommandArguments(editorCommand, args, countArguments(editorCommand));
+        launchExternalCommand(args[0], args, M_NONE);
+        free(editorCommand);
+      } else {
+        topLineMessage("Please set a valid editor utility program command in settings.");
       }
-    }
-    if ( eset ){
-      fullCommandLen = strlen(fullCommand);
-      escObjectLen = strlen(escObject);
-      editorCommand = malloc(sizeof(char) * (fullCommandLen + escObjectLen + 4));
-      sprintf(editorCommand, "%s '%s'", fullCommand, escObject);
-      free(fullCommand);
-      char *args[countArguments(editorCommand)];
-      buildCommandArguments(editorCommand, args, countArguments(editorCommand));
-      launchExternalCommand(args[0], args, M_NONE);
-      free(editorCommand);
     } else {
-      topLineMessage("Please set a valid editor utility program command in settings.");
+      topLineMessage("Error: Permission denied");
     }
-  } else {
-    topLineMessage("Error: Permission denied");
-  }
   return 0;
 }
 
