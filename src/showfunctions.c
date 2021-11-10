@@ -1640,19 +1640,19 @@ int SendToEditor(char* object)
         fullCommand = calloc((strlen(editor) + 1), sizeof(char));
         sprintf(fullCommand, "%s", editor);
         escObject = str_replace(object, "'", "'\"'\"'");
+        fullObject = calloc((strlen(escObject) + 3), sizeof(char));
+        sprintf(fullObject, "'%s'", escObject);
         for (i = 1; i < noOfArgs; i++){
           fullCommand = realloc(fullCommand, (strlen(fullCommand) + strlen(launchCommand[i]) + 2));
           sprintf(fullCommand, "%s %s", fullCommand, launchCommand[i]);
         }
-        fullCommandLen = strlen(fullCommand);
-        escObjectLen = strlen(escObject);
-        editorCommand = malloc(sizeof(char) * (fullCommandLen + escObjectLen + 4));
-        sprintf(editorCommand, "%s '%s'", fullCommand, escObject);
-        free(fullCommand);
-        char *args[countArguments(editorCommand)];
-        buildCommandArguments(editorCommand, args, countArguments(editorCommand));
+        fullCommand = realloc(fullCommand, (strlen(fullCommand) + strlen(fullObject) + 2));
+        sprintf(fullCommand, "%s %s", fullCommand, fullObject);
+        free(fullObject);
+        char *args[countArguments(fullCommand)];
+        buildCommandArguments(fullCommand, args, countArguments(fullCommand));
         launchExternalCommand(args[0], args, M_NONE);
-        free(editorCommand);
+        free(fullCommand);
       } else {
         topLineMessage("Please set a valid editor utility program command in settings.");
       }
