@@ -28,6 +28,9 @@ The following options are shared with ``ls``:
 ``--author``
   Prints the author of the file in the output.
 
+``--block-size``\ =SIZE
+  Scales sizes by SIZE when printing them; e.g., '--block-size=M'
+
 ``-B``, ``--ignore-backups``
   Hides files ending in ``~``, often used as backup files.
 
@@ -61,6 +64,9 @@ The following options are shared with ``ls``:
 
 ``-r``, ``--reverse``
   Reverse the order of sorting. Can be paird with ``-S`` or ``-t``
+
+``-s``, ``--size``
+  Displays file sizes in blocks.
 
 ``-S``
   Sorts files and directories by size, largest first.
