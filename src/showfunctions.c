@@ -1554,6 +1554,10 @@ int SendToPager(char* object)
     }
   
     if (useEnvPager){
+      // If the environment variables are not set, force the override on.
+      if (!getenv("PAGER")){
+        useDefinedPager = 1;
+      }
       if (!useDefinedPager){
         if ( getenv("PAGER")) {
           originalCmd = realloc(originalCmd, sizeof(char) * (strlen(getenv("PAGER") + 1)));
@@ -1607,6 +1611,11 @@ int SendToEditor(char* object)
   int e = 0;
   int i;
   int noOfArgs = 0;
+
+  // If the environment variables are not set, force the override on.
+  if (!getenv("EDITOR") && !getenv("VISUAL")){
+    useDefinedEditor = 1;
+  }
 
   if (access(object, R_OK) == 0){
     originalCmd = malloc(sizeof(char) + 1);
