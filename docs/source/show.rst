@@ -637,6 +637,11 @@ The following screen is displayed.
       [ ] Enter key acts like Show
       < > Owner Column: <owner> <group> <author>
       [ ] Skip to the first object
+      [ ] Show allocated size in blocks
+      [ ] Override default editor
+       -> Editor utility program command: vi
+      [ ] Override default pager
+       -> Pager utility program command: more
 
 There are three types of configuration items, each denoted with a different
 symbol:
@@ -654,6 +659,11 @@ option.
 Indicates a multi value option, the active items will be highlighted. To change
 their values, use the arrow keys to highlight the desired option and press
 *SPACE* to toggle its activation status.
+
+``->``:
+Indicates a free text box. To change the value, press *SPACE* and edit the value.
+When finished, press *ENTER* to confirm the change. Pressing *ESC* or setting a 
+blank value will abort the change.
 
 The following commands can be used within this menu.
 
