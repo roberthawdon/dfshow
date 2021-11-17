@@ -23,11 +23,17 @@ The `.` and `..` objects are never hidden due to their navigational functions in
 * `--author`:
 Prints the author of the file in the output.
 
+* `--block-size`=SIZE:
+Scales sizes by SIZE when printing them; e.g., '--block-size=M'
+
 * `-B`, `--ignore-backups`:
 Hides files ending in `~`, often used as backup files.
 
 * `--color`[=<COLOR>]:
 Sets colorizing of files and directories. Can be set to `always` or `never`.
+
+* `-d`, `--directory`:
+Displays only directories, not files.
 
 * `-f`:
 Does not sort the output, this is equivilent to running `show` with `-aU`.
@@ -49,6 +55,9 @@ As above, but uses powers of 1000. (1000 = 1m)
 
 * `-r`, `--reverse`:
 Reverse the order of sorting. Can be paired with `-S` or `-t`
+
+* `-s`, `--size`:
+Displays file sizes in blocks.
 
 * `-S`:
 Sorts files and directories by size, largest first.
@@ -568,6 +577,12 @@ The following screen is displayed.
       [ ] Enter key acts like Show
       < > Owner Column: <owner> <group> <author>
       [ ] Skip to the first object
+      [ ] Display only directories
+      [ ] Show allocated size in blocks
+      [ ] Override default editor
+       -> Editor utility program command: vi
+      [ ] Override default pager
+       -> Pager utility program command: more
 
 There are three types of configuration items, each denoted with a different symbol:
 
@@ -579,6 +594,9 @@ Indicates a single value option, the active item will be highlighted. To change 
 
 * `< >`:
 Indicates a multi value option, the active items will be highlighted. To change their values, use the arrow keys to highlight the desired option and press _SPACE_ to toggle its activation status.
+
+*  `->`:
+Indicates a free text box. To change the value, press _SPACE_ and edit the vaule. When finished, press _ENTER_ to confirm the change. Pressing _ESC_ or setting a blank value will abort the change.
 
 The following commands can be used within this menu.
 

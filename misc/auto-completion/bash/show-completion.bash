@@ -10,8 +10,10 @@ _show()
            -@
            --all
            --author
+	   --block-size
            --ignore-backups
            --color
+           --directroy
            -f
            --full-time
            -g
@@ -19,6 +21,7 @@ _show()
            --human-readable
            --si
            --reverse
+           --size
            -S
            --time-style
            -t

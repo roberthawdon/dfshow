@@ -7,8 +7,10 @@ args=(
     '(-@)-@[Display extended attribute keys and sizes]'
     '(-a --all)'{-a,--all}"["'Do not ignore entries starting with .'"]"
     '(--author)--author[Prints the author of each file]'
+    '(--block-size)--block-size[Scales sizes]'
     '(-B --ignore-backups)'{-B,--ignore-backups}"["'Do not list implied entries ending with ~'"]"
     '(--color)--color[Colorize the output]'
+    '(-d --directory)'{-d,--directory}"["'Show only directories'"]"
     '(-f)-f[Do not sort, enables -aU]'
     '(--full-time)--full-time[Display time as full-iso format]'
     '(-g)-g[Only show group]'
@@ -16,6 +18,7 @@ args=(
     '(-h --human-readable)'{-h,--human-readable}"["'Print sizes like 1K 234M 2G etc.'"]"
     '(--si)--si[As above, but use powers of 1000 not 1024]'
     '(-r --reverse)'{-r,--reverse}"["'Reverse order while sorting'"]"
+    '(-s --size)'{-s,--size}"["'Display the allocated size of files, in blocks'"]"
     '(-S)-S[Sort file by size, largest first]'
     '(--time-style)--time-style[Time/date format]'
     '(-t)-t[Sort by modification time, newset first]'

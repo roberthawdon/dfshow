@@ -1,7 +1,7 @@
 /*
   DF-SHOW: An interactive directory/file browser written for Unix-like systems.
   Based on the applications from the PC-DOS DF-EDIT suite by Larry Kroeker.
-  Copyright (C) 2018-2020  Robert Ian Hawdon
+  Copyright (C) 2018-2021  Robert Ian Hawdon
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -26,11 +26,14 @@
 #include <libconfig.h>
 #include <dirent.h>
 #include <errno.h>
+#include "menu.h"
+#include "display.h"
+#include "settings.h"
 #include "common.h"
 #include "colors.h"
+#include "input.h"
 
 int lightColorPair[256];
-// int commandL, infoL, inputL, selectL, displayL, dangerL, dirL, slinkL, exeL, suidL, sgidL, hiliteL = 0;
 
 int colorThemePos = 0;
 int totalItemCount = 16;
@@ -738,8 +741,6 @@ void setDefaultTheme(){
 
 void setColors(int pair)
 {
-  // endwin();
-  // printf("CP: %i\n", pair);
   attron(COLOR_PAIR(pair));
   if (lightColorPair[pair]){
     attron(A_BOLD);
@@ -833,8 +834,6 @@ void themeBuilder()
   setColors(DEFAULT_BOLD_PAIR);
   mvprintw(22, 22, "Select 0 to F for desired %s color", fgbgLabel);
 
-  // curs_set(TRUE);
-  // move(colorThemePos + 2, 1);
   attron(A_REVERSE);
   mvprintw(colorThemePos + 2, 1, " ");
   attroff(A_REVERSE);

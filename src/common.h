@@ -2,46 +2,18 @@
 #define CONF_NAME "dfshow.conf"
 #define HOME_CONF_DIR ".dfshow"
 
-#define SETTING_BOOL   0
-#define SETTING_SELECT 1
-#define SETTING_MULTI  2
-#define SETTING_FREE   3
+#define M_NONE 0x00
+#define M_NORMAL 0x01
 
-#include <wchar.h>
-
-typedef struct {
-  char refLabel[16];
-  wchar_t displayLabel[32];
-  int hotKey;
-  int displayLabelSize;
-} menuDef;
+/* TYPE DEFINITIONS */
+typedef unsigned int uint_t;
+typedef unsigned char uchar_t;
+typedef unsigned short ushort_t;
+typedef unsigned long long ullong_t;
 
 typedef struct {
   char directories[256];
 } pathDirs;
-
-typedef struct {
-  int type;
-  char refLabel[16];
-  wchar_t textLabel[32];
-  int invert;
-  int intSetting;
-  int maxValue;
-} settingIndex;
-
-typedef struct {
-  int index;
-  char refLabel[16];
-  char value[16];
-} t1CharValues;
-
-typedef struct {
-  int index;
-  char refLabel[16];
-  char settingLabel[16];
-  int value;
-  int boolVal;
-} t2BinValues;
 
 typedef struct node {
   int val;
@@ -49,30 +21,16 @@ typedef struct node {
 } node_t;
 
 int getch10th (void);
-int cmp_menu_ref(const void *lhs, const void *rhs);
 int splitPath(pathDirs **dirStruct, char *path);
 int createParentsInput(char *path);
 void createParentDirs(char *path);
-void addMenuItem(menuDef **dfMenu, int *pos, char* refLabel, wchar_t* displayLabel, int hotKey);
-void updateMenuItem(menuDef **dfMenu, int *menuSize, char* refLabel, wchar_t* displayLabel);
-wchar_t * genMenuDisplayLabel(wchar_t* preMenu, menuDef* dfMenu, int size, wchar_t* postMenu, int comma);
-int menuHotkeyLookup(menuDef* dfMenu, char* refLabel, int size);
-int altHotkey(int key);
 void mk_dir(char *path);
 void setConfLocations();
 void printVersion(char* programName);
 char * dirFromPath(const char* myStr);
 char * objectFromPath(const char* myStr);
-void wPrintMenu(int line, int col, wchar_t *menustring);
-void printMenu(int line, int col, char *menustring);
-void wPrintLine(int line, int col, wchar_t *textString);
-void printLine(int line, int col, char *textString);
-void topLineMessage(const char *message);
-int wReadLine(wchar_t *buffer, int buflen, wchar_t *oldbuf);
-int readline(char *buffer, int buflen, char *oldbuf);
 int check_dir(char *pwd);
 int check_file(char *file);
-void clear_workspace();
 int check_exec(const char *object);
 int check_last_char(const char *str, const char *chk);
 int check_first_char(const char *str, const char *chk);
@@ -81,14 +39,9 @@ char *str_replace(char *orig, char *rep, char *with);
 char * read_line(FILE *fin);
 void showManPage(const char * prog);
 int can_run_command(const char *cmd);
+char * commandFromPath(const char *cmd);
+int countArguments(const char *cmd);
+void buildCommandArguments(const char *cmd, char **args, size_t items);
+int launchExternalCommand(char *cmd, char **args, ushort_t mode);
 void sigintHandle(int sig);
 int exittoshell();
-void addT1CharValue(t1CharValues **values, int *totalItems, int *maxItem, char *refLabel, char *value);
-void addT2BinValue(t2BinValues **values, int *totalItems, int *maxItem, char *refLabel, char *settingLabel, int reset);
-void populateBool(t2BinValues **values, char *refLabel, int setting, int maxValue);
-void adjustBinSetting(settingIndex **settings, t2BinValues **values, char *refLabel, int *setting, int maxValue);
-void importSetting(settingIndex **settings, int *items, char *refLabel, wchar_t *textLabel, int type, int intSetting, int maxValue, int invert);
-void updateSetting(settingIndex **settings, int index, int type, int intSetting);
-int intSettingValue(int *setting, int newValue);
-void printSetting(int line, int col, settingIndex **settings, t1CharValues **values, t2BinValues **bins, int index, int charIndex, int binIndex, int type, int invert);
-int textValueLookup(t1CharValues **values, int *items, char *refLabel, char *value);

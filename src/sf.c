@@ -1,7 +1,7 @@
 /*
   DF-SHOW: An interactive directory/file browser written for Unix-like systems.
   Based on the applications from the PC-DOS DF-EDIT suite by Larry Kroeker.
-  Copyright (C) 2018-2020  Robert Ian Hawdon
+  Copyright (C) 2018-2021  Robert Ian Hawdon
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -31,7 +31,10 @@
 #include <libconfig.h>
 #include "config.h"
 #include "colors.h"
+#include "settings.h"
 #include "common.h"
+#include "menu.h"
+#include "display.h"
 #include "sfmenus.h"
 #include "sf.h"
 
@@ -140,7 +143,8 @@ void refreshScreen()
   endwin();
   clear();
   refresh();
-  initscr();
+  // newterm(NULL, stderr, stdin); 
+  // initscr();
   displaysize = LINES - 2;
   unloadMenuLabels();
   refreshMenuLabels();
@@ -422,7 +426,7 @@ void settingsMenuView()
   clear();
   wPrintMenu(0,0,settingsMenuLabel);
 
-  importSetting(&settingIndex, &items, "wrap", L"Enable text wrapping", SETTING_BOOL, wrap, -1, 0);
+  importSetting(&settingIndex, &items, "wrap", L"Enable text wrapping", SETTING_BOOL, NULL, wrap, -1, 0);
 
   while(1)
     {
@@ -501,6 +505,10 @@ void settingsMenuView()
     }
 }
 
+void freeSettingVars()
+{
+  return;
+}
 
 int main(int argc, char *argv[])
 {
@@ -581,7 +589,8 @@ int main(int argc, char *argv[])
 
   setlocale(LC_ALL, "");
 
-  initscr();
+  newterm(NULL, stderr, stdin); 
+  // initscr();
 
   refreshMenuLabels();
 

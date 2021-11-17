@@ -19,7 +19,8 @@ enum
    GETOPT_FULLTIME_CHAR = (CHAR_MIN - 14),
    GETOPT_THEMEEDIT_CHAR = (CHAR_MIN - 15),
    GETOPT_OPTIONSMENU_CHAR = (CHAR_MIN - 16),
-   GETOPT_SKIPTOFIRST_CHAR = (CHAR_MIN - 17)
+   GETOPT_SKIPTOFIRST_CHAR = (CHAR_MIN - 17),
+   GETOPT_BLOCKSIZE_CHAR = (CHAR_MIN - 18)
   };
 
 void readConfig(const char * confFile);
@@ -29,9 +30,11 @@ char *getcwd(char *buf, size_t size);
 int global_menu();
 void refreshScreen();
 int exittoshell();
+int setBlockSize(const char * arg);
 void printHelp(char* programName);
 int checkStyle(char* styleinput);
 int setColor(char* colorinput);
 int setMarked(char* markedinput);
 void applySettings(settingIndex **settings, t1CharValues **values, int items, int valuesCount);
 void settingsMenuView();
+void freeSettingVars();

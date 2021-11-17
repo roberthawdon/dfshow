@@ -1,7 +1,7 @@
 /*
   DF-SHOW: An interactive directory/file browser written for Unix-like systems.
   Based on the applications from the PC-DOS DF-EDIT suite by Larry Kroeker.
-  Copyright (C) 2018-2020  Robert Ian Hawdon
+  Copyright (C) 2018-2021  Robert Ian Hawdon
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -23,9 +23,13 @@
 #include <string.h>
 #include <ctype.h>
 #include <regex.h>
+#include "menu.h"
+#include "display.h"
+#include "settings.h"
 #include "common.h"
 #include "sf.h"
 #include "colors.h"
+#include "input.h"
 
 int c;
 int * pc = &c;
@@ -147,8 +151,6 @@ int show_file_find_case_input()
   int result;
   move(0,0);
   clrtoeol();
-  // printMenu(0,0,"!Ignore-case !Case-sensitive !Regular-expression (enter = I)");
-  // printMenu(0,0,"!Ignore-case !Case-sensitive (enter = I)");
   wPrintMenu(0,0,caseMenuLabel);
   while(1)
     {

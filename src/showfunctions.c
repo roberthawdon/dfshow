@@ -1,7 +1,7 @@
 /*
   DF-SHOW: An interactive directory/file browser written for Unix-like systems.
   Based on the applications from the PC-DOS DF-EDIT suite by Larry Kroeker.
-  Copyright (C) 2018-2020  Robert Ian Hawdon
+  Copyright (C) 2018-2021  Robert Ian Hawdon
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -40,7 +40,9 @@
 #include <regex.h>
 #include <sys/acl.h>
 #include <stdint.h>
+#include "settings.h"
 #include "common.h"
+#include "display.h"
 #include "config.h"
 #include "showfunctions.h"
 #include "showmenus.h"
@@ -73,14 +75,15 @@
 # define st_author st_uid
 #endif
 
-char hlinkstr[6], sizestr[32], majorstr[6], minorstr[6];
-char headAttrs[12], headOG[25], headSize[14], headDT[18], headName[13], headContext[14];
+char hlinkstr[6], sizestr[32], sizeblocksstr[32], majorstr[6], minorstr[6];
+char headAttrs[12], headOG[25], headSize[14], headDT[18], headName[13], headContext[14], headSizeBlocks[9];
 
 int hlinklen;
 int ownerlen;
 int grouplen;
 int authorlen;
 int sizelen;
+int sizeblockslen;
 int majorlen;
 int minorlen;
 int datelen;
@@ -132,7 +135,7 @@ int dirAbort = 0;
 
 int axDisplay = 0;
 
-int markedSegmentLen, attrSegmentLen, hlinkSegmentLen, ownerSegmentLen, contextSegmentLen, sizeSegmentLen, dateSegmentLen, nameSegmentDataLen, linkSegmentLen, tmpSegmentLen;
+int markedSegmentLen, sizeBlocksSegmentLen, attrSegmentLen, hlinkSegmentLen, ownerSegmentLen, contextSegmentLen, sizeSegmentLen, dateSegmentLen, nameSegmentDataLen, sizeBlocksSegmentLen, linkSegmentLen, tmpSegmentLen;
 
 uintmax_t savailable = 0;
 unsigned long int sused = 0;
@@ -155,9 +158,13 @@ int visibleOffset;
 int listLen;
 entryLines *el;
 
+extern char block_unit[4];
+
 extern DIR *folder;
 
-extern int segOrder[8];
+extern int segOrder[9];
+
+extern int block_size;
 
 extern int messageBreak;
 extern char currentpwd[4096];
@@ -177,10 +184,17 @@ extern int useEnvPager;
 extern int showProcesses;
 extern int exitCode;
 extern int showContext;
+extern int showSizeBlocks;
 extern int oneLine;
 extern int skipToFirstFile;
 extern int showXAttrs;
 extern int showAcls;
+extern bool dirOnly;
+extern bool scaleSize;
+extern bool useDefinedEditor;
+extern bool useDefinedPager;
+extern char * visualPath;
+extern char * pagerPath;
 
 extern char sortmode[9];
 
@@ -282,7 +296,6 @@ int processXAttrs(xattrList **xa, char *name, unsigned char *xattrs, size_t xatt
       strcpy((*xa)[pos].name, name);
       (*xa)[pos].xattr = calloc(strlen(xattrTmp) + 1, sizeof(char));
       strcpy((*xa)[pos].xattr, xattrTmp);
-      // (*xa)[pos].xattrSize = strlen((*xa)[pos].xattr);
     #ifdef HAVE_ACL_TYPE_EXTENDED
       (*xa)[pos].xattrSize = getxattr(name, xattrTmp, NULL, 0, 0, XATTR_NOFOLLOW);
     #else
@@ -292,8 +305,6 @@ int processXAttrs(xattrList **xa, char *name, unsigned char *xattrs, size_t xatt
         (*xa)[pos].xattrSize = 0;
       #endif
     #endif
-      // endwin();
-      // printf("%s - %s - %zu\n", (*xa)[pos].name, (*xa)[pos].xattr, (*xa)[pos].xattrSize);
       reset = true;
       pos++;
       ++*xattrsNum;
@@ -677,6 +688,13 @@ void writeResultStruct(results* ob, const char * filename, struct stat buffer, i
   ob[count].size = buffer.st_size;
   *ob[count].sizelens = strlen(sizestr);
 
+  ob[count].sizeBlocks = (buffer.st_blocks * 512) / block_size;
+
+  // Hacky workaround to show a size of 1 if the size is negligible
+  if ( (ob[count].sizeBlocks == 0) && ((buffer.st_blocks * 512) != 0)) {
+    ob[count].sizeBlocks = 1;
+  } 
+
   if (S_ISCHR(buffer.st_mode) || S_ISBLK(buffer.st_mode)){
     ob[count].major = major(buffer.st_rdev);
     ob[count].minor = minor(buffer.st_rdev);
@@ -693,7 +711,6 @@ void writeResultStruct(results* ob, const char * filename, struct stat buffer, i
   free(ob[count].datedisplay);
   ob[count].datedisplay = malloc(sizeof(wchar_t) * datedisplayLen);
   mbstowcs(ob[count].datedisplay, filedate, datedisplayLen);
-  // ob[count].datedisplay[datedisplayLen] = '\0';
 
   ob[count].name = malloc(sizeof(char) * (strlen(filename) + 1));
   strcpy(ob[count].name, filename);
@@ -730,12 +747,6 @@ int findResultByName(results *ob, char *name)
     }
     i++;
   }
-  //If there's no match, we'll fall back to the top item in the list
-  // if (skipToFirstFile == 1 && skippable == 1){
-  //   return 2;
-  // } else {
-  //   return 0;
-  // }
   return -1;
 }
 
@@ -907,8 +918,6 @@ void printXattr(int start, int selected, int listref, int currentItem, int subIn
   xattrKeySegment = writeSegment(xattrKeyLen, xa[xattrAtPos + subIndex].xattr, LEFT);
 
   tmpXattrPrint = calloc(COLS, sizeof(char));
-  // tmpXattrDataLen = snprintf(NULL, 0, "            %s        %s", xa[xattrAtPos + subIndex].xattr, tmpXattrSize);
-  // tmpXattrPadding = genPadding(COLS - tmpXattrDataLen);
   sprintf(tmpXattrPrint, "%s%s%s", xattrPrePad, xattrKeySegment, tmpXattrSize);
   for (i = 0; i < maxlen; i++){
     mvprintw(displaystart + listref, start + charPos, "%c", tmpXattrPrint[i]);
@@ -917,7 +926,6 @@ void printXattr(int start, int selected, int listref, int currentItem, int subIn
       break;
     }
   }
-  // mvprintw(displaystart + listref + offset + i, start + charPos, "            %s", xa[(xattrAtPos + (i - 1))].xattr);
   free(tmpXattrPrint);
   free(tmpXattrSize);
   free(tmpXattrPadding);
@@ -936,25 +944,23 @@ void printXattr(int start, int selected, int listref, int currentItem, int subIn
     }
     free(paddingE0);
   }
-  // mvprintw(displaystart + listref + start, 0, "            %s        %s", "uk.me.robertianhawdon.test", "27");
 }
 
-void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorlen, int sizelen, int majorlen, int minorlen, int datelen, int namelen, int contextlen, int selected, int listref, int currentitem, results* ob){
+void printEntry(int start, int hlinklen, int sizeblocklen, int ownerlen, int grouplen, int authorlen, int sizelen, int majorlen, int minorlen, int datelen, int namelen, int contextlen, int selected, int listref, int currentitem, results* ob){
 
   int i, n, t;
 
   char marked[2];
-  // wchar_t *entryMeta  = malloc(sizeof(wchar_t) + 1);
   wchar_t *entryName  = malloc(sizeof(wchar_t) + 1);
   wchar_t *entrySLink = malloc(sizeof(wchar_t) + 1);
   int maxlen = COLS - start - 1;
 
-  // int currentitem = listref + topref;
   int nameminlen = strlen(headName); // Length of "Name" heading
   int ogminlen = strlen(headOG); // Length of "Owner & Group" heading
   int sizeminlen = strlen(headSize); // Length of "Size" heading
   int dateminlen = strlen(headDT); // Length of "Date" heading
   int contextminlen = strlen(headContext); // Length of "Context" heading
+  int sizeblockminlen = strlen(headSizeBlocks); // Length of "Size (Blocks)" heading
 
   int oggap, gagap = 0;
 
@@ -974,13 +980,13 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
 
   int datepad = 0;
 
-  // char *s1, *s2, *s3, *s4, *s5, *s6;
-
   char *sizePadding;
 
   char *sizestring;
 
   char *contextText;
+
+  char *sizeBlocksString;
 
   int printSegment, printNameSegment = 0;
 
@@ -988,6 +994,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
 
   char *markedSegment;
   char *attrSegment;
+  char *sizeBlocksSegment;
   char *hlinkSegment;
   char *ownerSegment;
   char *contextSegment;
@@ -1096,9 +1103,6 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
 
 
   if (showContext){
-    // Test
-    // endwin();
-    // printf("%s - %s\n", ob[currentitem].name, ob[currentitem].contextText);
     contextText = malloc(sizeof(char) * (strlen(ob[currentitem].contextText) + 1));
     sprintf(contextText, "%s", ob[currentitem].contextText);
     if (contextlen < contextminlen) {
@@ -1115,6 +1119,24 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
     sprintf(contextSegment, "");
   }
 
+  if (showSizeBlocks){
+    sprintf(sizeblocksstr, "%lld", ob[currentitem].sizeBlocks);
+    if (sizeblocklen < sizeblockminlen) {
+      sizeBlocksSegmentLen = sizeblockminlen;
+    } else {
+      sizeBlocksSegmentLen = sizeblocklen;
+    }
+    sizeBlocksString = malloc(sizeof(char) * (sizeBlocksSegmentLen + 1 + strlen(block_unit)));
+    sprintf(sizeBlocksString, "%s%s", sizeblocksstr, block_unit);
+    sizeBlocksSegment = writeSegment(sizeBlocksSegmentLen, sizeBlocksString, RIGHT);
+  } else {
+    sizeBlocksSegmentLen = 1;
+    sizeBlocksString = malloc(sizeof(char) * sizeBlocksSegmentLen);
+    sprintf(sizeBlocksString, "");
+    sizeBlocksSegment = malloc(sizeof(char) * sizeBlocksSegmentLen);
+    sprintf(sizeBlocksSegment, "");
+  }
+
   if (ob[currentitem].minor > 1){
     mmpad = sizelen - (log10(ob[currentitem].minor + 1)) + 2;
   } else {
@@ -1127,17 +1149,20 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
 
   if ((ob[currentitem].major > 0) || (ob[currentitem].minor > 0)){
     // If either of these are not 0, then we're dealing with a Character or Block device.
-    // sizestring = malloc (sizeof (char) * (sizelen + 5));
     sizelen = snprintf(NULL, 0, "%i,%s%i", ob[currentitem].major, sizePadding, ob[currentitem].minor);
     sizestring = malloc (sizeof (char) * (sizelen + 1));
     sprintf(sizestring, "%i,%s%i", ob[currentitem].major, sizePadding, ob[currentitem].minor);
   } else {
-    if (human){
+    if ((human) && (!scaleSize)){
       sizestring = malloc (sizeof (char) * 10);
       readableSize(ob[currentitem].size, sizestring, si);
     } else {
-      sizestring = malloc (sizeof (char) * (sizelen + 1));
-      sprintf(sizestring, "%lu", ob[currentitem].size);
+      sizestring = malloc (sizeof (char) * (sizelen + 1 + strlen(block_unit)));
+      if (scaleSize){
+        sprintf(sizestring, "%lu%s", (ob[currentitem].size / block_size + 1), block_unit);
+      } else {
+        sprintf(sizestring, "%lu", ob[currentitem].size);
+      }
     }
   }
 
@@ -1150,7 +1175,6 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
 
   sizepad = (sizelen - strlen(sizestring));
 
-  // Experemental segment
   sizeSegment = writeSegment(sizeSegmentLen, sizestring, RIGHT);
 
   if ( (dateminlen - datelen) > 0 ) {
@@ -1159,16 +1183,6 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
     dateSegmentLen = datelen;
   }
   dateSegment = wWriteSegment(dateSegmentLen, ob[currentitem].datedisplay, LEFT);
-
-  // if (hlinkstart > -1){
-  //   s1 = genPadding(hlinkstart);
-  // }
-  // if (sizepad > -1){
-  //   s2 = genPadding(sizepad);
-  // }
-  // if (datepad > -1){
-  //   s3 = genPadding(datepad);
-  // }
 
   markedSegmentLen = 3;
 
@@ -1208,15 +1222,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
 
   attrSegment = writeSegment(attrSegmentLen, printPerm, LEFT);
 
-  // entryMetaLen = snprintf(NULL, 0, "%s%s%s%s%s%s%ls", markedSegment, attrSegment, hlinkSegment, ownerSegment, contextSegment, sizeSegment, dateSegment);
-
-  // entryMeta = realloc(entryMeta, sizeof(wchar_t) * (entryMetaLen + 1));
-
-  // swprintf(entryMeta, (entryMetaLen + 1), L"%s%s%s%s%s%s%ls", markedSegment, attrSegment, hlinkSegment, ownerSegment, contextSegment, sizeSegment, dateSegment);
-
   free(printPerm);
-
-  // entryMetaLen = wcslen(entryMeta);
 
   // Writing Name Segment Data
   nameSegmentData = malloc(sizeof(nameStruct));
@@ -1266,58 +1272,12 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
     entrySLinkLen = wcslen(entrySLink);
   }
 
-  // entryMetaLen = wcslen(entryMeta);
-  // entryNameLen = wcslen(entryName);
-  // entrySLinkLen = wcslen(entrySLink);
-  // mvprintw(4 + listref, start, "%s", entry);
-
   // Setting highlight
   if (selected) {
     setColors(SELECT_PAIR);
   } else {
     setColors(DISPLAY_PAIR);
   }
-
-  // // Temp
-  // if (showXAttrs){
-  //   hasXattr = false;
-  //   xattrAtPos = 0;
-  //   for(i = 0; i < xattrPos; i++){
-  //     if (!strcmp(ob[currentitem].name, xa[i].name)){
-  //       xattrAtPos = i;
-  //       hasXattr = true;
-  //       break;
-  //     }
-  //   }
-  //   // endwin();
-  //   // printf("\n%s:\n", ob[currentitem].name);
-  //   for(i = 0; i < ob[currentitem].xattrsNum + 1; i++){
-  //     // printf("%lu < %i\n", (listref - (ob[currentitem].xattrsNum - i)), visibleObjects);
-  //     if ((listref - (ob[currentitem].xattrsNum - i)) < (visibleObjects + visibleOffset)){
-  //       if (hasXattr && i != 0){
-  //         if (human){
-  //           tmpXattrSize = malloc(sizeof(char) * 10);
-  //           readableSize(xa[xattrAtPos + (i - 1)].xattrSize, tmpXattrSize, si);
-  //         } else {
-  //           tmpXattrSizeLen = snprintf(NULL, 0, "%zu", xa[xattrAtPos + (i - 1)].xattrSize);
-  //           tmpXattrSize = malloc(sizeof(char) * tmpXattrSizeLen);
-  //           sprintf(tmpXattrSize, "%zu", xa[xattrAtPos + (i - 1)].xattrSize);
-  //         }
-  //         tmpXattrPrint = calloc(COLS, sizeof(char));
-  //         tmpXattrDataLen = snprintf(NULL, 0, "            %s        %s", xa[(xattrAtPos + (i - 1))].xattr, tmpXattrSize);
-  //         tmpXattrPadding = genPadding(COLS - tmpXattrDataLen);
-  //         sprintf(tmpXattrPrint, "            %s        %s%s", xa[(xattrAtPos + (i - 1))].xattr, tmpXattrSize, tmpXattrPadding);
-  //         for (n = 0; n < strlen(tmpXattrPrint); n++){
-  //           mvprintw(displaystart + listref + offset + i, start + charPos + n, "%c", tmpXattrPrint[n]);
-  //         }
-  //         // mvprintw(displaystart + listref + offset + i, start + charPos, "            %s", xa[(xattrAtPos + (i - 1))].xattr);
-  //         free(tmpXattrPrint);
-  //         free(tmpXattrSize);
-  //         free(tmpXattrPadding);
-  //       }
-  //     }
-  //   }
-  // }
 
   for ( n = 0; n < (sizeof(segOrder) / sizeof(segOrder[0])); n++){
     t = segOrder[n];
@@ -1327,6 +1287,14 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
       tmpSegmentLen = markedSegmentLen + 2;
       tmpSegment = malloc(sizeof(wchar_t) * tmpSegmentLen);
       swprintf(tmpSegment, tmpSegmentLen, L"%s", markedSegment);
+      break;
+    case COL_SIZEBLOCKS:
+      if (showSizeBlocks){
+        printSegment = 1;
+        tmpSegmentLen = sizeBlocksSegmentLen + 2;
+        tmpSegment = malloc(sizeof(wchar_t) * tmpSegmentLen);
+        swprintf(tmpSegment, tmpSegmentLen, L"%s", sizeBlocksSegment);
+      }
       break;
     case COL_ATTR:
       printSegment = 1;
@@ -1479,6 +1447,7 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
 
   // Free segments
   free(markedSegment);
+  free(sizeBlocksSegment);
   free(attrSegment);
   free(hlinkSegment);
   free(ownerSegment);
@@ -1486,15 +1455,8 @@ void printEntry(int start, int hlinklen, int ownerlen, int grouplen, int authorl
   free(sizeSegment);
   free(dateSegment);
 
-  // free(s1);
-  // free(s2);
-  // free(s3);
-  // free(s4);
-  // free(s5);
-  // free(s6);
   free(sizestring);
   free(sizePadding);
-  // free(entryMeta);
   free(entryName);
   free(entrySLink);
   free(ogaval);
@@ -1506,14 +1468,9 @@ void LaunchShell()
   sprintf(c, "%i", showProcesses);
   setenv("DFS_RUNNING", c, 1);
   clear();
-  def_prog_mode();
   endwin();
-  // system("clear"); // Not exactly sure if I want this yet.
-  // printf("\nUse 'exit' to return to Show.\n\n");
   write(STDOUT_FILENO, "\nUse 'exit' to return to Show.\n\n", 32);
   system(getenv("SHELL"));
-  reset_prog_mode();
-  initscr();
   refreshScreen();
 }
 
@@ -1573,96 +1530,136 @@ void delete_file(char *source_input)
 
 int SendToPager(char* object)
 {
-  char *page = malloc(sizeof(char) * 2);
+  char *originalCmd;
+  char *page;
   char *pagerCommand;
-  int pset = 0;
+  char *fullCommand;
+  char *fullObject;
   int e = 0;
-  char *escObject = str_replace(object, "'", "'\"'\"'");
+  int i;
+  char *escObject;
+  int noOfArgs = 0;
 
-  if (can_run_command("sf")){
-    if (!useEnvPager){
-      setenv("DFS_THEME_OVERRIDE", "TRUE", 1);
-      page = realloc(page, (sizeof(char) * 3));
-      sprintf(page, "sf");
-      pset = 1;
-    }
-  } else {
-    useEnvPager = 1;
-  }
-
-  if (useEnvPager){
-    if ( getenv("PAGER")) {
-      page = realloc(page, (sizeof(char) * (strlen(getenv("PAGER")) + 1)));
-      sprintf(page, "%s", getenv("PAGER"));
-      pset = 1;
-    }
-  }
-
-  if ( pset ) {
-    pagerCommand = malloc(sizeof(char) * (strlen(page) + strlen(escObject) + 4));
-    sprintf(pagerCommand, "%s '%s'", page, escObject);
-    free(escObject);
-    if (access(object, R_OK) == 0){
-      // clear();
-      // endwin();
-      def_prog_mode();
-      endwin();
-      e = system(pagerCommand);
-      reset_prog_mode();
-      // initscr();
-      refreshScreen();
-      return e;
+  if (access(object, R_OK) == 0){
+    originalCmd = malloc(sizeof(char) + 1);
+    if (can_run_command("sf")){
+      if (!useEnvPager){
+        setenv("DFS_THEME_OVERRIDE", "TRUE", 1);
+        originalCmd = realloc(originalCmd, sizeof(char) * 3);
+        strcpy(originalCmd, "sf");
+        noOfArgs = countArguments(originalCmd);
+      }
     } else {
-      topLineMessage("Error: Permission denied");
+      useEnvPager = 1;
     }
-    free(pagerCommand);
+  
+    if (useEnvPager){
+      // If the environment variables are not set, force the override on.
+      if (!getenv("PAGER")){
+        useDefinedPager = 1;
+      }
+      if (!useDefinedPager){
+        if ( getenv("PAGER")) {
+          originalCmd = realloc(originalCmd, sizeof(char) * (strlen(getenv("PAGER") + 1)));
+          strcpy(originalCmd, getenv("PAGER"));
+          noOfArgs = countArguments(originalCmd);
+        }
+      } else {
+        originalCmd = realloc(originalCmd, sizeof(char) * (strlen(pagerPath) + 1));
+        strcpy(originalCmd, pagerPath);
+        noOfArgs = countArguments(originalCmd);
+      }
+    }
+  
+    char *launchCommand[noOfArgs];
+    buildCommandArguments(originalCmd, launchCommand, noOfArgs);
+    page = commandFromPath(launchCommand[0]);
+    if (can_run_command(page)){
+      fullCommand = calloc((strlen(page) + 1), sizeof(char));
+      sprintf(fullCommand, "%s", page);
+      escObject = str_replace(object, "'", "'\"'\"'");
+      fullObject = calloc((strlen(escObject) + 3), sizeof(char));
+      sprintf(fullObject, "'%s'", escObject);
+      for (i = 1; i < noOfArgs; i++){
+        fullCommand = realloc(fullCommand, (strlen(fullCommand) + strlen(launchCommand[i]) + 2));
+        sprintf(fullCommand, "%s %s", fullCommand, launchCommand[i]);
+      }
+      fullCommand = realloc(fullCommand, (strlen(fullCommand) + strlen(fullObject) + 2));
+      sprintf(fullCommand, "%s %s", fullCommand, fullObject);
+      free(fullObject);
+      char *args[countArguments(fullCommand)];
+      buildCommandArguments(fullCommand, args, countArguments(fullCommand));
+      launchExternalCommand(args[0], args, M_NONE);
+      free(fullCommand);
+    } else {
+      topLineMessage("Please set a valid pager utility program command in settings.");
+    }
   } else {
-    topLineMessage("Please export a PAGER environment variable to define the utility program name.");
+    topLineMessage("Error: Permission denied");
   }
-  free(page);
   return 0;
 }
 
 int SendToEditor(char* object)
-
 {
-  char *editor = malloc(sizeof(char) * 2);
+  char *originalCmd;
+  char *editor;
   char *editorCommand;
-  int eset = 0;
+  char *fullCommand;
+  char *escObject;
+  char *fullObject;
   int e = 0;
-  char *escObject = str_replace(object, "'", "'\"'\"'");
+  int i;
+  int noOfArgs = 0;
 
-  if ( getenv("EDITOR")) {
-    editor = realloc(editor, (sizeof(char) * (strlen(getenv("EDITOR")) + 1 )));
-    sprintf(editor, "%s", getenv("EDITOR"));
-    eset = 1;
-  } else if ( getenv("VISUAL")) {
-    editor = realloc(editor, (sizeof(char) * (strlen(getenv("VISUAL")) + 1 )));
-    sprintf(editor, "%s", getenv("VISUAL"));
-    eset = 1;
+  // If the environment variables are not set, force the override on.
+  if (!getenv("EDITOR") && !getenv("VISUAL")){
+    useDefinedEditor = 1;
   }
-  if ( eset ){
-    editorCommand = malloc(sizeof(char) * (strlen(editor) + strlen(escObject) + 4));
-    sprintf(editorCommand, "%s '%s'", editor, escObject);
-    free(escObject);
-    if (access(object, R_OK) == 0){
-      clear();
-      // endwin();
-      def_prog_mode();
-      endwin();
-      e = system(editorCommand);
-      reset_prog_mode();
-      // initscr();
-      refreshScreen();
-      return e;
+
+  if (access(object, R_OK) == 0){
+    originalCmd = malloc(sizeof(char) + 1);
+      if (!useDefinedEditor){
+        if (getenv("EDITOR")){
+          originalCmd = realloc(originalCmd, sizeof(char) * (strlen(getenv("EDITOR") + 1)));
+          strcpy(originalCmd, getenv("EDITOR"));
+          noOfArgs = countArguments(originalCmd);
+        } else if (getenv("VISUAL")){
+          originalCmd = realloc(originalCmd, sizeof(char) * (strlen(getenv("VISUAL") + 1)));
+          strcpy(originalCmd, getenv("VISUAL"));
+          noOfArgs = countArguments(originalCmd);
+        }
+      } else {
+        originalCmd = realloc(originalCmd, sizeof(char) * (strlen(visualPath) + 1));
+        strcpy(originalCmd, visualPath);
+        noOfArgs = countArguments(originalCmd);
+      }
+      char *launchCommand[noOfArgs];
+      buildCommandArguments(originalCmd, launchCommand, noOfArgs);
+      editor = commandFromPath(launchCommand[0]);
+      if (can_run_command(editor)){
+        fullCommand = calloc((strlen(editor) + 1), sizeof(char));
+        sprintf(fullCommand, "%s", editor);
+        escObject = str_replace(object, "'", "'\"'\"'");
+        fullObject = calloc((strlen(escObject) + 3), sizeof(char));
+        sprintf(fullObject, "'%s'", escObject);
+        for (i = 1; i < noOfArgs; i++){
+          fullCommand = realloc(fullCommand, (strlen(fullCommand) + strlen(launchCommand[i]) + 2));
+          sprintf(fullCommand, "%s %s", fullCommand, launchCommand[i]);
+        }
+        fullCommand = realloc(fullCommand, (strlen(fullCommand) + strlen(fullObject) + 2));
+        sprintf(fullCommand, "%s %s", fullCommand, fullObject);
+        free(fullObject);
+        char *args[countArguments(fullCommand)];
+        buildCommandArguments(fullCommand, args, countArguments(fullCommand));
+        launchExternalCommand(args[0], args, M_NONE);
+        free(fullCommand);
+      } else {
+        topLineMessage("Please set a valid editor utility program command in settings.");
+      }
     } else {
       topLineMessage("Error: Permission denied");
     }
-    free(editorCommand);
-  } else {
-    topLineMessage("Please export a VISUAL environment variable to define the utility program name.");
-  }
-  free(editor);
   return 0;
 }
 
@@ -1682,14 +1679,6 @@ uintmax_t GetAvailableSpace(const char* path)
   frsize = stat.f_frsize;
   result = bavail * frsize;
 
-  // the available size is f_bsize * f_bavail
-  // return stat.f_bsize * stat.f_bavail;
-  // endwin();
-  // clear();
-  // printf("f_bavail: %jd\nf_frsize: %jd\n", (uintmax_t) bavail, (uintmax_t) frsize);
-  // printf("f_bavail * f_frsize: %jd\n", (uintmax_t) (bavail * frsize));
-  // printf("f_bfree: %li\n", stat.f_bfree);
-  // // exit(0);
   return result;
 }
 
@@ -1717,54 +1706,6 @@ int seglength(const void *seg, char *segname, int LEN)
 
   size_t i;
 
-  // This seems unnessessary, what was I thinking?
-
-
-  // if (!strcmp(segname, "owner")) {
-  //   longest = strlen(dfseg[0].owner);
-  // }
-  // else if (!strcmp(segname, "group")) {
-  //   longest = strlen(dfseg[0].group);
-  // }
-  // else if (!strcmp(segname, "author")) {
-  //   longest = strlen(dfseg[0].author);
-  // }
-  // else if (!strcmp(segname, "hlink")) {
-  //   sprintf(hlinkstr, "%d", *dfseg[0].hlink);
-  //   longest = strlen(hlinkstr);
-  // }
-  // else if (!strcmp(segname, "size")) {
-  //   if (human){
-  //     readableSize(dfseg[0].size, sizestr, si);
-  //   } else {
-  //     sprintf(sizestr, "%lu", dfseg[0].size);
-  //   }
-  //   longest = strlen(sizestr);
-  // }
-  // else if (!strcmp(segname, "major")) {
-  //   sprintf(majorstr, "%d", dfseg[0].major);
-  //   longest = strlen(majorstr);
-  // }
-  // else if (!strcmp(segname, "minor")) {
-  //   sprintf(minorstr, "%d", dfseg[0].minor);
-  //   longest = strlen(minorstr);
-  // }
-  // else if (!strcmp(segname, "datedisplay")) {
-  //   longest = wcslen(dfseg[0].datedisplay);
-  // }
-  // else if (!strcmp(segname, "name")) {
-  //   longest = strlen(dfseg[0].name);
-  // }
-  // else if (!strcmp(segname, "slink")) {
-  //   longest = strlen(dfseg[0].slink);
-  // }
-  // else if (!strcmp(segname, "contextText")) {
-  //   longest = strlen(dfseg[0].contextText);
-  // }
-  // else {
-  //   longest = 0;
-  // }
-
   longest = 0;
 
   for(i = 0; i < LEN; i++)
@@ -1781,6 +1722,10 @@ int seglength(const void *seg, char *segname, int LEN)
       else if (!strcmp(segname, "hlink")) {
         sprintf(hlinkstr, "%d", *dfseg[i].hlink);
         len = strlen(hlinkstr);
+      }
+      else if (!strcmp(segname, "sizeBlocks")) {
+        sprintf(sizeblocksstr, "%lld", dfseg[i].sizeBlocks);
+        len = strlen(sizeblocksstr);
       }
       else if (!strcmp(segname, "size")) {
         if (human){
@@ -1936,8 +1881,6 @@ int check_object(const char *object){
 
 int UpdateOwnerGroup(const char* object, const char* pwdstr, const char* grpstr)
 {
-  // char *buf;
-  // size_t bufsize;
   struct stat sb;
   struct passwd *oldpwd;
   struct group *oldgrp;
@@ -1962,7 +1905,6 @@ int UpdateOwnerGroup(const char* object, const char* pwdstr, const char* grpstr)
     gid= atoi(grpstr);
   }
 
-  //mvprintw(0,66, "%d:%d", uid, gid); //test
   e = chown(object, uid, gid);
 
   return e;
@@ -1971,8 +1913,6 @@ int UpdateOwnerGroup(const char* object, const char* pwdstr, const char* grpstr)
 
 int RenameObject(char* source, char* dest)
 {
-  // char sourceDevId[256];
-  // char destDevId[256];
   char *destPath;
   struct stat sourcebuffer;
   struct stat destbuffer;
@@ -1981,27 +1921,17 @@ int RenameObject(char* source, char* dest)
 
   destPath = dirFromPath(dest);
 
-  // mvprintw(0,66,"Stripped: %s", dirFromPath(dest)); // test in the usual place
-
   if (check_dir(destPath)){
     lstat(source, &sourcebuffer);
     lstat(destPath, &destbuffer);
 
-    // sprintf(sourceDevId, "%d", sourcebuffer.st_dev);
-    // sprintf(destDevId, "%d", destbuffer.st_dev);
-
-    // if (!strcmp(sourceDevId, destDevId)) {
     if (sourcebuffer.st_dev == destbuffer.st_dev) {
-      // Destination is on the same filesystem.
-      //mvprintw(0,66,"PASS: %s:%s %s", sourceDevId, destDevId, dest); // test pass
       e = rename(source, dest);
       free(destPath);
       return e;
     } else {
       // Destination is NOT in the same filesystem, the file will need copying then deleting.
-      //mvprintw(0,66,"FAIL: %s:%s", sourceDevId, destDevId); // test fail
       if (moveBetweenDevices){
-        // To Do
         copy_file(source, dest, sourcebuffer.st_mode);
         touchDate.actime = sourcebuffer.st_atime;
         touchDate.modtime = sourcebuffer.st_mtime;
@@ -2021,7 +1951,6 @@ int RenameObject(char* source, char* dest)
     }
   } else {
     // Destination directory not found
-    //mvprintw(0,66, "FAIL: NO DIR"); // test
     topLineMessage("Error: Invalid Destination");
     free(destPath);
     return 1;
@@ -2156,7 +2085,6 @@ char *markedDisplay(results* ob)
 
 results* get_dir(char *pwd)
 {
-  //sused = GetUsedSpace(pwd); // Original DF-EDIT added the sizes to show what was used in that directory, rather than the whole disk.
   int i;
   size_t count = 0;
   size_t file_count = 0;
@@ -2209,7 +2137,6 @@ results* get_dir(char *pwd)
     }
   }
 
-  //if (stat(path, &sb) == 0 && S_ISDIR(sb.st_mode)){
   if (check_object(path) == 1){
   reload:
     folder = opendir ( path );
@@ -2225,25 +2152,29 @@ results* get_dir(char *pwd)
           xattrsNum = 0;
           haveAcl = 0;
           contextText = malloc(sizeof(char) * 2);
+          lstat(res->d_name, &sb);
           if ( showhidden == 0 && check_first_char(res->d_name, ".") && strcmp(res->d_name, ".") && strcmp(res->d_name, "..") ) {
             continue; // Skipping hidden files
           }
           if ( !showbackup && check_last_char(res->d_name, "~") ) {
             continue; // Skipping backup files
           }
+          if ( dirOnly ) {
+            if (!S_ISDIR(sb.st_mode)){
+              continue;
+            }
+          }
           if ( strcmp(objectWild, "")){
             if (!wildcard(res->d_name, objectWild) && strcmp(res->d_name, ".") && strcmp(res->d_name, "..")){
               continue;
             }
           }
-          // filename = res->d_name;
           if (pass == 0){
             count++;
           } else {
             if (count > totalfilecount){
               ob = realloc(ob, (count +1) * sizeof(results)); // Reallocating memory. Just in case a file is added between passes.
             }
-            lstat(res->d_name, &sb);
             status = lstat(res->d_name, &buffer);
 
             sprintf(hlinkstr, "%d", buffer.st_nlink);
@@ -2272,13 +2203,8 @@ results* get_dir(char *pwd)
               listxattr(res->d_name, xattrs, xattr, XATTR_NOFOLLOW);
               uXattrs = calloc(xattr, sizeof(unsigned char));
               memcpy(uXattrs, xattrs, xattr);
-              // endwin();
-              // printf("%s\n", uXattrs);
-              // xa = realloc(xa, (count +1) * sizeof(xattrList));
               xattrPos = processXAttrs(&xa, res->d_name, uXattrs, xattr, xattrPos, &xattrsNum);
               free(uXattrs);
-              // endwin();
-              // printf("%s - %zu - %i\n", res->d_name, count, xattrPos);
             #else
               #ifdef HAVE_SYS_ACL_H
                 xattrs = malloc(sizeof(char) * 1);
@@ -2363,9 +2289,6 @@ results* get_dir(char *pwd)
           goto reload;
         }
 
-        // free(objectWild);
-
-        // return ob;
       }else{
         // May want to use error no. here.
         dirErrorSize = 29;
@@ -2373,7 +2296,6 @@ results* get_dir(char *pwd)
         sprintf(dirError, "Could not open the directory" );
         topLineMessage(dirError);
         historyref--;
-        // return ob;
       }
     }
 
@@ -2405,14 +2327,13 @@ results* get_dir(char *pwd)
   grouplen = seglength(ob, "group", count);
   authorlen = seglength(ob, "author", count);
   sizelen = seglength(ob, "size", count);
+  sizeblockslen = seglength(ob, "sizeBlocks", count);
   majorlen = seglength(ob, "major", count);
   minorlen = seglength(ob, "minor", count);
   datelen = seglength(ob, "datedisplay", count);
   namelen = seglength(ob, "name", count);
   slinklen = seglength(ob, "slink", count);
   contextlen = seglength(ob, "contextText", count);
-
-  // nameSegLen = namelen + slinklen + 4; // The 4 is the length of " -> "
   nameSegLen = seglength(ob, "nameSegBlock", count);
 
   xattrKeyLen = 0;
@@ -2429,7 +2350,6 @@ results* get_dir(char *pwd)
 }
 
 results* reorder_ob(results* ob, char *order){
-  //mvprintw(2,66,"%i",*ob[0].sys);
   int count = totalfilecount;
 
   skippable = 0;
@@ -2553,10 +2473,8 @@ void display_dir(char *pwd, results* ob){
 
   int i, n, t;
   size_t list_count = 0;
-  // int count = totalfilecount;
   int count = listLen;
   int printSelect = 0;
-  //char sizeHeader[256], headings[256];
   char *sizeHeader = malloc(sizeof(char) + 1);
   char *headings = malloc(sizeof(char) + 1);
   size_t sizeHeaderLen;
@@ -2567,10 +2485,9 @@ void display_dir(char *pwd, results* ob){
   wchar_t *pwdPrint = malloc(sizeof(wchar_t) + 1);
   size_t pwdPrintSize;
   char *markedInfoLine;
-  // char *padCharHeadAttrs, *padCharHeadOG, *padCharHeadContext, *padCharHeadSize, *padCharHeadDT;
   char *headerCombined = malloc(sizeof(char) + 1);
   int headerCombinedLen = 1;
-  char *markedHeadSeg, *attrHeadSeg, *hlinkHeadSeg, *ownerHeadSeg, *contextHeadSeg, *sizeHeadSeg, *dateHeadSeg, *nameHeadSeg;
+  char *markedHeadSeg, *attrHeadSeg, *hlinkHeadSeg, *ownerHeadSeg, *contextHeadSeg, *sizeHeadSeg, *dateHeadSeg, *nameHeadSeg, *sizeBlocksHeadSeg;
   int xattrOffset = 0;
   int origTopFileRef;
   int currentItem;
@@ -2591,13 +2508,8 @@ void display_dir(char *pwd, results* ob){
   } else{
     displaysize = LINES - 5;
     displaystart = 4;
-    // TO DO: REFACTOR
-    // if ((totalfilecount >= displaysize) && (lineStart + (displaysize ) > totalfilecount )){
-    //   lineStart--;
-    // }
   }
 
-  // endwin();
   if ((lineStart + displaysize) > listLen){
     bottomFileRef = el[listLen - 1].fileRef;
   } else {
@@ -2619,32 +2531,7 @@ void display_dir(char *pwd, results* ob){
   }
 
   lineCount = 0;
-  // bottomFileRef = 0;
   visibleOffset = 0;
-
-  // origTopFileRef = topfileref;
-
-  // for(list_count = topfileref; list_count < totalfilecount; list_count++ ){
-  //   lineCount++;
-
-  //   if (showXAttrs){
-  //     lineCount += ob[list_count].xattrsNum;
-  //     // visibleOffset += ob[list_count].xattrsNum;
-  //   }
-
-  //   if (lineCount > displaysize){
-  //     // lineCount--;
-  //     break;
-  //   }
-  //   // bottomFileRef = list_count;
-  // }
-
-  // visibleObjects = bottomFileRef - topfileref + 1;
-
-  // // Hacky, but it works.
-  // if ((visibleObjects + visibleOffset) > displaysize){
-  //   visibleOffset -= (visibleObjects + visibleOffset) - displaysize;
-  // }
 
   if (displaysize > count){
     displaycount = count + 1;
@@ -2652,25 +2539,9 @@ void display_dir(char *pwd, results* ob){
     displaycount = displaysize;
   }
 
-  // displaycount = visibleObjects;
-
   if (displaycount < 0){
     displaycount = 0;
   }
-
-  // topfileref = sanitizeTopFileRef(topfileref);
-  // endwin();
-  // printf("OTFR: %i, NTFR: %i\n", origTopFileRef, topfileref);
-
-  // if (topfileref != origTopFileRef){
-  //   i++;
-  //   goto rerunCalc;
-  // }
-
-  // printf("\n");
-
-  // selected = selected - topfileref;
-
 
   pwdPrintSize = (strlen(pwd) + strlen(objectWild) + 2);
 
@@ -2708,6 +2579,12 @@ void display_dir(char *pwd, results* ob){
     strcpy(headContext, "---Context---");
   } else {
     strcpy(headContext, "");
+  }
+
+  if (showSizeBlocks){
+    strcpy(headSizeBlocks, "-Blocks-");
+  } else {
+    strcpy(headSizeBlocks, "");
   }
 
   if ( mmMode ){
@@ -2757,48 +2634,28 @@ void display_dir(char *pwd, results* ob){
     break;
   }
 
-  // mvprintw(LINES-1, 0, "bottomFileRef: %i", bottomFileRef);
-  // mvprintw(LINES-1, 0, "visibleObjects: %i", visibleObjects);
-  // if (showXAttrs){
-  //   if (display)
-  // } else {
-  // }
-
   if (el[lineStart].entryLineType != ET_OBJECT){
     topfileref++;
   }
 
   for(list_count = 0; list_count < displaycount + 1; list_count++ ){
-    // endwin();
-    // printf("%zu, %i, %i, - %i\n", list_count, lineStart, listLen, displaycount + 1);
     if ((list_count + lineStart) < listLen){
       // Setting highlight
-      // if (list_count == selected) {
       if (el[(list_count + lineStart)].fileRef == selected) {
         printSelect = 1;
       } else {
         printSelect = 0;
       }
 
-      // ownstart = hlinklen + 2;
-      // hlinkstart = ownstart - 1 - *ob[list_count + lineStart].hlinklens;
-
       displaypos = 0 - hpos;
 
       currentItem = el[(list_count + lineStart)].fileRef;
 
-      // endwin();
-      // printf("LC: %i, TFR: %i, DC: %i\n", list_count, topfileref, displaycount);
-
-      // printf("DP: %i, HL: %i, OL: %i, GL: %i, AL: %i, SL: %i, MaL: %i, MiL: %i, DL: %i, NL: %i, CL: %i, PS: %i, LC: %i, TF: %i, XO: %i\n", displaypos, hlinklen, ownerlen, grouplen, authorlen, sizelen, majorlen, minorlen, datelen, namelen, contextlen, printSelect, list_count, topfileref, xattrOffset);
-      // mvprintw(list_count + 4, 0, "DP: %i, HL: %i, OL: %i, GL: %i, AL: %i, SL: %i, MaL: %i, MiL: %i, DL: %i, NL: %i, CL: %i, PS: %i, LC: %i, TF: %i, XO: %i", displaypos, hlinklen, ownerlen, grouplen, authorlen, sizelen, majorlen, minorlen, datelen, namelen, contextlen, printSelect, list_count, topfileref, xattrOffset);
       if (el[(list_count + lineStart)].entryLineType == ET_OBJECT){
-        printEntry(displaypos, hlinklen, ownerlen, grouplen, authorlen, sizelen, majorlen, minorlen, datelen, namelen, contextlen, printSelect, list_count, currentItem, ob);
-        // mvprintw(displaystart + list_count, 0, "%i - THIS SHOULDN'T BE HERE! - %s", printSelect, ob[el[(list_count + lineStart)].fileRef].name);
+        printEntry(displaypos, hlinklen, sizeblockslen, ownerlen, grouplen, authorlen, sizelen, majorlen, minorlen, datelen, namelen, contextlen, printSelect, list_count, currentItem, ob);
       } else if (el[(list_count + lineStart)].entryLineType == ET_ACL) {
         // Not implemented yet
       } else if (el[(list_count + lineStart)].entryLineType == ET_XATTR) {
-        // Not implemented yet
         printXattr(displaypos, printSelect, list_count, currentItem, el[(list_count + lineStart)].subIndex, xa, ob);
       } else {
         mvprintw(displaystart + list_count, 0, "THIS SHOULDN'T BE HERE! - entryLineType: %d", el[(list_count + lineStart)].entryLineType);
@@ -2808,28 +2665,10 @@ void display_dir(char *pwd, results* ob){
         maxdisplaywidth = charPos;
       }
 
-      // if (showXAttrs && ob[list_count + topfileref].xattrsNum > 0){
-      //   // displaysize = displaysize - ob[list_count + topfileref].xattrsNum;
-      //   // displaycount = displaycount + ob[list_count + topfileref].xattrsNum;
-      //   // list_count = list_count + ob[list_count + topfileref].xattrsNum;
-      //   xattrOffset += ob[list_count + topfileref].xattrsNum;
-      // }
-
-      //list_count++;
     } else {
       break;
     }
   }
-
-
-  // if (slinklen == 0){
-  //   maxdisplaywidth = charPos + namelen;
-  // } else {
-  //   // maxdisplaywidth = entryMetaLen + namelen + slinklen + 4;
-  //   maxdisplaywidth = charPos + nameAndSLink;
-  // }
-
-  //mvprintw(0, 66, "%d %d", historyref, sessionhistory);
 
   // the space between the largest owner and largest group should always end up being 1... in theory.
   // 2018-07-05: That assumption was solid, until we added a third element (Owner, Group, and Author)
@@ -2871,18 +2710,6 @@ void display_dir(char *pwd, results* ob){
 
   sprintf(sizeHeader, "%i Objects   %s Used %s Available", totalfilecount, susedString, savailableString);
 
-  // padCharHeadAttrs = genPadding(hlinklen + 1 + axDisplay);
-  // padCharHeadOG = genPadding(padIntHeadOG);
-  // padCharHeadContext = genPadding(padIntHeadContext);
-  // padCharHeadSize = genPadding(padIntHeadSize);
-  // padCharHeadDT = genPadding(padIntHeadDT);
-
-  // headingsLen = snprintf(NULL, 0, "%s%s%s%s%s%s%s%s%s%s%s%s", headAttrs, padCharHeadAttrs, headOG, padCharHeadOG, headContext, padCharHeadContext, padCharHeadSize, headSize, " ", headDT, padCharHeadDT, headName);
-
-  // headings = realloc(headings, sizeof(char) * (headingsLen + 1));
-
-  // sprintf(headings, "%s%s%s%s%s%s%s%s%s%s%s%s", headAttrs, padCharHeadAttrs, headOG, padCharHeadOG, headContext, padCharHeadContext, padCharHeadSize, headSize, " ", headDT, padCharHeadDT, headName);
-
   markedHeadSeg = writeSegment(3, "", RIGHT);
   attrHeadSeg = writeSegment(attrSegmentLen, headAttrs, LEFT);
   hlinkHeadSeg = writeSegment(hlinkSegmentLen, "", RIGHT);
@@ -2890,6 +2717,7 @@ void display_dir(char *pwd, results* ob){
   contextHeadSeg = writeSegment(contextSegmentLen, headContext, LEFT);
   sizeHeadSeg = writeSegment(sizeSegmentLen, headSize, RIGHT);
   dateHeadSeg = writeSegment(dateSegmentLen, headDT, LEFT);
+  sizeBlocksHeadSeg = writeSegment(sizeBlocksSegmentLen, headSizeBlocks, RIGHT);
   nameHeadSeg = writeSegment(nameSegmentDataLen, headName, LEFT);
 
   sprintf(headerCombined, "");
@@ -2900,6 +2728,13 @@ void display_dir(char *pwd, results* ob){
       headerCombinedLen = (headerCombinedLen + strlen(markedHeadSeg));
       headerCombined = realloc(headerCombined, sizeof(char) * headerCombinedLen);
       strcat(headerCombined, markedHeadSeg);
+      break;
+    case COL_SIZEBLOCKS:
+      if (showSizeBlocks){
+        headerCombinedLen = (headerCombinedLen + strlen(sizeBlocksHeadSeg));
+        headerCombined = realloc(headerCombined, sizeof(char) * headerCombinedLen);
+        strcat(headerCombined, sizeBlocksHeadSeg);
+      }
       break;
     case COL_ATTR:
       headerCombinedLen = (headerCombinedLen + strlen(attrHeadSeg));
@@ -2954,19 +2789,13 @@ void display_dir(char *pwd, results* ob){
   free(sizeHeadSeg);
   free(dateHeadSeg);
   free(nameHeadSeg);
-
-  // free(padCharHeadAttrs);
-  // free(padCharHeadOG);
-  // free(padCharHeadContext);
-  // free(padCharHeadSize);
-  // free(padCharHeadDT);
+  free(sizeBlocksHeadSeg);
 
   if ( danger ) {
     setColors(DANGER_PAIR);
   } else {
     setColors(INFO_PAIR);
   }
-  // attroff(A_BOLD); // Required to ensure the last selected item doesn't bold the header
   wPrintLine(1, 2, pwdPrint);
 
   free(pwdPrint);
@@ -2985,13 +2814,9 @@ void display_dir(char *pwd, results* ob){
     setColors(HEADING_PAIR);
   }
 
-  // headerpos = 4 - hpos;
-
   if (markedinfo == 1 || (markedinfo == 2 && (CheckMarked(ob) > 0))){
-    // printLine (4, headerpos, headings);
     printLine (4, (0 - hpos), headerCombined);
   } else {
-    // printLine (3, headerpos, headings);
     printLine (3, (0 - hpos), headerCombined);
   }
   setColors(COMMAND_PAIR);
@@ -3014,6 +2839,5 @@ void resizeDisplayDir(results* ob){
     }
   }
   refreshDirectory(sortmode, lineStart, selected, -1);
-  // display_dir(currentpwd, ob);
 }
 

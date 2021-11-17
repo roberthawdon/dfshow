@@ -1,7 +1,7 @@
 /*
   DF-SHOW: An interactive directory/file browser written for Unix-like systems.
   Based on the applications from the PC-DOS DF-EDIT suite by Larry Kroeker.
-  Copyright (C) 2018-2020  Robert Ian Hawdon
+  Copyright (C) 2018-2021  Robert Ian Hawdon
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -27,12 +27,21 @@
 #include <signal.h>
 #include <getopt.h>
 #include <libconfig.h>
+#include <ctype.h>
+#include <math.h>
 #include "config.h"
 #include "showfunctions.h"
 #include "showmenus.h"
 #include "colors.h"
+#include "menu.h"
+#include "display.h"
+#include "settings.h"
 #include "common.h"
 #include "show.h"
+#include "input.h"
+
+char * visualPath;
+char * pagerPath;
 
 char currentpwd[4096];
 
@@ -57,6 +66,11 @@ int launchThemeEditor = 0;
 int launchSettingsMenu = 0;
 int oneLine = 0;
 int skipToFirstFile = 0;
+bool useDefinedEditor = 0;
+bool useDefinedPager = 0;
+
+bool dirOnly = 0;
+bool scaleSize = 0;
 
 int plugins = 0; // Not yet implemented
 
@@ -68,21 +82,32 @@ int showProcesses;
 
 int showContext = 0;
 
+int showSizeBlocks = 0;
+
 int showXAttrs = 0;
 
 int showAcls = 0; // Might end up not implementing this.
 
+#ifdef HAVE_GNU_BLOCKSIZE
+int block_size = 1024;
+#else
+int block_size = 512;
+#endif
+
 char *objectWild;
+
+char block_unit[4] = "\0\0\0\0";
 
 results *ob;
 
-int segOrder[8] = {COL_MARK, COL_ATTR, COL_HLINK, COL_OWNER, COL_CONTEXT, COL_SIZE, COL_DATE, COL_NAME};
-// int segOrder[8] = {COL_MARK, COL_NAME, COL_SIZE, COL_DATE, COL_ATTR}; // Emulating NET-DF-EDIT's XENIX layout
+int segOrder[9] = {COL_MARK, COL_SIZEBLOCKS, COL_ATTR, COL_HLINK, COL_OWNER, COL_CONTEXT, COL_SIZE, COL_DATE, COL_NAME};
+// int segOrder[9] = {COL_MARK, COL_NAME, COL_SIZE, COL_DATE, COL_ATTR}; // Emulating NET-DF-EDIT's XENIX layout
 
 extern int skippable;
 
 extern int settingsPos;
 extern int settingsBinPos;
+extern int settingsFreePos;
 
 extern menuDef *settingsMenu;
 extern int settingsMenuSize;
@@ -251,6 +276,52 @@ void readConfig(const char * confFile)
           showXAttrs = 1;
         }
       }
+      // Check Showing Only Directories
+      setting = config_setting_get_member(group, "only-dirs");
+      if (setting){
+        if (config_setting_get_int(setting)){
+          dirOnly = 1;
+        }
+      }
+      // Check Show Size In Blocks
+      setting = config_setting_get_member(group, "sizeblocks");
+      if (setting){
+        if (config_setting_get_int(setting)){
+          dirOnly = 1;
+        }
+      }
+      // Check use defined editor
+      setting = config_setting_get_member(group, "defined-editor");
+      if (setting){
+        if (config_setting_get_int(setting)){
+          useDefinedEditor = 1;
+        }
+      }
+      // Check visualPath
+      setting = config_setting_get_member(group, "visualPath");
+      if (setting){
+        if (visualPath){
+          free(visualPath);
+        }
+        visualPath = calloc(strlen(config_setting_get_string(setting)) + 1, sizeof(char));
+        strcpy(visualPath, config_setting_get_string(setting));
+      }
+      // Check use defined pager
+      setting = config_setting_get_member(group, "defined-pager");
+      if (setting){
+        if (config_setting_get_int(setting)){
+          useDefinedPager = 1;
+        }
+      }
+      // Check pagerPath
+      setting = config_setting_get_member(group, "pagerPath");
+      if (setting){
+        if (pagerPath){
+          free(pagerPath);
+        }
+        pagerPath = calloc(strlen(config_setting_get_string(setting)) + 1, sizeof(char));
+        strcpy(pagerPath, config_setting_get_string(setting));
+      }
       // Check Layout
       array = config_setting_get_member(group, "layout");
       if (array){
@@ -336,6 +407,14 @@ void saveConfig(const char * confFile, settingIndex **settings, t1CharValues **v
         config_setting_set_int(setting, skipToFirstFile);
       } else if (!strcmp((*settings)[i].refLabel, "showXAttrs")){
         config_setting_set_int(setting, showXAttrs);
+      } else if (!strcmp((*settings)[i].refLabel, "only-dirs")){
+        config_setting_set_int(setting, dirOnly);
+      } else if (!strcmp((*settings)[i].refLabel, "sizeblocks")){
+        config_setting_set_int(setting, showSizeBlocks);
+      } else if (!strcmp((*settings)[i].refLabel, "defined-editor")){
+        config_setting_set_int(setting, useDefinedEditor);
+      } else if (!strcmp((*settings)[i].refLabel, "defined-pager")){
+        config_setting_set_int(setting, useDefinedPager);
       }
     } else if ((*settings)[i].type == SETTING_SELECT){
       //
@@ -358,6 +437,13 @@ void saveConfig(const char * confFile, settingIndex **settings, t1CharValues **v
           setting = config_setting_add(subgroup, (*bins)[v].settingLabel, CONFIG_TYPE_INT);
           config_setting_set_int(setting, (*bins)[v].boolVal);
         }
+      }
+    } else if ((*settings)[i].type == SETTING_FREE){
+      setting = config_setting_add(group, (*settings)[i].refLabel, CONFIG_TYPE_STRING);
+      if (!strcmp((*settings)[i].refLabel, "visualPath")){
+        config_setting_set_string(setting, (*settings)[i].charSetting);
+      } else if (!strcmp((*settings)[i].refLabel, "pagerPath")){
+        config_setting_set_string(setting, (*settings)[i].charSetting);
       }
     }
   }
@@ -411,6 +497,22 @@ void applySettings(settingIndex **settings, t1CharValues **values, int items, in
       ogavis = (*settings)[i].intSetting;
     } else if (!strcmp((*settings)[i].refLabel, "showXAttrs")){
       showXAttrs = (*settings)[i].intSetting;
+    } else if (!strcmp((*settings)[i].refLabel, "only-dirs")){
+      dirOnly = (*settings)[i].intSetting;
+    } else if (!strcmp((*settings)[i].refLabel, "sizeblocks")){
+      showSizeBlocks = (*settings)[i].intSetting;
+    } else if (!strcmp((*settings)[i].refLabel, "defined-editor")){
+      useDefinedEditor = (*settings)[i].intSetting;
+    } else if (!strcmp((*settings)[i].refLabel, "visualPath")){
+      free(visualPath);
+      visualPath = calloc((strlen((*settings)[i].charSetting) + 1), sizeof(char));
+      sprintf(visualPath, "%s", (*settings)[i].charSetting);
+    } else if (!strcmp((*settings)[i].refLabel, "defined-pager")){
+      useDefinedPager = (*settings)[i].intSetting;
+    } else if (!strcmp((*settings)[i].refLabel, "pagerPath")){
+      free(pagerPath);
+      pagerPath = calloc((strlen((*settings)[i].charSetting) + 1), sizeof(char));
+      sprintf(pagerPath, "%s", (*settings)[i].charSetting);
     }
   }
 }
@@ -427,6 +529,8 @@ void settingsMenuView(){
   int charValuesCount;
   int binValuesCount;
   int sortmodeInt, timestyleInt;
+  int e;
+  char charTempValue[1024];
 
  reloadSettings:
 
@@ -457,36 +561,37 @@ void settingsMenuView(){
   sortmodeInt = textValueLookup(&charValues, &charValuesCount, "sortmode", sortmode);
   timestyleInt = textValueLookup(&charValues, &charValuesCount, "timestyle", timestyle);
 
-  importSetting(&settingIndex, &items, "color",          L"Display file colors", SETTING_BOOL, filecolors, -1, 0);
-  importSetting(&settingIndex, &items, "marked",         L"Show marked file info", SETTING_SELECT, markedinfo, markedCount, 0);
-  importSetting(&settingIndex, &items, "sortmode",       L"Sorting mode", SETTING_SELECT, sortmodeInt, sortmodeCount, 0);
-  importSetting(&settingIndex, &items, "reverse",        L"Reverse sorting order", SETTING_BOOL, reverse, -1, 0);
-  importSetting(&settingIndex, &items, "timestyle",      L"Time style", SETTING_SELECT, timestyleInt, timestyleCount, 0);
-  importSetting(&settingIndex, &items, "hidden",         L"Show hidden files", SETTING_BOOL, showhidden, -1, 0);
-  importSetting(&settingIndex, &items, "ignore-backups", L"Hide backup files", SETTING_BOOL, showbackup, -1, 1);
-  importSetting(&settingIndex, &items, "no-sf",          L"Use 3rd party pager over SF", SETTING_BOOL, useEnvPager, -1, 0);
+  importSetting(&settingIndex, &items, "color",          L"Display file colors", SETTING_BOOL, NULL, filecolors, -1, 0);
+  importSetting(&settingIndex, &items, "marked",         L"Show marked file info", SETTING_SELECT, NULL, markedinfo, markedCount, 0);
+  importSetting(&settingIndex, &items, "sortmode",       L"Sorting mode", SETTING_SELECT, NULL, sortmodeInt, sortmodeCount, 0);
+  importSetting(&settingIndex, &items, "reverse",        L"Reverse sorting order", SETTING_BOOL, NULL, reverse, -1, 0);
+  importSetting(&settingIndex, &items, "timestyle",      L"Time style", SETTING_SELECT, NULL, timestyleInt, timestyleCount, 0);
+  importSetting(&settingIndex, &items, "hidden",         L"Show hidden files", SETTING_BOOL, NULL, showhidden, -1, 0);
+  importSetting(&settingIndex, &items, "ignore-backups", L"Hide backup files", SETTING_BOOL, NULL, showbackup, -1, 1);
+  importSetting(&settingIndex, &items, "no-sf",          L"Use 3rd party pager over SF", SETTING_BOOL, NULL, useEnvPager, -1, 0);
   if (uid == 0 || euid == 0){
-    importSetting(&settingIndex, &items, "no-danger",      L"Hide danger lines as root", SETTING_BOOL, danger, -1, 1);
+    importSetting(&settingIndex, &items, "no-danger",      L"Hide danger lines as root", SETTING_BOOL, NULL, danger, -1, 1);
   }
-  importSetting(&settingIndex, &items, "si",             L"Use SI units", SETTING_BOOL, si, -1, 0);
-  importSetting(&settingIndex, &items, "human-readable", L"Human readable sizes", SETTING_BOOL, human, -1, 0);
-  importSetting(&settingIndex, &items, "show-on-enter",  L"Enter key acts like Show", SETTING_BOOL, enterAsShow, -1, 0);
-  importSetting(&settingIndex, &items, "owner",          L"Owner Column", SETTING_MULTI, ogavis, ownerCount, 0);
-  importSetting(&settingIndex, &items, "context",        L"Show security context of files", SETTING_BOOL, showContext, -1, 0);
-  importSetting(&settingIndex, &items, "skip-to-first",  L"Skip to the first object", SETTING_BOOL, skipToFirstFile, -1, 0);
+  importSetting(&settingIndex, &items, "si",             L"Use SI units", SETTING_BOOL, NULL, si, -1, 0);
+  importSetting(&settingIndex, &items, "human-readable", L"Human readable sizes", SETTING_BOOL, NULL, human, -1, 0);
+  importSetting(&settingIndex, &items, "show-on-enter",  L"Enter key acts like Show", SETTING_BOOL, NULL, enterAsShow, -1, 0);
+  importSetting(&settingIndex, &items, "owner",          L"Owner Column", SETTING_MULTI, NULL, ogavis, ownerCount, 0);
+  importSetting(&settingIndex, &items, "context",        L"Show security context of files", SETTING_BOOL, NULL, showContext, -1, 0);
+  importSetting(&settingIndex, &items, "skip-to-first",  L"Skip to the first object", SETTING_BOOL, NULL, skipToFirstFile, -1, 0);
 #ifdef HAVE_ACL_TYPE_EXTENDED
-  importSetting(&settingIndex, &items, "showXAttrs",     L"Display extended attribute keys and sizes", SETTING_BOOL, showXAttrs, -1, 0);
+  importSetting(&settingIndex, &items, "showXAttrs",     L"Display extended attribute keys and sizes", SETTING_BOOL, NULL, showXAttrs, -1, 0);
 #endif
+  importSetting(&settingIndex, &items, "only-dirs",      L"Display only directories", SETTING_BOOL, NULL, dirOnly, -1, 0);
+  importSetting(&settingIndex, &items, "sizeblocks",     L"Show allocated size in blocks", SETTING_BOOL, NULL, showSizeBlocks, -1, 0);
+  importSetting(&settingIndex, &items, "defined-editor", L"Override default editor", SETTING_BOOL, NULL, useDefinedEditor, -1, 0);
+  importSetting(&settingIndex, &items, "visualPath",     L"Editor utility program command", SETTING_FREE, visualPath, -1, -1, 0);
+  importSetting(&settingIndex, &items, "defined-pager",  L"Override default pager", SETTING_BOOL, NULL, useDefinedPager, -1, 0);
+  importSetting(&settingIndex, &items, "pagerPath",      L"Pager utility program command", SETTING_FREE, pagerPath, -1, -1, 0);
 
   populateBool(&binValues, "owner", ogavis, binValuesCount);
 
   while(1)
     {
-      // if (settingsBinPos < 0){
-      //   curs_set(TRUE);
-      // } else {
-      //   curs_set(FALSE);
-      // }
       for (count = 0; count < items; count++){
         printSetting(2 + count, 3, &settingIndex, &charValues, &binValues, count, charValuesCount, binValuesCount, settingIndex[count].type, settingIndex[count].invert);
       }
@@ -518,13 +623,13 @@ void settingsMenuView(){
         }
       } else if (*pc == 32 || *pc == 260 || *pc == 261){
         // Adjust
-        if (settingIndex[settingsPos].type == 0){
+        if (settingIndex[settingsPos].type == SETTING_BOOL){
           if (settingIndex[settingsPos].intSetting > 0){
             updateSetting(&settingIndex, settingsPos, 0, 0);
           } else {
             updateSetting(&settingIndex, settingsPos, 0, 1);
           }
-        } else if (settingIndex[settingsPos].type == 1){
+        } else if (settingIndex[settingsPos].type == SETTING_SELECT){
           if (*pc == 32 || *pc == 261){
             if (settingIndex[settingsPos].intSetting < (settingIndex[settingsPos].maxValue) - 1){
               updateSetting(&settingIndex, settingsPos, 1, (settingIndex[settingsPos].intSetting) + 1);
@@ -538,7 +643,7 @@ void settingsMenuView(){
               updateSetting(&settingIndex, settingsPos, 1, (settingIndex[settingsPos].maxValue - 1));
             }
           }
-        } else if (settingIndex[settingsPos].type == 2){
+        } else if (settingIndex[settingsPos].type == SETTING_MULTI){
           if (*pc == 261 && (settingsBinPos < (settingIndex[settingsPos].maxValue -1))){
             settingsBinPos++;
           } else if (*pc == 260 && (settingsBinPos > -1)){
@@ -548,6 +653,20 @@ void settingsMenuView(){
             if (!strcmp(settingIndex[settingsPos].refLabel, "owner")){
               adjustBinSetting(&settingIndex, &binValues, "owner", &ogavis, binValuesCount);
             }
+          }
+        } else if (settingIndex[settingsPos].type == SETTING_FREE){
+          if (*pc == 32 || *pc == 261) {
+            settingsFreePos = 0;
+            move(x + settingsPos, y + wcslen(settingIndex[settingsPos].textLabel) + 6);
+            e = readline(charTempValue, 1024, settingIndex[settingsPos].charSetting);
+            if (strcmp(charTempValue, "")){
+              free(settingIndex[settingsPos].charSetting);
+              settingIndex[settingsPos].charSetting = malloc(sizeof(char) * (strlen(charTempValue) + 1));
+              sprintf(settingIndex[settingsPos].charSetting, "%s", charTempValue);
+            }
+            move(x + settingsPos, 0);
+            clrtoeol();
+            settingsFreePos = -1;
           }
         }
       } else if (*pc == 259){
@@ -568,12 +687,10 @@ int directory_view(char * currentpwd)
     strcpy(objectWild, "");
   }
 
-  // topfileref = 0;
   lineStart = 0;
   clear();
   setColors(COMMAND_PAIR);
 
-  // directory_top_menu();
 
   wPrintMenu(0, 0, fileMenuLabel);
 
@@ -592,11 +709,6 @@ int directory_view(char * currentpwd)
 
   display_dir(currentpwd, ob);
 
-  // function_key_menu();
-
-  //printMenu(LINES-1, 0, functionMenuText);
-  // wPrintMenu(LINES-1, 0, functionMenuLabel);
-
   refresh();
 
   directory_view_menu_inputs();
@@ -609,13 +721,8 @@ int directory_view(char * currentpwd)
 int global_menu()
 {
   clear();
-
-  // printMenu(0, 0, globalMenuText);
-
   refresh();
-
   global_menu_inputs();
-
   return 0;
 }
 
@@ -649,9 +756,6 @@ int setColor(char* colorinput)
   if (!strcmp(colorinput, "always")){
     filecolors = 1;
     return 1;
-    // } else if (!strcmp(colorinput, "auto")){
-    //   filecolors = 0; // Need to make this autodetect
-    //   return 1;
   } else if (!strcmp(colorinput, "never")){
     filecolors = 0;
     return 1;
@@ -660,13 +764,99 @@ int setColor(char* colorinput)
   }
 }
 
+int setBlockSize(const char * arg){
+    size_t numarg;
+    int returnCode = 0;
+    int multiplier = 1;
+    int power = 1;
+    int powerUnit = 1024;
+
+    int i1 = 1;
+    signed char c1;
+    signed char e1 = 0;
+    signed char e2 = 0;
+
+    if ( isdigit(arg[0]) ){
+      sscanf(arg, "%d%1c%1c%1c", &i1, &c1, &e1, &e2);
+    } else {
+      sscanf(arg, "%1c%1c%1c", &c1, &e1, &e2);
+    }
+
+    if ( e1 == 66 || e1 == 98){
+      powerUnit = 1000;
+    } else if ( e1 != 0){
+      returnCode = 1;
+    }
+
+    if ( e2 != 0 ){
+      returnCode = 1;
+    }
+
+    // Deal with humans using lowercase
+    if ((c1 < 123) && (c1 > 96)){
+      c1 = c1 - 32;
+    }
+
+    block_unit[0] = c1;
+    block_unit[1] = e1;
+
+    switch (c1){
+      case 'K':
+        power = 1;
+        break;
+      case 'M':
+        power = 2;
+        break;
+      case 'G':
+        power = 3;
+        break;
+      case 'T':
+        power = 4;
+        break;
+      case 'P':
+        power = 5;
+        break;
+      case 'E':
+        power = 6;
+        break;
+      case 'Z':
+        power = 7;
+        break;
+      case 'Y':
+        power = 8;
+        break;
+      case '\0':
+        power = 0;
+        break;
+      default:
+        returnCode = 1;
+        break;
+    }
+
+    multiplier = pow(powerUnit, power);
+
+    numarg = i1 * multiplier;
+    if (returnCode != 1){
+      if (numarg < 1){
+        returnCode = 1;
+      } else {
+        block_size = numarg;
+        returnCode = 0;
+      }
+    }
+
+    return returnCode;
+}
+
 void refreshScreen()
 {
   endwin();
   clear();
+  cbreak();
+  noecho();
+  curs_set(FALSE);
+  keypad(stdscr, TRUE);
   refresh();
-  initscr();
-  //mvprintw(0,0,"%d:%d", LINES, COLS);
   unloadMenuLabels();
   refreshMenuLabels();
   switch(viewMode)
@@ -704,7 +894,6 @@ void refreshScreen()
 
 void sigwinchHandle(int sig){
   resized = 1;
-  // refreshScreen();
 }
 
 void printHelp(char* programName){
@@ -720,8 +909,11 @@ Options shared with ls:\n"), stdout);
 #endif
   fputs(("  -a, --all                    do not ignore entries starting with .\n\
       --author                 prints the author of each file\n\
+      --block-size=SIZE        scale sizes by SIZE, for example '--block-size=M'\n\
+                                 see SIZE format below\n\
   -B, --ignore-backups         do not list implied entries ending with ~\n\
       --color[=WHEN]           colorize the output, see the color section below\n\
+  -d, --directory              show only directories\n\
   -f                           do not sort, enables -aU\n\
       --full-time              display time as full-iso format\n\
   -g                           only show group\n\
@@ -729,6 +921,7 @@ Options shared with ls:\n"), stdout);
   -h, --human-readable         print sizes like 1K 234M 2G etc.\n\
       --si                     as above, but use powers of 1000 not 1024\n\
   -r, --reverse                reverse order while sorting\n\
+  -s, --size                   display the allocated size of files, in blocks\n\
   -S                           sort file by size, largest first\n\
       --time-style=TIME_STYLE  time/date format, see TIME_STYLE section below\n\
   -t                           sort by modification time, newest first\n\
@@ -738,6 +931,9 @@ Options shared with ls:\n"), stdout);
       --help                   displays help message, then exits\n\
       --version                displays version, then exits\n"), stdout);
   fputs (("\n\
+The SIZE agrument is an integer and optional unit (for example: 10K = 10*1024).\n\
+The units are K,M,G,T,P,E,Z,Y (powers of 1024) or KB,MB, etc. (powers of 1000).\n"), stdout);
+  fputs (("\n\
 The TIME_STYLE argument can be: full-iso; long-iso; iso; locale.\n"), stdout);
   fputs (("\n\
 Using color to highlight file attributes is disabled by default and with\n\
@@ -745,14 +941,14 @@ Using color to highlight file attributes is disabled by default and with\n\
   fputs (("\n\
 Options specific to show:\n\
       --theme=[THEME]          color themes, see the THEME section below for\n\
-                               valid themes\n\
+                                 valid themes\n\
       --no-danger              turns off danger colors when running with\n\
-                               elevated privileges\n\
+                                 elevated privileges\n\
       --marked=[MARKED]        shows information about marked objects. See\n\
-                               MARKED section below for valid options\n\
+                                 MARKED section below for valid options\n\
       --no-sf                  does not display files in sf\n\
       --show-on-enter          repurposes the Enter key to launch the show\n\
-                               command\n\
+                                 command\n\
       --running                display number of parent show processes\n\
       --settings-menu          launch settings menu\n\
       --edit-themes            launchs directly into the theme editor\n\
@@ -768,6 +964,12 @@ Exit status:\n\
   printf ("\nPlease report any bugs to: <%s>\n", PACKAGE_BUGREPORT);
 }
 
+void freeSettingVars()
+{
+  free(visualPath);
+  return;
+}
+
 int main(int argc, char *argv[])
 {
   uid_t uid=getuid(), euid=geteuid();
@@ -776,9 +978,42 @@ int main(int argc, char *argv[])
   char options[20];
 
 #ifdef HAVE_ACL_TYPE_EXTENDED
-  strcpy(options, "@aABfgGhlrStUZ1");
+  strcpy(options, "@aABdfgGhlrsStUZ1");
 #else
-  strcpy(options, "aABfgGhlrStUZ1");
+  strcpy(options, "aABdfgGhlrsStUZ1");
+#endif
+
+  // Setting the default editor
+#ifdef HAVE_NANO
+  visualPath = calloc(5, sizeof(char));
+  sprintf(visualPath, "nano");
+#elif HAVE_VIM
+  visualPath = calloc(4, sizeof(char));
+  sprintf(visualPath, "vim");
+#elif HAVE_VI
+  visualPath = calloc(3, sizeof(char));
+  sprintf(visualPath, "vi");
+#elif HAVE_EMACS
+  visualPath = calloc(6, sizeof(char));
+  sprintf(visualPath, "emacs");
+#elif HAVE_JED
+  visualPath = calloc(4, sizeof(char));
+  sprintf(visualPath, "jed");
+#else
+  visualPath = calloc(3, sizeof(char));
+  sprintf(visualPath, "vi");
+#endif
+
+  // Setting the default pager
+#ifdef HAVE_LESS
+  pagerPath = calloc(5, sizeof(char));
+  sprintf(pagerPath, "less");
+#elif HAVE_MORE
+  pagerPath = calloc(5, sizeof(char));
+  sprintf(pagerPath, "more");
+#else
+  pagerPath = calloc(5, sizeof(char));
+  sprintf(pagerPath, "more");
 #endif
 
   showProcesses = checkRunningEnv() + 1;
@@ -809,10 +1044,13 @@ int main(int argc, char *argv[])
          {"all",            no_argument,       0, 'a'},
          {"almost-all",     no_argument,       0, 'A'},
          {"author",         no_argument,       0, GETOPT_AUTHOR_CHAR},
+         {"block-size",     required_argument, 0, GETOPT_BLOCKSIZE_CHAR},
          {"ignore-backups", no_argument,       0, 'B'},
+         {"directory",      no_argument,       0, 'd'},
          {"human-readable", no_argument,       0, 'h'},
          {"no-group",       no_argument,       0, 'G'},
          {"reverse",        no_argument,       0, 'r'},
+         {"size",           no_argument,       0, 's'},
          {"time-style",     required_argument, 0, GETOPT_TIMESTYLE_CHAR},
          {"si",             no_argument,       0, GETOPT_SI_CHAR},
          {"help",           no_argument,       0, GETOPT_HELP_CHAR},
@@ -841,12 +1079,19 @@ int main(int argc, char *argv[])
 
     switch(c){
     case 'A':
-      // Dropthourgh
+      // Dropthrough
     case 'a':
       showhidden = 1;
       break;
     case GETOPT_AUTHOR_CHAR:
       ogavis = ogavis + 4;
+      break;
+    case GETOPT_BLOCKSIZE_CHAR:
+      if (setBlockSize(optarg)){
+          printf("%s: invalid argument '%s' for 'block-size'\n", argv[0], optarg);
+          exit(2);
+      };
+      scaleSize = 1;
       break;
     case 'B':
       showbackup = 0;
@@ -878,6 +1123,9 @@ Valid arguments are:\n\
         exit(2);
       }
       break;
+    case 'd':
+      dirOnly = 1;
+      break;
     case 'f':
       strcpy(sortmode, "unsorted"); // This needs to be set to "unsorted" to allow the settings menu to render correctly.
       showhidden = 1;
@@ -886,6 +1134,9 @@ Valid arguments are:\n\
       break; // Allows for accidental -l from `ls` muscle memory commands. Does nothing.
     case 'S':
       strcpy(sortmode, "size");
+      break;
+    case 's':
+      showSizeBlocks = 1;
       break;
     case GETOPT_TIMESTYLE_CHAR:
       strcpy(timestyle, optarg);
@@ -1001,11 +1252,10 @@ Valid arguments are:\n\
 
   generateDefaultMenus();
   set_escdelay(10);
-  //ESCDELAY = 10;
 
   setlocale(LC_ALL, "");
 
-  initscr();
+  newterm(NULL, stderr, stdin); 
   refreshMenuLabels();
 
   memset(&sa, 0, sizeof(struct sigaction));
@@ -1016,12 +1266,10 @@ Valid arguments are:\n\
   }
 
   start_color();
-  cbreak(); //Added for new method
   setDefaultTheme();
   loadAppTheme(themeName);
   bkgd(COLOR_PAIR(DISPLAY_PAIR));
   cbreak();
-  // nodelay(stdscr, TRUE);
   noecho();
   curs_set(FALSE); // Hide Curser (Will want to bring it back later)
   keypad(stdscr, TRUE);
@@ -1052,7 +1300,6 @@ Valid arguments are:\n\
     }
 
     if (!check_dir(currentpwd)){
-      //strcpy(currentpwd, "/"); // If dir doesn't exist, default to root
       invalidstart = 1;
       exitCode = 1;
       global_menu();
