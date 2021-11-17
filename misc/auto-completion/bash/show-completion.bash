@@ -10,6 +10,7 @@ _show()
            -@
            --all
            --author
+	   --block-size
            --ignore-backups
            --color
            --directroy

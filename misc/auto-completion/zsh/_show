@@ -7,6 +7,7 @@ args=(
     '(-@)-@[Display extended attribute keys and sizes]'
     '(-a --all)'{-a,--all}"["'Do not ignore entries starting with .'"]"
     '(--author)--author[Prints the author of each file]'
+    '(--block-size)--block-size[Scales sizes]'
     '(-B --ignore-backups)'{-B,--ignore-backups}"["'Do not list implied entries ending with ~'"]"
     '(--color)--color[Colorize the output]'
     '(-d --directory)'{-d,--directory}"["'Show only directories'"]"
