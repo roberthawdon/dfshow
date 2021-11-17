@@ -596,7 +596,7 @@ Indicates a single value option, the active item will be highlighted. To change 
 Indicates a multi value option, the active items will be highlighted. To change their values, use the arrow keys to highlight the desired option and press _SPACE_ to toggle its activation status.
 
 *  `->`:
-Indicates a free text box. To change the value, press _SPACE_ and edit the vaule. When finished, press _ENTER_ to confirm the change. Pressing _ESC_ or setting a blank value will abort the change.
+Indicates a free text box. To change the value, press _SPACE_ and edit the value. When finished, press _ENTER_ to confirm the change. Pressing _ESC_ or setting a blank value will abort the change.
 
 The following commands can be used within this menu.
 
