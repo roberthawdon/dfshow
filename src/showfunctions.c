@@ -363,7 +363,7 @@ char *getRelativePath(char *file, char *target)
     }
     for(i=(fileLen - fileUp); i < fileLen; i++){
       j = strlen(fileStruct[i].directories);
-      result = realloc(result, sizeof(char) * (strlen(result) + j + 1));
+      result = realloc(result, sizeof(char) * (strlen(result) + j + 2));
       if (i == fileLen - 1){
         sprintf(result + strlen(result), "%s%c", fileStruct[i].directories, '\0');
       } else {
@@ -373,7 +373,7 @@ char *getRelativePath(char *file, char *target)
   } else if ((targetUp < 1) && (fileUp > 1)){
     for(i=commonPath; i < fileLen; i++){
       j = strlen(fileStruct[i].directories);
-      result = realloc(result, sizeof(char) * (strlen(result) + j + 1));
+      result = realloc(result, sizeof(char) * (strlen(result) + j + 2));
       if (c == 0){
         sprintf(result, "%s/%c", fileStruct[i].directories, '\0');
       } else if (i == fileLen - 1){
