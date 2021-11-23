@@ -357,7 +357,7 @@ char *getRelativePath(char *file, char *target)
       if (c == 0){
         sprintf(result, "%s/", "..");
       } else {
-        sprintf(result, "%s%s/", result, "..");
+        sprintf(result + strlen(result), "%s/", "..");
       }
       c++;
     }
@@ -365,9 +365,9 @@ char *getRelativePath(char *file, char *target)
       j = strlen(fileStruct[i].directories);
       result = realloc(result, sizeof(char) * (strlen(result) + j + 1));
       if (i == fileLen - 1){
-        sprintf(result, "%s%s", result, fileStruct[i].directories);
+        sprintf(result + strlen(result), "%s%c", fileStruct[i].directories, '\0');
       } else {
-        sprintf(result, "%s%s/", result, fileStruct[i].directories);
+        sprintf(result + strlen(result), "%s/%c", fileStruct[i].directories, '\0');
       }
     }
   } else if ((targetUp < 1) && (fileUp > 1)){
@@ -375,11 +375,11 @@ char *getRelativePath(char *file, char *target)
       j = strlen(fileStruct[i].directories);
       result = realloc(result, sizeof(char) * (strlen(result) + j + 1));
       if (c == 0){
-        sprintf(result, "%s/", fileStruct[i].directories);
+        sprintf(result, "%s/%c", fileStruct[i].directories, '\0');
       } else if (i == fileLen - 1){
-        sprintf(result, "%s%s", result, fileStruct[i].directories);
+        sprintf(result + strlen(result), "%s%c", fileStruct[i].directories, '\0');
       } else {
-        sprintf(result, "%s%s/", result, fileStruct[i].directories);
+        sprintf(result + strlen(result), "%s/%c", fileStruct[i].directories, '\0');
       }
       c++;
     }
@@ -1582,10 +1582,10 @@ int SendToPager(char* object)
       sprintf(fullObject, "'%s'", escObject);
       for (i = 1; i < noOfArgs; i++){
         fullCommand = realloc(fullCommand, (strlen(fullCommand) + strlen(launchCommand[i]) + 2));
-        sprintf(fullCommand, "%s %s", fullCommand, launchCommand[i]);
+        sprintf(fullCommand + strlen(fullCommand), " %s", launchCommand[i]);
       }
       fullCommand = realloc(fullCommand, (strlen(fullCommand) + strlen(fullObject) + 2));
-      sprintf(fullCommand, "%s %s", fullCommand, fullObject);
+      sprintf(fullCommand + strlen(fullCommand), " %s", fullObject);
       free(fullObject);
       char *args[countArguments(fullCommand)];
       buildCommandArguments(fullCommand, args, countArguments(fullCommand));
@@ -1645,10 +1645,10 @@ int SendToEditor(char* object)
         sprintf(fullObject, "'%s'", escObject);
         for (i = 1; i < noOfArgs; i++){
           fullCommand = realloc(fullCommand, (strlen(fullCommand) + strlen(launchCommand[i]) + 2));
-          sprintf(fullCommand, "%s %s", fullCommand, launchCommand[i]);
+          sprintf(fullCommand + strlen(fullCommand), " %s", launchCommand[i]);
         }
         fullCommand = realloc(fullCommand, (strlen(fullCommand) + strlen(fullObject) + 2));
-        sprintf(fullCommand, "%s %s", fullCommand, fullObject);
+        sprintf(fullCommand + strlen(fullCommand), " %s", fullObject);
         free(fullObject);
         char *args[countArguments(fullCommand)];
         buildCommandArguments(fullCommand, args, countArguments(fullCommand));
