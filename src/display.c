@@ -25,6 +25,7 @@
 #include <string.h>
 #include <wchar.h>
 #include "colors.h"
+#include "banned.h"
 
 extern int * pc;
 

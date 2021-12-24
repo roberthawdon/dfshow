@@ -39,6 +39,7 @@
 #include "common.h"
 #include "show.h"
 #include "input.h"
+#include "banned.h"
 
 char * visualPath;
 char * pagerPath;
@@ -159,7 +160,7 @@ void readConfig(const char * confFile)
       setting = config_setting_get_member(group, "theme");
       if (setting){
         if (!getenv("DFS_THEME_OVERRIDE")){
-          strcpy(themeName, config_setting_get_string(setting));
+          snprintf(themeName, 256, "%s", config_setting_get_string(setting));
           setenv("DFS_THEME", themeName, 1);
         }
       }
@@ -183,13 +184,13 @@ void readConfig(const char * confFile)
       // Check Marked
       setting = config_setting_get_member(group, "marked");
       if (setting){
-        strcpy(markedParam, config_setting_get_string(setting));
+        snprintf(markedParam, 8, "%s", config_setting_get_string(setting));
         setMarked(markedParam);
       }
       // Check Sort
       setting = config_setting_get_member(group, "sortmode");
       if (setting){
-        strcpy(sortmode, config_setting_get_string(setting));
+        snprintf(sortmode, 9, "%s", config_setting_get_string(setting));
       }
       // Check Reverse
       setting = config_setting_get_member(group, "reverse");
@@ -201,9 +202,9 @@ void readConfig(const char * confFile)
       // Check Timestyle
       setting = config_setting_get_member(group, "timestyle");
       if (setting){
-        strcpy(timestyle, config_setting_get_string(setting));
+        snprintf(timestyle, 9, "%s", config_setting_get_string(setting));
         if(!checkStyle(timestyle)){
-          strcpy(timestyle, "locale");
+          snprintf(timestyle, 9, "locale");
         }
       }
       // Check Hidden
@@ -304,7 +305,7 @@ void readConfig(const char * confFile)
           free(visualPath);
         }
         visualPath = calloc(strlen(config_setting_get_string(setting)) + 1, sizeof(char));
-        strcpy(visualPath, config_setting_get_string(setting));
+        snprintf(visualPath, (strlen(config_setting_get_string(setting)) + 1), "%s", config_setting_get_string(setting));
       }
       // Check use defined pager
       setting = config_setting_get_member(group, "defined-pager");
@@ -320,7 +321,7 @@ void readConfig(const char * confFile)
           free(pagerPath);
         }
         pagerPath = calloc(strlen(config_setting_get_string(setting)) + 1, sizeof(char));
-        strcpy(pagerPath, config_setting_get_string(setting));
+        snprintf(pagerPath, (strlen(config_setting_get_string(setting)) + 1), "%s", config_setting_get_string(setting));
       }
       // Check Layout
       array = config_setting_get_member(group, "layout");
@@ -484,13 +485,13 @@ void applySettings(settingIndex **settings, t1CharValues **values, int items, in
     } else if (!strcmp((*settings)[i].refLabel, "sortmode")){
       for (j = 0; j < valuesCount; j++){
         if (!strcmp((*values)[j].refLabel, "sortmode") && ((*values)[j].index == (*settings)[i].intSetting)){
-          strcpy(sortmode, (*values)[j].value);
+          snprintf(sortmode, 9, "%s", (*values)[j].value);
         }
       }
     } else if (!strcmp((*settings)[i].refLabel, "timestyle")){
       for (j = 0; j < valuesCount; j++){
         if (!strcmp((*values)[j].refLabel, "timestyle") && ((*values)[j].index == (*settings)[i].intSetting)){
-          strcpy(timestyle, (*values)[j].value);
+          snprintf(timestyle, 9, "%s", (*values)[j].value);
         }
       }
     } else if (!strcmp((*settings)[i].refLabel, "owner")){
@@ -506,13 +507,13 @@ void applySettings(settingIndex **settings, t1CharValues **values, int items, in
     } else if (!strcmp((*settings)[i].refLabel, "visualPath")){
       free(visualPath);
       visualPath = calloc((strlen((*settings)[i].charSetting) + 1), sizeof(char));
-      sprintf(visualPath, "%s", (*settings)[i].charSetting);
+      snprintf(visualPath, (strlen((*settings)[i].charSetting) + 1), "%s", (*settings)[i].charSetting);
     } else if (!strcmp((*settings)[i].refLabel, "defined-pager")){
       useDefinedPager = (*settings)[i].intSetting;
     } else if (!strcmp((*settings)[i].refLabel, "pagerPath")){
       free(pagerPath);
       pagerPath = calloc((strlen((*settings)[i].charSetting) + 1), sizeof(char));
-      sprintf(pagerPath, "%s", (*settings)[i].charSetting);
+      snprintf(pagerPath, (strlen((*settings)[i].charSetting) + 1), "%s", (*settings)[i].charSetting);
     }
   }
 }
@@ -662,7 +663,7 @@ void settingsMenuView(){
             if (strcmp(charTempValue, "")){
               free(settingIndex[settingsPos].charSetting);
               settingIndex[settingsPos].charSetting = malloc(sizeof(char) * (strlen(charTempValue) + 1));
-              sprintf(settingIndex[settingsPos].charSetting, "%s", charTempValue);
+              snprintf(settingIndex[settingsPos].charSetting, (strlen(charTempValue) + 1), "%s", charTempValue);
             }
             move(x + settingsPos, 0);
             clrtoeol();
@@ -682,9 +683,9 @@ int directory_view(char * currentpwd)
 {
   objectWild = objectFromPath(currentpwd);
   if ( strchr(objectWild, MULTICHAR) || strchr(objectWild, ONECHAR)){
-    strcpy(currentpwd, dirFromPath(currentpwd));
+    snprintf(currentpwd, strlen(dirFromPath(currentpwd)), "%s", dirFromPath(currentpwd));
   } else {
-    strcpy(objectWild, "");
+    snprintf(objectWild, 1, "");
   }
 
   lineStart = 0;
@@ -978,42 +979,42 @@ int main(int argc, char *argv[])
   char options[20];
 
 #ifdef HAVE_ACL_TYPE_EXTENDED
-  strcpy(options, "@aABdfgGhlrsStUZ1");
+  snprintf(options, 20, "%s", "@aABdfgGhlrsStUZ1");
 #else
-  strcpy(options, "aABdfgGhlrsStUZ1");
+  snprintf(options, 20, "%s", "aABdfgGhlrsStUZ1");
 #endif
 
   // Setting the default editor
 #ifdef HAVE_NANO
   visualPath = calloc(5, sizeof(char));
-  sprintf(visualPath, "nano");
+  snprintf(visualPath, 5, "nano");
 #elif HAVE_VIM
   visualPath = calloc(4, sizeof(char));
-  sprintf(visualPath, "vim");
+  snprintf(visualPath, 4, "vim");
 #elif HAVE_VI
   visualPath = calloc(3, sizeof(char));
-  sprintf(visualPath, "vi");
+  snprintf(visualPath, 3, "vi");
 #elif HAVE_EMACS
   visualPath = calloc(6, sizeof(char));
-  sprintf(visualPath, "emacs");
+  snprintf(visualPath, 6, "emacs");
 #elif HAVE_JED
   visualPath = calloc(4, sizeof(char));
-  sprintf(visualPath, "jed");
+  snprintf(visualPath, 4, "jed");
 #else
   visualPath = calloc(3, sizeof(char));
-  sprintf(visualPath, "vi");
+  snprintf(visualPath, 3, "vi");
 #endif
 
   // Setting the default pager
 #ifdef HAVE_LESS
   pagerPath = calloc(5, sizeof(char));
-  sprintf(pagerPath, "less");
+  snprintf(pagerPath, 5, "less");
 #elif HAVE_MORE
   pagerPath = calloc(5, sizeof(char));
-  sprintf(pagerPath, "more");
+  snprintf(pagerPath, 5, "more");
 #else
   pagerPath = calloc(5, sizeof(char));
-  sprintf(pagerPath, "more");
+  snprintf(pagerPath, 5, "more");
 #endif
 
   showProcesses = checkRunningEnv() + 1;
@@ -1033,7 +1034,7 @@ int main(int argc, char *argv[])
 
   // Check for theme env variable
   if ( getenv("DFS_THEME")) {
-    strcpy(themeName, getenv("DFS_THEME"));
+    snprintf(themeName, 256, "%s", getenv("DFS_THEME"));
   }
 
   // Getting arguments
@@ -1114,7 +1115,7 @@ Valid arguments are:\n\
     case GETOPT_THEME_CHAR:
       if (optarg){
         if (strcmp(optarg, "\0")){
-          strcpy(themeName, optarg);
+          snprintf(themeName, 256, "%s", optarg);
           setenv("DFS_THEME_OVERRIDE", "TRUE", 1);
         }
       } else {
@@ -1127,19 +1128,19 @@ Valid arguments are:\n\
       dirOnly = 1;
       break;
     case 'f':
-      strcpy(sortmode, "unsorted"); // This needs to be set to "unsorted" to allow the settings menu to render correctly.
+      snprintf(sortmode, 9, "unsorted"); // This needs to be set to "unsorted" to allow the settings menu to render correctly.
       showhidden = 1;
       break;
     case 'l':
       break; // Allows for accidental -l from `ls` muscle memory commands. Does nothing.
     case 'S':
-      strcpy(sortmode, "size");
+      snprintf(sortmode, 9, "size");
       break;
     case 's':
       showSizeBlocks = 1;
       break;
     case GETOPT_TIMESTYLE_CHAR:
-      strcpy(timestyle, optarg);
+      snprintf(timestyle, 9, "%s", optarg);
       if (!checkStyle(timestyle)){
         printf("%s: invalid argument '%s' for 'time style'\n", argv[0], timestyle);
         fputs (("\
@@ -1153,10 +1154,10 @@ Valid arguments are:\n\
       }
       break;
     case GETOPT_FULLTIME_CHAR:
-      strcpy(timestyle, "full-iso");
+      snprintf(timestyle, 9, "full-iso");
       break;
     case 't':
-      strcpy(sortmode, "date");
+      snprintf(sortmode, 9, "date");
       break;
     case 'g':
       ogavis--;
@@ -1175,7 +1176,7 @@ Valid arguments are:\n\
       reverse = 1;
       break;
     case 'U':
-      strcpy(sortmode, "unsorted");
+      snprintf(sortmode, 9, "unsorted");
       break;
     case GETOPT_NODANGER_CHAR:
       danger = 0;
@@ -1289,10 +1290,10 @@ Valid arguments are:\n\
         // If the path given doesn't start with a / then assume we're dealing with a relative path.
         tmpPwd = malloc(sizeof(currentpwd));
         getcwd(tmpPwd, sizeof(currentpwd));
-        sprintf(currentpwd, "%s/%s", tmpPwd, argv[optind]);
+        snprintf(currentpwd, 4096, "%s/%s", tmpPwd, argv[optind]);
         free(tmpPwd);
       } else {
-        strcpy(currentpwd, argv[optind]);
+        snprintf(currentpwd, 4096, "%s", argv[optind]);
       }
       chdir(currentpwd);
     } else {

@@ -30,6 +30,7 @@
 #include "sf.h"
 #include "colors.h"
 #include "input.h"
+#include "banned.h"
 
 int c;
 int * pc = &c;

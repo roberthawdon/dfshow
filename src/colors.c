@@ -32,6 +32,7 @@
 #include "common.h"
 #include "colors.h"
 #include "input.h"
+#include "banned.h"
 
 int lightColorPair[256];
 

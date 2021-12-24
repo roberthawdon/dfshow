@@ -25,6 +25,7 @@
 #include <wchar.h>
 #include "colors.h"
 #include "menu.h"
+#include "banned.h"
 
 int cmp_menu_ref(const void *lhs, const void *rhs)
 {

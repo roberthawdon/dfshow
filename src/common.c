@@ -36,6 +36,7 @@
 #include "colors.h"
 #include "config.h"
 #include "common.h"
+#include "banned.h"
 
 DIR *folder;
 FILE *file;

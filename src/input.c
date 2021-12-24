@@ -25,6 +25,7 @@
 #include <wchar.h>
 #include <wctype.h>
 #include "colors.h"
+#include "banned.h"
 
 int wReadLine(wchar_t *buffer, int buflen, wchar_t *oldbuf)
 /* Read up to buflen-1 characters into `buffer`.

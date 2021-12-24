@@ -29,6 +29,7 @@
 #include "settings.h"
 #include "colors.h"
 #include "input.h"
+#include "banned.h"
 
 menuDef *settingsMenu;
 int settingsMenuSize = 0;
