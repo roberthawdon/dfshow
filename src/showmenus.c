@@ -319,14 +319,14 @@ void refreshDirectory(char *sortmode, int origlineStart, int origselected, int d
  handleMissingDir:
   if (check_dir(currentpwd)){
     if (invalidstart) {
-      strcpy(currentselectname, "");
+      snprintf(currentselectname, 512, "");
       exitCode = 0;
       invalidstart = 0;
     } else {
       if (destructive == 2){
-        strcpy(currentselectname, currentfilename);
+        memcpy(currentselectname, currentfilename, 512);
       } else {
-        strcpy(currentselectname, ob[origselected].name);
+        snprintf(currentselectname, 512, "%s", ob[origselected].name);
       }
     }
     if (destructive != -1){
@@ -361,7 +361,7 @@ void refreshDirectory(char *sortmode, int origlineStart, int origselected, int d
     }
   } else {
     if (historyref > 1){
-      strcpy(currentpwd, hs[historyref - 2].path);
+      memcpy(currentpwd, hs[historyref - 2].path, 4096);
       objectWild = hs[historyref - 2].objectWild;
       historyref--;
       chdir(currentpwd);
@@ -394,7 +394,7 @@ void show_directory_input()
   char *direrror = malloc(sizeof(char) + 1);
   size_t direrrorLen;
 
-  strcpy(oldpwd, currentpwd);
+  memcpy(oldpwd, currentpwd, (strlen(currentpwd) + 1));
   move(0,0);
   clrtoeol();
   mvprintw(0, 0, "Show Directory - Enter pathname:");
@@ -410,14 +410,14 @@ void show_directory_input()
   if ((strcmp(currentpwd, oldpwd) && strcmp(currentpwd, "")) || !historyref){
     objectWild = objectFromPath(currentpwd);
     if ( strchr(objectWild, MULTICHAR) || strchr(objectWild, ONECHAR)){
-      strcpy(currentpwd, dirFromPath(currentpwd));
+      snprintf(currentpwd, 4096, "%s", dirFromPath(currentpwd));
     } else {
-      strcpy(objectWild, "");
+      snprintf(objectWild, 1, "");
     }
 
     if (check_first_char(currentpwd, "~")){
       rewrite = str_replace(currentpwd, "~", getenv("HOME"));
-      strcpy(currentpwd, rewrite);
+      memcpy(currentpwd, rewrite, 4096);
       free(rewrite);
     }
     if (check_object(currentpwd) == 1){
@@ -434,12 +434,12 @@ void show_directory_input()
     } else {
       direrrorLen = snprintf(NULL, 0, "The location %s cannot be opened or is not a directory\n", currentpwd);
       direrror = realloc(direrror, sizeof(char) * (direrrorLen + 1));
-      sprintf(direrror, "The location %s cannot be opened or is not a directory\n", currentpwd);
-      strcpy(currentpwd, oldpwd);
+      snprintf(direrror, (direrrorLen + 1), "The location %s cannot be opened or is not a directory\n", currentpwd);
+      memcpy(currentpwd, oldpwd, 4096);
       topLineMessage(direrror);
     }
   } else {
-    strcpy(currentpwd, oldpwd); // Copying old value back if the input was aborted
+    memcpy(currentpwd, oldpwd, 4096); // Copying old value back if the input was aborted
   }
   free(direrror);
   free(oldpwd);
@@ -457,7 +457,7 @@ int replace_file_confirm_input(char *filename)
   size_t messageLen;
   messageLen = snprintf(NULL, 0, "Replace file [<%s>]? (!Yes/!No)", filename);
   message = realloc(message, sizeof(char) * messageLen);
-  sprintf(message, "Replace file [<%s>]? (!Yes/!No)", filename);
+  snprintf(message, messageLen, "Replace file [<%s>]? (!Yes/!No)", filename);
   printMenu(0,0, message);
   free(message);
   while(1)
@@ -491,7 +491,7 @@ void copy_file_input(char *file, mode_t mode)
   if ( strcmp(newfile, file) && strcmp(newfile, "")) {
     if (check_first_char(newfile, "~")){
       rewrite = str_replace(newfile, "~", getenv("HOME"));
-      strcpy(newfile, rewrite);
+      memcpy(newfile, rewrite, 4096);
       free(rewrite);
     }
   copyFile:
@@ -514,11 +514,11 @@ void copy_file_input(char *file, mode_t mode)
           createParentDirs(newfile);
           goto copyFile;
         } else {
-          sprintf(errmessage, "Error: %s", strerror(errno));
+          snprintf(errmessage, 256, "Error: %s", strerror(errno));
           topLineMessage(errmessage);
         }
       } else {
-        sprintf(errmessage, "Error: %s", strerror(errno));
+        snprintf(errmessage, 256, "Error: %s", strerror(errno));
         topLineMessage(errmessage);
       }
     }
@@ -542,7 +542,7 @@ void copy_multi_file_input(results* ob, char *input)
   if ( strcmp(dest, input) && strcmp(dest, "")) {
     if (check_first_char(dest, "~")){
       rewrite = str_replace(dest, "~", getenv("HOME"));
-      strcpy(dest, rewrite);
+      memcpy(dest, rewrite, 4096);
       free(rewrite);
     }
   copyMultiFile:
@@ -551,16 +551,16 @@ void copy_multi_file_input(results* ob, char *input)
         {
           if ( *ob[i].marked )
             {
-              strcpy(selfile, currentpwd);
+              memcpy(selfile, currentpwd, 4096);
               if (!check_last_char(selfile, "/")){
-                strcat(selfile, "/");
+                snprintf(selfile + strlen(selfile), 4096, "%s", "/");
               }
-              strcat(selfile, ob[i].name);
-              strcpy(destfile, dest);
+              snprintf(selfile + strlen(selfile), 4096, "%s", ob[i].name);
+              memcpy(destfile, dest, 4096);
               if (!check_last_char(destfile, "/")){
-                strcat(destfile, "/");
+                snprintf(destfile + strlen(destfile), 4096, "%s", "/");
               }
-              strcat(destfile, ob[i].name);
+              snprintf(destfile + strlen(destfile), 4096, "%s", ob[i].name);
               if ( check_file(destfile) )
                 {
                   if ( replace_file_confirm_input(destfile) )
@@ -603,7 +603,7 @@ void rename_multi_file_input(results* ob, char *input)
   if (strcmp(dest, input) && strcmp(dest, "")){
     if (check_first_char(dest, "~")){
       rewrite = str_replace(dest, "~", getenv("HOME"));
-      strcpy(dest, rewrite);
+      memcpy(dest, rewrite, 4096);
       free(rewrite);
     }
   renameMultiFile:
@@ -612,16 +612,16 @@ void rename_multi_file_input(results* ob, char *input)
         {
           if ( *ob[i].marked )
             {
-              strcpy(selfile, currentpwd);
+              memcpy(selfile, currentpwd, 4096);
               if (!check_last_char(selfile, "/")){
-                strcat(selfile, "/");
+                snprintf(selfile + strlen(selfile), 4096, "%s", "/");
               }
-              strcat(selfile, ob[i].name);
-              strcpy(destfile, dest);
+              snprintf(selfile + strlen(selfile), 4096, "%s", ob[i].name);
+              memcpy(destfile, dest, 4096);
               if (!check_last_char(destfile, "/")){
-                strcat(destfile, "/");
+                snprintf(destfile + strlen(destfile), 4096, "%s", "/");
               }
-              strcat(destfile, ob[i].name);
+              snprintf(destfile + strlen(destfile), 4096, "%s", ob[i].name);
               if ( check_file(destfile) )
                 {
                   if ( replace_file_confirm_input(destfile) )
@@ -678,7 +678,7 @@ void rename_file_input(char *file)
   if (strcmp(dest, file) && strcmp(dest, "")){
     if (check_first_char(dest, "~")){
       rewrite = str_replace(dest, "~", getenv("HOME"));
-      strcpy(dest, rewrite);
+      memcpy(dest, rewrite, 4096);
       free(rewrite);
     }
   renameFile:
@@ -688,12 +688,12 @@ void rename_file_input(char *file)
           if ( replace_file_confirm_input(dest) )
             {
               RenameObject(file, dest);
-              strcpy(currentfilename, objectFromPath(dest));
+              snprintf(currentfilename, 512, "%s", objectFromPath(dest));
               refreshDirectory(sortmode, 0, selected, 2);
             }
         } else {
         RenameObject(file, dest);
-        strcpy(currentfilename, objectFromPath(dest));
+        snprintf(currentfilename, 512, "%s", objectFromPath(dest));
         refreshDirectory(sortmode, 0, selected, 2);
       }
     } else {
@@ -703,11 +703,11 @@ void rename_file_input(char *file)
           createParentDirs(dest);
           goto renameFile;
         } else {
-          sprintf(errmessage, "Error: %s", strerror(errno));
+          snprintf(errmessage, 256, "Error: %s", strerror(errno));
           topLineMessage(errmessage);
         }
       } else {
-        sprintf(errmessage, "Error: %s", strerror(errno));
+        snprintf(errmessage, 256, "Error: %s", strerror(errno));
         topLineMessage(errmessage);
       }
     }
@@ -725,13 +725,13 @@ void make_directory_input()
   mvprintw(0, 0, "Make Directory - Enter pathname:");
   move (0,33);
   if (!check_last_char(currentpwd, "/")){
-    strcat(currentpwd, "/");
+    snprintf(currentpwd + strlen(currentpwd), 4096, "/");
   }
   readline(newdir, 4096, currentpwd);
   if (strcmp(newdir, currentpwd) && strcmp(newdir, "")){
     if (check_first_char(newdir, "~")){
       rewrite = str_replace(newdir, "~", getenv("HOME"));
-      strcpy(newdir, rewrite);
+      memcpy(newdir, rewrite, 4096);
       free(rewrite);
     }
   makeDir:
@@ -744,11 +744,11 @@ void make_directory_input()
           createParentDirs(newdir);
           goto makeDir;
         } else {
-          sprintf(errmessage, "Error: %s", strerror(errno));
+          snprintf(errmessage, 256, "Error: %s", strerror(errno));
           topLineMessage(errmessage);
         }
       } else {
-        sprintf(errmessage, "Error: %s", strerror(errno));
+        snprintf(errmessage, 256, "Error: %s", strerror(errno));
         topLineMessage(errmessage);
       }
     }
@@ -770,11 +770,11 @@ time_t touchTimeInput(int type)
   time_t newTime, tmpTime;
   int i;
   if (type == 1){
-    strcpy(menuTitle, "Set Access Time:");
+    snprintf(menuTitle, 32, "Set Access Time:");
   } else if (type == 2){
-    strcpy(menuTitle, "Set Modified Time:");
+    snprintf(menuTitle, 32, "Set Modified Time:");
   } else {
-    strcpy(menuTitle, "Set Time:");
+    snprintf(menuTitle, 32, "Set Time:");
   }
   move(0,0);
   clrtoeol();
@@ -841,11 +841,11 @@ void touch_file_input()
   int e;
   move(0,0);
   clrtoeol();
-  strcpy(menuTitle, "Touch File - Enter pathname:");
+  snprintf(menuTitle, 32, "Touch File - Enter pathname:");
   mvprintw(0,0,menuTitle);
   move (0, strlen(menuTitle) + 1);
   if (!check_last_char(currentpwd, "/")){
-    strcat(currentpwd, "/");
+    snprintf(currentpwd + strlen(currentpwd), 4096, "/");
   }
   if (readline(touchFile, 4096, currentpwd) != -1){
     //TODO: Ask if we want to set a time.
@@ -858,7 +858,7 @@ void touch_file_input()
     if (strcmp(touchFile, currentpwd) && strcmp(touchFile, "")){
       if (check_first_char(touchFile, "~")){
         rewrite = str_replace(touchFile, "~", getenv("HOME"));
-        strcpy(touchFile, rewrite);
+        memcpy(touchFile, rewrite, 4096);
         free(rewrite);
       }
     }
@@ -887,11 +887,11 @@ void touch_file_input()
           createParentDirs(touchFile);
           goto touchFile;
         } else {
-          sprintf(errmessage, "Error: %s", strerror(errno));
+          snprintf(errmessage, 256, "Error: %s", strerror(errno));
           topLineMessage(errmessage);
         }
       } else {
-        sprintf(errmessage, "Error: %s", strerror(errno));
+        snprintf(errmessage, 256, "Error: %s", strerror(errno));
         topLineMessage(errmessage);
       }
     }
@@ -929,7 +929,7 @@ int huntCaseSelectInput()
   size_t messageLen;
   messageLen = snprintf(NULL, 0, "Case Sensitive, !Yes/!No/<ESC> (enter = no)");
   message = malloc(sizeof(char) * (messageLen + 1));
-  sprintf(message,"Case Sensitive, !Yes/!No/<ESC> (enter = no)");
+  snprintf(message, (messageLen + 1), "Case Sensitive, !Yes/!No/<ESC> (enter = no)");
   printMenu(0,0, message);
   while(1)
     {
@@ -965,14 +965,10 @@ void huntInput(int selected, int charcase)
   size_t inputmessageLen;
   if (charcase){
     regexcase = 0;
-    inputmessageLen = snprintf(NULL, 0, "Match Case - Enter string:");
-    inputmessage = malloc(sizeof(char) * (inputmessageLen + 1));
-    sprintf(inputmessage, "Match Case - Enter string:");
+    setDynamicChar(&inputmessage, "Match Case - Enter string:");
   } else {
     regexcase = REG_ICASE;
-    inputmessageLen = snprintf(NULL, 0, "Ignore Case - Enter string:");
-    inputmessage = malloc(sizeof(char) * (inputmessageLen + 1));
-    sprintf(inputmessage, "Ignore Case - Enter string:");
+    setDynamicChar(&inputmessage, "Ignore Case - Enter string:");
   }
   move(0,0);
   clrtoeol();
@@ -983,22 +979,22 @@ void huntInput(int selected, int charcase)
     abortinput = 1;
   } else {
     if (CheckMarked(ob) < 1){
-      strcpy(chpwd, currentpwd);
+      memcpy(chpwd, currentpwd, 4096);
       if (!check_last_char(chpwd, "/")){
-        strcat(chpwd, "/");
+        snprintf(chpwd + strlen(chpwd), 4096, "%s", "/");
       }
-      strcat(chpwd, ob[selected].name);
+      snprintf(chpwd + strlen(chpwd), 4096, "%s", ob[selected].name);
       if (huntFile(chpwd, regexinput, regexcase)){
         *ob[selected].marked = 1;
       }
     } else {
       for (i = 0; i < totalfilecount; i++){
         if ( *ob[i].marked ){
-          strcpy(chpwd, currentpwd);
+          memcpy(chpwd, currentpwd, 4096);
           if (!check_last_char(chpwd, "/")){
-            strcat(chpwd, "/");
+            snprintf(chpwd + strlen(chpwd), 4096, "%s", "/");
           }
-          strcat(chpwd, ob[i].name);
+          snprintf(chpwd + strlen(chpwd), 4096, "%s", ob[i].name);
           if (huntFile(chpwd, regexinput, regexcase)){
             *ob[i].marked = 1;
           } else {
@@ -1042,7 +1038,7 @@ void delete_directory_confirm_input(char *directory)
         case 'y':
           e = rmdir(directory);
           if (e != 0){
-            sprintf(errmessage, "Error: %s", strerror(errno));
+            snprintf(errmessage, 256, "Error: %s", strerror(errno));
             topLineMessage(errmessage);
           }
           refreshDirectory(sortmode, lineStart, selected, 1);
@@ -1066,18 +1062,16 @@ void delete_multi_file_confirm_input(results* ob)
     {
       if ( *ob[i].marked && !abortflag )
         {
-          strcpy(selfile, currentpwd);
+          memcpy(selfile, currentpwd, 4096);
           if (!check_last_char(selfile, "/")){
-            strcat(selfile, "/");
+            snprintf(selfile + strlen(selfile), 4096, "%s", "/");
           }
-          strcat(selfile, ob[i].name);
+          snprintf(selfile + strlen(selfile), 4096, "%s", ob[i].name);
           if ( allflag )
             {
               delete_file(selfile);
             } else {
-            messageLen = snprintf(NULL, 0,"Delete file [<%s>]? (!Yes/!No/!All/!Stop)", selfile);
-            message = malloc(sizeof(char) * (messageLen + 1));
-            sprintf(message,"Delete file [<%s>]? (!Yes/!No/!All/!Stop)", selfile);
+            setDynamicChar(&message, "Delete file [<%s>]? (!Yes/!No/!All/!Stop)", selfile);
             printMenu(0,0, message);
             free(message);
             k = 1;

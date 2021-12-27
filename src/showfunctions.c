@@ -1626,16 +1626,16 @@ int SendToEditor(char* object)
       if (!useDefinedEditor){
         if (getenv("EDITOR")){
           originalCmd = realloc(originalCmd, sizeof(char) * (strlen(getenv("EDITOR") + 1)));
-          strcpy(originalCmd, getenv("EDITOR"));
+          snprintf(originalCmd, (strlen(getenv("EDITOR") + 1)), "%s", getenv("EDITOR"));
           noOfArgs = countArguments(originalCmd);
         } else if (getenv("VISUAL")){
           originalCmd = realloc(originalCmd, sizeof(char) * (strlen(getenv("VISUAL") + 1)));
-          strcpy(originalCmd, getenv("VISUAL"));
+          snprintf(originalCmd, (strlen(getenv("VISUAL") + 1)), "%s", getenv("VISUAL"));
           noOfArgs = countArguments(originalCmd);
         }
       } else {
         originalCmd = realloc(originalCmd, sizeof(char) * (strlen(visualPath) + 1));
-        strcpy(originalCmd, visualPath);
+        memcpy(originalCmd, visualPath, (strlen(visualPath) + 1));
         noOfArgs = countArguments(originalCmd);
       }
       char *launchCommand[noOfArgs];
@@ -1643,16 +1643,16 @@ int SendToEditor(char* object)
       editor = commandFromPath(launchCommand[0]);
       if (can_run_command(editor)){
         fullCommand = calloc((strlen(editor) + 1), sizeof(char));
-        sprintf(fullCommand, "%s", editor);
+        snprintf(fullCommand, (strlen(editor) + 1), "%s", editor);
         escObject = str_replace(object, "'", "'\"'\"'");
         fullObject = calloc((strlen(escObject) + 3), sizeof(char));
-        sprintf(fullObject, "'%s'", escObject);
+        snprintf(fullObject, (strlen(escObject) + 3), "'%s'", escObject);
         for (i = 1; i < noOfArgs; i++){
           fullCommand = realloc(fullCommand, (strlen(fullCommand) + strlen(launchCommand[i]) + 2));
-          sprintf(fullCommand + strlen(fullCommand), " %s", launchCommand[i]);
+          snprintf(fullCommand + strlen(fullCommand), (strlen(fullCommand) + strlen(launchCommand[i]) + 2),  " %s", launchCommand[i]);
         }
         fullCommand = realloc(fullCommand, (strlen(fullCommand) + strlen(fullObject) + 2));
-        sprintf(fullCommand + strlen(fullCommand), " %s", fullObject);
+        snprintf(fullCommand + strlen(fullCommand), (strlen(fullCommand) + strlen(fullObject) + 2), " %s", fullObject);
         free(fullObject);
         char *args[countArguments(fullCommand)];
         buildCommandArguments(fullCommand, args, countArguments(fullCommand));
@@ -1724,27 +1724,27 @@ int seglength(const void *seg, char *segname, int LEN)
         len = strlen(dfseg[i].author);
       }
       else if (!strcmp(segname, "hlink")) {
-        sprintf(hlinkstr, "%d", *dfseg[i].hlink);
+        snprintf(hlinkstr, 6, "%d", *dfseg[i].hlink);
         len = strlen(hlinkstr);
       }
       else if (!strcmp(segname, "sizeBlocks")) {
-        sprintf(sizeblocksstr, "%lld", dfseg[i].sizeBlocks);
+        snprintf(sizeblocksstr, 32, "%lld", dfseg[i].sizeBlocks);
         len = strlen(sizeblocksstr);
       }
       else if (!strcmp(segname, "size")) {
         if (human){
           readableSize(dfseg[i].size, 32, sizestr, si);
         } else {
-          sprintf(sizestr, "%lu", dfseg[i].size);
+          snprintf(sizestr, 32, "%lu", dfseg[i].size);
         }
         len = strlen(sizestr);
       }
       else if (!strcmp(segname, "major")) {
-        sprintf(majorstr, "%d", dfseg[i].major);
+        snprintf(majorstr, 6, "%d", dfseg[i].major);
         len = strlen(majorstr);
       }
       else if (!strcmp(segname, "minor")) {
-        sprintf(minorstr, "%d", dfseg[i].minor);
+        snprintf(minorstr, 6, "%d", dfseg[i].minor);
         len = strlen(minorstr);
       }
       else if (!strcmp(segname, "datedisplay")) {
@@ -1995,9 +1995,9 @@ void set_history(char *pwd, char *objectWild, char *name, int lineStart, int sel
   hs[historyref].path = malloc(sizeof(char) * (strlen(pwd) + 1));
   hs[historyref].name = malloc(sizeof(char) * (strlen(name) + 1));
   hs[historyref].objectWild = malloc(sizeof(char) * (strlen(objectWild) + 1));
-  strcpy(hs[historyref].path, pwd);
-  strcpy(hs[historyref].objectWild, objectWild);
-  strcpy(hs[historyref].name, name);
+  memcpy(hs[historyref].path, pwd, (strlen(pwd) + 1));
+  memcpy(hs[historyref].name, name, (strlen(name) + 1));
+  memcpy(hs[historyref].objectWild, objectWild, (strlen(objectWild) + 1));
   hs[historyref].lineStart = lineStart;
   hs[historyref].selected = selected;
   hs[historyref].visibleObjects = visibleObjects;
@@ -2064,23 +2064,24 @@ char *markedDisplay(results* ob)
   } else {
     if (markedSize == 0){
       markedSizeString = malloc (sizeof (char) * 1);
+      snprintf(markedSizeString, 1, "%lu", markedSize);
     } else {
       markedSizeString = malloc (sizeof (char) * (log10(markedSize) + 2));
+      snprintf(markedSizeString, (log10(markedSize) + 2), "%lu", markedSize);
     }
-    sprintf(markedSizeString, "%lu", markedSize);
   }
 
   if (markedNum == 1){
-    strcpy(filesWord, "file");
+    snprintf(filesWord, 6, "%s", "file");
   } else {
-    strcpy(filesWord, "files");
+    snprintf(filesWord, 6, "%s", "files");
   }
 
-  sprintf(markedNumString, "%lu", markedNum);
+  snprintf(markedNumString, 12, "%lu", markedNum);
 
   outChar = realloc(outChar, sizeof(char) * ( strlen(markedNumString) + strlen(markedSizeString) + strlen(filesWord) + 16));
 
-  sprintf(outChar, "MARKED: %s in %s %s", markedSizeString, markedNumString, filesWord);
+  snprintf(outChar, ( strlen(markedNumString) + strlen(markedSizeString) + strlen(filesWord) + 16), "MARKED: %s in %s %s", markedSizeString, markedNumString, filesWord);
 
   free(markedSizeString);
 
@@ -2149,7 +2150,7 @@ results* get_dir(char *pwd)
       if ( folder ){
         while ( ( res = readdir ( folder ) ) != NULL ){
           fullFilePath = calloc((strlen(pwd) + 2 + (strlen(res->d_name))), sizeof(char));
-          sprintf(fullFilePath, "%s/%s", pwd, res->d_name);
+          snprintf(fullFilePath, (strlen(pwd) + 2 + (strlen(res->d_name))), "%s/%s", pwd, res->d_name);
           acl = NULL; // Resetting
           xattr = 0; // Resetting
           seLinuxCon = 0; //Resetting
@@ -2181,8 +2182,8 @@ results* get_dir(char *pwd)
             }
             status = lstat(res->d_name, &buffer);
 
-            sprintf(hlinkstr, "%d", buffer.st_nlink);
-            sprintf(sizestr, "%lld", (long long)buffer.st_size);
+            snprintf(hlinkstr, 6, "%d", buffer.st_nlink);
+            snprintf(sizestr, 32, "%lld", (long long)buffer.st_size);
 
             // axflag here
 
@@ -2212,7 +2213,7 @@ results* get_dir(char *pwd)
             #else
               #ifdef HAVE_SYS_ACL_H
                 xattrs = malloc(sizeof(char) * 1);
-                strcpy(xattrs, "");
+                snprintf(xattrs, 1, "%s", "");
                 #if HAVE_ACL_LIBACL_H
                   haveAcl = acl_extended_file(res->d_name);
                   if (haveAcl == -1){
@@ -2229,7 +2230,7 @@ results* get_dir(char *pwd)
               seLinuxCon = lgetfilecon(res->d_name, &context);
               if (seLinuxCon > 0){
                 contextText = realloc(contextText, sizeof(char) * seLinuxCon);
-                strcpy(contextText, context);
+                memcpy(contextText, context, seLinuxCon);
               } else {
                 seLinuxCon = 0;
               }
@@ -2242,7 +2243,7 @@ results* get_dir(char *pwd)
             }
 
             if (seLinuxCon == 0){
-              sprintf(contextText, "?");
+              snprintf(contextText, 2, "%s", "?");
             }
 
             writeResultStruct(ob, res->d_name, buffer, count, haveAcl, xattr, seLinuxCon, contextText, xattrs, xattrsNum);
@@ -2272,11 +2273,11 @@ results* get_dir(char *pwd)
           // This is a hacky mitigation for drivefs returning 0 objects, it should prevent the crash of #82. However, it doesn't fix the inablity to load Google Drive Stream directories properly. The GNU version of 'ls' also has similar issues, so the bug is most likely in the underlying library rather than DF-SHOW itself.
           dirErrorSize = 36;
           dirError = realloc(dirError, sizeof(char) * dirErrorSize);
-          sprintf(dirError, "Error: Directory Returned 0 Objects" );
+          snprintf(dirError, dirErrorSize, "Error: Directory Returned 0 Objects" );
           topLineMessage(dirError);
           historyref--;
           if (historyref > 0){
-            strcpy(path, hs[historyref - 1].path);
+            memcpy(path, hs[historyref - 1].path, strlen(hs[historyref - 1].path));
             chdir(path);
             dirAbort = 1;
             goto reload;
@@ -2297,7 +2298,7 @@ results* get_dir(char *pwd)
         // May want to use error no. here.
         dirErrorSize = 29;
         dirError = realloc(dirError, sizeof(char) * dirErrorSize);
-        sprintf(dirError, "Could not open the directory" );
+        snprintf(dirError, dirErrorSize, "Could not open the directory" );
         topLineMessage(dirError);
         historyref--;
       }
@@ -2306,18 +2307,18 @@ results* get_dir(char *pwd)
   } else if (check_object(path) == 2){
 
     objectWild = objectFromPath(path);
-    strcpy(currentpwd, dirFromPath(path));
+    memcpy(currentpwd, dirFromPath(path), strlen(dirFromPath(path)));
 
     goto fetch;
 
   } else {
     dirErrorSize = snprintf(NULL, 0, "The location %s cannot be opened or is not a directory", path);
     dirError = realloc(dirError, sizeof(char) * (dirErrorSize + 1));
-    sprintf(dirError, "The location %s cannot be opened or is not a directory", path);
+    snprintf(dirError, (dirErrorSize + 1), "The location %s cannot be opened or is not a directory", path);
     topLineMessage(dirError);
     historyref--;
     if (historyref > 0){
-      strcpy(path, hs[historyref - 1].path);
+      memcpy(path, hs[historyref - 1].path, strlen(hs[historyref - 1].path));
       chdir(path);
       dirAbort = 1;
       goto reload;
@@ -2565,75 +2566,77 @@ void display_dir(char *pwd, results* ob){
   } else {
     if (sused == 0){
       susedString = malloc (sizeof (char) * 1);
+      snprintf(susedString, 1, "%lu", sused);
     } else {
       susedString = malloc (sizeof (char) * (log10(sused) + 2));
+      snprintf(susedString, (log10(sused) + 2), "%lu", sused);
     }
     if (savailable == 0){
       savailableString = malloc (sizeof (char) * 1);
+      snprintf(savailableString, 1, "%ju", (uintmax_t) savailable);
     } else {
       savailableString = malloc (sizeof (char) * (log10(savailable) + 2));
+      snprintf(savailableString, (log10(savailable) + 2), "%ju", (uintmax_t) savailable);
     }
-    sprintf(susedString, "%lu", sused);
-    sprintf(savailableString, "%ju", (uintmax_t) savailable);
   }
 
-  strcpy(headAttrs, "---Attrs---");
+  snprintf(headAttrs, 12, "---Attrs---");
 
   if (showContext){
-    strcpy(headContext, "---Context---");
+    snprintf(headContext, 14, "---Context---");
   } else {
-    strcpy(headContext, "");
+    snprintf(headContext, 14, "");
   }
 
   if (showSizeBlocks){
-    strcpy(headSizeBlocks, "-Blocks-");
+    snprintf(headSizeBlocks, 9, "-Blocks-");
   } else {
-    strcpy(headSizeBlocks, "");
+    snprintf(headSizeBlocks, 9, "");
   }
 
   if ( mmMode ){
-    strcpy(headSize, "-Driver/Size-");
+    snprintf(headSize, 14, "-Driver/Size-");
   } else {
-    strcpy(headSize, "-Size-");
+    snprintf(headSize, 14, "-Size-");
   }
-  strcpy(headDT, "---Date & Time---");
-  strcpy(headName, "----Name----");
+  snprintf(headDT, 18, "---Date & Time---");
+  snprintf(headName, 13, "----Name----");
 
   // Decide which owner header we need:
   switch(ogavis){
   case 0:
-    strcpy(headOG, "");
+    snprintf(headOG, 25, "");
     break;
   case 1:
-    strcpy(headOG, "-Owner-");
+    snprintf(headOG, 25, "-Owner-");
     ogalen = ownerlen;
     break;
   case 2:
-    strcpy(headOG, "-Group-");
+    snprintf(headOG, 25, "-Group-");
     ogalen = grouplen;
     break;
   case 3:
-    strcpy(headOG, "-Owner & Group-");
+    snprintf(headOG, 25, "-Owner & Group-");
     ogalen = ownerlen + grouplen;
     break;
   case 4:
-    strcpy(headOG, "-Author-");
+    snprintf(headOG, 25, "-Author-");
     ogalen = authorlen; //test
     break;
   case 5:
-    strcpy(headOG, "-Owner & Author-");
+    snprintf(headOG, 25, "-Owner & Author-");
     ogalen = ownerlen + authorlen;
     break;
   case 6:
-    strcpy(headOG, "-Group & Author-");
+    snprintf(headOG, 25, "-Group & Author-");
     ogalen = grouplen + authorlen;
     break;
   case 7:
-    strcpy(headOG, "-Owner, Group, & Author-"); // I like the Oxford comma, deal with it.
+    snprintf(headOG, 25, "-Owner, Group, & Author-"); // I like the Oxford comma, deal with it.
     ogalen = ownerlen + grouplen + authorlen;
     break;
   default:
-    strcpy(headOG, "-Owner & Group-"); // This should never be called, but we'd rather be safe.
+    snprintf(headOG, 25, "-Owner & Group-"); // This should never be called, but we'd rather be safe.
     ogalen = ownerlen + grouplen;
     break;
   }
@@ -2712,7 +2715,7 @@ void display_dir(char *pwd, results* ob){
 
   sizeHeader = realloc(sizeHeader, sizeof(char) * (sizeHeaderLen + 1));
 
-  sprintf(sizeHeader, "%i Objects   %s Used %s Available", totalfilecount, susedString, savailableString);
+  snprintf(sizeHeader, (sizeHeaderLen + 1), "%i Objects   %s Used %s Available", totalfilecount, susedString, savailableString);
 
   markedHeadSeg = writeSegment(3, "", RIGHT);
   attrHeadSeg = writeSegment(attrSegmentLen, headAttrs, LEFT);
@@ -2724,60 +2727,60 @@ void display_dir(char *pwd, results* ob){
   sizeBlocksHeadSeg = writeSegment(sizeBlocksSegmentLen, headSizeBlocks, RIGHT);
   nameHeadSeg = writeSegment(nameSegmentDataLen, headName, LEFT);
 
-  sprintf(headerCombined, "");
+  snprintf(headerCombined, 1, "");
   for ( n = 0; n < (sizeof(segOrder) / sizeof(segOrder[0])); n++){
     t = segOrder[n];
     switch(t){
     case COL_MARK:
       headerCombinedLen = (headerCombinedLen + strlen(markedHeadSeg));
       headerCombined = realloc(headerCombined, sizeof(char) * headerCombinedLen);
-      strcat(headerCombined, markedHeadSeg);
+      snprintf(headerCombined + strlen(headerCombined), headerCombinedLen, "%s", markedHeadSeg);
       break;
     case COL_SIZEBLOCKS:
       if (showSizeBlocks){
         headerCombinedLen = (headerCombinedLen + strlen(sizeBlocksHeadSeg));
         headerCombined = realloc(headerCombined, sizeof(char) * headerCombinedLen);
-        strcat(headerCombined, sizeBlocksHeadSeg);
+        snprintf(headerCombined + strlen(headerCombined), headerCombinedLen, "%s", sizeBlocksHeadSeg);
       }
       break;
     case COL_ATTR:
       headerCombinedLen = (headerCombinedLen + strlen(attrHeadSeg));
       headerCombined = realloc(headerCombined, sizeof(char) * headerCombinedLen);
-      strcat(headerCombined, attrHeadSeg);
+      snprintf(headerCombined + strlen(headerCombined), headerCombinedLen, "%s", attrHeadSeg);
       break;
     case COL_HLINK:
       headerCombinedLen = (headerCombinedLen + strlen(hlinkHeadSeg));
       headerCombined = realloc(headerCombined, sizeof(char) * headerCombinedLen);
-      strcat(headerCombined, hlinkHeadSeg);
+      snprintf(headerCombined + strlen(headerCombined), headerCombinedLen, "%s", hlinkHeadSeg);
       break;
     case COL_OWNER:
       if (ogavis){
         headerCombinedLen = (headerCombinedLen + strlen(ownerHeadSeg));
         headerCombined = realloc(headerCombined, sizeof(char) * headerCombinedLen);
-        strcat(headerCombined, ownerHeadSeg);
+        snprintf(headerCombined + strlen(headerCombined), headerCombinedLen, "%s", ownerHeadSeg);
       }
       break;
     case COL_CONTEXT:
       if (showContext){
         headerCombinedLen = (headerCombinedLen + strlen(contextHeadSeg));
         headerCombined = realloc(headerCombined, sizeof(char) * headerCombinedLen);
-        strcat(headerCombined, contextHeadSeg);
+        snprintf(headerCombined + strlen(headerCombined), headerCombinedLen, "%s", contextHeadSeg);
       }
       break;
     case COL_SIZE:
       headerCombinedLen = (headerCombinedLen + strlen(sizeHeadSeg));
       headerCombined = realloc(headerCombined, sizeof(char) * headerCombinedLen);
-      strcat(headerCombined, sizeHeadSeg);
+      snprintf(headerCombined + strlen(headerCombined), headerCombinedLen, "%s", sizeHeadSeg);
       break;
     case COL_DATE:
       headerCombinedLen = (headerCombinedLen + strlen(dateHeadSeg));
       headerCombined = realloc(headerCombined, sizeof(char) * headerCombinedLen);
-      strcat(headerCombined, dateHeadSeg);
+      snprintf(headerCombined + strlen(headerCombined), headerCombinedLen, "%s", dateHeadSeg);
       break;
     case COL_NAME:
       headerCombinedLen = (headerCombinedLen + strlen(nameHeadSeg));
       headerCombined = realloc(headerCombined, sizeof(char) * headerCombinedLen);
-      strcat(headerCombined, nameHeadSeg);
+      snprintf(headerCombined + strlen(headerCombined), headerCombinedLen, "%s", nameHeadSeg);
       break;
     default:
       break;

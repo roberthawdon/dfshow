@@ -74,6 +74,24 @@ int getch10th (void) {
   return ch;
 }
 
+int setDynamicChar(char **str, const char *format, ...)
+{
+  int length = 0;
+  va_list pArg1, pArg2;
+  va_start(pArg1, format);
+  va_copy(pArg2, pArg1);
+
+  length = vsnprintf(NULL, 0, format, pArg1);
+  length++;
+
+  *str = malloc(sizeof(char) * length);
+  vsnprintf(*str, length, format, pArg2);
+
+  va_end(pArg1);
+  va_end(pArg2);
+  return(length);
+}
+
 int splitPath(pathDirs **dirStruct, char *path){
   int e, i, j, c;
   pathDirs *tmp;

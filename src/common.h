@@ -21,6 +21,7 @@ typedef struct node {
 } node_t;
 
 int getch10th (void);
+int setDynamicChar(char **str, const char *format, ...);
 int splitPath(pathDirs **dirStruct, char *path);
 int createParentsInput(char *path);
 void createParentDirs(char *path);
