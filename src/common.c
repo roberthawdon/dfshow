@@ -231,7 +231,7 @@ char * dirFromPath(const char* myStr){
   outStr = malloc(sizeof (char) * (i + 2));
 
   if (i < 2){
-    strcpy(outStr, "/");
+    snprintf(outStr, (i + 2), "/");
   } else{
     while(n <= i){
       outStr[n] = myStr[n];
@@ -434,7 +434,7 @@ void showManPage(const char * prog)
 {
   char mancmd[10];
   int i;
-  sprintf(mancmd, "man %s", prog);
+  snprintf(mancmd, 10, "man %s", prog);
   clear();
   system("clear"); // Needed to ensure man pages display correctly
   system(mancmd);
@@ -461,7 +461,7 @@ int can_run_command(const char *cmd) {
     }
     if(p==buf) *p++='.';
     if(p[-1]!='/') *p++='/';
-    strcpy(p, cmd);
+    snprintf(p, (strlen(path)+strlen(cmd)+3), "%s", cmd);
     if(access(buf, X_OK)==0) {
         free(buf);
         return 1;
@@ -484,7 +484,7 @@ char * commandFromPath(const char *cmd) {
   if(strchr(cmd, '/')) {
       free(outStr);
       outStr = malloc(strlen(cmd)+1);
-      sprintf(outStr, "%s", cmd);
+      snprintf(outStr, (strlen(cmd)+1), "%s", cmd);
       return outStr;
   }
   if(!path){
@@ -498,7 +498,7 @@ char * commandFromPath(const char *cmd) {
     }
     if(p==outStr) *p++='.';
     if(p[-1]!='/') *p++='/';
-    strcpy(p, cmd);
+    snprintf(p, (strlen(path)+strlen(cmd)+3), "%s", cmd);
     if(access(outStr, X_OK)==0) {
         return outStr;
     }
@@ -640,7 +640,7 @@ void buildCommandArguments(const char *cmd, char **args, size_t items)
         tempStr[k + 1] = '\0';
       }
     }
-    strcpy(args[i], tempStr);
+    memcpy(args[i], tempStr, strlen(tempStr));
     cmdPos += itemLen[i];
     free(tempStr);
   }  
