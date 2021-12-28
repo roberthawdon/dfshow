@@ -117,7 +117,7 @@ int splitPath(pathDirs **dirStruct, char *path){
           (*dirStruct) = realloc((*dirStruct), sizeof(pathDirs) * (2 + e));
         } else if (!strcmp((*dirStruct)[e].directories, ".")){
           // strip single .
-          strcpy((*dirStruct)[e].directories, "\0");
+          snprintf((*dirStruct)[e].directories, 256, "\0");
         } else {
           // If element created is NOT ..
           e++;
@@ -135,7 +135,7 @@ int splitPath(pathDirs **dirStruct, char *path){
   }
   (*dirStruct)[e].directories[j] = '\0';
   if (!strcmp((*dirStruct)[e].directories, ".")){
-    strcpy((*dirStruct)[e].directories, "");
+    snprintf((*dirStruct)[e].directories, 256, "");
     e--;
   }
 
@@ -174,15 +174,15 @@ int createParentsInput(char *path)
 
 void createParentDirs(char *path){
   pathDirs *targetPath;
-  char *tempPath = malloc(sizeof(char) + 1);
+  char *tempPath = malloc(sizeof(char) * 1);
   int e, i = 0;
 
   e = splitPath(&targetPath, path);
 
-  strcpy(tempPath, "");
+  snprintf(tempPath, 1, "");
   for (i = 0; i < e; i++){
     tempPath = realloc(tempPath, sizeof(char) * (strlen(tempPath) + strlen(targetPath[i].directories) + 2));
-    sprintf(tempPath, "%s/%s", tempPath, targetPath[i].directories);
+    snprintf(tempPath, (strlen(tempPath) + strlen(targetPath[i].directories) + 2), "%s/%s", tempPath, targetPath[i].directories);
     if (!check_dir(tempPath)){
       mk_dir(tempPath);
     }
@@ -204,9 +204,9 @@ void mk_dir(char *path)
 
 void setConfLocations()
 {
-  sprintf(globalConfLocation, "%s/%s", SYSCONFIG, CONF_NAME);
+  snprintf(globalConfLocation, 128, "%s/%s", SYSCONFIG, CONF_NAME);
 
-  sprintf(homeConfLocation, "%s/%s/%s", getenv("HOME"), HOME_CONF_DIR, CONF_NAME);
+  snprintf(homeConfLocation, 128, "%s/%s/%s", getenv("HOME"), HOME_CONF_DIR, CONF_NAME);
 }
 
 int exittoshell()
@@ -353,6 +353,7 @@ char *str_replace(char *orig, char *rep, char *with) {
     int len_with; // length of with (the string to replace rep with)
     int len_front; // distance between rep and end of last rep
     int count;    // number of replacements
+    int tmp_size;
 
     // sanity checks and initialization
     if (!orig || !rep)
@@ -369,8 +370,9 @@ char *str_replace(char *orig, char *rep, char *with) {
     for (count = 0; (tmp = strstr(ins, rep)); ++count) {
         ins = tmp + len_rep;
     }
-
-    tmp = result = malloc(strlen(orig) + (len_with - len_rep) * count + 1);
+    
+    tmp_size = strlen(orig) + (len_with - len_rep) * count + 1;
+    tmp = result = malloc(tmp_size);
 
     if (!result)
         return NULL;
@@ -387,7 +389,7 @@ char *str_replace(char *orig, char *rep, char *with) {
         tmp = strcpy(tmp, with) + len_with;
         orig += len_front + len_rep; // move to next "end of rep"
     }
-    strcpy(tmp, orig);
+    memcpy(tmp, orig, tmp_size);
     return result;
 }
 
