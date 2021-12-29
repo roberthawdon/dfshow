@@ -1564,8 +1564,9 @@ int SendToPager(char* object)
       }
       if (!useDefinedPager){
         if ( getenv("PAGER")) {
-          originalCmd = realloc(originalCmd, sizeof(char) * (strlen(getenv("PAGER") + 1)));
-          snprintf(originalCmd, (strlen(getenv("PAGER") + 1)), "%s", getenv("PAGER"));
+          const char *temp = getenv("PAGER");
+          originalCmd = realloc(originalCmd, sizeof(char) * (strlen(temp + 1)));
+          memcpy(originalCmd, temp, (strlen(temp) + 1));
           noOfArgs = countArguments(originalCmd);
         }
       } else {
@@ -1625,12 +1626,14 @@ int SendToEditor(char* object)
     originalCmd = malloc(sizeof(char) + 1);
       if (!useDefinedEditor){
         if (getenv("EDITOR")){
-          originalCmd = realloc(originalCmd, sizeof(char) * (strlen(getenv("EDITOR") + 1)));
-          snprintf(originalCmd, (strlen(getenv("EDITOR") + 1)), "%s", getenv("EDITOR"));
+          const char *temp = getenv("EDITOR");
+          originalCmd = realloc(originalCmd, sizeof(char) * (strlen(temp + 1)));
+          memcpy(originalCmd, temp, (strlen(temp) + 1));
           noOfArgs = countArguments(originalCmd);
         } else if (getenv("VISUAL")){
-          originalCmd = realloc(originalCmd, sizeof(char) * (strlen(getenv("VISUAL") + 1)));
-          snprintf(originalCmd, (strlen(getenv("VISUAL") + 1)), "%s", getenv("VISUAL"));
+          const char *temp = getenv("VISUAL");
+          originalCmd = realloc(originalCmd, sizeof(char) * (strlen(temp + 1)));
+          memcpy(originalCmd, temp, (strlen(temp) + 1));
           noOfArgs = countArguments(originalCmd);
         }
       } else {
