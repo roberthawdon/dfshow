@@ -156,7 +156,7 @@ int readline(char *buffer, int buflen, char *oldbuf)
   wOldBuf = malloc(sizeof(wchar_t) * (strlen(oldbuf) + 1));
   swprintf(wOldBuf, strlen(oldbuf) + 1, L"%s", oldbuf);
   status = wReadLine(wBuffer, buflen, wOldBuf);
-  sprintf(buffer, "%ls", wBuffer);
+  snprintf(buffer, buflen, "%ls", wBuffer);
   free(wBuffer);
   free(wOldBuf);
   return(status);

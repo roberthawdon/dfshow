@@ -118,10 +118,10 @@ void show_file_find(bool charcase, bool useLast)
   if (!useLast){
     if (charcase){
       regexcase = 0;
-      strcpy(inputmessage, "Match Case - Enter string:");
+      snprintf(inputmessage, 32, "Match Case - Enter string:");
     } else {
       regexcase = REG_ICASE;
-      strcpy(inputmessage, "Ignore Case - Enter string:");
+      snprintf(inputmessage, 32, "Ignore Case - Enter string:");
     }
     move(0,0);
     clrtoeol();
@@ -141,7 +141,7 @@ void show_file_find(bool charcase, bool useLast)
       updateView();
     } else if ( result == -2 ){
       // Not a feature in DF-EDIT 2.3d, but a nice to have
-      sprintf(errormessage, "No further references to '%s' found.", regexinput);
+      snprintf(errormessage, 1024, "No further references to '%s' found.", regexinput);
       topLineMessage(errormessage);
     }
   }
@@ -178,9 +178,7 @@ void show_file_position_input(int currentpos)
   int filePosTextLen;
   int status;
   // Fun fact, in DF-EDIT 2.3d, the following text input typoed "absolute" as "absolue", this typo also exists in the Windows version from 1997 (2.3d-76), however, the 1986 documentation correctly writes it as "absolute".
-  filePosTextLen = snprintf(NULL, 0, "Position relative (<+num> || <-num>) or absolute (<num>):");
-  filePosText = malloc(sizeof(char) * (filePosTextLen + 1));
-  sprintf(filePosText, "Position relative (<+num> || <-num>) or absolute (<num>):");
+  setDynamicChar(&filePosText, "Position relative (<+num> || <-num>) or absolute (<num>):");
   viewmode = 2;
   move(0,0);
   clrtoeol();
@@ -338,7 +336,7 @@ void show_file_file_input()
   curs_set(FALSE);
   if (check_first_char(fileName, "~")){
     rewrite = str_replace(fileName, "~", getenv("HOME"));
-    strcpy(fileName, rewrite);
+    memcpy(fileName, rewrite, 4096);
     free(rewrite);
   }
   file_view(fileName);

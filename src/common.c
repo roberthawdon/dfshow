@@ -117,7 +117,7 @@ int splitPath(pathDirs **dirStruct, char *path){
           (*dirStruct) = realloc((*dirStruct), sizeof(pathDirs) * (2 + e));
         } else if (!strcmp((*dirStruct)[e].directories, ".")){
           // strip single .
-          snprintf((*dirStruct)[e].directories, 256, "\0");
+          snprintf((*dirStruct)[e].directories, 256, "");
         } else {
           // If element created is NOT ..
           e++;
@@ -385,8 +385,10 @@ char *str_replace(char *orig, char *rep, char *with) {
     while (count--) {
         ins = strstr(orig, rep);
         len_front = ins - orig;
-        tmp = strncpy(tmp, orig, len_front) + len_front;
-        tmp = strcpy(tmp, with) + len_with;
+        memcpy(tmp, orig, len_front);
+        tmp = tmp + len_front;
+        memcpy(tmp, with, len_with);
+        tmp = tmp + len_with;
         orig += len_front + len_rep; // move to next "end of rep"
     }
     memcpy(tmp, orig, tmp_size);

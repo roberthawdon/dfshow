@@ -65,7 +65,7 @@ void addMenuItem(menuDef **dfMenu, int *pos, char* refLabel, wchar_t* displayLab
     *dfMenu = tmp;
   }
 
-  sprintf((*dfMenu)[menuPos].refLabel, "%s", refLabel);
+  snprintf((*dfMenu)[menuPos].refLabel, 16, "%s", refLabel);
   swprintf((*dfMenu)[menuPos].displayLabel, 32, L"%ls", displayLabel);
   (*dfMenu)[menuPos].hotKey = hotKey;
 
