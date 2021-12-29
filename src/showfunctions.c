@@ -1627,12 +1627,12 @@ int SendToEditor(char* object)
       if (!useDefinedEditor){
         if (getenv("EDITOR")){
           const char *temp = getenv("EDITOR");
-          originalCmd = realloc(originalCmd, sizeof(char) * (strlen(temp + 1)));
+          originalCmd = realloc(originalCmd, sizeof(char) * (strlen(temp) + 1));
           memcpy(originalCmd, temp, (strlen(temp) + 1));
           noOfArgs = countArguments(originalCmd);
         } else if (getenv("VISUAL")){
           const char *temp = getenv("VISUAL");
-          originalCmd = realloc(originalCmd, sizeof(char) * (strlen(temp + 1)));
+          originalCmd = realloc(originalCmd, sizeof(char) * (strlen(temp) + 1));
           memcpy(originalCmd, temp, (strlen(temp) + 1));
           noOfArgs = countArguments(originalCmd);
         }
