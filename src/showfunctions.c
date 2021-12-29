@@ -1565,7 +1565,7 @@ int SendToPager(char* object)
       if (!useDefinedPager){
         if ( getenv("PAGER")) {
           const char *temp = getenv("PAGER");
-          originalCmd = realloc(originalCmd, sizeof(char) * (strlen(temp + 1)));
+          originalCmd = realloc(originalCmd, sizeof(char) * (strlen(temp) + 1));
           memcpy(originalCmd, temp, (strlen(temp) + 1));
           noOfArgs = countArguments(originalCmd);
         }
