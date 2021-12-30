@@ -113,6 +113,7 @@ void show_file_find(bool charcase, bool useLast)
 {
   int regexcase;
   int result;
+  int curPos = 0;
   char inputmessage[32];
   char errormessage[1024];
   if (!useLast){
@@ -125,9 +126,9 @@ void show_file_find(bool charcase, bool useLast)
     }
     move(0,0);
     clrtoeol();
-    mvprintw(0, 0, inputmessage);
+    curPos = (printMenu(0, 0, inputmessage) + 1);
     curs_set(TRUE);
-    move(0, strlen(inputmessage) + 1);
+    move(0, curPos);
     curs_set(FALSE);
     if (readline(regexinput, 1024, regexinput) == -1 ){
       abortinput = 1;
@@ -177,15 +178,16 @@ void show_file_position_input(int currentpos)
   char *filePosText;
   int filePosTextLen;
   int status;
+  int curPos = 0;
   // Fun fact, in DF-EDIT 2.3d, the following text input typoed "absolute" as "absolue", this typo also exists in the Windows version from 1997 (2.3d-76), however, the 1986 documentation correctly writes it as "absolute".
   setDynamicChar(&filePosText, "Position relative (<+num> || <-num>) or absolute (<num>):");
   viewmode = 2;
   move(0,0);
   clrtoeol();
-  printMenu(0,0,filePosText);
+  curPos = (printMenu(0,0,filePosText) + 1);
   free(filePosText);
   curs_set(TRUE);
-  move(0,52);
+  move(0,curPos);
   status = readline(newpos, 11, ""); // DF-EDIT defaulted to 0, but it also defaulted to overtype mode, so for ease of use, we'll leave the default blank.
   curs_set(FALSE);
   if ((status != -1) && (strcmp(newpos,"") != 0)){
@@ -327,11 +329,12 @@ void show_file_inputs()
 void show_file_file_input()
 {
   char *rewrite;
+  int curPos = 0;
   move(0,0);
   clrtoeol(); // Probably not needed as this is only ever displayed when launching without a file
-  mvprintw(0,0,"Show File - Enter pathname:");
+  curPos = (printMenu(0,0,"Show File - Enter pathname:") + 1);
   curs_set(TRUE);
-  move(0,28);
+  move(0,curPos);
   readline(fileName, 4096, "");
   curs_set(FALSE);
   if (check_first_char(fileName, "~")){

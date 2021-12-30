@@ -392,14 +392,15 @@ void show_directory_input()
 {
   char *oldpwd = malloc(sizeof(char) * (strlen(currentpwd) + 1));
   char *direrror = malloc(sizeof(char) + 1);
+  int curPos;
   size_t direrrorLen;
 
   memcpy(oldpwd, currentpwd, (strlen(currentpwd) + 1));
   move(0,0);
   clrtoeol();
-  mvprintw(0, 0, "Show Directory - Enter pathname:");
+  curPos = (printMenu(0, 0, "Show Directory - Enter pathname:") + 1);
   curs_set(TRUE);
-  move(0,33);
+  move(0,curPos);
   readline(currentpwd, 4096, oldpwd);
   curs_set(FALSE);
   testSlash:
@@ -422,7 +423,6 @@ void show_directory_input()
     }
     if (check_object(currentpwd) == 1){
       if ( invalidstart ){
-        // invalidstart = 0;
         set_history(currentpwd, "", "", 0, 0);
       } else {
         set_history(currentpwd, objectWild, ob[selected].name, lineStart, selected);
@@ -432,9 +432,7 @@ void show_directory_input()
       chdir(currentpwd);
       refreshDirectory(sortmode, 0, selected, -2);
     } else {
-      direrrorLen = snprintf(NULL, 0, "The location %s cannot be opened or is not a directory\n", currentpwd);
-      direrror = realloc(direrror, sizeof(char) * (direrrorLen + 1));
-      snprintf(direrror, (direrrorLen + 1), "The location %s cannot be opened or is not a directory\n", currentpwd);
+      setDynamicChar(&direrror, "The location %s cannot be opened or is not a directory\n", currentpwd);
       memcpy(currentpwd, oldpwd, 4096);
       topLineMessage(direrror);
     }
@@ -453,11 +451,8 @@ void show_directory_input()
 
 int replace_file_confirm_input(char *filename)
 {
-  char *message = malloc(sizeof(char) + 1);
-  size_t messageLen;
-  messageLen = snprintf(NULL, 0, "Replace file [<%s>]? (!Yes/!No)", filename);
-  message = realloc(message, sizeof(char) * messageLen);
-  snprintf(message, messageLen, "Replace file [<%s>]? (!Yes/!No)", filename);
+  char *message = malloc(sizeof(char) * 1);
+  setDynamicChar(&message, "Replace file [<%s>]? (!Yes/!No)", filename);
   printMenu(0,0, message);
   free(message);
   while(1)
@@ -480,11 +475,12 @@ void copy_file_input(char *file, mode_t mode)
   // YUCK, repetition, this needs sorting
   char newfile[4096];
   int e;
+  int curPos = 0;
   move(0,0);
   clrtoeol();
-  mvprintw(0, 0, "Copy file to:");
+  curPos = (printMenu(0, 0, "Copy file to:") + 1);
   curs_set(TRUE);
-  move(0,14);
+  move(0,curPos);
   readline(newfile, 4096, file);
   curs_set(FALSE);
   // If the two values don't match, we want to do the copy
@@ -529,14 +525,14 @@ void copy_file_input(char *file, mode_t mode)
 void copy_multi_file_input(results* ob, char *input)
 {
   int i, e;
-
+  int curPos = 0;
   char dest[4096];
   char destfile[4096];
   move(0,0);
   clrtoeol();
-  mvprintw(0, 0, "Copy multiple files to:");
+  curPos = (printMenu(0, 0, "Copy multiple files to:") + 1);
   curs_set(TRUE);
-  move(0, 24);
+  move(0, curPos);
   readline(dest, 4096, input);
   curs_set(FALSE);
   if ( strcmp(dest, input) && strcmp(dest, "")) {
@@ -590,14 +586,14 @@ void copy_multi_file_input(results* ob, char *input)
 void rename_multi_file_input(results* ob, char *input)
 {
   int i, e;
-
+  int curPos = 0;
   char dest[4096];
   char destfile[4096];
   move(0,0);
   clrtoeol();
-  mvprintw(0, 0, "Rename multiple files to:");
+  curPos = (printMenu(0, 0, "Rename multiple files to:") + 1);
   curs_set(TRUE);
-  move(0, 26);
+  move(0, curPos);
   readline(dest, 4096, input);
   curs_set(FALSE);
   if (strcmp(dest, input) && strcmp(dest, "")){
@@ -652,11 +648,12 @@ void rename_multi_file_input(results* ob, char *input)
 void edit_file_input()
 {
   char filepath[4096];
+  int curPos = 0;
   move(0,0);
   clrtoeol();
-  mvprintw(0, 0, "Edit File - Enter pathname:");
+  curPos = (printMenu(0, 0, "Edit File - Enter pathname:") + 1);
   curs_set(TRUE);
-  move(0,28);
+  move(0,curPos);
   readline(filepath, 4096, "");
   curs_set(FALSE);
   SendToEditor(filepath);
@@ -667,12 +664,13 @@ void rename_file_input(char *file)
 {
   // YUCK, repetition, this needs sorting
   char dest[4096];
+  int curPos = 0;
   int e;
   move(0,0);
   clrtoeol();
-  mvprintw(0, 0, "Rename file to:");
+  curPos = (printMenu(0, 0, "Rename file to:") + 1);
   curs_set(TRUE);
-  move(0,16);
+  move(0,curPos);
   readline(dest, 4096, file);
   curs_set(FALSE);
   if (strcmp(dest, file) && strcmp(dest, "")){
@@ -719,11 +717,12 @@ void rename_file_input(char *file)
 void make_directory_input()
 {
   char newdir[4096];
+  int curPos = 0;
   int e;
   move(0,0);
   clrtoeol();
-  mvprintw(0, 0, "Make Directory - Enter pathname:");
-  move (0,33);
+  curPos = (printMenu(0, 0, "Make Directory - Enter pathname:") + 1);
+  move (0,curPos);
   if (!check_last_char(currentpwd, "/")){
     snprintf(currentpwd + strlen(currentpwd), 4096, "/");
   }
@@ -768,6 +767,7 @@ time_t touchTimeInput(int type)
   char charTime[64];
   struct tm tmp, localTmp;
   time_t newTime, tmpTime;
+  int curPos = 0;
   int i;
   if (type == 1){
     snprintf(menuTitle, 32, "Set Access Time:");
@@ -778,8 +778,8 @@ time_t touchTimeInput(int type)
   }
   move(0,0);
   clrtoeol();
-  mvprintw(0,0,menuTitle);
-  move(0, strlen(menuTitle) + 1);
+  curPos = (printMenu(0,0,menuTitle) + 1);
+  move(0, curPos);
   if (readline(charTime, 64, "") != -1){
     time(&tmpTime);
     gmtime_r(&tmpTime, &localTmp);
@@ -834,16 +834,15 @@ int touchType()
 
 void touch_file_input()
 {
-  char menuTitle[32];
   char touchFile[4096];
   FILE* touchFileObject;
   int setDateFlag = -1;
   int e;
+  int curPos = 0;
   move(0,0);
   clrtoeol();
-  snprintf(menuTitle, 32, "Touch File - Enter pathname:");
-  mvprintw(0,0,menuTitle);
-  move (0, strlen(menuTitle) + 1);
+  curPos = (printMenu(0, 0, "Touch File - Enter pathname:") + 1);
+  move (0, curPos);
   if (!check_last_char(currentpwd, "/")){
     snprintf(currentpwd + strlen(currentpwd), 4096, "/");
   }
@@ -908,13 +907,17 @@ void touch_file_input()
 char * execute_argument_input(const char *exec)
 {
   char *strout;
-  int execlen = strlen(exec);
+  char *message;
+  int curPos = 0;
   strout = malloc(sizeof(char) * 1024);
+  message = malloc(sizeof(char) * 1);
+  setDynamicChar(&message, "Args to pass to %s:", exec);
   move(0,0);
   clrtoeol();
-  mvprintw(0, 0, "Args to pass to %s:", exec);
+  curPos = (printMenu(0, 0, message) + 1);
+  free(message);
   curs_set(TRUE);
-  move(0, 18 + execlen);
+  move(0, curPos);
   if (readline(strout, 1024, "") == -1){
     abortinput = 1;
   }
@@ -926,10 +929,7 @@ int huntCaseSelectInput()
 {
   int result = 0;
   char *message;
-  size_t messageLen;
-  messageLen = snprintf(NULL, 0, "Case Sensitive, !Yes/!No/<ESC> (enter = no)");
-  message = malloc(sizeof(char) * (messageLen + 1));
-  snprintf(message, (messageLen + 1), "Case Sensitive, !Yes/!No/<ESC> (enter = no)");
+  setDynamicChar(&message, "Case Sensitive, !Yes/!No/<ESC> (enter = no)");
   printMenu(0,0, message);
   while(1)
     {
@@ -960,6 +960,7 @@ void huntInput(int selected, int charcase)
 {
   int regexcase;
   int i;
+  int curPos = 0;
   char regexinput[4096];
   char *inputmessage;
   size_t inputmessageLen;
@@ -972,8 +973,8 @@ void huntInput(int selected, int charcase)
   }
   move(0,0);
   clrtoeol();
-  mvprintw(0, 0, inputmessage);
-  move(0, strlen(inputmessage) + 1);
+  curPos = (printMenu(0, 0, inputmessage) + 1);
+  move(0, curPos);
   free(inputmessage);
   if (readline(regexinput, 4096, "") == -1) {
     abortinput = 1;
@@ -1056,7 +1057,6 @@ void delete_multi_file_confirm_input(results* ob)
   int allflag = 0;
   int abortflag = 0;
   char *message;
-  size_t messageLen;
 
   for (i = 0; i < totalfilecount; i++)
     {
@@ -1145,15 +1145,20 @@ void modify_group_input()
   struct group *gresult;
   size_t bufsize;
   char errortxt[256];
-  int i, menuLen, status;
+  int i, status;
+  char *message;
+  int curPos = 0;
+
+  message = malloc(sizeof(char) * 1);
 
  groupInputLoop:
   move(0,0);
   clrtoeol();
-  menuLen = (strlen(ownerinput) + 14);
-  mvprintw(0, 0, "Set Group (%s):", ownerinput);
+  setDynamicChar(&message, "Set Group (%s):", ownerinput);
+  curPos = (printMenu(0, 0, message) + 1);
+  free(message);
   curs_set(TRUE);
-  move(0,menuLen);
+  move(0,curPos);
   status = readline(groupinput, 256, "");
   curs_set(FALSE);
 
@@ -1228,13 +1233,14 @@ void modify_owner_input()
   struct passwd *presult;
   size_t bufsize;
   int status;
+  int curPos = 0;
 
  ownerInputLoop:
   move(0,0);
   clrtoeol();
-  mvprintw(0, 0, "Set Owner:");
+  curPos = (printMenu(0, 0, "Set Owner:") + 1);
   curs_set(TRUE);
-  move(0,11);
+  move(0,curPos);
   status = readline(ownerinput, 256, "");
   curs_set(FALSE);
 
@@ -1274,11 +1280,12 @@ void modify_permissions_input()
   char perms[5];
   char *ptr;
   char *pfile;
+  int curPos;
   move(0,0);
   clrtoeol();
-  mvprintw(0, 0, "Modify Permissions:");
+  curPos = (printMenu(0, 0, "Modify Permissions:") + 1);
   curs_set(TRUE);
-  move(0,20);
+  move(0,curPos);
   status = readline(perms, 5, "");
   curs_set(FALSE);
 
@@ -1346,6 +1353,7 @@ void linktext_input(char *file, int symbolic)
   int relative, e;
   char *relativeFile;
   char tempDebug[1024];
+  int curPos = 0;
   memcpy(target, currentpwd, 4096);
   if (!check_last_char(target, "/")){
     snprintf(target + strlen(target), 4096, "/");
@@ -1355,11 +1363,11 @@ void linktext_input(char *file, int symbolic)
   } else {
     snprintf(typeText, 9, "Hard");
   }
-  snprintf(inputmessage, 32, "%s link to: ", typeText);
+  snprintf(inputmessage, 32, "%s link to:", typeText);
   move(0,0);
   clrtoeol();
-  mvprintw(0,0,inputmessage);
-  move(0, strlen(inputmessage) + 1);
+  curPos = (printMenu(0,0,inputmessage) + 1);
+  move(0, curPos);
   if (readline(target, 4096, target) != -1){
 
     // Check for ~ that needs replacing with home directory

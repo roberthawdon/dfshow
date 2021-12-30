@@ -161,9 +161,10 @@ int altHotkey(int key)
   return(alt);
 }
 
-void wPrintMenu(int line, int col, wchar_t *menustring)
+int wPrintMenu(int line, int col, wchar_t *menustring)
 {
-  int i, len, charcount, pad;
+  int i, len, charcount, pad, returnChars;
+  returnChars = 0;
   charcount = 0;
   move(line, col);
   clrtoeol();
@@ -198,20 +199,24 @@ void wPrintMenu(int line, int col, wchar_t *menustring)
         charcount++;
       }
     }
+  returnChars = charcount;
   pad = COLS - charcount;
   for (i = 0; i < pad; i++)
     {
       mvprintw(line, col + charcount, " ");
       charcount++;
     }
+  return(returnChars);
 }
 
-void printMenu(int line, int col, char *menustring)
+int printMenu(int line, int col, char *menustring)
 {
   // Small wrapper to seemlessly forward calls to the wide char version
   wchar_t *wMenuString;
+  int returnChars = 0;
   wMenuString = malloc(sizeof(wchar_t) * (strlen(menustring) + 1));
   swprintf(wMenuString, strlen(menustring) + 1, L"%s", menustring);
-  wPrintMenu(line, col, wMenuString);
+  returnChars = wPrintMenu(line, col, wMenuString);
   free(wMenuString);
+  return(returnChars);
 }
