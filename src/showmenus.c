@@ -66,7 +66,7 @@ int abortinput = 0;
 struct utimbuf touchDate;
 time_t touchTime;
 
-extern char errmessage[256];
+extern char *errmessage;
 
 extern results* ob;
 extern history* hs;
@@ -510,12 +510,14 @@ void copy_file_input(char *file, mode_t mode)
           createParentDirs(newfile);
           goto copyFile;
         } else {
-          snprintf(errmessage, 256, "Error: %s", strerror(errno));
+          setDynamicChar(&errmessage, "Error: %s", strerror(errno));
           topLineMessage(errmessage);
+          free(errmessage);
         }
       } else {
-        snprintf(errmessage, 256, "Error: %s", strerror(errno));
+        setDynamicChar(&errmessage, "Error: %s", strerror(errno));
         topLineMessage(errmessage);
+        free(errmessage);
       }
     }
   }
@@ -701,12 +703,14 @@ void rename_file_input(char *file)
           createParentDirs(dest);
           goto renameFile;
         } else {
-          snprintf(errmessage, 256, "Error: %s", strerror(errno));
+          setDynamicChar(&errmessage, "Error: %s", strerror(errno));
           topLineMessage(errmessage);
+          free(errmessage);
         }
       } else {
-        snprintf(errmessage, 256, "Error: %s", strerror(errno));
+        setDynamicChar(&errmessage, "Error: %s", strerror(errno));
         topLineMessage(errmessage);
+        free(errmessage);
       }
     }
     refreshDirectory(sortmode, 0, selected, 0);
@@ -743,12 +747,14 @@ void make_directory_input()
           createParentDirs(newdir);
           goto makeDir;
         } else {
-          snprintf(errmessage, 256, "Error: %s", strerror(errno));
+          setDynamicChar(&errmessage, "Error: %s", strerror(errno));
           topLineMessage(errmessage);
+          free(errmessage);
         }
       } else {
-        snprintf(errmessage, 256, "Error: %s", strerror(errno));
+        setDynamicChar(&errmessage, "Error: %s", strerror(errno));
         topLineMessage(errmessage);
+        free(errmessage);
       }
     }
   testSlash:
@@ -886,12 +892,14 @@ void touch_file_input()
           createParentDirs(touchFile);
           goto touchFile;
         } else {
-          snprintf(errmessage, 256, "Error: %s", strerror(errno));
+          setDynamicChar(&errmessage, "Error: %s", strerror(errno));
           topLineMessage(errmessage);
+          free(errmessage);
         }
       } else {
-        snprintf(errmessage, 256, "Error: %s", strerror(errno));
+        setDynamicChar(&errmessage, "Error: %s", strerror(errno));
         topLineMessage(errmessage);
+        free(errmessage);
       }
     }
   testSlash:
@@ -1039,8 +1047,9 @@ void delete_directory_confirm_input(char *directory)
         case 'y':
           e = rmdir(directory);
           if (e != 0){
-            snprintf(errmessage, 256, "Error: %s", strerror(errno));
+            setDynamicChar(&errmessage, "Error: %s", strerror(errno));
             topLineMessage(errmessage);
+            free(errmessage);
           }
           refreshDirectory(sortmode, lineStart, selected, 1);
           // Not breaking here, intentionally dropping through to the default
@@ -1182,8 +1191,9 @@ void modify_group_input()
     free(buf);
     if (gresult == NULL){
       if (s == 0){
-        snprintf(errmessage, 256, "Invalid group: %s", groupinput);
+        setDynamicChar(&errmessage, "Invalid group: %s", groupinput);
         topLineMessage(errmessage);
+        free(errmessage);
         goto groupInputLoop;
       }
     } else {
@@ -1213,8 +1223,9 @@ void modify_group_input()
         snprintf(ofile + strlen(ofile), (strlen(currentpwd) + strlen(ob[selected].name) + 2), "%s", ob[selected].name);
 
         if (UpdateOwnerGroup(ofile, uids, gids) == -1) {
-          snprintf(errmessage, 256, "Error: %s", strerror(errno));
+          setDynamicChar(&errmessage, "Error: %s", strerror(errno));
           topLineMessage(errmessage);
+          free(errmessage);
         }
         free(ofile);
       }
@@ -1261,8 +1272,9 @@ void modify_owner_input()
     free(buf);
     if (presult == NULL){
       if (s == 0){
-        snprintf(errmessage, 256, "Invalid user: %s", ownerinput);
+        setDynamicChar(&errmessage, "Invalid user: %s", ownerinput);
         topLineMessage(errmessage);
+        free(errmessage);
         goto ownerInputLoop;
       }
     } else {
@@ -1410,12 +1422,14 @@ void linktext_input(char *file, int symbolic)
           createParentDirs(target);
           goto makeSymlink;
         } else {
-          snprintf(errmessage, 256, "Error: %s", strerror(errno));
+          setDynamicChar(&errmessage, "Error: %s", strerror(errno));
           topLineMessage(errmessage);
+          free(errmessage);
         }
       } else {
-        snprintf(errmessage, 256, "Error: %s", strerror(errno));
+        setDynamicChar(&errmessage, "Error: %s", strerror(errno));
         topLineMessage(errmessage);
+        free(errmessage);
       }
     }
   }

@@ -115,7 +115,7 @@ void show_file_find(bool charcase, bool useLast)
   int result;
   int curPos = 0;
   char inputmessage[32];
-  char errormessage[1024];
+  char *errormessage;
   if (!useLast){
     if (charcase){
       regexcase = 0;
@@ -142,8 +142,9 @@ void show_file_find(bool charcase, bool useLast)
       updateView();
     } else if ( result == -2 ){
       // Not a feature in DF-EDIT 2.3d, but a nice to have
-      snprintf(errormessage, 1024, "No further references to '%s' found.", regexinput);
+      setDynamicChar(&errormessage, "No further references to '%s' found.", regexinput);
       topLineMessage(errormessage);
+      free(errormessage);
     }
   }
 }

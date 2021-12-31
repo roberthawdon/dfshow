@@ -117,7 +117,7 @@ int splitPath(pathDirs **dirStruct, char *path){
           (*dirStruct) = realloc((*dirStruct), sizeof(pathDirs) * (2 + e));
         } else if (!strcmp((*dirStruct)[e].directories, ".")){
           // strip single .
-          snprintf((*dirStruct)[e].directories, 256, "");
+          (*dirStruct)[e].directories[0]=0;
         } else {
           // If element created is NOT ..
           e++;
@@ -135,7 +135,7 @@ int splitPath(pathDirs **dirStruct, char *path){
   }
   (*dirStruct)[e].directories[j] = '\0';
   if (!strcmp((*dirStruct)[e].directories, ".")){
-    snprintf((*dirStruct)[e].directories, 256, "");
+    (*dirStruct)[e].directories[0]=0;
     e--;
   }
 
@@ -179,7 +179,7 @@ void createParentDirs(char *path){
 
   e = splitPath(&targetPath, path);
 
-  snprintf(tempPath, 1, "");
+  tempPath[0]=0;
   for (i = 0; i < e; i++){
     tempPath = realloc(tempPath, sizeof(char) * (strlen(tempPath) + strlen(targetPath[i].directories) + 2));
     snprintf(tempPath, (strlen(tempPath) + strlen(targetPath[i].directories) + 2), "%s/%s", tempPath, targetPath[i].directories);
@@ -434,12 +434,14 @@ char * read_line(FILE *fin) {
 
 void showManPage(const char * prog)
 {
-  char mancmd[10];
+  char *mancmd;
   int i;
-  snprintf(mancmd, 10, "man %s", prog);
+  setDynamicChar(&mancmd,"%s %s", commandFromPath("man"), prog);
   clear();
-  system("clear"); // Needed to ensure man pages display correctly
-  system(mancmd);
+  char *args[countArguments(mancmd)];
+  buildCommandArguments(mancmd, args, countArguments(mancmd));
+  free(mancmd);
+  launchExternalCommand(args[0], args, M_NONE);
 }
 
 int can_run_command(const char *cmd) {

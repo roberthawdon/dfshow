@@ -727,7 +727,7 @@ void writeResultStruct(results* ob, const char * filename, struct stat buffer, i
     ob[count].slink[cslinklen] = '\0';
   } else {
     ob[count].slink = malloc(sizeof(char) + 1);
-    snprintf(ob[count].slink, 1, "");
+    ob[count].slink[0]=0;
   }
 
   ob[count].contextText = malloc(sizeof(char) * (strlen(contextText) + 1));
@@ -827,7 +827,7 @@ char *genPadding(int num_of_spaces) {
   if (num_of_spaces > 0){
     snprintf(dest, (i + 1), "%*s", num_of_spaces, " ");
   } else {
-    snprintf(dest, 1, "");
+    dest[0]=0;
   }
   return dest;
 }
@@ -1030,8 +1030,8 @@ void printEntry(int start, int hlinklen, int sizeblocklen, int ownerlen, int gro
   // Owner, Group, Author
   switch(ogavis){
   case 0:
-    ogaval = malloc (sizeof (char) + 1);
-    snprintf(ogaval, 1, "");
+    ogaval = malloc (sizeof (char) * 1);
+    ogaval[0]=0;
     break;
   case 1:
     oglen = (strlen(ob[currentitem].owner));
@@ -1095,7 +1095,7 @@ void printEntry(int start, int hlinklen, int sizeblocklen, int ownerlen, int gro
   if (!ogavis){
     ogpad = 0;
     ownerSegment = malloc(sizeof(char));
-    snprintf(ownerSegment, 1, "");
+    ownerSegment[0]=0;
   } else {
     if ( (ogminlen - ogseglen) > 0 ) {
       ownerSegmentLen = ogminlen;
@@ -1118,9 +1118,9 @@ void printEntry(int start, int hlinklen, int sizeblocklen, int ownerlen, int gro
   } else {
     contextSegmentLen = 1;
     contextText = malloc(sizeof(char) * contextSegmentLen);
-    snprintf(contextText, contextSegmentLen, "");
+    contextText[0]=0;
     contextSegment = malloc(sizeof(char) * contextSegmentLen);
-    snprintf(contextSegment, contextSegmentLen, "");
+    contextSegment[0]=0;
   }
 
   if (showSizeBlocks){
@@ -1136,9 +1136,9 @@ void printEntry(int start, int hlinklen, int sizeblocklen, int ownerlen, int gro
   } else {
     sizeBlocksSegmentLen = 1;
     sizeBlocksString = malloc(sizeof(char) * sizeBlocksSegmentLen);
-    snprintf(sizeBlocksString, sizeBlocksSegmentLen, "");
+    sizeBlocksString[0]=0;
     sizeBlocksSegment = malloc(sizeof(char) * sizeBlocksSegmentLen);
-    snprintf(sizeBlocksSegment, sizeBlocksSegmentLen, "");
+    sizeBlocksSegment[0]=0;
   }
 
   if (ob[currentitem].minor > 1){
@@ -2185,7 +2185,7 @@ results* get_dir(char *pwd)
             }
             status = lstat(res->d_name, &buffer);
 
-            snprintf(hlinkstr, 6, "%d", buffer.st_nlink);
+            snprintf(hlinkstr, 6, "%hu", buffer.st_nlink);
             snprintf(sizestr, 32, "%lld", (long long)buffer.st_size);
 
             // axflag here
@@ -2568,15 +2568,15 @@ void display_dir(char *pwd, results* ob){
     readableSize(savailable, 10, savailableString, si);
   } else {
     if (sused == 0){
-      susedString = malloc (sizeof (char) * 1);
-      snprintf(susedString, 1, "%lu", sused);
+      susedString = malloc (sizeof (char) * 4);
+      snprintf(susedString, 4, "%lu", sused);
     } else {
       susedString = malloc (sizeof (char) * (log10(sused) + 2));
       snprintf(susedString, (log10(sused) + 2), "%lu", sused);
     }
     if (savailable == 0){
-      savailableString = malloc (sizeof (char) * 1);
-      snprintf(savailableString, 1, "%ju", (uintmax_t) savailable);
+      savailableString = malloc (sizeof (char) * 4);
+      snprintf(savailableString, 4, "%ju", (uintmax_t) savailable);
     } else {
       savailableString = malloc (sizeof (char) * (log10(savailable) + 2));
       snprintf(savailableString, (log10(savailable) + 2), "%ju", (uintmax_t) savailable);
@@ -2588,13 +2588,13 @@ void display_dir(char *pwd, results* ob){
   if (showContext){
     snprintf(headContext, 14, "---Context---");
   } else {
-    snprintf(headContext, 14, "");
+    headContext[0]=0;
   }
 
   if (showSizeBlocks){
     snprintf(headSizeBlocks, 9, "-Blocks-");
   } else {
-    snprintf(headSizeBlocks, 9, "");
+    headSizeBlocks[0]=0;
   }
 
   if ( mmMode ){
@@ -2608,7 +2608,7 @@ void display_dir(char *pwd, results* ob){
   // Decide which owner header we need:
   switch(ogavis){
   case 0:
-    snprintf(headOG, 25, "");
+    headOG[0]=0;
     break;
   case 1:
     snprintf(headOG, 25, "-Owner-");
@@ -2730,7 +2730,7 @@ void display_dir(char *pwd, results* ob){
   sizeBlocksHeadSeg = writeSegment(sizeBlocksSegmentLen, headSizeBlocks, RIGHT);
   nameHeadSeg = writeSegment(nameSegmentDataLen, headName, LEFT);
 
-  snprintf(headerCombined, 1, "");
+  headerCombined[0]=0;
   for ( n = 0; n < (sizeof(segOrder) / sizeof(segOrder[0])); n++){
     t = segOrder[n];
     switch(t){
