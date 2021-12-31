@@ -2185,7 +2185,7 @@ results* get_dir(char *pwd)
             }
             status = lstat(res->d_name, &buffer);
 
-            snprintf(hlinkstr, 6, "%hu", buffer.st_nlink);
+            snprintf(hlinkstr, 6, "%d", buffer.st_nlink);
             snprintf(sizestr, 32, "%lld", (long long)buffer.st_size);
 
             // axflag here
