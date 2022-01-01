@@ -393,7 +393,6 @@ void show_directory_input()
   char *oldpwd = malloc(sizeof(char) * (strlen(currentpwd) + 1));
   char *direrror = malloc(sizeof(char) + 1);
   int curPos;
-  size_t direrrorLen;
 
   memcpy(oldpwd, currentpwd, (strlen(currentpwd) + 1));
   move(0,0);
@@ -774,7 +773,6 @@ time_t touchTimeInput(int type)
   struct tm tmp, localTmp;
   time_t newTime, tmpTime;
   int curPos = 0;
-  int i;
   if (type == 1){
     snprintf(menuTitle, 32, "Set Access Time:");
   } else if (type == 2){
@@ -971,7 +969,6 @@ void huntInput(int selected, int charcase)
   int curPos = 0;
   char regexinput[4096];
   char *inputmessage;
-  size_t inputmessageLen;
   if (charcase){
     regexcase = 0;
     setDynamicChar(&inputmessage, "Match Case - Enter string:");
@@ -1153,7 +1150,6 @@ void modify_group_input()
   struct group grp;
   struct group *gresult;
   size_t bufsize;
-  char errortxt[256];
   int i, status;
   char *message;
   int curPos = 0;
@@ -1364,7 +1360,6 @@ void linktext_input(char *file, int symbolic)
   char target[4096];
   int relative, e;
   char *relativeFile;
-  char tempDebug[1024];
   int curPos = 0;
   memcpy(target, currentpwd, 4096);
   if (!check_last_char(target, "/")){

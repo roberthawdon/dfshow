@@ -366,7 +366,7 @@ void saveTheme(){
 
 int applyTheme(const char *filename){
   config_t cfg;
-  config_setting_t *root, *setting, *group, *array;
+  config_setting_t *setting, *group, *array;
   int groupLen, i, h;
   setenv("DFS_THEME", objectFromPath(filename), 1);
   config_init(&cfg);

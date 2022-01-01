@@ -435,7 +435,6 @@ char * read_line(FILE *fin) {
 void showManPage(const char * prog)
 {
   char *mancmd;
-  int i;
   setDynamicChar(&mancmd,"%s %s", commandFromPath("man"), prog);
   clear();
   char *args[countArguments(mancmd)];
@@ -560,7 +559,7 @@ int countArguments(const char *cmd)
 
 void buildCommandArguments(const char *cmd, char **args, size_t items)
 {
-  int j, k, cmdLen; // , countArgs;
+  int k, cmdLen; // , countArgs;
   int i, itemCount, argCharCount;
   int cmdPos = 0;
   int cmdOffset = 0;
@@ -659,9 +658,7 @@ void buildCommandArguments(const char *cmd, char **args, size_t items)
 int launchExternalCommand(char *cmd, char **args, ushort_t mode)
 {
   sigset_t newMask, oldMask;
-  pid_t parent = getpid();
   pid_t pid;
-  int i;
 
   sigemptyset(&newMask);
   sigemptyset(&oldMask);

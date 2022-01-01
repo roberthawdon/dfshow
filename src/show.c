@@ -149,9 +149,9 @@ int checkStyle(char* styleinput);
 void readConfig(const char * confFile)
 {
   config_t cfg;
-  config_setting_t *root, *setting, *group, *array; //probably don't need the array, but it may be used in the future.
+  config_setting_t *setting, *group, *array;
   char markedParam[8];
-  int i, n;
+  int i;
   config_init(&cfg);
   if (config_read_file(&cfg, confFile)){
     // Deal with the globals first

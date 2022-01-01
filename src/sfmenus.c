@@ -177,7 +177,6 @@ void show_file_position_input(int currentpos)
 {
   char newpos[11];
   char *filePosText;
-  int filePosTextLen;
   int status;
   int curPos = 0;
   // Fun fact, in DF-EDIT 2.3d, the following text input typoed "absolute" as "absolue", this typo also exists in the Windows version from 1997 (2.3d-76), however, the 1986 documentation correctly writes it as "absolute".

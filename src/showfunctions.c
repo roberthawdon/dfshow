@@ -319,7 +319,7 @@ int processXAttrs(xattrList **xa, char *name, unsigned char *xattrs, size_t xatt
 char *getRelativePath(char *file, char *target)
 {
   char *result = malloc(sizeof(char) + 1);
-  int i, j, e, c, resultLen, targetUp, fileUp;
+  int i, j, e, c, targetUp, fileUp;
   pathDirs *fileStruct, *targetStruct;
   int  fileLen, targetLen, commonPath = 0;
 
@@ -837,7 +837,6 @@ wchar_t *wWriteSegment(int segLen, wchar_t *text, int align){
   int paddingLen;
   char *padding;
   int textLen;
-  int i;
 
   textLen = wcslen(text);
   paddingLen = segLen - textLen;
@@ -879,19 +878,13 @@ void printXattr(int start, int selected, int listref, int currentItem, int subIn
 
   int maxlen = COLS - start - 1;
 
-  char *tmpXattrAt;
   int xattrAtPos;
-  bool hasXattr = false;
-  int tmpXattrDataLen;
   char *tmpXattrPrint;
   char *tmpXattrSize;
   int tmpXattrSizeLen;
   char *tmpXattrPadding;
   int linepadding;
-  int xattrKeySegmentLen;
   char *xattrKeySegment;
-  int xattrSizeSegmentLen;
-  char *xattrSizeSegment;
   char xattrPrePad[13] = "            ";
   char *paddingE0;
 
@@ -954,7 +947,6 @@ void printEntry(int start, int hlinklen, int sizeblocklen, int ownerlen, int gro
 
   int i, n, t;
 
-  char marked[2];
   wchar_t *entryName  = malloc(sizeof(wchar_t) + 1);
   wchar_t *entrySLink = malloc(sizeof(wchar_t) + 1);
   int maxlen = COLS - start - 1;
@@ -980,9 +972,6 @@ void printEntry(int start, int hlinklen, int sizeblocklen, int ownerlen, int gro
   int ogpad = 0;
   int sizepad = 0;
   int mmpad = 0;
-  int contextpad = 0;
-
-  int datepad = 0;
 
   char *sizePadding;
 
@@ -1004,13 +993,11 @@ void printEntry(int start, int hlinklen, int sizeblocklen, int ownerlen, int gro
   char *contextSegment;
   char *sizeSegment;
   wchar_t *dateSegment;
-  wchar_t *linkSegment;
   nameStruct *nameSegmentData;
 
   wchar_t *tmpSegment;
 
   int linepadding;
-  int colpos;
 
   char tmpperms[12];
 
@@ -1493,7 +1480,6 @@ void copy_file(char *source_input, char *target_input, mode_t mode)
   char *targetmod = malloc(sizeof(char) * (strlen(target_input) + 1));
   FILE *source = NULL;
   FILE *target = NULL;
-  char ch = '\0';
   size_t n, m;
   unsigned char buff[8192];
 
@@ -1536,10 +1522,8 @@ int SendToPager(char* object)
 {
   char *originalCmd;
   char *page;
-  char *pagerCommand;
   char *fullCommand;
   char *fullObject;
-  int e = 0;
   int i;
   char *escObject;
   int noOfArgs = 0;
@@ -1609,11 +1593,9 @@ int SendToEditor(char* object)
 {
   char *originalCmd;
   char *editor;
-  char *editorCommand;
   char *fullCommand;
   char *escObject;
   char *fullObject;
-  int e = 0;
   int i;
   int noOfArgs = 0;
 
@@ -1891,7 +1873,7 @@ int UpdateOwnerGroup(const char* object, const char* pwdstr, const char* grpstr)
   struct stat sb;
   struct passwd *oldpwd;
   struct group *oldgrp;
-  int s, uid, gid, e;
+  int uid, gid, e;
 
   uid = -1;
   gid = -1;
@@ -1982,9 +1964,9 @@ int CheckMarked(results* ob)
 
 void set_history(char *pwd, char *objectWild, char *name, int lineStart, int selected)
 {
-  if (sessionhistory == 0){
-    history *hs = malloc(sizeof(history));
-  }
+  // if (sessionhistory == 0){
+  //   history *hs = malloc(sizeof(history));
+  // }
 
   if (historyref == sessionhistory) {
     hs = realloc(hs, (historyref +1) * sizeof(history));
@@ -2014,7 +1996,6 @@ int huntFile(const char * file, const char * search, int charcase)
   char *line;
   regex_t regex;
   int reti;
-  char msgbuf[8192];
 
   reti = regcomp(&regex, search, charcase);
 
@@ -2095,7 +2076,6 @@ results* get_dir(char *pwd)
 {
   int i;
   size_t count = 0;
-  size_t file_count = 0;
   size_t dirErrorSize = 0;
   struct dirent *res;
   struct stat sb;
@@ -2103,10 +2083,7 @@ results* get_dir(char *pwd)
   struct stat buffer;
   int         status;
   int         pass = 0;
-  int axFlag = 0;
   char *dirError = malloc(sizeof(char) + 1);
-  // char direrror[1024];
-  // char filename[256];
   acl_t acl;
   acl_entry_t dummy;
   int haveAcl;
@@ -2479,16 +2456,15 @@ int lineStartFromBottomFileRef(int fileRef, entryLines* el, int listLen, int dis
 
 void display_dir(char *pwd, results* ob){
 
-  int i, n, t;
+  int n, t;
   size_t list_count = 0;
   int count = listLen;
   int printSelect = 0;
   char *sizeHeader = malloc(sizeof(char) + 1);
   char *headings = malloc(sizeof(char) + 1);
   size_t sizeHeaderLen;
-  size_t headingsLen;
   int padIntHeadOG, padIntHeadContext, padIntHeadSize, padIntHeadDT;
-  int headerpos, displaypos;
+  int displaypos;
   char *susedString, *savailableString;
   wchar_t *pwdPrint = malloc(sizeof(wchar_t) + 1);
   size_t pwdPrintSize;
@@ -2496,8 +2472,6 @@ void display_dir(char *pwd, results* ob){
   char *headerCombined = malloc(sizeof(char) + 1);
   int headerCombinedLen = 1;
   char *markedHeadSeg, *attrHeadSeg, *hlinkHeadSeg, *ownerHeadSeg, *contextHeadSeg, *sizeHeadSeg, *dateHeadSeg, *nameHeadSeg, *sizeBlocksHeadSeg;
-  int xattrOffset = 0;
-  int origTopFileRef;
   int currentItem;
 
   maxdisplaywidth = 0;
@@ -2527,15 +2501,6 @@ void display_dir(char *pwd, results* ob){
   // Replacement to "sanitizeTopFileRef" - should be simpler with the lookup table.
   if ((selected > bottomFileRef) || ((selected < topfileref + 1)) || ((bottomFileRef - topfileref - 1) > displaysize)){
     adjustViewForSelected(selected, el, listLen, displaysize);
-  }
-
-  i = 0;
-
- rerunCalc:
-
-  // Hacky, but this will stop show hanging if the topfileref check fails after 50 times. It's in place as if CTRL-C is disabled, then this lock can't be exited without killing show from another terminal.
-  if (i > 50){
-    exit(27);
   }
 
   lineCount = 0;
