@@ -319,7 +319,7 @@ void refreshDirectory(char *sortmode, int origlineStart, int origselected, int d
  handleMissingDir:
   if (check_dir(currentpwd)){
     if (invalidstart) {
-      snprintf(currentselectname, 512, "");
+      currentselectname[0]=0;
       exitCode = 0;
       invalidstart = 0;
     } else {
@@ -412,7 +412,7 @@ void show_directory_input()
     if ( strchr(objectWild, MULTICHAR) || strchr(objectWild, ONECHAR)){
       snprintf(currentpwd, 4096, "%s", dirFromPath(currentpwd));
     } else {
-      snprintf(objectWild, 1, "");
+      objectWild[0]=0;
     }
 
     if (check_first_char(currentpwd, "~")){
