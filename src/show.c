@@ -685,7 +685,7 @@ int directory_view(char * currentpwd)
   if ( strchr(objectWild, MULTICHAR) || strchr(objectWild, ONECHAR)){
     snprintf(currentpwd, strlen(dirFromPath(currentpwd)), "%s", dirFromPath(currentpwd));
   } else {
-    snprintf(objectWild, 1, "");
+    objectWild[0]=0;
   }
 
   lineStart = 0;
