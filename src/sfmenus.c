@@ -339,7 +339,7 @@ void show_file_file_input()
   curs_set(FALSE);
   if (check_first_char(fileName, "~")){
     rewrite = str_replace(fileName, "~", getenv("HOME"));
-    memcpy(fileName, rewrite, 4096);
+    memcpy(fileName, rewrite, (strlen(rewrite) + 1));
     free(rewrite);
   }
   file_view(fileName);

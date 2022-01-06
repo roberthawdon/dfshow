@@ -361,7 +361,7 @@ void refreshDirectory(char *sortmode, int origlineStart, int origselected, int d
     }
   } else {
     if (historyref > 1){
-      memcpy(currentpwd, hs[historyref - 2].path, 4096);
+      memcpy(currentpwd, hs[historyref - 2].path, strlen(hs[historyref - 2].path));
       objectWild = hs[historyref - 2].objectWild;
       historyref--;
       chdir(currentpwd);
@@ -417,7 +417,7 @@ void show_directory_input()
 
     if (check_first_char(currentpwd, "~")){
       rewrite = str_replace(currentpwd, "~", getenv("HOME"));
-      memcpy(currentpwd, rewrite, 4096);
+      memcpy(currentpwd, rewrite, (strlen(rewrite) + 1));
       free(rewrite);
     }
     if (check_object(currentpwd) == 1){
@@ -432,11 +432,11 @@ void show_directory_input()
       refreshDirectory(sortmode, 0, selected, -2);
     } else {
       setDynamicChar(&direrror, "The location %s cannot be opened or is not a directory\n", currentpwd);
-      memcpy(currentpwd, oldpwd, 4096);
+      memcpy(currentpwd, oldpwd, (strlen(oldpwd) + 1));
       topLineMessage(direrror);
     }
   } else {
-    memcpy(currentpwd, oldpwd, 4096); // Copying old value back if the input was aborted
+    memcpy(currentpwd, oldpwd, (strlen(oldpwd) + 1)); // Copying old value back if the input was aborted
   }
   free(direrror);
   free(oldpwd);
@@ -486,7 +486,7 @@ void copy_file_input(char *file, mode_t mode)
   if ( strcmp(newfile, file) && strcmp(newfile, "")) {
     if (check_first_char(newfile, "~")){
       rewrite = str_replace(newfile, "~", getenv("HOME"));
-      memcpy(newfile, rewrite, 4096);
+      memcpy(newfile, rewrite, (strlen(rewrite) + 1));
       free(rewrite);
     }
   copyFile:
@@ -539,7 +539,7 @@ void copy_multi_file_input(results* ob, char *input)
   if ( strcmp(dest, input) && strcmp(dest, "")) {
     if (check_first_char(dest, "~")){
       rewrite = str_replace(dest, "~", getenv("HOME"));
-      memcpy(dest, rewrite, 4096);
+      memcpy(dest, rewrite, (strlen(rewrite) + 1));
       free(rewrite);
     }
   copyMultiFile:
@@ -600,7 +600,7 @@ void rename_multi_file_input(results* ob, char *input)
   if (strcmp(dest, input) && strcmp(dest, "")){
     if (check_first_char(dest, "~")){
       rewrite = str_replace(dest, "~", getenv("HOME"));
-      memcpy(dest, rewrite, 4096);
+      memcpy(dest, rewrite, (strlen(rewrite) + 1));
       free(rewrite);
     }
   renameMultiFile:
@@ -677,7 +677,7 @@ void rename_file_input(char *file)
   if (strcmp(dest, file) && strcmp(dest, "")){
     if (check_first_char(dest, "~")){
       rewrite = str_replace(dest, "~", getenv("HOME"));
-      memcpy(dest, rewrite, 4096);
+      memcpy(dest, rewrite, (strlen(rewrite) + 1));
       free(rewrite);
     }
   renameFile:
@@ -733,7 +733,7 @@ void make_directory_input()
   if (strcmp(newdir, currentpwd) && strcmp(newdir, "")){
     if (check_first_char(newdir, "~")){
       rewrite = str_replace(newdir, "~", getenv("HOME"));
-      memcpy(newdir, rewrite, 4096);
+      memcpy(newdir, rewrite, (strlen(rewrite) + 1));
       free(rewrite);
     }
   makeDir:
@@ -861,7 +861,7 @@ void touch_file_input()
     if (strcmp(touchFile, currentpwd) && strcmp(touchFile, "")){
       if (check_first_char(touchFile, "~")){
         rewrite = str_replace(touchFile, "~", getenv("HOME"));
-        memcpy(touchFile, rewrite, 4096);
+        memcpy(touchFile, rewrite, (strlen(rewrite) + 1));
         free(rewrite);
       }
     }
@@ -1380,13 +1380,13 @@ void linktext_input(char *file, int symbolic)
     // Check for ~ that needs replacing with home directory
     if (check_first_char(file, "~")){
       rewrite = str_replace(file, "~", getenv("HOME"));
-      memcpy(file, rewrite, 4096);
+      memcpy(file, rewrite, (strlen(rewrite) + 1));
       free(rewrite);
     }
 
     if (check_first_char(target, "~")){
       rewrite = str_replace(target, "~", getenv("HOME"));
-      memcpy(target, rewrite, 4096);
+      memcpy(target, rewrite, (strlen(rewrite) + 1));
       free(rewrite);
     }
 
@@ -1615,7 +1615,7 @@ void directory_view_menu_inputs()
           if (!strcmp(ob[selected].name, "..")) {
             if (strcmp(currentpwd, "/")){
               updir = dirFromPath(currentpwd);
-              memcpy(chpwd, updir, 4096);
+              memcpy(chpwd, updir, (strlen(updir) + 1));
               free(updir);
               objectWild = "";
               testSlash:

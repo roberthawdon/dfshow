@@ -70,7 +70,7 @@ void processListThemes(const char * pathName)
   char currentFile[1024];
   config_t cfg;
   config_setting_t *group;
-  memcpy(currentPath, pathName, 1024);
+  memcpy(currentPath, pathName, (strlen(pathName) + 1));
   dfDir = opendir ( currentPath );
   if (access (currentPath, F_OK) != -1){
     if (dfDir){
@@ -305,7 +305,7 @@ void saveTheme(){
   if ( e == 0 ){
     if (check_first_char(filename, "~")){
       rewrite = str_replace(filename, "~", getenv("HOME"));
-      memcpy(filename, rewrite, 1024);
+      memcpy(filename, rewrite, (strlen(rewrite) + 1));
       free(rewrite);
     }
     config_init(&cfg);
@@ -410,7 +410,7 @@ void loadTheme(){
   if ( e == 0 ){
     if (check_first_char(filename, "~")){
       rewrite = str_replace(filename, "~", getenv("HOME"));
-      memcpy(filename, rewrite, 1024);
+      memcpy(filename, rewrite, (strlen(rewrite) + 1));
       free(rewrite);
     }
     if (check_file(filename) ){
