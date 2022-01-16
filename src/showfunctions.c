@@ -1111,7 +1111,7 @@ void printEntry(int start, int hlinklen, int sizeblocklen, int ownerlen, int gro
   }
 
   if (showSizeBlocks){
-    snprintf(sizeblocksstr, 32, "%lld", ob[currentitem].sizeBlocks);
+    snprintf(sizeblocksstr, 32, "%ju", (uintmax_t)ob[currentitem].sizeBlocks);
     if (sizeblocklen < sizeblockminlen) {
       sizeBlocksSegmentLen = sizeblockminlen;
     } else {
@@ -1714,7 +1714,7 @@ int seglength(const void *seg, char *segname, int LEN)
         len = strlen(hlinkstr);
       }
       else if (!strcmp(segname, "sizeBlocks")) {
-        snprintf(sizeblocksstr, 32, "%lld", dfseg[i].sizeBlocks);
+        snprintf(sizeblocksstr, 32, "%ju", (uintmax_t)dfseg[i].sizeBlocks);
         len = strlen(sizeblocksstr);
       }
       else if (!strcmp(segname, "size")) {
@@ -2163,7 +2163,7 @@ results* get_dir(char *pwd)
             }
             status = lstat(res->d_name, &buffer);
 
-            snprintf(hlinkstr, 6, "%d", buffer.st_nlink);
+            snprintf(hlinkstr, 6, "%ju", (uintmax_t)buffer.st_nlink);
             snprintf(sizestr, 32, "%lld", (long long)buffer.st_size);
 
             // axflag here
