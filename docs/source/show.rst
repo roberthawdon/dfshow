@@ -216,14 +216,15 @@ the command has any additional propts, they are also described here.
 ``Edit``
   This invokes the default text editor. Please consult the ``man``
   pages of your preferred editor for more information. The edit
-  command utilizes the ``VISUAL`` or ``EDITOR`` environment
-  variable. If this has not been set, the following message is
-  displayed.
+  command is set in show's configuration settings or can utilize
+  the ``VISUAL`` or ``EDITOR`` environment variable. If neither of
+  these have been set, the following message is displayed.
 
-  ``Please export a VISUAL environment variable to define the utility program name.``
+  ``Please set a valid editor utility program command in settings.``
 
-  To resolve this, set a variable to your preferred editor in your
-  shell's user preference file.
+  To resolve this, set your preferred editor in show's configuration
+  settings or set the following environment variable your shell's
+  user preference file.
 
   ``export VISUAL=/usr/bin/vi``
 
@@ -308,14 +309,16 @@ the command has any additional propts, they are also described here.
 
 ``Show``
   Will either display the contents of a directory, or open the
-  contents of a file. The show file command utilizes the ``PAGER``
-  environment variable. If this has not been set, the following
-  message is displayed.
+  contents of a file. The show file command is set in show's
+  configuration but can also utilize the ``PAGER`` environment
+  variable. If neither of these have been set, or the command is
+  invalid, the following message is displayed.
 
-  ``Please export a PAGER environment variable to define the utility program name.``
+  ``Please set a valid pager utility program command in settings.``
 
-  To resolve this, set a variable to your preferred pager in your
-  shell's user preference file.
+  To resolve this, set your preferred pager in show's configuration
+  settings or set the following environment variable your shell's
+  user preference file.
 
   ``export PAGER=/usr/bin/less``
 

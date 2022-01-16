@@ -1,6 +1,6 @@
 .\" generated with Ronn-NG/v0.9.1
 .\" http://github.com/apjanke/ronn-ng/tree/0.9.1
-.TH "SHOW" "1" "November 2021" ""
+.TH "SHOW" "1" "January 2022" ""
 .SH "NAME"
 \fBshow\fR \- An interactive directory/file browser written for Unix\-like systems\.
 .SH "USAGE"
@@ -147,11 +147,11 @@ Delete the selected file, or marked files\. As this is a destructive process, co
 For single files, a "Y" will delete files and anything else will abort the delete file operation\. For multiple files, confirmation for all files is requested\. A "Y" will delete the prompted file, an "N" will not delete the file, an "A" will delete all the marked files without further confirmation, and an "S" will stop the multiple delete command\.
 .TP
 \fBEdit\fR
-This invokes the default text editor\. Please consult the \fBman\fR pages of your preferred editor for more information\. The edit command utilizes the \fBVISUAL\fR or \fBEDITOR\fR environment variable\. If this has not been set, the following message is displayed\.
+This invokes the default text editor\. Please consult the \fBman\fR pages of your preferred editor for more information\. The edit command is set in show\'s configuration settings or can utilize the \fBVISUAL\fR or \fBEDITOR\fR environment variable\. If neither of these have been set, the following message is displayed\.
 .IP
-\fBPlease export a VISUAL environment variable to define the utility program name\.\fR
+\fBPlease set a valid editor utility program command in settings\.\fR
 .IP
-To resolve this, set a variable to your preferred editor in your shell\'s user preference file\.
+To resolve this, set your preferred editor in show\'s configuration settings or set the following environment variable your shell\'s user preference file\.
 .IP
 \fBexport VISUAL=/usr/bin/vi\fR
 .TP
@@ -211,11 +211,11 @@ Rename the selected file, or marked files to a new file name\. The new file name
 \fBRename multiple files to:\fR
 .TP
 \fBShow\fR
-Will either display the contents of a directory, or open the contents of a file\. The show file command utilizes the \fBPAGER\fR environment variable\. If this has not been set, the following message is displayed\.
+Will either display the contents of a directory, or open the contents of a file\. The show file command is set in show\'s configuration but can also utilize the \fBPAGER\fR environment variable\. If neither of these have been set, or the command is invalid, the following message is displayed\.
 .IP
-\fBPlease export a PAGER environment variable to define the utility program name\.\fR
+\fBPlease set a valid pager utility program command in settings\.\fR
 .IP
-To resolve this, set a variable to your preferred pager in your shell\'s user preference file\.
+To resolve this, set your preferred pager in show\'s configuration settings or set the following environment variable your shell\'s user preference file\.
 .IP
 \fBexport PAGER=/usr/bin/less\fR
 .TP
