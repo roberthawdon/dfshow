@@ -397,7 +397,6 @@ char *str_replace(char *orig, char *rep, char *with) {
 
 char * read_line(FILE *fin) {
   char *buffer;
-  char *tmp;
   int read_chars = 0;
   int initBufsize = 8192;
   int bufsize = initBufsize;
