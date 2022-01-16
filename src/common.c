@@ -399,7 +399,8 @@ char * read_line(FILE *fin) {
   char *buffer;
   char *tmp;
   int read_chars = 0;
-  int bufsize = 8192;
+  int initBufsize = 8192;
+  int bufsize = initBufsize;
   char *line = malloc(bufsize);
 
   if ( !line ) {
@@ -414,19 +415,10 @@ char * read_line(FILE *fin) {
     if ( line[read_chars - 1] == '\n' ) {
       line[read_chars - 1] = '\0';
       return line;
-    }
-
-    else {
-      bufsize = 2 * bufsize;
-      tmp = realloc(line, bufsize);
-      if ( tmp ) {
-        line = tmp;
-        buffer = line + read_chars;
-      }
-      else {
-        free(line);
-        return NULL;
-      }
+    } else {
+      bufsize = bufsize + initBufsize;
+      line = realloc(line, bufsize);
+      buffer = line + read_chars;
     }
   }
   return NULL;

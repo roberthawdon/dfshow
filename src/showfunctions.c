@@ -1460,7 +1460,8 @@ void LaunchShell()
   setenv("DFS_RUNNING", c, 1);
   clear();
   endwin();
-  write(STDOUT_FILENO, "\nUse 'exit' to return to Show.\n\n", 32);
+  // write(STDOUT_FILENO, "\nUse 'exit' to return to Show.\n\n", 32);
+  printf("\nUse 'exit' to return to Show.\n\n");
   system(getenv("SHELL"));
   refreshScreen();
 }
