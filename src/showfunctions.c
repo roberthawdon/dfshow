@@ -2048,8 +2048,8 @@ char *markedDisplay(results* ob)
     readableSize(markedSize, 8, markedSizeString, si);
   } else {
     if (markedSize == 0){
-      markedSizeString = malloc (sizeof (char) * 1);
-      snprintf(markedSizeString, 1, "%lu", markedSize);
+      markedSizeString = malloc (sizeof (char) * 2);
+      snprintf(markedSizeString, 2, "%lu", markedSize);
     } else {
       markedSizeString = malloc (sizeof (char) * (log10(markedSize) + 2));
       snprintf(markedSizeString, (log10(markedSize) + 2), "%lu", markedSize);
