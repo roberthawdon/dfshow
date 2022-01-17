@@ -1,7 +1,7 @@
 /*
   DF-SHOW: An interactive directory/file browser written for Unix-like systems.
   Based on the applications from the PC-DOS DF-EDIT suite by Larry Kroeker.
-  Copyright (C) 2018-2021  Robert Ian Hawdon
+  Copyright (C) 2018-2022  Robert Ian Hawdon
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@
 #include <wchar.h>
 #include <wctype.h>
 #include "colors.h"
+#include "banned.h"
 
 int wReadLine(wchar_t *buffer, int buflen, wchar_t *oldbuf)
 /* Read up to buflen-1 characters into `buffer`.
@@ -155,7 +156,7 @@ int readline(char *buffer, int buflen, char *oldbuf)
   wOldBuf = malloc(sizeof(wchar_t) * (strlen(oldbuf) + 1));
   swprintf(wOldBuf, strlen(oldbuf) + 1, L"%s", oldbuf);
   status = wReadLine(wBuffer, buflen, wOldBuf);
-  sprintf(buffer, "%ls", wBuffer);
+  snprintf(buffer, buflen, "%ls", wBuffer);
   free(wBuffer);
   free(wOldBuf);
   return(status);

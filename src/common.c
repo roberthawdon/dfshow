@@ -1,7 +1,7 @@
 /*
   DF-SHOW: An interactive directory/file browser written for Unix-like systems.
   Based on the applications from the PC-DOS DF-EDIT suite by Larry Kroeker.
-  Copyright (C) 2018-2021  Robert Ian Hawdon
+  Copyright (C) 2018-2022  Robert Ian Hawdon
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -36,6 +36,7 @@
 #include "colors.h"
 #include "config.h"
 #include "common.h"
+#include "banned.h"
 
 DIR *folder;
 FILE *file;
@@ -73,6 +74,24 @@ int getch10th (void) {
   return ch;
 }
 
+int setDynamicChar(char **str, const char *format, ...)
+{
+  int length = 0;
+  va_list pArg1, pArg2;
+  va_start(pArg1, format);
+  va_copy(pArg2, pArg1);
+
+  length = vsnprintf(NULL, 0, format, pArg1);
+  length++;
+
+  *str = malloc(sizeof(char) * length);
+  vsnprintf(*str, length, format, pArg2);
+
+  va_end(pArg1);
+  va_end(pArg2);
+  return(length);
+}
+
 int splitPath(pathDirs **dirStruct, char *path){
   int e, i, j, c;
   pathDirs *tmp;
@@ -98,7 +117,7 @@ int splitPath(pathDirs **dirStruct, char *path){
           (*dirStruct) = realloc((*dirStruct), sizeof(pathDirs) * (2 + e));
         } else if (!strcmp((*dirStruct)[e].directories, ".")){
           // strip single .
-          strcpy((*dirStruct)[e].directories, "\0");
+          (*dirStruct)[e].directories[0]=0;
         } else {
           // If element created is NOT ..
           e++;
@@ -116,7 +135,7 @@ int splitPath(pathDirs **dirStruct, char *path){
   }
   (*dirStruct)[e].directories[j] = '\0';
   if (!strcmp((*dirStruct)[e].directories, ".")){
-    strcpy((*dirStruct)[e].directories, "");
+    (*dirStruct)[e].directories[0]=0;
     e--;
   }
 
@@ -155,15 +174,15 @@ int createParentsInput(char *path)
 
 void createParentDirs(char *path){
   pathDirs *targetPath;
-  char *tempPath = malloc(sizeof(char) + 1);
+  char *tempPath = malloc(sizeof(char) * 1);
   int e, i = 0;
 
   e = splitPath(&targetPath, path);
 
-  strcpy(tempPath, "");
+  tempPath[0]=0;
   for (i = 0; i < e; i++){
     tempPath = realloc(tempPath, sizeof(char) * (strlen(tempPath) + strlen(targetPath[i].directories) + 2));
-    sprintf(tempPath, "%s/%s", tempPath, targetPath[i].directories);
+    snprintf(tempPath, (strlen(tempPath) + strlen(targetPath[i].directories) + 2), "%s/%s", tempPath, targetPath[i].directories);
     if (!check_dir(tempPath)){
       mk_dir(tempPath);
     }
@@ -185,9 +204,9 @@ void mk_dir(char *path)
 
 void setConfLocations()
 {
-  sprintf(globalConfLocation, "%s/%s", SYSCONFIG, CONF_NAME);
+  snprintf(globalConfLocation, 128, "%s/%s", SYSCONFIG, CONF_NAME);
 
-  sprintf(homeConfLocation, "%s/%s/%s", getenv("HOME"), HOME_CONF_DIR, CONF_NAME);
+  snprintf(homeConfLocation, 128, "%s/%s/%s", getenv("HOME"), HOME_CONF_DIR, CONF_NAME);
 }
 
 int exittoshell()
@@ -212,7 +231,7 @@ char * dirFromPath(const char* myStr){
   outStr = malloc(sizeof (char) * (i + 2));
 
   if (i < 2){
-    strcpy(outStr, "/");
+    snprintf(outStr, (i + 2), "/");
   } else{
     while(n <= i){
       outStr[n] = myStr[n];
@@ -254,7 +273,7 @@ char * objectFromPath(const char *myStr){
 void printVersion(char* programName){
   printf (("Directory File Show (DF-SHOW) - %s %s\n"), programName, VERSION);
   fputs (("\
-Copyright (C) 2021 Robert Ian Hawdon\n\
+Copyright (C) 2022 Robert Ian Hawdon\n\
 License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.\n\
 This program comes with ABSOLUTELY NO WARRANTY. This is free software, and you\n\
 are welcome to redistribute it under certain conditions.\n"), stdout);
@@ -334,6 +353,7 @@ char *str_replace(char *orig, char *rep, char *with) {
     int len_with; // length of with (the string to replace rep with)
     int len_front; // distance between rep and end of last rep
     int count;    // number of replacements
+    int tmp_size;
 
     // sanity checks and initialization
     if (!orig || !rep)
@@ -350,8 +370,9 @@ char *str_replace(char *orig, char *rep, char *with) {
     for (count = 0; (tmp = strstr(ins, rep)); ++count) {
         ins = tmp + len_rep;
     }
-
-    tmp = result = malloc(strlen(orig) + (len_with - len_rep) * count + 1);
+    
+    tmp_size = strlen(orig) + (len_with - len_rep) * count + 1;
+    tmp = result = malloc(tmp_size);
 
     if (!result)
         return NULL;
@@ -364,19 +385,21 @@ char *str_replace(char *orig, char *rep, char *with) {
     while (count--) {
         ins = strstr(orig, rep);
         len_front = ins - orig;
-        tmp = strncpy(tmp, orig, len_front) + len_front;
-        tmp = strcpy(tmp, with) + len_with;
+        memcpy(tmp, orig, len_front);
+        tmp = tmp + len_front;
+        memcpy(tmp, with, len_with);
+        tmp = tmp + len_with;
         orig += len_front + len_rep; // move to next "end of rep"
     }
-    strcpy(tmp, orig);
+    memcpy(tmp, orig, tmp_size);
     return result;
 }
 
 char * read_line(FILE *fin) {
   char *buffer;
-  char *tmp;
   int read_chars = 0;
-  int bufsize = 8192;
+  int initBufsize = 8192;
+  int bufsize = initBufsize;
   char *line = malloc(bufsize);
 
   if ( !line ) {
@@ -391,19 +414,10 @@ char * read_line(FILE *fin) {
     if ( line[read_chars - 1] == '\n' ) {
       line[read_chars - 1] = '\0';
       return line;
-    }
-
-    else {
-      bufsize = 2 * bufsize;
-      tmp = realloc(line, bufsize);
-      if ( tmp ) {
-        line = tmp;
-        buffer = line + read_chars;
-      }
-      else {
-        free(line);
-        return NULL;
-      }
+    } else {
+      bufsize = bufsize + initBufsize;
+      line = realloc(line, bufsize);
+      buffer = line + read_chars;
     }
   }
   return NULL;
@@ -411,12 +425,13 @@ char * read_line(FILE *fin) {
 
 void showManPage(const char * prog)
 {
-  char mancmd[10];
-  int i;
-  sprintf(mancmd, "man %s", prog);
+  char *mancmd;
+  setDynamicChar(&mancmd,"%s %s", commandFromPath("man"), prog);
   clear();
-  system("clear"); // Needed to ensure man pages display correctly
-  system(mancmd);
+  char *args[countArguments(mancmd)];
+  buildCommandArguments(mancmd, args, countArguments(mancmd));
+  free(mancmd);
+  launchExternalCommand(args[0], args, M_NONE);
 }
 
 int can_run_command(const char *cmd) {
@@ -440,7 +455,7 @@ int can_run_command(const char *cmd) {
     }
     if(p==buf) *p++='.';
     if(p[-1]!='/') *p++='/';
-    strcpy(p, cmd);
+    snprintf(p, (strlen(path)+strlen(cmd)+3), "%s", cmd);
     if(access(buf, X_OK)==0) {
         free(buf);
         return 1;
@@ -463,7 +478,7 @@ char * commandFromPath(const char *cmd) {
   if(strchr(cmd, '/')) {
       free(outStr);
       outStr = malloc(strlen(cmd)+1);
-      sprintf(outStr, "%s", cmd);
+      snprintf(outStr, (strlen(cmd)+1), "%s", cmd);
       return outStr;
   }
   if(!path){
@@ -477,7 +492,7 @@ char * commandFromPath(const char *cmd) {
     }
     if(p==outStr) *p++='.';
     if(p[-1]!='/') *p++='/';
-    strcpy(p, cmd);
+    snprintf(p, (strlen(path)+strlen(cmd)+3), "%s", cmd);
     if(access(outStr, X_OK)==0) {
         return outStr;
     }
@@ -535,7 +550,7 @@ int countArguments(const char *cmd)
 
 void buildCommandArguments(const char *cmd, char **args, size_t items)
 {
-  int j, k, cmdLen; // , countArgs;
+  int k, cmdLen; // , countArgs;
   int i, itemCount, argCharCount;
   int cmdPos = 0;
   int cmdOffset = 0;
@@ -619,7 +634,7 @@ void buildCommandArguments(const char *cmd, char **args, size_t items)
         tempStr[k + 1] = '\0';
       }
     }
-    strcpy(args[i], tempStr);
+    memcpy(args[i], tempStr, strlen(tempStr));
     cmdPos += itemLen[i];
     free(tempStr);
   }  
@@ -634,9 +649,7 @@ void buildCommandArguments(const char *cmd, char **args, size_t items)
 int launchExternalCommand(char *cmd, char **args, ushort_t mode)
 {
   sigset_t newMask, oldMask;
-  pid_t parent = getpid();
   pid_t pid;
-  int i;
 
   sigemptyset(&newMask);
   sigemptyset(&oldMask);

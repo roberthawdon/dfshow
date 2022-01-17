@@ -1,7 +1,7 @@
 /*
   DF-SHOW: An interactive directory/file browser written for Unix-like systems.
   Based on the applications from the PC-DOS DF-EDIT suite by Larry Kroeker.
-  Copyright (C) 2018-2021  Robert Ian Hawdon
+  Copyright (C) 2018-2022  Robert Ian Hawdon
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -30,6 +30,7 @@
 #include "sf.h"
 #include "colors.h"
 #include "input.h"
+#include "banned.h"
 
 int c;
 int * pc = &c;
@@ -112,21 +113,22 @@ void show_file_find(bool charcase, bool useLast)
 {
   int regexcase;
   int result;
+  int curPos = 0;
   char inputmessage[32];
-  char errormessage[1024];
+  char *errormessage;
   if (!useLast){
     if (charcase){
       regexcase = 0;
-      strcpy(inputmessage, "Match Case - Enter string:");
+      snprintf(inputmessage, 32, "Match Case - Enter string:");
     } else {
       regexcase = REG_ICASE;
-      strcpy(inputmessage, "Ignore Case - Enter string:");
+      snprintf(inputmessage, 32, "Ignore Case - Enter string:");
     }
     move(0,0);
     clrtoeol();
-    mvprintw(0, 0, inputmessage);
+    curPos = (printMenu(0, 0, inputmessage) + 1);
     curs_set(TRUE);
-    move(0, strlen(inputmessage) + 1);
+    move(0, curPos);
     curs_set(FALSE);
     if (readline(regexinput, 1024, regexinput) == -1 ){
       abortinput = 1;
@@ -140,8 +142,9 @@ void show_file_find(bool charcase, bool useLast)
       updateView();
     } else if ( result == -2 ){
       // Not a feature in DF-EDIT 2.3d, but a nice to have
-      sprintf(errormessage, "No further references to '%s' found.", regexinput);
+      setDynamicChar(&errormessage, "No further references to '%s' found.", regexinput);
       topLineMessage(errormessage);
+      free(errormessage);
     }
   }
 }
@@ -174,19 +177,17 @@ void show_file_position_input(int currentpos)
 {
   char newpos[11];
   char *filePosText;
-  int filePosTextLen;
   int status;
+  int curPos = 0;
   // Fun fact, in DF-EDIT 2.3d, the following text input typoed "absolute" as "absolue", this typo also exists in the Windows version from 1997 (2.3d-76), however, the 1986 documentation correctly writes it as "absolute".
-  filePosTextLen = snprintf(NULL, 0, "Position relative (<+num> || <-num>) or absolute (<num>):");
-  filePosText = malloc(sizeof(char) * (filePosTextLen + 1));
-  sprintf(filePosText, "Position relative (<+num> || <-num>) or absolute (<num>):");
+  setDynamicChar(&filePosText, "Position relative (<+num> || <-num>) or absolute (<num>):");
   viewmode = 2;
   move(0,0);
   clrtoeol();
-  printMenu(0,0,filePosText);
+  curPos = (printMenu(0,0,filePosText) + 1);
   free(filePosText);
   curs_set(TRUE);
-  move(0,52);
+  move(0,curPos);
   status = readline(newpos, 11, ""); // DF-EDIT defaulted to 0, but it also defaulted to overtype mode, so for ease of use, we'll leave the default blank.
   curs_set(FALSE);
   if ((status != -1) && (strcmp(newpos,"") != 0)){
@@ -328,16 +329,17 @@ void show_file_inputs()
 void show_file_file_input()
 {
   char *rewrite;
+  int curPos = 0;
   move(0,0);
   clrtoeol(); // Probably not needed as this is only ever displayed when launching without a file
-  mvprintw(0,0,"Show File - Enter pathname:");
+  curPos = (printMenu(0,0,"Show File - Enter pathname:") + 1);
   curs_set(TRUE);
-  move(0,28);
+  move(0,curPos);
   readline(fileName, 4096, "");
   curs_set(FALSE);
   if (check_first_char(fileName, "~")){
     rewrite = str_replace(fileName, "~", getenv("HOME"));
-    strcpy(fileName, rewrite);
+    memcpy(fileName, rewrite, (strlen(rewrite) + 1));
     free(rewrite);
   }
   file_view(fileName);

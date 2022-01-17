@@ -1,7 +1,7 @@
 /*
   DF-SHOW: An interactive directory/file browser written for Unix-like systems.
   Based on the applications from the PC-DOS DF-EDIT suite by Larry Kroeker.
-  Copyright (C) 2018-2021  Robert Ian Hawdon
+  Copyright (C) 2018-2022  Robert Ian Hawdon
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -29,6 +29,7 @@
 #include "settings.h"
 #include "colors.h"
 #include "input.h"
+#include "banned.h"
 
 menuDef *settingsMenu;
 int settingsMenuSize = 0;
@@ -71,8 +72,8 @@ void addT1CharValue(t1CharValues **values, int *totalItems, int *maxItem, char *
 
   j++;
   (*values)[i].index = j;
-  sprintf((*values)[i].refLabel, "%s", refLabel);
-  sprintf((*values)[i].value, "%s", value);
+  snprintf((*values)[i].refLabel, 16, "%s", refLabel);
+  snprintf((*values)[i].value, 16, "%s", value);
 
   ++*totalItems;
   ++*maxItem;
@@ -106,8 +107,8 @@ void addT2BinValue(t2BinValues **values, int *totalItems, int *maxItem, char *re
 
   j++;
   ((*values))[i].index = j;
-  sprintf((*values)[i].refLabel, "%s", refLabel);
-  sprintf((*values)[i].settingLabel, "%s", settingLabel);
+  snprintf((*values)[i].refLabel, 16, "%s", refLabel);
+  snprintf((*values)[i].settingLabel, 16, "%s", settingLabel);
   ((*values))[i].value = value;
   ((*values))[i].boolVal = 0;
 
@@ -132,7 +133,7 @@ void importSetting(settingIndex **settings, int *items, char *refLabel, wchar_t 
   }
 
   (*settings)[currentItem].type = type;
-  sprintf((*settings)[currentItem].refLabel, "%s", refLabel);
+  snprintf((*settings)[currentItem].refLabel, 16, "%s", refLabel);
   swprintf((*settings)[currentItem].textLabel, 32, L"%ls", textLabel);
   (*settings)[currentItem].intSetting = intSetting;
   (*settings)[currentItem].maxValue = maxValue;
@@ -140,7 +141,7 @@ void importSetting(settingIndex **settings, int *items, char *refLabel, wchar_t 
 
   if (charSetting){
     (*settings)[currentItem].charSetting = malloc(sizeof(char) * (strlen(charSetting) + 1));
-    sprintf((*settings)[currentItem].charSetting, "%s", charSetting);
+    snprintf((*settings)[currentItem].charSetting, (strlen(charSetting) + 1), "%s", charSetting);
   }
 
   ++*items;
@@ -192,7 +193,7 @@ void printSetting(int line, int col, settingIndex **settings, t1CharValues **val
   char refLabel[16];
 
   labelLen = wcslen((*settings)[index].textLabel) + 2;
-  sprintf(refLabel, "%s", (*settings)[index].refLabel);
+  snprintf(refLabel, 16, "%s", (*settings)[index].refLabel);
 
   for (i = 0; i < charIndex; i++){
     if (!strcmp((*values)[i].refLabel, refLabel) && ((*values)[i].index) == 0){

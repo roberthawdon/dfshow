@@ -13,5 +13,5 @@ void updateMenuItem(menuDef **dfMenu, int *menuSize, char* refLabel, wchar_t* di
 wchar_t * genMenuDisplayLabel(wchar_t* preMenu, menuDef* dfMenu, int size, wchar_t* postMenu, int comma);
 int menuHotkeyLookup(menuDef* dfMenu, char* refLabel, int size);
 int altHotkey(int key);
-void wPrintMenu(int line, int col, wchar_t *menustring);
-void printMenu(int line, int col, char *menustring);
+int wPrintMenu(int line, int col, wchar_t *menustring);
+int printMenu(int line, int col, char *menustring);

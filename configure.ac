@@ -1,8 +1,6 @@
-AC_INIT([dfshow], [0.9.3], [https://github.com/roberthawdon/dfshow/issues])
-AC_GNU_SOURCE
+AC_INIT([dfshow],[0.9.4],[https://github.com/roberthawdon/dfshow/issues])
 AM_INIT_AUTOMAKE([subdir-objects])
 AC_PROG_CC
-AC_PROG_CC_STDC
 AC_CONFIG_HEADERS([config.h:config.hin])
 AC_SUBST([AM_LDFLAGS])
 

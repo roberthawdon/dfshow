@@ -1,7 +1,7 @@
 /*
   DF-SHOW: An interactive directory/file browser written for Unix-like systems.
   Based on the applications from the PC-DOS DF-EDIT suite by Larry Kroeker.
-  Copyright (C) 2018-2021  Robert Ian Hawdon
+  Copyright (C) 2018-2022  Robert Ian Hawdon
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -32,6 +32,7 @@
 #include "common.h"
 #include "colors.h"
 #include "input.h"
+#include "banned.h"
 
 int lightColorPair[256];
 
@@ -69,12 +70,12 @@ void processListThemes(const char * pathName)
   char currentFile[1024];
   config_t cfg;
   config_setting_t *group;
-  strcpy(currentPath, pathName);
+  memcpy(currentPath, pathName, (strlen(pathName) + 1));
   dfDir = opendir ( currentPath );
   if (access (currentPath, F_OK) != -1){
     if (dfDir){
       while ( ( res = readdir (dfDir))){
-        sprintf(currentFile, "%s/%s", currentPath, res->d_name);
+        snprintf(currentFile, 1024, "%s/%s", currentPath, res->d_name);
         if (!check_dir(currentFile)){
           config_init(&cfg);
           config_read_file(&cfg, currentFile);
@@ -164,58 +165,58 @@ int itemLookup(int menuPos){
 void setColorPairs(int pair, int foreground, int background, int bold){
   switch(pair){
   case 1:
-    strcpy(colors[pair].name, "command");
+    snprintf(colors[pair].name, 24, "command");
     break;
   case 2:
-    strcpy(colors[pair].name, "info");
+    snprintf(colors[pair].name, 24, "info");
     break;
   case 3:
-    strcpy(colors[pair].name, "input");
+    snprintf(colors[pair].name, 24, "input");
     break;
   case 4:
-    strcpy(colors[pair].name, "select");
+    snprintf(colors[pair].name, 24, "select");
     break;
   case 5:
-    strcpy(colors[pair].name, "display");
+    snprintf(colors[pair].name, 24, "display");
     break;
   case 6:
-    strcpy(colors[pair].name, "danger");
+    snprintf(colors[pair].name, 24, "danger");
     break;
   case 7:
-    strcpy(colors[pair].name, "dir");
+    snprintf(colors[pair].name, 24, "dir");
     break;
   case 8:
-    strcpy(colors[pair].name, "symlink");
+    snprintf(colors[pair].name, 24, "symlink");
     break;
   case 9:
-    strcpy(colors[pair].name, "exec");
+    snprintf(colors[pair].name, 24, "exec");
     break;
   case 10:
-    strcpy(colors[pair].name, "suid");
+    snprintf(colors[pair].name, 24, "suid");
     break;
   case 11:
-    strcpy(colors[pair].name, "sgid");
+    snprintf(colors[pair].name, 24, "sgid");
     break;
   case 12:
-    strcpy(colors[pair].name, "hilite");
+    snprintf(colors[pair].name, 24, "hilite");
     break;
   case 13:
-    strcpy(colors[pair].name, "error");
+    snprintf(colors[pair].name, 24, "error");
     break;
   case 14:
-    strcpy(colors[pair].name, "heading");
+    snprintf(colors[pair].name, 24, "heading");
     break;
   case 15:
-    strcpy(colors[pair].name, "deadlink");
+    snprintf(colors[pair].name, 24, "deadlink");
     break;
   case 16:
-    strcpy(colors[pair].name, "sticky");
+    snprintf(colors[pair].name, 24, "sticky");
     break;
   case 17:
-    strcpy(colors[pair].name, "sticky-ow");
+    snprintf(colors[pair].name, 24, "sticky-ow");
     break;
   default:
-    sprintf(colors[pair].name, "undef-%i", pair);
+    snprintf(colors[pair].name, 24, "undef-%i", pair);
     break;
   }
   if (COLORS < 9){
@@ -298,13 +299,13 @@ void saveTheme(){
   printMenu(0,0, "Save Colors - Enter pathname:");
   move(0,30);
   rewrite = malloc(sizeof(char) * strlen(dirFromPath(homeConfLocation) +1));
-  sprintf(rewrite, "%s/", dirFromPath(homeConfLocation));
+  snprintf(rewrite, strlen(dirFromPath(homeConfLocation) +1), "%s/", dirFromPath(homeConfLocation));
   e = readline(filename, 1024, rewrite);
   free(rewrite);
   if ( e == 0 ){
     if (check_first_char(filename, "~")){
       rewrite = str_replace(filename, "~", getenv("HOME"));
-      strcpy(filename, rewrite);
+      memcpy(filename, rewrite, (strlen(rewrite) + 1));
       free(rewrite);
     }
     config_init(&cfg);
@@ -350,11 +351,11 @@ void saveTheme(){
           createParentDirs(filename);
           goto saveTheme;
         } else {
-          sprintf(errmessage, "Error: %s", strerror(errno));
+          snprintf(errmessage, 256, "Error: %s", strerror(errno));
           topLineMessage(errmessage);
         }
       } else {
-        sprintf(errmessage, "Error: %s", strerror(errno));
+        snprintf(errmessage, 256, "Error: %s", strerror(errno));
         topLineMessage(errmessage);
       }
     }
@@ -365,7 +366,7 @@ void saveTheme(){
 
 int applyTheme(const char *filename){
   config_t cfg;
-  config_setting_t *root, *setting, *group, *array;
+  config_setting_t *setting, *group, *array;
   int groupLen, i, h;
   setenv("DFS_THEME", objectFromPath(filename), 1);
   config_init(&cfg);
@@ -403,13 +404,13 @@ void loadTheme(){
   printMenu(0,0, "Load Colors - Enter pathname:");
   move(0,30);
   rewrite = malloc(sizeof(char) * strlen(dirFromPath(homeConfLocation) +1));
-  sprintf(rewrite, "%s/", dirFromPath(homeConfLocation));
+  snprintf(rewrite, strlen(dirFromPath(homeConfLocation) +1), "%s/", dirFromPath(homeConfLocation));
   e = readline(filename, 1024, rewrite);
   free(rewrite);
   if ( e == 0 ){
     if (check_first_char(filename, "~")){
       rewrite = str_replace(filename, "~", getenv("HOME"));
-      strcpy(filename, rewrite);
+      memcpy(filename, rewrite, (strlen(rewrite) + 1));
       free(rewrite);
     }
     if (check_file(filename) ){
@@ -431,13 +432,13 @@ void loadAppTheme(const char *themeName)
   // Ignore if the theme requested is called 'default'
   if (strcmp(themeName, "default") && strcmp(themeName, "\0")){
       rewrite = malloc(sizeof(char) * (strlen(dirFromPath(homeConfLocation)) + strlen(themeName) + 2));
-      sprintf(rewrite, "%s/%s", dirFromPath(homeConfLocation), themeName);
+      snprintf(rewrite, (strlen(dirFromPath(homeConfLocation)) + strlen(themeName) + 2), "%s/%s", dirFromPath(homeConfLocation), themeName);
       if (check_file(rewrite)){
         applyTheme(rewrite);
       } else {
         free(rewrite);
         rewrite = malloc(sizeof(char) * (strlen(DATADIR) + strlen(themeName) + 2));
-        sprintf(rewrite, "%s/%s", DATADIR, themeName);
+        snprintf(rewrite, (strlen(DATADIR) + strlen(themeName) + 2), "%s/%s", DATADIR, themeName);
         if (check_file(rewrite)){
           applyTheme(rewrite);
         }
@@ -660,7 +661,7 @@ void theme_menu_inputs()
             createParentDirs(homeConfLocation);
           }
           if (useTheme(homeConfLocation)){
-            sprintf(useThemeMessage, "Default theme has been set to [%s].", getenv("DFS_THEME"));
+            snprintf(useThemeMessage, 256, "Default theme has been set to [%s].", getenv("DFS_THEME"));
             topLineMessage(useThemeMessage);
           } else {
             topLineMessage("An error occurred setting the default theme.");
@@ -753,9 +754,9 @@ void themeBuilder()
 {
   clear();
   if (bgToggle){
-    strcpy(fgbgLabel, "background");
+    snprintf(fgbgLabel, 11, "background");
   } else {
-    strcpy(fgbgLabel, "foreground");
+    snprintf(fgbgLabel, 11, "foreground");
   }
   wPrintMenu(0,0,colorMenuLabel);
 

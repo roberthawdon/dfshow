@@ -1,7 +1,7 @@
 /*
   DF-SHOW: An interactive directory/file browser written for Unix-like systems.
   Based on the applications from the PC-DOS DF-EDIT suite by Larry Kroeker.
-  Copyright (C) 2018-2021  Robert Ian Hawdon
+  Copyright (C) 2018-2022  Robert Ian Hawdon
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -102,9 +102,8 @@ extern wchar_t *settingsMenuLabel;
 void readConfig(const char * confFile)
 {
   config_t cfg;
-  config_setting_t *root, *setting, *group, *array; //probably don't need the array, but it may be used in the future.
+  config_setting_t *setting, *group;
   char themeName[24];
-  char markedParam[8];
   config_init(&cfg);
   if (config_read_file(&cfg, confFile)){
     // Deal with the globals first
@@ -187,7 +186,6 @@ int findInFile(const char * currentfile, const char * search, int charcase)
 {
   regex_t regex;
   int reti;
-  char msgbuf[8192];
 
   reti = regcomp(&regex, search, charcase);
 
@@ -363,8 +361,8 @@ void file_view(char * currentfile)
 void saveConfig(const char * confFile, settingIndex **settings, t1CharValues **values, t2BinValues **bins, int items, int charIndex, int binIndex)
 {
   config_t cfg;
-  config_setting_t *root, *setting, *group, *subgroup;
-  int i, v;
+  config_setting_t *root, *setting, *group;
+  int i;
 
   config_init(&cfg);
 
@@ -400,7 +398,7 @@ void saveConfig(const char * confFile, settingIndex **settings, t1CharValues **v
 
 void applySettings(settingIndex **settings, t1CharValues **values, int items, int valuesCount)
 {
-  int i, j;
+  int i;
   for (i = 0; i < items; i++){
     if (!strcmp((*settings)[i].refLabel, "wrap")){
       wrap = (*settings)[i].intSetting;

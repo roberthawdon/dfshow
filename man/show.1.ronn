@@ -184,11 +184,11 @@ Delete the selected file, or marked files. As this is a destructive process, con
   For single files, a "Y" will delete files and anything else will abort the delete file operation. For multiple files, confirmation for all files is requested. A "Y" will delete the prompted file, an "N" will not delete the file, an "A" will delete all the marked files without further confirmation, and an "S" will stop the multiple delete command.
   
 * `Edit`:
-This invokes the default text editor. Please consult the `man` pages of your preferred editor for more information. The edit command utilizes the `VISUAL` or `EDITOR` environment variable. If this has not been set, the following message is displayed.
+This invokes the default text editor. Please consult the `man` pages of your preferred editor for more information. The edit command is set in show's configuration settings or can utilize the `VISUAL` or `EDITOR` environment variable. If neither of these have been set, the following message is displayed.
 
-  `Please export a VISUAL environment variable to define the utility program name.`
+  `Please set a valid editor utility program command in settings.`
   
-  To resolve this, set a variable to your preferred editor in your shell's user preference file.
+  To resolve this, set your preferred editor in show's configuration settings or set the following environment variable your shell's user preference file.
   
   `export VISUAL=/usr/bin/vi`
 
@@ -248,11 +248,11 @@ Rename the selected file, or marked files to a new file name. The new file name 
   `Rename multiple files to:`
   
 * `Show`:
-Will either display the contents of a directory, or open the contents of a file. The show file command utilizes the `PAGER` environment variable. If this has not been set, the following message is displayed.
+Will either display the contents of a directory, or open the contents of a file. The show file command is set in show's configuration but can also utilize the `PAGER` environment variable. If neither of these have been set, or the command is invalid, the following message is displayed.
 
-  `Please export a PAGER environment variable to define the utility program name.`
+  `Please set a valid pager utility program command in settings.`
   
-  To resolve this, set a variable to your preferred pager in your shell's user preference file.
+  To resolve this, set your preferred pager in show's configuration settings or set the following environment variable your shell's user preference file.
   
   `export PAGER=/usr/bin/less`
 
