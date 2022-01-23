@@ -40,6 +40,7 @@
 #include "show.h"
 #include "input.h"
 #include "banned.h"
+#include "i18n.h"
 
 char * visualPath;
 char * pagerPath;
@@ -977,6 +978,8 @@ int main(int argc, char *argv[])
   int c;
   char * tmpPwd;
   char options[20];
+
+  initI18n();
 
 #ifdef HAVE_ACL_TYPE_EXTENDED
   snprintf(options, 20, "%s", "@aABdfgGhlrsStUZ1");
