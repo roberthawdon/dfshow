@@ -41,6 +41,7 @@
 #include "colors.h"
 #include "input.h"
 #include "banned.h"
+#include "i18n.h"
 
 int c;
 int * pc = &c;

@@ -37,6 +37,7 @@
 #include "display.h"
 #include "sfmenus.h"
 #include "sf.h"
+#include "i18n.h"
 
 
 char regexinput[1024];
@@ -512,6 +513,8 @@ int main(int argc, char *argv[])
 {
   int c;
 
+  initI18n();
+  
   setConfLocations();
 
   // Read the config
