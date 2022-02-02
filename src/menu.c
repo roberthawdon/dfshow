@@ -27,6 +27,19 @@
 #include "menu.h"
 #include "banned.h"
 
+int dynamicMenuLabel(wchar_t **label, const char *str)
+{
+  int length = 0;
+
+  length = strlen(str);
+  length++;
+
+  *label = malloc(sizeof(wchar_t) * length);
+  mbstowcs(*label, str, length);
+
+  return(length);
+}
+
 int cmp_menu_ref(const void *lhs, const void *rhs)
 {
 
@@ -49,12 +62,13 @@ void updateMenuItem(menuDef **dfMenu, int *menuSize, char* refLabel, wchar_t* di
   return;
 }
 
-void addMenuItem(menuDef **dfMenu, int *pos, char* refLabel, wchar_t* displayLabel, int hotKey){
+void addMenuItem(menuDef **dfMenu, int *pos, char* refLabel, char* displayLabel, int hotKey){
 
   int menuPos = *pos;
   int charCount = 0;
   int i;
   menuDef *tmp;
+  wchar_t *wideLabel;
 
   if (menuPos == 0){
     tmp = malloc(sizeof(menuDef) * 2);
@@ -65,11 +79,15 @@ void addMenuItem(menuDef **dfMenu, int *pos, char* refLabel, wchar_t* displayLab
     *dfMenu = tmp;
   }
 
+  wideLabel = malloc(sizeof(wchar_t) * (strlen(displayLabel) + 1));
+  mbstowcs(wideLabel, displayLabel, (strlen(displayLabel) + 1));
+
   snprintf((*dfMenu)[menuPos].refLabel, 16, "%s", refLabel);
-  swprintf((*dfMenu)[menuPos].displayLabel, 32, L"%ls", displayLabel);
+  swprintf((*dfMenu)[menuPos].displayLabel, 32, L"%ls", wideLabel);
+  free(wideLabel);
   (*dfMenu)[menuPos].hotKey = hotKey;
 
-  for (i = 0; i < wcslen(displayLabel); i++)
+  for (i = 0; i < strlen(displayLabel); i++)
     {
       if ( displayLabel[i] == '!' || displayLabel[i] == '<' || displayLabel[i] == '>' || displayLabel[i] == '\\') {
         i++;
@@ -209,7 +227,7 @@ int wPrintMenu(int line, int col, wchar_t *menustring)
   return(returnChars);
 }
 
-int printMenu(int line, int col, char *menustring)
+int printMenu(int line, int col, const char *menustring)
 {
   // Small wrapper to seemlessly forward calls to the wide char version
   wchar_t *wMenuString;

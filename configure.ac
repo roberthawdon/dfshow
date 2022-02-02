@@ -4,6 +4,9 @@ AC_PROG_CC
 AC_CONFIG_HEADERS([config.h:config.hin])
 AC_SUBST([AM_LDFLAGS])
 
+AM_GNU_GETTEXT([external])
+AM_GNU_GETTEXT_REQUIRE_VERSION(0.20)
+
 # Check for ACL_TYPE_NFS4
 AC_CHECK_DECL([ACL_TYPE_NFS4],
     [AC_DEFINE(HAVE_ACL_TYPE_NFS4, 1, [True for FreeBSD with NFSv4 ACL support])],
@@ -94,5 +97,7 @@ AM_CONDITIONAL([DARWIN], [test $(uname) = "Darwin"])
 AM_CONDITIONAL([LINUX], [test $(uname) = "Linux"])
 AM_CONDITIONAL([HURD], [test $(uname) = "GNU"])
 AM_CONDITIONAL([SELINUX], [test "x$with_selinux" = "xyes"])
-AC_CONFIG_FILES([Makefile])
+AC_CONFIG_FILES([ po/Makefile.in
+  Makefile
+])
 AC_OUTPUT
