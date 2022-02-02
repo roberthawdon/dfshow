@@ -1,0 +1,12 @@
+# List of source files which contain translatable strings
+src/colors.c
+src/common.c
+src/display.c
+src/input.c
+src/menu.c
+src/settings.c
+src/sf.c
+src/sfmenus.c
+src/show.c
+src/showfunctions.c
+src/showmenus.c
