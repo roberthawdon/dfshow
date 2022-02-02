@@ -588,8 +588,6 @@ int main(int argc, char *argv[])
 
   strcpy(regexinput, "");
 
-  setlocale(LC_ALL, "");
-
   newterm(NULL, stderr, stdin); 
   // initscr();
 

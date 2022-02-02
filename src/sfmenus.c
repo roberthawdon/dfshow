@@ -23,6 +23,8 @@
 #include <string.h>
 #include <ctype.h>
 #include <regex.h>
+#include <libintl.h>
+#include <locale.h>
 #include "menu.h"
 #include "display.h"
 #include "settings.h"
@@ -30,6 +32,7 @@
 #include "sf.h"
 #include "colors.h"
 #include "input.h"
+#include "i18n.h"
 #include "banned.h"
 
 int c;
@@ -72,29 +75,29 @@ extern wchar_t *longline;
 
 void generateDefaultMenus(){
   // File Menu
-  addMenuItem(&fileMenu, &fileMenuSize, "f_01", L"<F1>-Down", 265);
-  addMenuItem(&fileMenu, &fileMenuSize, "f_02", L"<F2>-Up", 266);
-  addMenuItem(&fileMenu, &fileMenuSize, "f_03", L"<F3>-Top", 267);
-  addMenuItem(&fileMenu, &fileMenuSize, "f_04", L"<F4>-Bottom", 268);
-  addMenuItem(&fileMenu, &fileMenuSize, "f_config", L"!Config", 'c');
-  addMenuItem(&fileMenu, &fileMenuSize, "f_find", L"!Find", 'f');
-  addMenuItem(&fileMenu, &fileMenuSize, "f_help", L"!Help", 'h');
-  addMenuItem(&fileMenu, &fileMenuSize, "f_position", L"!Position", 'p');
-  addMenuItem(&fileMenu, &fileMenuSize, "f_quit", L"!Quit", 'q');
+  addMenuItem(&fileMenu, &fileMenuSize, "f_01", _("<F1>-Down"), 265);
+  addMenuItem(&fileMenu, &fileMenuSize, "f_02", _("<F2>-Up"), 266);
+  addMenuItem(&fileMenu, &fileMenuSize, "f_03", _("<F3>-Top"), 267);
+  addMenuItem(&fileMenu, &fileMenuSize, "f_04", _("<F4>-Bottom"), 268);
+  addMenuItem(&fileMenu, &fileMenuSize, "f_config", _("!Config"), 'c');
+  addMenuItem(&fileMenu, &fileMenuSize, "f_find", _("!Find"), 'f');
+  addMenuItem(&fileMenu, &fileMenuSize, "f_help", _("!Help"), 'h');
+  addMenuItem(&fileMenu, &fileMenuSize, "f_position", _("!Position"), 'p');
+  addMenuItem(&fileMenu, &fileMenuSize, "f_quit", _("!Quit"), 'q');
   if (wrap){
-    addMenuItem(&fileMenu, &fileMenuSize, "f_wrap", L"!Wrap-off", 'w');
+    addMenuItem(&fileMenu, &fileMenuSize, "f_wrap", _("!Wrap-off"), 'w');
   } else {
-    addMenuItem(&fileMenu, &fileMenuSize, "f_wrap", L"!Wrap-on", 'w');
+    addMenuItem(&fileMenu, &fileMenuSize, "f_wrap", _("!Wrap-on"), 'w');
   }
 
   // Case Menu
-  addMenuItem(&caseMenu, &caseMenuSize, "c1_ignore", L"!Ignore-case", 'i');
-  addMenuItem(&caseMenu, &caseMenuSize, "c2_sensitive", L"!Case-sensitive", 'c');
+  addMenuItem(&caseMenu, &caseMenuSize, "c1_ignore", _("!Ignore-case"), 'i');
+  addMenuItem(&caseMenu, &caseMenuSize, "c2_sensitive", _("!Case-sensitive"), 'c');
 
   // Setings Menu
-  addMenuItem(&settingsMenu, &settingsMenuSize, "s_quit", L"!Quit", 'q');
-  addMenuItem(&settingsMenu, &settingsMenuSize, "s_revert", L"!Revert", 'r');
-  addMenuItem(&settingsMenu, &settingsMenuSize, "s_save", L"!Save", 's');
+  addMenuItem(&settingsMenu, &settingsMenuSize, "s_quit", _("!Quit"), 'q');
+  addMenuItem(&settingsMenu, &settingsMenuSize, "s_revert", _("!Revert"), 'r');
+  addMenuItem(&settingsMenu, &settingsMenuSize, "s_save", _("!Save"), 's');
 }
 
 void refreshMenuLabels(){

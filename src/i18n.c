@@ -3,8 +3,10 @@
 #include <stdlib.h>
 #include <libintl.h>
 #include <locale.h>
+#include "config.h"
 
 void initI18n(){
-  bindtextdomain("base", "./locales/");
-  textdomain("base");
+  setlocale(LC_ALL, "");
+  bindtextdomain(PACKAGE, LOCALEDIR);
+  textdomain(PACKAGE);
 }

@@ -1257,8 +1257,6 @@ Valid arguments are:\n\
   generateDefaultMenus();
   set_escdelay(10);
 
-  setlocale(LC_ALL, "");
-
   newterm(NULL, stderr, stdin); 
   refreshMenuLabels();
 
