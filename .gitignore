@@ -12,7 +12,6 @@ config.hin
 config.log
 config.status
 config.guess
-config.rpath
 config.sub
 configure
 depcomp
