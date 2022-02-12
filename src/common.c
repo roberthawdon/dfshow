@@ -175,14 +175,15 @@ int createParentsInput(char *path)
 void createParentDirs(char *path){
   pathDirs *targetPath;
   char *tempPath = malloc(sizeof(char) * 1);
+  char *tempPathWork;
   int e, i = 0;
 
   e = splitPath(&targetPath, path);
 
   tempPath[0]=0;
   for (i = 0; i < e; i++){
-    tempPath = realloc(tempPath, sizeof(char) * (strlen(tempPath) + strlen(targetPath[i].directories) + 2));
-    snprintf(tempPath, (strlen(tempPath) + strlen(targetPath[i].directories) + 2), "%s/%s", tempPath, targetPath[i].directories);
+    memcpy(tempPath, tempPathWork, (setDynamicChar(&tempPathWork, "%s/%s", tempPath, targetPath[i].directories) + 1));
+    free(tempPathWork);
     if (!check_dir(tempPath)){
       mk_dir(tempPath);
     }
