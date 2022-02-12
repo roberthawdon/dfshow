@@ -1568,8 +1568,7 @@ int SendToPager(char* object)
       fullCommand = calloc((strlen(page) + 1), sizeof(char));
       snprintf(fullCommand, (strlen(page) + 1), "%s", page);
       escObject = str_replace(object, "'", "'\"'\"'");
-      fullObject = calloc((strlen(escObject) + 3), sizeof(char));
-      snprintf(fullObject, (strlen(escObject) + 3), "'%s'", escObject);
+      setDynamicChar(&fullObject, "'%s'", escObject);
       for (i = 1; i < noOfArgs; i++){
         fullCommand = realloc(fullCommand, (strlen(fullCommand) + strlen(launchCommand[i]) + 2));
         snprintf(fullCommand + strlen(fullCommand), (strlen(fullCommand) + strlen(launchCommand[i]) + 2), " %s", launchCommand[i]);
@@ -1631,8 +1630,7 @@ int SendToEditor(char* object)
         fullCommand = calloc((strlen(editor) + 1), sizeof(char));
         snprintf(fullCommand, (strlen(editor) + 1), "%s", editor);
         escObject = str_replace(object, "'", "'\"'\"'");
-        fullObject = calloc((strlen(escObject) + 3), sizeof(char));
-        snprintf(fullObject, (strlen(escObject) + 3), "'%s'", escObject);
+        setDynamicChar(&fullObject, "'%s'", escObject);
         for (i = 1; i < noOfArgs; i++){
           fullCommand = realloc(fullCommand, (strlen(fullCommand) + strlen(launchCommand[i]) + 2));
           snprintf(fullCommand + strlen(fullCommand), (strlen(fullCommand) + strlen(launchCommand[i]) + 2),  " %s", launchCommand[i]);

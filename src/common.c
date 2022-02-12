@@ -175,14 +175,15 @@ int createParentsInput(char *path)
 void createParentDirs(char *path){
   pathDirs *targetPath;
   char *tempPath = malloc(sizeof(char) * 1);
+  char *tempPathWork;
   int e, i = 0;
 
   e = splitPath(&targetPath, path);
 
   tempPath[0]=0;
   for (i = 0; i < e; i++){
-    tempPath = realloc(tempPath, sizeof(char) * (strlen(tempPath) + strlen(targetPath[i].directories) + 2));
-    snprintf(tempPath, (strlen(tempPath) + strlen(targetPath[i].directories) + 2), "%s/%s", tempPath, targetPath[i].directories);
+    memcpy(tempPath, tempPathWork, (setDynamicChar(&tempPathWork, "%s/%s", tempPath, targetPath[i].directories) + 1));
+    free(tempPathWork);
     if (!check_dir(tempPath)){
       mk_dir(tempPath);
     }
@@ -371,11 +372,12 @@ char *str_replace(char *orig, char *rep, char *with) {
         ins = tmp + len_rep;
     }
     
-    tmp_size = strlen(orig) + (len_with - len_rep) * count + 1;
+    tmp_size = (strlen(orig) + ((len_with - len_rep) * count) + 1);
     tmp = result = malloc(tmp_size);
 
-    if (!result)
-        return NULL;
+    if (!result){
+      return NULL;
+    }
 
     // first time through the loop, all the variable are set correctly
     // from here on,
@@ -391,7 +393,7 @@ char *str_replace(char *orig, char *rep, char *with) {
         tmp = tmp + len_with;
         orig += len_front + len_rep; // move to next "end of rep"
     }
-    memcpy(tmp, orig, tmp_size);
+    memcpy(tmp, orig, (strlen(orig) + 1));
     return result;
 }
 
@@ -564,7 +566,6 @@ void buildCommandArguments(const char *cmd, char **args, size_t items)
   // Getting the length of the input
   cmdLen = strlen(cmd);
 
-  // endwin();
   // First sweep to get the number of args, and length
   itemCount = 0;
   argCharCount = 0;
@@ -608,7 +609,7 @@ void buildCommandArguments(const char *cmd, char **args, size_t items)
     tempStr = calloc(itemLen[i] + 1, sizeof(char));
     args[i] = calloc(itemLen[i] + 1, sizeof(char));
     for (k = 0; k < itemLen[i]; k++){
-      if ((cmdPos + cmdOffset + k) > cmdLen){
+      if ((cmdPos + cmdOffset + k) > cmdLen - 1){
         // Hacky workaround to avoid buffer overflow
         break;
       }
@@ -628,6 +629,7 @@ void buildCommandArguments(const char *cmd, char **args, size_t items)
           cmdOffset++;
         }
         cmdOffset++;
+        goto checkBlank;
       }
       tempStr[k] = cmd[cmdPos + cmdOffset + k]; 
       if (k == (itemLen[i] - 1)){
