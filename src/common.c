@@ -372,11 +372,12 @@ char *str_replace(char *orig, char *rep, char *with) {
         ins = tmp + len_rep;
     }
     
-    tmp_size = strlen(orig) + (len_with - len_rep) * count + 1;
+    tmp_size = (strlen(orig) + ((len_with - len_rep) * count) + 1);
     tmp = result = malloc(tmp_size);
 
-    if (!result)
-        return NULL;
+    if (!result){
+      return NULL;
+    }
 
     // first time through the loop, all the variable are set correctly
     // from here on,
@@ -392,7 +393,7 @@ char *str_replace(char *orig, char *rep, char *with) {
         tmp = tmp + len_with;
         orig += len_front + len_rep; // move to next "end of rep"
     }
-    memcpy(tmp, orig, tmp_size);
+    memcpy(tmp, orig, (strlen(orig) + 1));
     return result;
 }
 
@@ -565,7 +566,6 @@ void buildCommandArguments(const char *cmd, char **args, size_t items)
   // Getting the length of the input
   cmdLen = strlen(cmd);
 
-  // endwin();
   // First sweep to get the number of args, and length
   itemCount = 0;
   argCharCount = 0;
@@ -609,7 +609,7 @@ void buildCommandArguments(const char *cmd, char **args, size_t items)
     tempStr = calloc(itemLen[i] + 1, sizeof(char));
     args[i] = calloc(itemLen[i] + 1, sizeof(char));
     for (k = 0; k < itemLen[i]; k++){
-      if ((cmdPos + cmdOffset + k) > cmdLen){
+      if ((cmdPos + cmdOffset + k) > cmdLen - 1){
         // Hacky workaround to avoid buffer overflow
         break;
       }
@@ -629,6 +629,7 @@ void buildCommandArguments(const char *cmd, char **args, size_t items)
           cmdOffset++;
         }
         cmdOffset++;
+        goto checkBlank;
       }
       tempStr[k] = cmd[cmdPos + cmdOffset + k]; 
       if (k == (itemLen[i] - 1)){
