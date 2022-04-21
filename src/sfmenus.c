@@ -117,19 +117,20 @@ void show_file_find(bool charcase, bool useLast)
   int regexcase;
   int result;
   int curPos = 0;
-  char inputmessage[32];
+  char *inputmessage;
   char *errormessage;
   if (!useLast){
     if (charcase){
       regexcase = 0;
-      snprintf(inputmessage, 32, "Match Case - Enter string:");
+      setDynamicChar(&inputmessage, _("Match Case - Enter string:"));
     } else {
       regexcase = REG_ICASE;
-      snprintf(inputmessage, 32, "Ignore Case - Enter string:");
+      setDynamicChar(&inputmessage, _("Ignore Case - Enter string:"));
     }
     move(0,0);
     clrtoeol();
     curPos = (printMenu(0, 0, inputmessage) + 1);
+    free(inputmessage);
     curs_set(TRUE);
     move(0, curPos);
     curs_set(FALSE);
@@ -145,7 +146,7 @@ void show_file_find(bool charcase, bool useLast)
       updateView();
     } else if ( result == -2 ){
       // Not a feature in DF-EDIT 2.3d, but a nice to have
-      setDynamicChar(&errormessage, "No further references to '%s' found.", regexinput);
+      setDynamicChar(&errormessage, _("No further references to '%s' found."), regexinput);
       topLineMessage(errormessage);
       free(errormessage);
     }
@@ -183,7 +184,7 @@ void show_file_position_input(int currentpos)
   int status;
   int curPos = 0;
   // Fun fact, in DF-EDIT 2.3d, the following text input typoed "absolute" as "absolue", this typo also exists in the Windows version from 1997 (2.3d-76), however, the 1986 documentation correctly writes it as "absolute".
-  setDynamicChar(&filePosText, "Position relative (<+num> || <-num>) or absolute (<num>):");
+  setDynamicChar(&filePosText, _("Position relative (<+num> || <-num>) or absolute (<num>):"));
   viewmode = 2;
   move(0,0);
   clrtoeol();
@@ -335,7 +336,7 @@ void show_file_file_input()
   int curPos = 0;
   move(0,0);
   clrtoeol(); // Probably not needed as this is only ever displayed when launching without a file
-  curPos = (printMenu(0,0,"Show File - Enter pathname:") + 1);
+  curPos = (printMenu(0,0,_("Show File - Enter pathname:")) + 1);
   curs_set(TRUE);
   move(0,curPos);
   readline(fileName, 4096, "");

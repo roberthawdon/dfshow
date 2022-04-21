@@ -29,6 +29,7 @@
 #include <libconfig.h>
 #include <ctype.h>
 #include <math.h>
+#include <libintl.h>
 #include "config.h"
 #include "showfunctions.h"
 #include "showmenus.h"
@@ -1092,7 +1093,7 @@ int main(int argc, char *argv[])
       break;
     case GETOPT_BLOCKSIZE_CHAR:
       if (setBlockSize(optarg)){
-          printf("%s: invalid argument '%s' for 'block-size'\n", argv[0], optarg);
+          printf(_("%s: invalid argument '%s' for 'block-size'\n"), argv[0], optarg);
           exit(2);
       };
       scaleSize = 1;
@@ -1103,12 +1104,12 @@ int main(int argc, char *argv[])
     case GETOPT_COLOR_CHAR:
       if (optarg){
         if (!setColor(optarg)){
-          printf("%s: invalid argument '%s' for 'color'\n", argv[0], optarg);
-          fputs (("\
+          printf(_("%s: invalid argument '%s' for 'color'\n"), argv[0], optarg);
+          fputs ((_("\
 Valid arguments are:\n\
   - always\n\
-  - never\n"), stdout);
-          printf("Try '%s --help' for more information.\n", argv[0]);
+  - never\n")), stdout);
+          printf(_("Try '%s --help' for more information.\n"), argv[0]);
           exit(2);
         }
       } else {
@@ -1122,7 +1123,7 @@ Valid arguments are:\n\
           setenv("DFS_THEME_OVERRIDE", "TRUE", 1);
         }
       } else {
-        printf("%s: The following themes are available:\n", argv[0]);
+        printf(_("%s: The following themes are available:\n"), argv[0]);
         listThemes();
         exit(2);
       }
@@ -1145,14 +1146,14 @@ Valid arguments are:\n\
     case GETOPT_TIMESTYLE_CHAR:
       snprintf(timestyle, 9, "%s", optarg);
       if (!checkStyle(timestyle)){
-        printf("%s: invalid argument '%s' for 'time style'\n", argv[0], timestyle);
-        fputs (("\
+        printf(_("%s: invalid argument '%s' for 'time style'\n"), argv[0], timestyle);
+        fputs ((_("\
 Valid arguments are:\n\
   - full-iso\n\
   - long-iso\n\
   - iso\n\
-  - locale\n"), stdout);
-        printf("Try '%s --help' for more information.\n", argv[0]);
+  - locale\n")), stdout);
+        printf(_("Try '%s --help' for more information.\n"), argv[0]);
         exit(2);
       }
       break;
@@ -1187,13 +1188,13 @@ Valid arguments are:\n\
     case GETOPT_MARKED_CHAR:
       if (optarg){
         if ( setMarked(optarg) == -1 ){
-          printf("%s: invalid argument '%s' for 'marked'\n", argv[0], optarg);
-          fputs (("\
+          printf(_("%s: invalid argument '%s' for 'marked'\n"), argv[0], optarg);
+          fputs ((_("\
 Valid arguments are:\n\
   - always\n\
   - never\n\
-  - auto\n"), stdout);
-          printf("Try '%s --help' for more information.\n", argv[0]);
+  - auto\n")), stdout);
+          printf(_("Try '%s --help' for more information.\n"), argv[0]);
           exit(2);
         }
       }
@@ -1214,10 +1215,10 @@ Valid arguments are:\n\
       break;
     case GETOPT_SHOWRUNNING_CHAR:
       if (checkRunningEnv() > 0){
-        printf("There are currently %i running parent show application(s).\n\nUse 'exit' to return to Show.\n", checkRunningEnv());
+        printf(_("There are currently %i running parent show application(s).\n\nUse 'exit' to return to Show.\n"), checkRunningEnv());
         exit(0);
       } else {
-        printf("There are no parent show applications currently running.\n");
+        printf(_("There are no parent show applications currently running.\n"));
         exit(0);
       }
       break;

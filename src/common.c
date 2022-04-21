@@ -32,11 +32,13 @@
 #include <signal.h>
 #include <math.h>
 #include <sys/wait.h>
+#include <libintl.h>
 #include "menu.h"
 #include "colors.h"
 #include "config.h"
 #include "common.h"
 #include "banned.h"
+#include "i18n.h"
 
 DIR *folder;
 FILE *file;
@@ -145,15 +147,12 @@ int splitPath(pathDirs **dirStruct, char *path){
 int createParentsInput(char *path)
 {
   int result = 0;
-  int messageLen;
-  wchar_t *message = malloc(sizeof(wchar_t) * 1);
+  char *message;
 
-  messageLen = (strlen(path) + 64);
+  setDynamicChar(&message, _("Directory [<%s>] does not exist. Create it? !Yes/!No (enter = no)"), path);
 
-  message = realloc(message, sizeof(wchar_t) * (messageLen + 1));
+  printMenu(0,0, message);
 
-  swprintf(message, messageLen, L"Directory [<%s>] does not exist. Create it? !Yes/!No (enter = no)", path);
-  wPrintMenu(0,0, message);
   while(1)
     {
       *pc = getch10th();
@@ -604,9 +603,6 @@ void buildCommandArguments(const char *cmd, char **args, size_t items)
     }
   }
 
-  // We need one more as the last argument MUST be NULL
-  // countArgs++;
-
   for (i = 0; i < (itemCount + 1); i++){
     tempStr = calloc(itemLen[i] + 1, sizeof(char));
     args[i] = calloc(itemLen[i] + 1, sizeof(char));
@@ -643,6 +639,7 @@ void buildCommandArguments(const char *cmd, char **args, size_t items)
     free(tempStr);
   }  
 
+  // The last argument MUST be NULL, so we'll add this here.
   args[itemCount + 1] = NULL;
 
   free(itemLen_copy);

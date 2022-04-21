@@ -29,6 +29,8 @@
 #include <regex.h>
 #include <wchar.h>
 #include <libconfig.h>
+#include <libintl.h>
+#include "banned.h"
 #include "config.h"
 #include "colors.h"
 #include "settings.h"
@@ -104,7 +106,6 @@ void readConfig(const char * confFile)
 {
   config_t cfg;
   config_setting_t *setting, *group;
-  char themeName[24];
   config_init(&cfg);
   if (config_read_file(&cfg, confFile)){
     // Deal with the globals first
@@ -113,7 +114,7 @@ void readConfig(const char * confFile)
       setting = config_setting_get_member(group, "theme");
       if (setting){
         if (!getenv("DFS_THEME_OVERRIDE")){
-          strcpy(themeName, config_setting_get_string(setting));
+          snprintf(themeName, 256, "%s", config_setting_get_string(setting));
           setenv("DFS_THEME", themeName, 1);
         }
       }
@@ -149,7 +150,7 @@ void refreshScreen()
   unloadMenuLabels();
   refreshMenuLabels();
   if (viewmode == 0){
-    mvprintw(0,0,"Show File - Enter pathname:");
+    mvprintw(0,0,_("Show File - Enter pathname:"));
   } else if (viewmode > 0){
     wPrintMenu(0, 0, fileMenuLabel);
     loadFile(fileName);
@@ -234,13 +235,14 @@ The THEME argument can be:\n"), stdout);
 
 void fileShowStatus()
 {
-  wchar_t statusText[5120];
+  char *statusText;
   if (wrap){
-    swprintf(statusText, 5120, L"File = <%s>  Top = <%i>", fileName, topline);
+    setDynamicChar(&statusText, _("File = <%s>  Top = <%i>"), fileName, topline);
   } else {
-    swprintf(statusText, 5120, L"File = <%s>  Top = <%i:%i>", fileName, topline, leftcol);
+    setDynamicChar(&statusText, _("File = <%s>  Top = <%i:%i>"), fileName, topline, leftcol);
   }
-  wPrintMenu(LINES - 1, 0, statusText);
+  printMenu(LINES - 1, 0, statusText);
+  free(statusText);
 }
 
 void updateView()
@@ -337,7 +339,7 @@ void loadFile(const char * currentfile)
 
 void file_view(char * currentfile)
 {
-  char notFoundMessage[512];
+  char *notFoundMessage;
   clear();
   setColors(COMMAND_PAIR);
 
@@ -350,8 +352,9 @@ void file_view(char * currentfile)
     loadFile(currentfile);
     show_file_inputs();
   } else {
-    sprintf(notFoundMessage, "File [%s] does not exist", currentfile);
+    setDynamicChar(&notFoundMessage, _("File [%s] does not exist"), currentfile);
     topLineMessage(notFoundMessage);
+    free(notFoundMessage);
     exitCode = 1;
   }
   // sleep(10); // No function, so we'll pause for 10 seconds to display our menu
@@ -456,7 +459,7 @@ void settingsMenuView()
         saveConfig(homeConfLocation, &settingIndex, &charValues, &binValues, items, charValuesCount, binValuesCount);
         // Future task: ensure saving actually worked
         curs_set(FALSE);
-        topLineMessage("Settings saved.");
+        topLineMessage(_("Settings saved."));
         curs_set(TRUE);
         wPrintMenu(0,0,settingsMenuLabel);
       } else if (*pc == 258 || *pc == 10){
@@ -524,7 +527,7 @@ int main(int argc, char *argv[])
 
   // Check for theme env variable
   if ( getenv("DFS_THEME")) {
-    strcpy(themeName, getenv("DFS_THEME"));
+    snprintf(themeName, 256, "%s", getenv("DFS_THEME"));
   }
 
   while (1)
@@ -561,11 +564,11 @@ int main(int argc, char *argv[])
     case GETOPT_THEME_CHAR:
       if (optarg){
         if (strcmp(optarg, "\0")){
-          strcpy(themeName, optarg);
+          snprintf(themeName, 256, "%s", optarg);
           setenv("DFS_THEME_OVERRIDE", "TRUE", 1);
         }
       } else {
-        printf("%s: The following themes are available:\n", argv[0]);
+        printf(_("%s: The following themes are available:\n"), argv[0]);
         listThemes();
         exit(2);
       }
@@ -586,7 +589,8 @@ int main(int argc, char *argv[])
 
   // Blank out regexinput
 
-  strcpy(regexinput, "");
+  //strcpy(regexinput, "");
+  regexinput[0]=0;
 
   newterm(NULL, stderr, stdin); 
   // initscr();
@@ -615,7 +619,7 @@ int main(int argc, char *argv[])
     settingsMenuView();
   } else {
     if (optind < argc){
-      strcpy(fileName, argv[optind]);
+      snprintf(fileName, 4096, "%s", argv[optind]);
       file_view(fileName);
     } else {
       show_file_file_input();
