@@ -40,6 +40,7 @@
 #include <regex.h>
 #include <sys/acl.h>
 #include <stdint.h>
+#include <libintl.h>
 #include "settings.h"
 #include "common.h"
 #include "display.h"
@@ -49,6 +50,7 @@
 #include "colors.h"
 #include "show.h"
 #include "banned.h"
+#include "i18n.h"
 
 #if HAVE_ACL_LIBACL_H
 # include <acl/libacl.h>
@@ -1461,7 +1463,7 @@ void LaunchShell()
   clear();
   endwin();
   // write(STDOUT_FILENO, "\nUse 'exit' to return to Show.\n\n", 32);
-  printf("\nUse 'exit' to return to Show.\n\n");
+  printf(_("\nUse 'exit' to return to Show.\n\n"));
   system(getenv("SHELL"));
   refreshScreen();
 }
@@ -1581,10 +1583,10 @@ int SendToPager(char* object)
       launchExternalCommand(args[0], args, M_NONE);
       free(fullCommand);
     } else {
-      topLineMessage("Please set a valid pager utility program command in settings.");
+      topLineMessage(_("Please set a valid pager utility program command in settings."));
     }
   } else {
-    topLineMessage("Error: Permission denied");
+    topLineMessage(_("Error: Permission denied"));
   }
   return 0;
 }
@@ -1643,10 +1645,10 @@ int SendToEditor(char* object)
         launchExternalCommand(args[0], args, M_NONE);
         free(fullCommand);
       } else {
-        topLineMessage("Please set a valid editor utility program command in settings.");
+        topLineMessage(_("Please set a valid editor utility program command in settings."));
       }
     } else {
-      topLineMessage("Error: Permission denied");
+      topLineMessage(_("Error: Permission denied"));
     }
   return 0;
 }
@@ -1932,14 +1934,14 @@ int RenameObject(char* source, char* dest)
         }
         return e;
       } else {
-        topLineMessage("Error: Unable to move file between mount points");
+        topLineMessage(_("Error: Unable to move file between mount points"));
         free(destPath);
         return 1;
       }
     }
   } else {
     // Destination directory not found
-    topLineMessage("Error: Invalid Destination");
+    topLineMessage(_("Error: Invalid Destination"));
     free(destPath);
     return 1;
   }
@@ -2275,10 +2277,12 @@ results* get_dir(char *pwd)
 
       }else{
         // May want to use error no. here.
-        dirErrorSize = 29;
-        dirError = realloc(dirError, sizeof(char) * dirErrorSize);
-        snprintf(dirError, dirErrorSize, "Could not open the directory" );
+        // dirErrorSize = 29;
+        // dirError = realloc(dirError, sizeof(char) * dirErrorSize);
+        // snprintf(dirError, dirErrorSize, "Could not open the directory" );
+        setDynamicChar(&dirError, _("Could not open the directory"));
         topLineMessage(dirError);
+        free(dirError);
         historyref--;
       }
     }
