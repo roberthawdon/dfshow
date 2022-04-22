@@ -79,7 +79,11 @@
 #endif
 
 char hlinkstr[6], sizestr[32], sizeblocksstr[32], majorstr[6], minorstr[6];
-char headAttrs[12], headOG[25], headSize[14], headDT[18], headName[13], headContext[14], headSizeBlocks[9];
+// char headAttrs[12], headOG[25], headSize[14], headDT[18], headName[13], headContext[14], headSizeBlocks[9];
+// char headOG[25], headSize[14], headDT[18], headName[13], headContext[14], headSizeBlocks[9];
+
+char *headAttrs, *headOG, *headSize, *headDT, *headName, *headContext, *headSizeBlocks;
+// char *headAttrs;
 
 int hlinklen;
 int ownerlen;
@@ -2057,16 +2061,16 @@ char *markedDisplay(results* ob)
   }
 
   if (markedNum == 1){
-    snprintf(filesWord, 6, "%s", "file");
+    snprintf(filesWord, 6, "%s", _("file"));
   } else {
-    snprintf(filesWord, 6, "%s", "files");
+    snprintf(filesWord, 6, "%s", _("files"));
   }
 
   snprintf(markedNumString, 12, "%lu", markedNum);
 
   outChar = realloc(outChar, sizeof(char) * ( strlen(markedNumString) + strlen(markedSizeString) + strlen(filesWord) + 16));
 
-  snprintf(outChar, ( strlen(markedNumString) + strlen(markedSizeString) + strlen(filesWord) + 16), "MARKED: %s in %s %s", markedSizeString, markedNumString, filesWord);
+  snprintf(outChar, ( strlen(markedNumString) + strlen(markedSizeString) + strlen(filesWord) + 16), _("MARKED: %s in %s %s"), markedSizeString, markedNumString, filesWord);
 
   free(markedSizeString);
 
@@ -2077,14 +2081,13 @@ results* get_dir(char *pwd)
 {
   int i;
   size_t count = 0;
-  size_t dirErrorSize = 0;
   struct dirent *res;
   struct stat sb;
   char *path = pwd;
   struct stat buffer;
   int         status;
   int         pass = 0;
-  char *dirError = malloc(sizeof(char) + 1);
+  char *dirError;
   acl_t acl;
   acl_entry_t dummy;
   int haveAcl;
@@ -2252,10 +2255,9 @@ results* get_dir(char *pwd)
 
         if ( count == 0 ) {
           // This is a hacky mitigation for drivefs returning 0 objects, it should prevent the crash of #82. However, it doesn't fix the inablity to load Google Drive Stream directories properly. The GNU version of 'ls' also has similar issues, so the bug is most likely in the underlying library rather than DF-SHOW itself.
-          dirErrorSize = 36;
-          dirError = realloc(dirError, sizeof(char) * dirErrorSize);
-          snprintf(dirError, dirErrorSize, "Error: Directory Returned 0 Objects" );
+          setDynamicChar(&dirError, _("Error: Directory Returned 0 Objects"));
           topLineMessage(dirError);
+          free(dirError);
           historyref--;
           if (historyref > 0){
             memcpy(path, hs[historyref - 1].path, strlen(hs[historyref - 1].path));
@@ -2277,9 +2279,6 @@ results* get_dir(char *pwd)
 
       }else{
         // May want to use error no. here.
-        // dirErrorSize = 29;
-        // dirError = realloc(dirError, sizeof(char) * dirErrorSize);
-        // snprintf(dirError, dirErrorSize, "Could not open the directory" );
         setDynamicChar(&dirError, _("Could not open the directory"));
         topLineMessage(dirError);
         free(dirError);
@@ -2295,10 +2294,9 @@ results* get_dir(char *pwd)
     goto fetch;
 
   } else {
-    dirErrorSize = snprintf(NULL, 0, "The location %s cannot be opened or is not a directory", path);
-    dirError = realloc(dirError, sizeof(char) * (dirErrorSize + 1));
-    snprintf(dirError, (dirErrorSize + 1), "The location %s cannot be opened or is not a directory", path);
+    setDynamicChar(&dirError, _("The location %s cannot be opened or is not a directory"), path);
     topLineMessage(dirError);
+    free(dirError);
     historyref--;
     if (historyref > 0){
       memcpy(path, hs[historyref - 1].path, strlen(hs[historyref - 1].path));
@@ -2332,7 +2330,6 @@ results* get_dir(char *pwd)
     }
   }
 
-  free(dirError);
   free(res);
   return ob;
 }
@@ -2551,27 +2548,27 @@ void display_dir(char *pwd, results* ob){
     }
   }
 
-  snprintf(headAttrs, 12, "---Attrs---");
+  setDynamicChar(&headAttrs, _("---Attrs---"));
 
   if (showContext){
-    snprintf(headContext, 14, "---Context---");
+    setDynamicChar(&headContext, _("---Context---"));
   } else {
-    headContext[0]=0;
+    setDynamicChar(&headContext, "");
   }
 
   if (showSizeBlocks){
-    snprintf(headSizeBlocks, 9, "-Blocks-");
+    setDynamicChar(&headSizeBlocks, _("-Blocks-"));
   } else {
-    headSizeBlocks[0]=0;
+    setDynamicChar(&headSizeBlocks, "");
   }
 
   if ( mmMode ){
-    snprintf(headSize, 14, "-Driver/Size-");
+    setDynamicChar(&headSize, _("-Driver/Size-"));
   } else {
-    snprintf(headSize, 14, "-Size-");
+    setDynamicChar(&headSize, _("-Size-"));
   }
-  snprintf(headDT, 18, "---Date & Time---");
-  snprintf(headName, 13, "----Name----");
+  setDynamicChar(&headDT, _("---Date & Time---"));
+  setDynamicChar(&headName, _("----Name----"));
 
   // Decide which owner header we need:
   switch(ogavis){
@@ -2579,35 +2576,35 @@ void display_dir(char *pwd, results* ob){
     headOG[0]=0;
     break;
   case 1:
-    snprintf(headOG, 25, "-Owner-");
+    setDynamicChar(&headOG, _("-Owner-"));
     ogalen = ownerlen;
     break;
   case 2:
-    snprintf(headOG, 25, "-Group-");
+    setDynamicChar(&headOG, _("-Group-"));
     ogalen = grouplen;
     break;
   case 3:
-    snprintf(headOG, 25, "-Owner & Group-");
+    setDynamicChar(&headOG, _("-Owner & Group-"));
     ogalen = ownerlen + grouplen;
     break;
   case 4:
-    snprintf(headOG, 25, "-Author-");
+    setDynamicChar(&headOG, _("-Author-"));
     ogalen = authorlen; //test
     break;
   case 5:
-    snprintf(headOG, 25, "-Owner & Author-");
+    setDynamicChar(&headOG, _("-Owner & Author-"));
     ogalen = ownerlen + authorlen;
     break;
   case 6:
-    snprintf(headOG, 25, "-Group & Author-");
+    setDynamicChar(&headOG, _("-Group & Author-"));
     ogalen = grouplen + authorlen;
     break;
   case 7:
-    snprintf(headOG, 25, "-Owner, Group, & Author-"); // I like the Oxford comma, deal with it.
+    setDynamicChar(&headOG, _("-Owner, Group, & Author-")); // I like the Oxford comma, deal with it.
     ogalen = ownerlen + grouplen + authorlen;
     break;
   default:
-    snprintf(headOG, 25, "-Owner & Group-"); // This should never be called, but we'd rather be safe.
+    setDynamicChar(&headOG, _("-Owner & Group-")); // This should never be called, but we'd rather be safe.
     ogalen = ownerlen + grouplen;
     break;
   }
@@ -2682,21 +2679,28 @@ void display_dir(char *pwd, results* ob){
     padIntHeadDT = 1;
   }
 
-  sizeHeaderLen = snprintf(NULL, 0, "%i Objects   %s Used %s Available", totalfilecount, susedString, savailableString);
+  // sizeHeaderLen = snprintf(NULL, 0, "%i Objects   %s Used %s Available", totalfilecount, susedString, savailableString);
 
-  sizeHeader = realloc(sizeHeader, sizeof(char) * (sizeHeaderLen + 1));
+  // sizeHeader = realloc(sizeHeader, sizeof(char) * (sizeHeaderLen + 1));
 
-  snprintf(sizeHeader, (sizeHeaderLen + 1), "%i Objects   %s Used %s Available", totalfilecount, susedString, savailableString);
+  setDynamicChar(&sizeHeader, _("%i Objects   %s Used %s Available"), totalfilecount, susedString, savailableString);
 
   markedHeadSeg = writeSegment(3, "", RIGHT);
   attrHeadSeg = writeSegment(attrSegmentLen, headAttrs, LEFT);
+  free(headAttrs);
   hlinkHeadSeg = writeSegment(hlinkSegmentLen, "", RIGHT);
   ownerHeadSeg = writeSegment(ownerSegmentLen, headOG, LEFT);
+  free(headOG);
   contextHeadSeg = writeSegment(contextSegmentLen, headContext, LEFT);
+  free(headContext);
   sizeHeadSeg = writeSegment(sizeSegmentLen, headSize, RIGHT);
+  free(headSize);
   dateHeadSeg = writeSegment(dateSegmentLen, headDT, LEFT);
+  free(headDT);
   sizeBlocksHeadSeg = writeSegment(sizeBlocksSegmentLen, headSizeBlocks, RIGHT);
+  free(headSizeBlocks);
   nameHeadSeg = writeSegment(nameSegmentDataLen, headName, LEFT);
+  free(headName);
 
   headerCombined[0]=0;
   for ( n = 0; n < (sizeof(segOrder) / sizeof(segOrder[0])); n++){
