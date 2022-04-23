@@ -50,15 +50,21 @@ int cmp_menu_ref(const void *lhs, const void *rhs)
 
 }
 
-void updateMenuItem(menuDef **dfMenu, int *menuSize, char* refLabel, wchar_t* displayLabel){
+void updateMenuItem(menuDef **dfMenu, int *menuSize, char* refLabel, char* displayLabel){
   // To Do
   int i;
+  wchar_t *wideDisplayLabel;
+
+  wideDisplayLabel = malloc(sizeof(wchar_t) * (strlen(displayLabel) + 1 ));
+  mbstowcs(wideDisplayLabel, displayLabel, (strlen(displayLabel) + 1));
+
   for(i = 0; i < *menuSize; i++){
     if (!strcmp(((*dfMenu)[i].refLabel), refLabel)){
-      swprintf((*dfMenu)[i].displayLabel, 32, L"%ls", displayLabel);
+      swprintf((*dfMenu)[i].displayLabel, 32, L"%ls", wideDisplayLabel);
       break;
     }
   }
+  free(wideDisplayLabel);
   return;
 }
 
@@ -104,19 +110,28 @@ void addMenuItem(menuDef **dfMenu, int *pos, char* refLabel, char* displayLabel,
 
 }
 
-wchar_t * genMenuDisplayLabel(wchar_t* preMenu, menuDef* dfMenu, int size, wchar_t* postMenu, int comma){
+wchar_t * genMenuDisplayLabel(char* preMenu, menuDef* dfMenu, int size, char* postMenu, int comma){
   wchar_t * output;
   int gapSize;
   int currentLen = 0;
   int i;
+  wchar_t *widePreMenu;
+  wchar_t *widePostMenu;
 
-  output = malloc(sizeof(wchar_t) * ( wcslen(preMenu) + 2));
-  if (wcscmp(preMenu, L"")){
-    wcscpy(output, preMenu);
+  widePreMenu = malloc(sizeof(wchar_t) * (strlen(preMenu) + 1));
+  mbstowcs(widePreMenu, preMenu, (strlen(preMenu) + 1));
+
+  widePostMenu = malloc(sizeof(wchar_t) * (strlen(postMenu) + 1));
+  mbstowcs(widePostMenu, postMenu, (strlen(postMenu) + 1));
+
+  output = malloc(sizeof(wchar_t) * ( wcslen(widePreMenu) + 2));
+  if (wcscmp(widePreMenu, L"")){
+    wcscpy(output, widePreMenu);
     wcscat(output, L" ");
   } else {
     wcscpy(output, L"\0");
   }
+  free(widePreMenu);
   for (i = 0; i < size ; i++){
     output = realloc(output, ((i + 1) * sizeof(dfMenu[i].displayLabel) + wcslen(output) + 1) * sizeof(wchar_t) );
    if ( i == 0 ){
@@ -145,13 +160,14 @@ wchar_t * genMenuDisplayLabel(wchar_t* preMenu, menuDef* dfMenu, int size, wchar
      }
    }
   }
-  output = realloc(output, (sizeof(wchar_t) * (wcslen(output) + wcslen(postMenu) + 2) ));
-  if (wcscmp(postMenu, L"")){
+  output = realloc(output, (sizeof(wchar_t) * (wcslen(output) + wcslen(widePostMenu) + 2) ));
+  if (wcscmp(widePostMenu, L"")){
     wcscat(output, L" ");
-    wcscat(output, postMenu);
+    wcscat(output, widePostMenu);
   } else {
     wcscat(output, L"\0");
   }
+  free(widePostMenu);
   return output;
 }
 
