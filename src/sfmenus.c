@@ -101,9 +101,9 @@ void generateDefaultMenus(){
 }
 
 void refreshMenuLabels(){
-  fileMenuLabel     = genMenuDisplayLabel(L"", fileMenu, fileMenuSize, L"", 1);
-  caseMenuLabel     = genMenuDisplayLabel(L"", caseMenu, caseMenuSize, L"(enter = I)", 0);
-  settingsMenuLabel = genMenuDisplayLabel(L"SF Settings Menu -", settingsMenu, settingsMenuSize, L"", 1);
+  fileMenuLabel     = genMenuDisplayLabel("", fileMenu, fileMenuSize, "", 1);
+  caseMenuLabel     = genMenuDisplayLabel("", caseMenu, caseMenuSize, _("(enter = I)"), 0);
+  settingsMenuLabel = genMenuDisplayLabel(_("SF Settings Menu -"), settingsMenu, settingsMenuSize, "", 1);
 }
 
 void unloadMenuLabels(){
@@ -261,10 +261,10 @@ void show_file_inputs()
         exittoshell();
       } else if (*pc == menuHotkeyLookup(fileMenu, "f_wrap", fileMenuSize)){
         if (wrap){
-          updateMenuItem(&fileMenu, &fileMenuSize, "f_wrap", L"!Wrap-on");
+          updateMenuItem(&fileMenu, &fileMenuSize, "f_wrap", _("!Wrap-on"));
           wrap = 0;
         } else {
-          updateMenuItem(&fileMenu, &fileMenuSize, "f_wrap", L"!Wrap-off");
+          updateMenuItem(&fileMenu, &fileMenuSize, "f_wrap", _("!Wrap-off"));
           leftcol = 1;
           wrap = 1;
         }

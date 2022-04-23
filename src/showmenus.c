@@ -257,17 +257,17 @@ void generateDefaultMenus(){
 }
 
 void refreshMenuLabels(){
-  globalMenuLabel = genMenuDisplayLabel(L"", globalMenu, globalMenuSize, L"", 1);
-  fileMenuLabel = genMenuDisplayLabel(L"", fileMenu, fileMenuSize, L"", 1);
-  functionMenuLabel = genMenuDisplayLabel(L"", functionMenu, functionMenuSize, L"", 0);
-  modifyMenuLabel = genMenuDisplayLabel(L"Modify -", modifyMenu, modifyMenuSize, L"", 1);
-  sortMenuLabel = genMenuDisplayLabel(L"Sort list by -", sortMenu, sortMenuSize, L"", 1);
-  linkMenuLabel = genMenuDisplayLabel(L"Link Type -", linkMenu, linkMenuSize, L"(enter = S)", 1);
-  linkLocationMenuLabel = genMenuDisplayLabel(L"Link Location -", linkLocationMenu, linkLocationMenuSize, L"(enter = R)", 1);
-  touchMenuLabel = genMenuDisplayLabel(L"Set Time -", touchMenu, touchMenuSize, L"(enter = B)", 1);
-  touchDateConfirmMenuLabel = genMenuDisplayLabel(L"Set Time?", touchDateConfirmMenu, touchDateConfirmMenuSize, L"(enter = N)", -1);
-  colorMenuLabel = genMenuDisplayLabel(L"", colorMenu, colorMenuSize, L"", 1);
-  settingsMenuLabel = genMenuDisplayLabel(L"SHOW Settings Menu -", settingsMenu, settingsMenuSize, L"", 1);
+  globalMenuLabel = genMenuDisplayLabel("", globalMenu, globalMenuSize, "", 1);
+  fileMenuLabel = genMenuDisplayLabel("", fileMenu, fileMenuSize, "", 1);
+  functionMenuLabel = genMenuDisplayLabel("", functionMenu, functionMenuSize, "", 0);
+  modifyMenuLabel = genMenuDisplayLabel(_("Modify -"), modifyMenu, modifyMenuSize, "", 1);
+  sortMenuLabel = genMenuDisplayLabel(_("Sort list by -"), sortMenu, sortMenuSize, _("(<shift> = reverse)"), 1);
+  linkMenuLabel = genMenuDisplayLabel(_("Link Type -"), linkMenu, linkMenuSize, _("(enter = S)"), 1);
+  linkLocationMenuLabel = genMenuDisplayLabel(_("Link Location -"), linkLocationMenu, linkLocationMenuSize, _("(enter = R)"), 1);
+  touchMenuLabel = genMenuDisplayLabel(_("Set Time -"), touchMenu, touchMenuSize, _("(enter = B)"), 1);
+  touchDateConfirmMenuLabel = genMenuDisplayLabel(_("Set Time?"), touchDateConfirmMenu, touchDateConfirmMenuSize, _("(enter = N)"), -1);
+  colorMenuLabel = genMenuDisplayLabel("", colorMenu, colorMenuSize, "", 1);
+  settingsMenuLabel = genMenuDisplayLabel(_("SHOW Settings Menu -"), settingsMenu, settingsMenuSize, "", 1);
 }
 
 void unloadMenuLabels(){
