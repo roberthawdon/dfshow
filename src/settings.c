@@ -117,10 +117,14 @@ void addT2BinValue(t2BinValues **values, int *totalItems, int *maxItem, char *re
 
 }
 
-void importSetting(settingIndex **settings, int *items, char *refLabel, wchar_t *textLabel, int type, char *charSetting, int intSetting, int maxValue, int invert)
+void importSetting(settingIndex **settings, int *items, char *refLabel, char *textLabel, int type, char *charSetting, int intSetting, int maxValue, int invert)
 {
   settingIndex *tmp;
   int currentItem = *items;
+  wchar_t *wideTextLabel;
+
+  wideTextLabel = malloc(sizeof(wchar_t) * (strlen(textLabel) + 1));
+  mbstowcs(wideTextLabel, textLabel, (strlen(textLabel) + 1));
 
   if (*items == 0){
     tmp = malloc(sizeof(settingIndex) * 2);
@@ -134,7 +138,7 @@ void importSetting(settingIndex **settings, int *items, char *refLabel, wchar_t 
 
   (*settings)[currentItem].type = type;
   snprintf((*settings)[currentItem].refLabel, 16, "%s", refLabel);
-  swprintf((*settings)[currentItem].textLabel, 32, L"%ls", textLabel);
+  swprintf((*settings)[currentItem].textLabel, 32, L"%ls", wideTextLabel);
   (*settings)[currentItem].intSetting = intSetting;
   (*settings)[currentItem].maxValue = maxValue;
   (*settings)[currentItem].invert = invert;
