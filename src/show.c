@@ -543,19 +543,19 @@ void settingsMenuView(){
   wPrintMenu(0,0,settingsMenuLabel);
   // mvprintw(2, 10, "SHOW Settings Menu");
 
-  addT1CharValue(&charValues, &charValuesCount, &markedCount, "marked", "never");
-  addT1CharValue(&charValues, &charValuesCount, &markedCount, "marked", "always");
-  addT1CharValue(&charValues, &charValuesCount, &markedCount, "marked", "auto");
+  addT1CharValue(&charValues, &charValuesCount, &markedCount, "marked", _("never"));
+  addT1CharValue(&charValues, &charValuesCount, &markedCount, "marked", _("always"));
+  addT1CharValue(&charValues, &charValuesCount, &markedCount, "marked", _("auto"));
 
-  addT1CharValue(&charValues, &charValuesCount, &sortmodeCount, "sortmode", "name");
-  addT1CharValue(&charValues, &charValuesCount, &sortmodeCount, "sortmode", "date");
-  addT1CharValue(&charValues, &charValuesCount, &sortmodeCount, "sortmode", "size");
-  addT1CharValue(&charValues, &charValuesCount, &sortmodeCount, "sortmode", "unsorted");
+  addT1CharValue(&charValues, &charValuesCount, &sortmodeCount, "sortmode", _("name"));
+  addT1CharValue(&charValues, &charValuesCount, &sortmodeCount, "sortmode", _("date"));
+  addT1CharValue(&charValues, &charValuesCount, &sortmodeCount, "sortmode", _("size"));
+  addT1CharValue(&charValues, &charValuesCount, &sortmodeCount, "sortmode", _("unsorted"));
 
-  addT1CharValue(&charValues, &charValuesCount, &timestyleCount, "timestyle", "locale");
-  addT1CharValue(&charValues, &charValuesCount, &timestyleCount, "timestyle", "iso");
-  addT1CharValue(&charValues, &charValuesCount, &timestyleCount, "timestyle", "long-iso");
-  addT1CharValue(&charValues, &charValuesCount, &timestyleCount, "timestyle", "full-iso");
+  addT1CharValue(&charValues, &charValuesCount, &timestyleCount, "timestyle", _("locale"));
+  addT1CharValue(&charValues, &charValuesCount, &timestyleCount, "timestyle", _("iso"));
+  addT1CharValue(&charValues, &charValuesCount, &timestyleCount, "timestyle", _("long-iso"));
+  addT1CharValue(&charValues, &charValuesCount, &timestyleCount, "timestyle", _("full-iso"));
 
   addT2BinValue(&binValues, &binValuesCount, &ownerCount, "owner", "owner", 1);
   addT2BinValue(&binValues, &binValuesCount, &ownerCount, "owner", "group", 0);
@@ -564,32 +564,32 @@ void settingsMenuView(){
   sortmodeInt = textValueLookup(&charValues, &charValuesCount, "sortmode", sortmode);
   timestyleInt = textValueLookup(&charValues, &charValuesCount, "timestyle", timestyle);
 
-  importSetting(&settingIndex, &items, "color",          L"Display file colors", SETTING_BOOL, NULL, filecolors, -1, 0);
-  importSetting(&settingIndex, &items, "marked",         L"Show marked file info", SETTING_SELECT, NULL, markedinfo, markedCount, 0);
-  importSetting(&settingIndex, &items, "sortmode",       L"Sorting mode", SETTING_SELECT, NULL, sortmodeInt, sortmodeCount, 0);
-  importSetting(&settingIndex, &items, "reverse",        L"Reverse sorting order", SETTING_BOOL, NULL, reverse, -1, 0);
-  importSetting(&settingIndex, &items, "timestyle",      L"Time style", SETTING_SELECT, NULL, timestyleInt, timestyleCount, 0);
-  importSetting(&settingIndex, &items, "hidden",         L"Show hidden files", SETTING_BOOL, NULL, showhidden, -1, 0);
-  importSetting(&settingIndex, &items, "ignore-backups", L"Hide backup files", SETTING_BOOL, NULL, showbackup, -1, 1);
-  importSetting(&settingIndex, &items, "no-sf",          L"Use 3rd party pager over SF", SETTING_BOOL, NULL, useEnvPager, -1, 0);
+  importSetting(&settingIndex, &items, "color",          _("Display file colors"), SETTING_BOOL, NULL, filecolors, -1, 0);
+  importSetting(&settingIndex, &items, "marked",         _("Show marked file info"), SETTING_SELECT, NULL, markedinfo, markedCount, 0);
+  importSetting(&settingIndex, &items, "sortmode",       _("Sorting mode"), SETTING_SELECT, NULL, sortmodeInt, sortmodeCount, 0);
+  importSetting(&settingIndex, &items, "reverse",        _("Reverse sorting order"), SETTING_BOOL, NULL, reverse, -1, 0);
+  importSetting(&settingIndex, &items, "timestyle",      _("Time style"), SETTING_SELECT, NULL, timestyleInt, timestyleCount, 0);
+  importSetting(&settingIndex, &items, "hidden",         _("Show hidden files"), SETTING_BOOL, NULL, showhidden, -1, 0);
+  importSetting(&settingIndex, &items, "ignore-backups", _("Hide backup files"), SETTING_BOOL, NULL, showbackup, -1, 1);
+  importSetting(&settingIndex, &items, "no-sf",          _("Use 3rd party pager over SF"), SETTING_BOOL, NULL, useEnvPager, -1, 0);
   if (uid == 0 || euid == 0){
-    importSetting(&settingIndex, &items, "no-danger",      L"Hide danger lines as root", SETTING_BOOL, NULL, danger, -1, 1);
+    importSetting(&settingIndex, &items, "no-danger",      _("Hide danger lines as root"), SETTING_BOOL, NULL, danger, -1, 1);
   }
-  importSetting(&settingIndex, &items, "si",             L"Use SI units", SETTING_BOOL, NULL, si, -1, 0);
-  importSetting(&settingIndex, &items, "human-readable", L"Human readable sizes", SETTING_BOOL, NULL, human, -1, 0);
-  importSetting(&settingIndex, &items, "show-on-enter",  L"Enter key acts like Show", SETTING_BOOL, NULL, enterAsShow, -1, 0);
-  importSetting(&settingIndex, &items, "owner",          L"Owner Column", SETTING_MULTI, NULL, ogavis, ownerCount, 0);
-  importSetting(&settingIndex, &items, "context",        L"Show security context of files", SETTING_BOOL, NULL, showContext, -1, 0);
-  importSetting(&settingIndex, &items, "skip-to-first",  L"Skip to the first object", SETTING_BOOL, NULL, skipToFirstFile, -1, 0);
+  importSetting(&settingIndex, &items, "si",             _("Use SI units"), SETTING_BOOL, NULL, si, -1, 0);
+  importSetting(&settingIndex, &items, "human-readable", _("Human readable sizes"), SETTING_BOOL, NULL, human, -1, 0);
+  importSetting(&settingIndex, &items, "show-on-enter",  _("Enter key acts like Show"), SETTING_BOOL, NULL, enterAsShow, -1, 0);
+  importSetting(&settingIndex, &items, "owner",          _("Owner Column"), SETTING_MULTI, NULL, ogavis, ownerCount, 0);
+  importSetting(&settingIndex, &items, "context",        _("Show security context of files"), SETTING_BOOL, NULL, showContext, -1, 0);
+  importSetting(&settingIndex, &items, "skip-to-first",  _("Skip to the first object"), SETTING_BOOL, NULL, skipToFirstFile, -1, 0);
 #ifdef HAVE_ACL_TYPE_EXTENDED
-  importSetting(&settingIndex, &items, "showXAttrs",     L"Display extended attribute keys and sizes", SETTING_BOOL, NULL, showXAttrs, -1, 0);
+  importSetting(&settingIndex, &items, "showXAttrs",     _("Display extended attribute keys and sizes"), SETTING_BOOL, NULL, showXAttrs, -1, 0);
 #endif
-  importSetting(&settingIndex, &items, "only-dirs",      L"Display only directories", SETTING_BOOL, NULL, dirOnly, -1, 0);
-  importSetting(&settingIndex, &items, "sizeblocks",     L"Show allocated size in blocks", SETTING_BOOL, NULL, showSizeBlocks, -1, 0);
-  importSetting(&settingIndex, &items, "defined-editor", L"Override default editor", SETTING_BOOL, NULL, useDefinedEditor, -1, 0);
-  importSetting(&settingIndex, &items, "visualPath",     L"Editor utility program command", SETTING_FREE, visualPath, -1, -1, 0);
-  importSetting(&settingIndex, &items, "defined-pager",  L"Override default pager", SETTING_BOOL, NULL, useDefinedPager, -1, 0);
-  importSetting(&settingIndex, &items, "pagerPath",      L"Pager utility program command", SETTING_FREE, pagerPath, -1, -1, 0);
+  importSetting(&settingIndex, &items, "only-dirs",      _("Display only directories"), SETTING_BOOL, NULL, dirOnly, -1, 0);
+  importSetting(&settingIndex, &items, "sizeblocks",     _("Show allocated size in blocks"), SETTING_BOOL, NULL, showSizeBlocks, -1, 0);
+  importSetting(&settingIndex, &items, "defined-editor", _("Override default editor"), SETTING_BOOL, NULL, useDefinedEditor, -1, 0);
+  importSetting(&settingIndex, &items, "visualPath",     _("Editor utility program command"), SETTING_FREE, visualPath, -1, -1, 0);
+  importSetting(&settingIndex, &items, "defined-pager",  _("Override default pager"), SETTING_BOOL, NULL, useDefinedPager, -1, 0);
+  importSetting(&settingIndex, &items, "pagerPath",      _("Pager utility program command"), SETTING_FREE, pagerPath, -1, -1, 0);
 
   populateBool(&binValues, "owner", ogavis, binValuesCount);
 
