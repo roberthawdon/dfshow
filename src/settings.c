@@ -139,6 +139,7 @@ void importSetting(settingIndex **settings, int *items, char *refLabel, char *te
   (*settings)[currentItem].type = type;
   snprintf((*settings)[currentItem].refLabel, 16, "%s", refLabel);
   swprintf((*settings)[currentItem].textLabel, 32, L"%ls", wideTextLabel);
+  free(wideTextLabel);
   (*settings)[currentItem].intSetting = intSetting;
   (*settings)[currentItem].maxValue = maxValue;
   (*settings)[currentItem].invert = invert;
