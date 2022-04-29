@@ -51,7 +51,7 @@ char homeConfLocation[128];
 
 char themeName[128] = "default";
 
-char errmessage[256];
+char *errmessage;
 
 extern int * pc;
 

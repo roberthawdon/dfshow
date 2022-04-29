@@ -68,13 +68,14 @@ void updateMenuItem(menuDef **dfMenu, int *menuSize, char* refLabel, char* displ
   return;
 }
 
-void addMenuItem(menuDef **dfMenu, int *pos, char* refLabel, char* displayLabel, int hotKey){
+void addMenuItem(menuDef **dfMenu, int *pos, char* refLabel, char* displayLabel, int defaultHotKey){
 
   int menuPos = *pos;
   int charCount = 0;
   int i;
   menuDef *tmp;
   wchar_t *wideLabel;
+  bool hotKeyFound = false;
 
   if (menuPos == 0){
     tmp = malloc(sizeof(menuDef) * 2);
@@ -91,11 +92,15 @@ void addMenuItem(menuDef **dfMenu, int *pos, char* refLabel, char* displayLabel,
   snprintf((*dfMenu)[menuPos].refLabel, 16, "%s", refLabel);
   swprintf((*dfMenu)[menuPos].displayLabel, 32, L"%ls", wideLabel);
   free(wideLabel);
-  (*dfMenu)[menuPos].hotKey = hotKey;
+  (*dfMenu)[menuPos].hotKey = defaultHotKey; // Set the hotkey to the one we've provided first
 
   for (i = 0; i < strlen(displayLabel); i++)
     {
       if ( displayLabel[i] == '!' || displayLabel[i] == '<' || displayLabel[i] == '>' || displayLabel[i] == '\\') {
+        if (displayLabel[i] == '!' && !hotKeyFound){
+          (*dfMenu)[menuPos].hotKey = tolower(displayLabel[i + 1]);
+          hotKeyFound = true;
+        }
         i++;
         charCount++;
       } else {
