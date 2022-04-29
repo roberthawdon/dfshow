@@ -52,7 +52,7 @@ colorPairs colors[256];
 
 char fgbgLabel[11];
 
-extern char errmessage[256];
+extern char *errmessage;
 
 extern int colormode;
 extern int c;
@@ -355,12 +355,14 @@ void saveTheme(){
           createParentDirs(filename);
           goto saveTheme;
         } else {
-          snprintf(errmessage, 256, _("Error: %s"), strerror(errno));
+          setDynamicChar(&errmessage, _("Error: %s"), strerror(errno));
           topLineMessage(errmessage);
+          free(errmessage);
         }
       } else {
-        snprintf(errmessage, 256, _("Error: %s"), strerror(errno));
+        setDynamicChar(&errmessage, _("Error: %s"), strerror(errno));
         topLineMessage(errmessage);
+        free(errmessage);
       }
     }
     config_destroy(&cfg);
