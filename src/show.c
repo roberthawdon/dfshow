@@ -91,6 +91,8 @@ int showXAttrs = 0;
 
 int showAcls = 0; // Might end up not implementing this.
 
+bool showInodes = false;
+
 #ifdef HAVE_GNU_BLOCKSIZE
 int block_size = 1024;
 #else
@@ -103,8 +105,8 @@ char block_unit[4] = "\0\0\0\0";
 
 results *ob;
 
-int segOrder[9] = {COL_MARK, COL_SIZEBLOCKS, COL_ATTR, COL_HLINK, COL_OWNER, COL_CONTEXT, COL_SIZE, COL_DATE, COL_NAME};
-// int segOrder[9] = {COL_MARK, COL_NAME, COL_SIZE, COL_DATE, COL_ATTR}; // Emulating NET-DF-EDIT's XENIX layout
+int segOrder[10] = {COL_MARK, COL_INODE, COL_SIZEBLOCKS, COL_ATTR, COL_HLINK, COL_OWNER, COL_CONTEXT, COL_SIZE, COL_DATE, COL_NAME};
+// int segOrder[10] = {COL_MARK, COL_NAME, COL_SIZE, COL_DATE, COL_ATTR}; // Emulating NET-DF-EDIT's XENIX layout
 
 extern int skippable;
 
@@ -249,6 +251,13 @@ void readConfig(const char * confFile)
       if (setting){
         if (config_setting_get_int(setting)){
           human = 1;
+        }
+      }
+      // Check Show Inodes
+      setting = config_setting_get_member(group, "showInodes");
+      if (setting){
+        if (config_setting_get_int(setting)){
+          showInodes = true;
         }
       }
       // Check Enter As Show
@@ -402,6 +411,8 @@ void saveConfig(const char * confFile, settingIndex **settings, t1CharValues **v
         config_setting_set_int(setting, si);
       } else if (!strcmp((*settings)[i].refLabel, "human-readable")){
         config_setting_set_int(setting, human);
+      } else if (!strcmp((*settings)[i].refLabel, "showInodes")){
+        config_setting_set_int(setting, showInodes);
       } else if (!strcmp((*settings)[i].refLabel, "show-on-enter")){
         config_setting_set_int(setting, enterAsShow);
       } else if (!strcmp((*settings)[i].refLabel, "context")){
@@ -476,6 +487,8 @@ void applySettings(settingIndex **settings, t1CharValues **values, int items, in
       si = (*settings)[i].intSetting;
     } else if (!strcmp((*settings)[i].refLabel, "human-readable")){
       human = (*settings)[i].intSetting;
+    } else if (!strcmp((*settings)[i].refLabel, "showInodes")){
+      showInodes = (*settings)[i].intSetting;
     } else if (!strcmp((*settings)[i].refLabel, "show-on-enter")){
       enterAsShow = (*settings)[i].intSetting;
     } else if (!strcmp((*settings)[i].refLabel, "marked")){
@@ -577,6 +590,7 @@ void settingsMenuView(){
   }
   importSetting(&settingIndex, &items, "si",             _("Use SI units"), SETTING_BOOL, NULL, si, -1, 0);
   importSetting(&settingIndex, &items, "human-readable", _("Human readable sizes"), SETTING_BOOL, NULL, human, -1, 0);
+  importSetting(&settingIndex, &items, "showInodes",     _("Show Inode"), SETTING_BOOL, NULL, showInodes, -1, 0);
   importSetting(&settingIndex, &items, "show-on-enter",  _("Enter key acts like Show"), SETTING_BOOL, NULL, enterAsShow, -1, 0);
   importSetting(&settingIndex, &items, "owner",          _("Owner Column"), SETTING_MULTI, NULL, ogavis, ownerCount, 0);
   importSetting(&settingIndex, &items, "context",        _("Show security context of files"), SETTING_BOOL, NULL, showContext, -1, 0);
@@ -922,6 +936,7 @@ Options shared with ls:\n"), stdout);
   -g                           only show group\n\
   -G, --no-group               do not show group\n\
   -h, --human-readable         print sizes like 1K 234M 2G etc.\n\
+  -i, --inode                  print index number of each file\n\
       --si                     as above, but use powers of 1000 not 1024\n\
   -r, --reverse                reverse order while sorting\n\
   -s, --size                   display the allocated size of files, in blocks\n\
@@ -978,14 +993,14 @@ int main(int argc, char *argv[])
   uid_t uid=getuid(), euid=geteuid();
   int c;
   char * tmpPwd;
-  char options[20];
+  char options[21];
 
   initI18n();
 
 #ifdef HAVE_ACL_TYPE_EXTENDED
-  snprintf(options, 20, "%s", "@aABdfgGhlrsStUZ1");
+  snprintf(options, 21, "%s", "@aABdfgGhilrsStUZ1");
 #else
-  snprintf(options, 20, "%s", "aABdfgGhlrsStUZ1");
+  snprintf(options, 21, "%s", "aABdfgGhilrsStUZ1");
 #endif
 
   // Setting the default editor
@@ -1053,6 +1068,7 @@ int main(int argc, char *argv[])
          {"ignore-backups", no_argument,       0, 'B'},
          {"directory",      no_argument,       0, 'd'},
          {"human-readable", no_argument,       0, 'h'},
+         {"inode",          no_argument,       0, 'i'},
          {"no-group",       no_argument,       0, 'G'},
          {"reverse",        no_argument,       0, 'r'},
          {"size",           no_argument,       0, 's'},
@@ -1171,6 +1187,9 @@ Valid arguments are:\n\
       break;
     case 'h':
       human = 1;
+      break;
+    case 'i':
+      showInodes = true;
       break;
     case GETOPT_SI_CHAR:
       human = 1;
