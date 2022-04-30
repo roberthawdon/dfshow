@@ -719,6 +719,7 @@ void rename_file_input(char *file)
 
 void make_directory_input()
 {
+  char *tmpPwd;
   char newdir[4096];
   int curPos = 0;
   int e;
@@ -726,10 +727,9 @@ void make_directory_input()
   clrtoeol();
   curPos = (printMenu(0, 0, "Make Directory - Enter pathname:") + 1);
   move (0,curPos);
-  if (!check_last_char(currentpwd, "/")){
-    snprintf(currentpwd + strlen(currentpwd), 4096, "/");
-  }
-  readline(newdir, 4096, currentpwd);
+  setDynamicChar(&tmpPwd, "%s/", currentpwd);
+  readline(newdir, 4096, tmpPwd);
+  free(tmpPwd);
   if (strcmp(newdir, currentpwd) && strcmp(newdir, "")){
     if (check_first_char(newdir, "~")){
       rewrite = str_replace(newdir, "~", getenv("HOME"));
@@ -838,6 +838,7 @@ int touchType()
 
 void touch_file_input()
 {
+  char *tmpPwd;
   char touchFile[4096];
   FILE* touchFileObject;
   int setDateFlag = -1;
@@ -847,11 +848,8 @@ void touch_file_input()
   clrtoeol();
   curPos = (printMenu(0, 0, "Touch File - Enter pathname:") + 1);
   move (0, curPos);
-  if (!check_last_char(currentpwd, "/")){
-    snprintf(currentpwd + strlen(currentpwd), 4096, "/");
-  }
-  if (readline(touchFile, 4096, currentpwd) != -1){
-    //TODO: Ask if we want to set a time.
+  setDynamicChar(&tmpPwd, "%s/", currentpwd);
+  if (readline(touchFile, 4096, tmpPwd) != -1){
     wPrintMenu(0,0,touchDateConfirmMenuLabel);
     *pc = getch10th();
     if (*pc == menuHotkeyLookup(touchDateConfirmMenu, "t_1", touchDateConfirmMenuSize)){
@@ -907,6 +905,7 @@ void touch_file_input()
     }
     refreshDirectory(sortmode, 0, selected, 0);
   }
+  free(tmpPwd);
   directory_view_menu_inputs();
 }
 
