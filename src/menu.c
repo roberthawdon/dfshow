@@ -23,6 +23,7 @@
 #include <ncurses.h>
 #include <string.h>
 #include <wchar.h>
+#include <ctype.h>
 #include "colors.h"
 #include "menu.h"
 #include "banned.h"
