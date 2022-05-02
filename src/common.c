@@ -82,7 +82,7 @@ int setDynamicChar(char **str, const char *format, ...)
   va_copy(pArg2, pArg1);
 
   length = vsnprintf(NULL, 0, format, pArg1);
-  length++;
+  length++; // Adds 1 for null terminator
 
   *str = malloc(sizeof(char) * length);
   vsnprintf(*str, length, format, pArg2);
@@ -176,13 +176,15 @@ void createParentDirs(char *path){
   pathDirs *targetPath;
   char *tempPath = malloc(sizeof(char) * 1);
   char *tempPathWork;
-  int e, i = 0;
+  int e, i, t = 0;
 
   e = splitPath(&targetPath, path);
 
   tempPath[0]=0;
   for (i = 0; i < e; i++){
-    memcpy(tempPath, tempPathWork, (setDynamicChar(&tempPathWork, "%s/%s", tempPath, targetPath[i].directories) + 1));
+    t = setDynamicChar(&tempPathWork, "%s/%s", tempPath, targetPath[i].directories);
+    tempPath = realloc(tempPath, sizeof(char) + t);
+    memcpy(tempPath, tempPathWork, t);
     free(tempPathWork);
     if (!check_dir(tempPath)){
       mk_dir(tempPath);
