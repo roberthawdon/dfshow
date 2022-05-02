@@ -39,6 +39,7 @@
 #include "display.h"
 #include "sfmenus.h"
 #include "sf.h"
+#include "sffunctions.h"
 #include "i18n.h"
 
 
