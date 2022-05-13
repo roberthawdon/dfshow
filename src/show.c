@@ -108,6 +108,12 @@ results *ob;
 int segOrder[10] = {COL_MARK, COL_INODE, COL_SIZEBLOCKS, COL_ATTR, COL_HLINK, COL_OWNER, COL_CONTEXT, COL_SIZE, COL_DATE, COL_NAME};
 // int segOrder[10] = {COL_MARK, COL_NAME, COL_SIZE, COL_DATE, COL_ATTR}; // Emulating NET-DF-EDIT's XENIX layout
 
+settingIndex *settingIndexShow;
+t1CharValues *charValuesShow;
+t2BinValues *binValuesShow;
+int totalCharItemsShow;
+int totalBinItemsShow;
+
 extern int skippable;
 
 extern int settingsPos;
@@ -533,166 +539,69 @@ void applySettings(settingIndex **settings, t1CharValues **values, int items, in
   }
 }
 
-void settingsMenuView(){
+int generateSettingsVars()
+{
   uid_t uid=getuid(), euid=geteuid();
-  int items, count = 0;
-  int x = 2;
-  int y = 3;
-  settingIndex *settingIndex;
-  t1CharValues *charValues;
-  t2BinValues *binValues;
-  int markedCount, sortmodeCount, timestyleCount, ownerCount;
-  int charValuesCount;
-  int binValuesCount;
-  int sortmodeInt, timestyleInt;
-  int e;
-  char charTempValue[1024];
+  int items = 0;
+  int markedCount = 0, sortmodeCount = 0, timestyleCount = 0, ownerCount = 0;
+  int sortmodeInt = 0, timestyleInt = 0;
+  int charValuesCount = 0;
+  int binValuesCount = 0;
 
- reloadSettings:
+  addT1CharValue(&charValuesShow, &charValuesCount, &markedCount, "marked", _("never"));
+  addT1CharValue(&charValuesShow, &charValuesCount, &markedCount, "marked", _("always"));
+  addT1CharValue(&charValuesShow, &charValuesCount, &markedCount, "marked", _("auto"));
 
-  items = charValuesCount = binValuesCount = markedCount = sortmodeCount = timestyleCount = ownerCount = 0;
+  addT1CharValue(&charValuesShow, &charValuesCount, &sortmodeCount, "sortmode", _("name"));
+  addT1CharValue(&charValuesShow, &charValuesCount, &sortmodeCount, "sortmode", _("date"));
+  addT1CharValue(&charValuesShow, &charValuesCount, &sortmodeCount, "sortmode", _("size"));
+  addT1CharValue(&charValuesShow, &charValuesCount, &sortmodeCount, "sortmode", _("unsorted"));
 
-  clear();
-  wPrintMenu(0,0,settingsMenuLabel);
-  // mvprintw(2, 10, "SHOW Settings Menu");
+  addT1CharValue(&charValuesShow, &charValuesCount, &timestyleCount, "timestyle", _("locale"));
+  addT1CharValue(&charValuesShow, &charValuesCount, &timestyleCount, "timestyle", _("iso"));
+  addT1CharValue(&charValuesShow, &charValuesCount, &timestyleCount, "timestyle", _("long-iso"));
+  addT1CharValue(&charValuesShow, &charValuesCount, &timestyleCount, "timestyle", _("full-iso"));
 
-  addT1CharValue(&charValues, &charValuesCount, &markedCount, "marked", _("never"));
-  addT1CharValue(&charValues, &charValuesCount, &markedCount, "marked", _("always"));
-  addT1CharValue(&charValues, &charValuesCount, &markedCount, "marked", _("auto"));
+  addT2BinValue(&binValuesShow, &binValuesCount, &ownerCount, "owner", "owner", 1);
+  addT2BinValue(&binValuesShow, &binValuesCount, &ownerCount, "owner", "group", 0);
+  addT2BinValue(&binValuesShow, &binValuesCount, &ownerCount, "owner", "author", 0);
 
-  addT1CharValue(&charValues, &charValuesCount, &sortmodeCount, "sortmode", _("name"));
-  addT1CharValue(&charValues, &charValuesCount, &sortmodeCount, "sortmode", _("date"));
-  addT1CharValue(&charValues, &charValuesCount, &sortmodeCount, "sortmode", _("size"));
-  addT1CharValue(&charValues, &charValuesCount, &sortmodeCount, "sortmode", _("unsorted"));
+  sortmodeInt = textValueLookup(&charValuesShow, &charValuesCount, "sortmode", sortmode);
+  timestyleInt = textValueLookup(&charValuesShow, &charValuesCount, "timestyle", timestyle);
 
-  addT1CharValue(&charValues, &charValuesCount, &timestyleCount, "timestyle", _("locale"));
-  addT1CharValue(&charValues, &charValuesCount, &timestyleCount, "timestyle", _("iso"));
-  addT1CharValue(&charValues, &charValuesCount, &timestyleCount, "timestyle", _("long-iso"));
-  addT1CharValue(&charValues, &charValuesCount, &timestyleCount, "timestyle", _("full-iso"));
-
-  addT2BinValue(&binValues, &binValuesCount, &ownerCount, "owner", "owner", 1);
-  addT2BinValue(&binValues, &binValuesCount, &ownerCount, "owner", "group", 0);
-  addT2BinValue(&binValues, &binValuesCount, &ownerCount, "owner", "author", 0);
-
-  sortmodeInt = textValueLookup(&charValues, &charValuesCount, "sortmode", sortmode);
-  timestyleInt = textValueLookup(&charValues, &charValuesCount, "timestyle", timestyle);
-
-  importSetting(&settingIndex, &items, "color",          _("Display file colors"), SETTING_BOOL, NULL, filecolors, -1, 0);
-  importSetting(&settingIndex, &items, "marked",         _("Show marked file info"), SETTING_SELECT, NULL, markedinfo, markedCount, 0);
-  importSetting(&settingIndex, &items, "sortmode",       _("Sorting mode"), SETTING_SELECT, NULL, sortmodeInt, sortmodeCount, 0);
-  importSetting(&settingIndex, &items, "reverse",        _("Reverse sorting order"), SETTING_BOOL, NULL, reverse, -1, 0);
-  importSetting(&settingIndex, &items, "timestyle",      _("Time style"), SETTING_SELECT, NULL, timestyleInt, timestyleCount, 0);
-  importSetting(&settingIndex, &items, "hidden",         _("Show hidden files"), SETTING_BOOL, NULL, showhidden, -1, 0);
-  importSetting(&settingIndex, &items, "ignore-backups", _("Hide backup files"), SETTING_BOOL, NULL, showbackup, -1, 1);
-  importSetting(&settingIndex, &items, "no-sf",          _("Use 3rd party pager over SF"), SETTING_BOOL, NULL, useEnvPager, -1, 0);
+  importSetting(&settingIndexShow, &items, "color",          _("Display file colors"), SETTING_BOOL, NULL, filecolors, -1, 0);
+  importSetting(&settingIndexShow, &items, "marked",         _("Show marked file info"), SETTING_SELECT, NULL, markedinfo, markedCount, 0);
+  importSetting(&settingIndexShow, &items, "sortmode",       _("Sorting mode"), SETTING_SELECT, NULL, sortmodeInt, sortmodeCount, 0);
+  importSetting(&settingIndexShow, &items, "reverse",        _("Reverse sorting order"), SETTING_BOOL, NULL, reverse, -1, 0);
+  importSetting(&settingIndexShow, &items, "timestyle",      _("Time style"), SETTING_SELECT, NULL, timestyleInt, timestyleCount, 0);
+  importSetting(&settingIndexShow, &items, "hidden",         _("Show hidden files"), SETTING_BOOL, NULL, showhidden, -1, 0);
+  importSetting(&settingIndexShow, &items, "ignore-backups", _("Hide backup files"), SETTING_BOOL, NULL, showbackup, -1, 1);
+  importSetting(&settingIndexShow, &items, "no-sf",          _("Use 3rd party pager over SF"), SETTING_BOOL, NULL, useEnvPager, -1, 0);
   if (uid == 0 || euid == 0){
-    importSetting(&settingIndex, &items, "no-danger",      _("Hide danger lines as root"), SETTING_BOOL, NULL, danger, -1, 1);
+    importSetting(&settingIndexShow, &items, "no-danger",      _("Hide danger lines as root"), SETTING_BOOL, NULL, danger, -1, 1);
   }
-  importSetting(&settingIndex, &items, "si",             _("Use SI units"), SETTING_BOOL, NULL, si, -1, 0);
-  importSetting(&settingIndex, &items, "human-readable", _("Human readable sizes"), SETTING_BOOL, NULL, human, -1, 0);
-  importSetting(&settingIndex, &items, "showInodes",     _("Show Inode"), SETTING_BOOL, NULL, showInodes, -1, 0);
-  importSetting(&settingIndex, &items, "show-on-enter",  _("Enter key acts like Show"), SETTING_BOOL, NULL, enterAsShow, -1, 0);
-  importSetting(&settingIndex, &items, "owner",          _("Owner Column"), SETTING_MULTI, NULL, ogavis, ownerCount, 0);
-  importSetting(&settingIndex, &items, "context",        _("Show security context of files"), SETTING_BOOL, NULL, showContext, -1, 0);
-  importSetting(&settingIndex, &items, "skip-to-first",  _("Skip to the first object"), SETTING_BOOL, NULL, skipToFirstFile, -1, 0);
+  importSetting(&settingIndexShow, &items, "si",             _("Use SI units"), SETTING_BOOL, NULL, si, -1, 0);
+  importSetting(&settingIndexShow, &items, "human-readable", _("Human readable sizes"), SETTING_BOOL, NULL, human, -1, 0);
+  importSetting(&settingIndexShow, &items, "showInodes",     _("Show Inode"), SETTING_BOOL, NULL, showInodes, -1, 0);
+  importSetting(&settingIndexShow, &items, "show-on-enter",  _("Enter key acts like Show"), SETTING_BOOL, NULL, enterAsShow, -1, 0);
+  importSetting(&settingIndexShow, &items, "owner",          _("Owner Column"), SETTING_MULTI, NULL, ogavis, ownerCount, 0);
+  importSetting(&settingIndexShow, &items, "context",        _("Show security context of files"), SETTING_BOOL, NULL, showContext, -1, 0);
+  importSetting(&settingIndexShow, &items, "skip-to-first",  _("Skip to the first object"), SETTING_BOOL, NULL, skipToFirstFile, -1, 0);
 #ifdef HAVE_ACL_TYPE_EXTENDED
-  importSetting(&settingIndex, &items, "showXAttrs",     _("Display extended attribute keys and sizes"), SETTING_BOOL, NULL, showXAttrs, -1, 0);
+  importSetting(&settingIndexShow, &items, "showXAttrs",     _("Display extended attribute keys and sizes"), SETTING_BOOL, NULL, showXAttrs, -1, 0);
 #endif
-  importSetting(&settingIndex, &items, "only-dirs",      _("Display only directories"), SETTING_BOOL, NULL, dirOnly, -1, 0);
-  importSetting(&settingIndex, &items, "sizeblocks",     _("Show allocated size in blocks"), SETTING_BOOL, NULL, showSizeBlocks, -1, 0);
-  importSetting(&settingIndex, &items, "defined-editor", _("Override default editor"), SETTING_BOOL, NULL, useDefinedEditor, -1, 0);
-  importSetting(&settingIndex, &items, "visualPath",     _("Editor utility program command"), SETTING_FREE, visualPath, -1, -1, 0);
-  importSetting(&settingIndex, &items, "defined-pager",  _("Override default pager"), SETTING_BOOL, NULL, useDefinedPager, -1, 0);
-  importSetting(&settingIndex, &items, "pagerPath",      _("Pager utility program command"), SETTING_FREE, pagerPath, -1, -1, 0);
+  importSetting(&settingIndexShow, &items, "only-dirs",      _("Display only directories"), SETTING_BOOL, NULL, dirOnly, -1, 0);
+  importSetting(&settingIndexShow, &items, "sizeblocks",     _("Show allocated size in blocks"), SETTING_BOOL, NULL, showSizeBlocks, -1, 0);
+  importSetting(&settingIndexShow, &items, "defined-editor", _("Override default editor"), SETTING_BOOL, NULL, useDefinedEditor, -1, 0);
+  importSetting(&settingIndexShow, &items, "visualPath",     _("Editor utility program command"), SETTING_FREE, visualPath, -1, -1, 0);
+  importSetting(&settingIndexShow, &items, "defined-pager",  _("Override default pager"), SETTING_BOOL, NULL, useDefinedPager, -1, 0);
+  importSetting(&settingIndexShow, &items, "pagerPath",      _("Pager utility program command"), SETTING_FREE, pagerPath, -1, -1, 0);
 
-  populateBool(&binValues, "owner", ogavis, binValuesCount);
+  populateBool(&binValuesShow, "owner", ogavis, binValuesCount);
 
-  while(1)
-    {
-      for (count = 0; count < items; count++){
-        printSetting(2 + count, 3, &settingIndex, &charValues, &binValues, count, charValuesCount, binValuesCount, settingIndex[count].type, settingIndex[count].invert);
-      }
-
-      move(x + settingsPos, y + 1);
-      *pc = getch10th();
-      if (*pc == menuHotkeyLookup(settingsMenu, "s_quit", settingsMenuSize)){
-        curs_set(FALSE);
-        applySettings(&settingIndex, &charValues, items, charValuesCount);
-        free(settingIndex);
-        return;
-      } else if (*pc == menuHotkeyLookup(settingsMenu, "s_revert", settingsMenuSize)){
-        free(settingIndex);
-        goto reloadSettings;
-      } else if (*pc == menuHotkeyLookup(settingsMenu, "s_save", settingsMenuSize)){
-        applySettings(&settingIndex, &charValues, items, charValuesCount);
-        if (access(dirFromPath(homeConfLocation), W_OK) != 0) {
-          createParentDirs(homeConfLocation);
-        }
-        saveConfig(homeConfLocation, &settingIndex, &charValues, &binValues, items, charValuesCount, binValuesCount);
-        curs_set(FALSE);
-        topLineMessage("Settings saved.");
-        curs_set(TRUE);
-        wPrintMenu(0,0,settingsMenuLabel);
-      } else if (*pc == 258 || *pc == 10){
-        if (settingsPos < (items -1 )){
-          settingsBinPos = -1;
-          settingsPos++;
-        }
-      } else if (*pc == 32 || *pc == 260 || *pc == 261){
-        // Adjust
-        if (settingIndex[settingsPos].type == SETTING_BOOL){
-          if (settingIndex[settingsPos].intSetting > 0){
-            updateSetting(&settingIndex, settingsPos, 0, 0);
-          } else {
-            updateSetting(&settingIndex, settingsPos, 0, 1);
-          }
-        } else if (settingIndex[settingsPos].type == SETTING_SELECT){
-          if (*pc == 32 || *pc == 261){
-            if (settingIndex[settingsPos].intSetting < (settingIndex[settingsPos].maxValue) - 1){
-              updateSetting(&settingIndex, settingsPos, 1, (settingIndex[settingsPos].intSetting) + 1);
-            } else {
-              updateSetting(&settingIndex, settingsPos, 1, 0);
-            }
-          } else {
-            if (settingIndex[settingsPos].intSetting > 0){
-              updateSetting(&settingIndex, settingsPos, 1, (settingIndex[settingsPos].intSetting) - 1);
-            } else {
-              updateSetting(&settingIndex, settingsPos, 1, (settingIndex[settingsPos].maxValue - 1));
-            }
-          }
-        } else if (settingIndex[settingsPos].type == SETTING_MULTI){
-          if (*pc == 261 && (settingsBinPos < (settingIndex[settingsPos].maxValue -1))){
-            settingsBinPos++;
-          } else if (*pc == 260 && (settingsBinPos > -1)){
-            settingsBinPos--;
-          } else if (*pc == 32 && (settingsBinPos > -1)){
-            // Not fond of this, but it should work
-            if (!strcmp(settingIndex[settingsPos].refLabel, "owner")){
-              adjustBinSetting(&settingIndex, &binValues, "owner", &ogavis, binValuesCount);
-            }
-          }
-        } else if (settingIndex[settingsPos].type == SETTING_FREE){
-          if (*pc == 32 || *pc == 261) {
-            settingsFreePos = 0;
-            move(x + settingsPos, y + wcslen(settingIndex[settingsPos].textLabel) + 6);
-            e = readline(charTempValue, 1024, settingIndex[settingsPos].charSetting);
-            if (strcmp(charTempValue, "")){
-              free(settingIndex[settingsPos].charSetting);
-              settingIndex[settingsPos].charSetting = malloc(sizeof(char) * (strlen(charTempValue) + 1));
-              snprintf(settingIndex[settingsPos].charSetting, (strlen(charTempValue) + 1), "%s", charTempValue);
-            }
-            move(x + settingsPos, 0);
-            clrtoeol();
-            settingsFreePos = -1;
-          }
-        }
-      } else if (*pc == 259){
-        if (settingsPos > 0){
-          settingsBinPos = -1;
-          settingsPos--;
-        }
-      }
-    }
+  totalBinItemsShow = binValuesCount;
+  totalCharItemsShow = charValuesCount;
+  return items;
 }
 
 int directory_view(char * currentpwd)
@@ -1296,13 +1205,14 @@ Valid arguments are:\n\
   curs_set(FALSE); // Hide Curser (Will want to bring it back later)
   keypad(stdscr, TRUE);
 
+  generateSettingsVars();
 
   if (launchThemeEditor == 1){
     themeBuilder();
     theme_menu_inputs();
     exittoshell();
   } else if (launchSettingsMenu == 1) {
-    settingsMenuView();
+    settingsMenuView(settingsMenuLabel, &settingIndexShow, &charValuesShow, &binValuesShow, totalCharItemsShow, totalBinItemsShow, generateSettingsVars());
     exittoshell();
   } else {
     // Remaining arguments passed as working directory

@@ -36,5 +36,5 @@ int checkStyle(char* styleinput);
 int setColor(char* colorinput);
 int setMarked(char* markedinput);
 void applySettings(settingIndex **settings, t1CharValues **values, int items, int valuesCount);
-void settingsMenuView();
+int generateSettingsVars();
 void freeSettingVars();

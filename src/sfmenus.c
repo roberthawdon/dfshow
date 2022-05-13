@@ -29,10 +29,10 @@
 #include "display.h"
 #include "settings.h"
 #include "common.h"
-#include "sf.h"
 #include "colors.h"
 #include "input.h"
 #include "i18n.h"
+#include "sffunctions.h"
 #include "banned.h"
 
 int c;

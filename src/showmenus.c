@@ -69,6 +69,12 @@ int abortinput = 0;
 struct utimbuf touchDate;
 time_t touchTime;
 
+extern settingIndex *settingIndexShow;
+extern t1CharValues *charValuesShow;
+extern t2BinValues *binValuesShow;
+extern int totalCharItemsShow;
+extern int totalBinItemsShow;
+
 extern char *errmessage;
 
 extern results* ob;
@@ -1957,7 +1963,7 @@ void global_menu_inputs()
           global_menu_inputs();
         }
       } else if (*pc == menuHotkeyLookup(globalMenu, "g_config", globalMenuSize)) {
-        settingsMenuView();
+          settingsMenuView(settingsMenuLabel, &settingIndexShow, &charValuesShow, &binValuesShow, totalCharItemsShow, totalBinItemsShow, generateSettingsVars());
         if (historyref == 0){
           clear();
           global_menu_inputs();

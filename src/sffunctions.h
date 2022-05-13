@@ -1,0 +1,18 @@
+#include <limits.h>
+
+#define PROGRAM_NAME "sf"
+#define LINE_WRAP 0
+#define WORD_WRAP 1
+
+int calculateTab(int pos);
+void file_view(char * currentfile);
+void fileShowStatus();
+void loadFile(const char * currentfile);
+void updateView();
+int findInFile(const char * currentfile, const char * search, int charcase);
+void refreshScreen();
+void readConfig(const char * confFile);
+void saveConfig(const char * confFile, settingIndex **settings, t1CharValues **values, t2BinValues **bins, int items, int charIndex, int binIndex);
+void freeSettingVars();
+void applySettings(settingIndex **settings, t1CharValues **values, int items, int valuesCount);
+

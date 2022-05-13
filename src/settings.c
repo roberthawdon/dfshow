@@ -20,16 +20,21 @@
 #define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <ncurses.h>
 #include <string.h>
 #include <libconfig.h>
 #include <wchar.h>
+#include <libintl.h>
 #include <math.h>
+#include "display.h"
 #include "menu.h"
 #include "settings.h"
 #include "colors.h"
 #include "input.h"
+#include "common.h"
 #include "banned.h"
+#include "i18n.h"
 
 menuDef *settingsMenu;
 int settingsMenuSize = 0;
@@ -38,6 +43,19 @@ wchar_t *settingsMenuLabel;
 int settingsPos = 0;
 int settingsBinPos = -1;
 int settingsFreePos = -1;
+
+extern int * pc;
+
+extern char globalConfLocation[4096];
+extern char homeConfLocation[4096];
+
+void readConfig(const char * confFile);
+
+void generateSettingsVars();
+
+void applySettings(settingIndex **settings, t1CharValues **values, int items, int valuesCount);
+
+void saveConfig(const char * confFile, settingIndex **settings, t1CharValues **values, t2BinValues **bins, int items, int charIndex, int binIndex);
 
 void updateSetting(settingIndex **settings, int index, int type, int intSetting)
 {
@@ -173,7 +191,7 @@ void populateBool(t2BinValues **values, char *refLabel, int setting, int maxValu
   }
 }
 
-void adjustBinSetting(settingIndex **settings, t2BinValues **values, char *refLabel, int *setting, int maxValue)
+void adjustBinSetting(settingIndex **settings, t2BinValues **values, char *refLabel, int maxValue)
 {
   int i;
 
@@ -321,3 +339,113 @@ int textValueLookup(t1CharValues **values, int *items, char *refLabel, char *val
 
   return -1;
 }
+
+void settingsMenuView(wchar_t *settingsMenuLabel, settingIndex **settings, t1CharValues **charValues, t2BinValues **binValues, int totalCharItems, int totalBinItems, int totalItems)
+{
+  int count = 0;
+  int x = 2;
+  int y = 3;
+  int markedCount, sortmodeCount, timestyleCount, ownerCount;
+  int sortmodeInt, timestyleInt;
+  int e;
+  char charTempValue[1024];
+
+  clear();
+  wPrintMenu(0,0,settingsMenuLabel);
+
+  // TODO call the settings loader
+
+  while(1)
+    {
+      for (count = 0; count < totalItems; count++){
+      // printSetting(2 + count, 3, settings, charValues, binValues, count, totalCharItems, totalBinItems, settings[count]->type, settings[count]->invert);
+      printSetting(2 + count, 3, settings, charValues, binValues, count, totalCharItems, totalBinItems, (*settings)[count].type, (*settings)[count].invert);
+      }
+
+      move(x + settingsPos, y + 1);
+      *pc = getch10th();
+      if (*pc == menuHotkeyLookup(settingsMenu, "s_quit", settingsMenuSize)){
+        curs_set(FALSE);
+        applySettings(settings, charValues, totalItems, totalCharItems);
+        // free(settings);
+        return;
+      } else if (*pc == menuHotkeyLookup(settingsMenu, "s_revert", settingsMenuSize)){
+        // free(settings);
+        // TODO call the settings loader
+        readConfig(globalConfLocation);
+        readConfig(homeConfLocation);
+        generateSettingsVars();
+      } else if (*pc == menuHotkeyLookup(settingsMenu, "s_save", settingsMenuSize)){
+        applySettings(settings, charValues, totalItems, totalCharItems);
+        if (access(dirFromPath(homeConfLocation), W_OK) != 0) {
+          createParentDirs(homeConfLocation);
+        }
+        saveConfig(homeConfLocation, settings, charValues, binValues, totalItems, totalCharItems, totalBinItems);
+        curs_set(FALSE);
+        topLineMessage(_("Settings saved."));
+        curs_set(TRUE);
+        wPrintMenu(0,0,settingsMenuLabel);
+      } else if (*pc == 258 || *pc == 10){
+        if (settingsPos < (totalItems -1 )){
+          settingsBinPos = -1;
+          settingsPos++;
+        }
+      } else if (*pc == 32 || *pc == 260 || *pc == 261){
+        // Adjust
+        if ((*settings)[settingsPos].type == SETTING_BOOL){
+          if ((*settings)[settingsPos].intSetting > 0){
+            updateSetting(settings, settingsPos, SETTING_BOOL, 0);
+          } else {
+            updateSetting(settings, settingsPos, SETTING_BOOL, 1);
+          }
+        } else if ((*settings)[settingsPos].type == SETTING_SELECT){
+          if (*pc == 32 || *pc == 261){
+            if ((*settings)[settingsPos].intSetting < ((*settings)[settingsPos].maxValue) - 1){
+              updateSetting(settings, settingsPos, SETTING_SELECT, ((*settings)[settingsPos].intSetting) + 1);
+            } else {
+              updateSetting(settings, settingsPos, SETTING_SELECT, 0);
+            }
+          } else {
+            if ((*settings)[settingsPos].intSetting > 0){
+              updateSetting(settings, settingsPos, SETTING_SELECT, ((*settings)[settingsPos].intSetting) - 1);
+            } else {
+              updateSetting(settings, settingsPos, SETTING_SELECT, ((*settings)[settingsPos].maxValue - 1));
+            }
+          }
+        } else if ((*settings)[settingsPos].type == SETTING_MULTI){
+          if (*pc == 261 && (settingsBinPos < ((*settings)[settingsPos].maxValue -1))){
+            settingsBinPos++;
+          } else if (*pc == 260 && (settingsBinPos > -1)){
+            settingsBinPos--;
+          } else if (*pc == 32 && (settingsBinPos > -1)){
+            // Not fond of this, but it should work
+            if (!strcmp((*settings)[settingsPos].refLabel, "owner")){
+              adjustBinSetting(settings, binValues, "owner", totalBinItems);
+            }
+          }
+        } else if ((*settings)[settingsPos].type == SETTING_FREE){
+          if (*pc == 32 || *pc == 261) {
+            settingsFreePos = 0;
+            move(x + settingsPos, y + wcslen((*settings)[settingsPos].textLabel) + 6);
+            e = readline(charTempValue, 1024, (*settings)[settingsPos].charSetting);
+            if (strcmp(charTempValue, "")){
+              free((*settings)[settingsPos].charSetting);
+              (*settings)[settingsPos].charSetting = malloc(sizeof(char) * (strlen(charTempValue) + 1));
+              snprintf((*settings)[settingsPos].charSetting, (strlen(charTempValue) + 1), "%s", charTempValue);
+            }
+            move(x + settingsPos, 0);
+            clrtoeol();
+            settingsFreePos = -1;
+          }
+        }
+      } else if (*pc == 259){
+        if (settingsPos > 0){
+          settingsBinPos = -1;
+          settingsPos--;
+        }
+      }
+    }
+
+}
+
+
