@@ -72,6 +72,12 @@ char regexinput[1024];
 
 long int *filePos;
 
+settingIndex *settingIndexSf;
+t1CharValues *charValuesSf;
+t2BinValues *binValuesSf;
+int totalCharItemsSf;
+int totalBinItemsSf;
+
 extern FILE *file;
 extern int exitCode;
 
@@ -166,102 +172,117 @@ void saveConfig(const char * confFile, settingIndex **settings, t1CharValues **v
 
 }
 
-void settingsMenuView()
+int generateSettingsVars()
 {
-  int items, count = 0;
-  int x = 2;
-  int y = 3;
-  settingIndex *settingIndex;
-  t1CharValues *charValues;
-  t2BinValues *binValues;
-  int charValuesCount;
-  int binValuesCount;
+  uid_t uid=getuid(), euid=geteuid();
+  int items = 0;
+  int charValuesCount = 0;
+  int binValuesCount = 0;
 
- reloadSettings:
+  importSetting(&settingIndexSf, &items, "wrap", _("Enable text wrapping"), SETTING_BOOL, NULL, wrap, -1, 0);
 
-  items = charValuesCount = binValuesCount = 0;
-
-  clear();
-  wPrintMenu(0,0,settingsMenuLabel);
-
-  importSetting(&settingIndex, &items, "wrap", _("Enable text wrapping"), SETTING_BOOL, NULL, wrap, -1, 0);
-
-  while(1)
-    {
-      // if (settingsBinPos < 0){
-      //   curs_set(TRUE);
-      // } else {
-      //   curs_set(FALSE);
-      // }
-      for (count = 0; count < items; count++){
-        printSetting(2 + count, 3, &settingIndex, &charValues, &binValues, count, charValuesCount, binValuesCount, settingIndex[count].type, settingIndex[count].invert);
-      }
-
-      move(x + settingsPos, y + 1);
-      *pc = getch10th();
-      if (*pc == menuHotkeyLookup(settingsMenu, "s_quit", settingsMenuSize)){
-        curs_set(FALSE);
-        applySettings(&settingIndex, &charValues, items, charValuesCount);
-        free(settingIndex);
-        return;
-      } else if (*pc == menuHotkeyLookup(settingsMenu, "s_revert", settingsMenuSize)){
-        free(settingIndex);
-        goto reloadSettings;
-      } else if (*pc == menuHotkeyLookup(settingsMenu, "s_save", settingsMenuSize)){
-        applySettings(&settingIndex, &charValues, items, charValuesCount);
-        if (access(dirFromPath(homeConfLocation), W_OK) != 0) {
-          createParentDirs(homeConfLocation);
-        }
-        saveConfig(homeConfLocation, &settingIndex, &charValues, &binValues, items, charValuesCount, binValuesCount);
-        // Future task: ensure saving actually worked
-        curs_set(FALSE);
-        topLineMessage("Settings saved.");
-        curs_set(TRUE);
-        wPrintMenu(0,0,settingsMenuLabel);
-      } else if (*pc == 258 || *pc == 10){
-        if (settingsPos < (items -1 )){
-          settingsBinPos = -1;
-          settingsPos++;
-        }
-      } else if (*pc == 32 || *pc == 260 || *pc == 261){
-        // Adjust
-        if (settingIndex[settingsPos].type == 0){
-          if (settingIndex[settingsPos].intSetting > 0){
-            updateSetting(&settingIndex, settingsPos, 0, 0);
-          } else {
-            updateSetting(&settingIndex, settingsPos, 0, 1);
-          }
-        } else if (settingIndex[settingsPos].type == 1){
-          if (*pc == 32 || *pc == 261){
-            if (settingIndex[settingsPos].intSetting < (settingIndex[settingsPos].maxValue) - 1){
-              updateSetting(&settingIndex, settingsPos, 1, (settingIndex[settingsPos].intSetting) + 1);
-            } else {
-              updateSetting(&settingIndex, settingsPos, 1, 0);
-            }
-          } else {
-            if (settingIndex[settingsPos].intSetting > 0){
-              updateSetting(&settingIndex, settingsPos, 1, (settingIndex[settingsPos].intSetting) - 1);
-            } else {
-              updateSetting(&settingIndex, settingsPos, 1, (settingIndex[settingsPos].maxValue - 1));
-            }
-          }
-        } else if (settingIndex[settingsPos].type == 2){
-          if (*pc == 261 && (settingsBinPos < (settingIndex[settingsPos].maxValue -1))){
-            settingsBinPos++;
-          } else if (*pc == 260 && (settingsBinPos > -1)){
-            settingsBinPos--;
-          } else if (*pc == 32 && (settingsBinPos > -1)){
-            // Not fond of this, but it should work
-          }
-        }
-      } else if (*pc == 259){
-        if (settingsPos > 0){
-          settingsBinPos = -1;
-          settingsPos--;
-        }
-      }
-    }
+  totalBinItemsSf = binValuesCount;
+  totalCharItemsSf = charValuesCount;
+  return items;
 }
+
+
+// void settingsMenuView()
+// {
+//   int items, count = 0;
+//   int x = 2;
+//   int y = 3;
+//   settingIndex *settingIndex;
+//   t1CharValues *charValues;
+//   t2BinValues *binValues;
+//   int charValuesCount;
+//   int binValuesCount;
+// 
+//  reloadSettings:
+// 
+//   items = charValuesCount = binValuesCount = 0;
+// 
+//   clear();
+//   wPrintMenu(0,0,settingsMenuLabel);
+// 
+//   importSetting(&settingIndex, &items, "wrap", _("Enable text wrapping"), SETTING_BOOL, NULL, wrap, -1, 0);
+// 
+//   while(1)
+//     {
+//       // if (settingsBinPos < 0){
+//       //   curs_set(TRUE);
+//       // } else {
+//       //   curs_set(FALSE);
+//       // }
+//       for (count = 0; count < items; count++){
+//         printSetting(2 + count, 3, &settingIndex, &charValues, &binValues, count, charValuesCount, binValuesCount, settingIndex[count].type, settingIndex[count].invert);
+//       }
+// 
+//       move(x + settingsPos, y + 1);
+//       *pc = getch10th();
+//       if (*pc == menuHotkeyLookup(settingsMenu, "s_quit", settingsMenuSize)){
+//         curs_set(FALSE);
+//         applySettings(&settingIndex, &charValues, items, charValuesCount);
+//         free(settingIndex);
+//         return;
+//       } else if (*pc == menuHotkeyLookup(settingsMenu, "s_revert", settingsMenuSize)){
+//         free(settingIndex);
+//         goto reloadSettings;
+//       } else if (*pc == menuHotkeyLookup(settingsMenu, "s_save", settingsMenuSize)){
+//         applySettings(&settingIndex, &charValues, items, charValuesCount);
+//         if (access(dirFromPath(homeConfLocation), W_OK) != 0) {
+//           createParentDirs(homeConfLocation);
+//         }
+//         saveConfig(homeConfLocation, &settingIndex, &charValues, &binValues, items, charValuesCount, binValuesCount);
+//         // Future task: ensure saving actually worked
+//         curs_set(FALSE);
+//         topLineMessage("Settings saved.");
+//         curs_set(TRUE);
+//         wPrintMenu(0,0,settingsMenuLabel);
+//       } else if (*pc == 258 || *pc == 10){
+//         if (settingsPos < (items -1 )){
+//           settingsBinPos = -1;
+//           settingsPos++;
+//         }
+//       } else if (*pc == 32 || *pc == 260 || *pc == 261){
+//         // Adjust
+//         if (settingIndex[settingsPos].type == 0){
+//           if (settingIndex[settingsPos].intSetting > 0){
+//             updateSetting(&settingIndex, settingsPos, 0, 0);
+//           } else {
+//             updateSetting(&settingIndex, settingsPos, 0, 1);
+//           }
+//         } else if (settingIndex[settingsPos].type == 1){
+//           if (*pc == 32 || *pc == 261){
+//             if (settingIndex[settingsPos].intSetting < (settingIndex[settingsPos].maxValue) - 1){
+//               updateSetting(&settingIndex, settingsPos, 1, (settingIndex[settingsPos].intSetting) + 1);
+//             } else {
+//               updateSetting(&settingIndex, settingsPos, 1, 0);
+//             }
+//           } else {
+//             if (settingIndex[settingsPos].intSetting > 0){
+//               updateSetting(&settingIndex, settingsPos, 1, (settingIndex[settingsPos].intSetting) - 1);
+//             } else {
+//               updateSetting(&settingIndex, settingsPos, 1, (settingIndex[settingsPos].maxValue - 1));
+//             }
+//           }
+//         } else if (settingIndex[settingsPos].type == 2){
+//           if (*pc == 261 && (settingsBinPos < (settingIndex[settingsPos].maxValue -1))){
+//             settingsBinPos++;
+//           } else if (*pc == 260 && (settingsBinPos > -1)){
+//             settingsBinPos--;
+//           } else if (*pc == 32 && (settingsBinPos > -1)){
+//             // Not fond of this, but it should work
+//           }
+//         }
+//       } else if (*pc == 259){
+//         if (settingsPos > 0){
+//           settingsBinPos = -1;
+//           settingsPos--;
+//         }
+//       }
+//     }
+// }
 
 void freeSettingVars()
 {

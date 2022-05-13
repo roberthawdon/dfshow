@@ -50,6 +50,12 @@ menuDef *caseMenu;
 int caseMenuSize = 0;
 wchar_t *caseMenuLabel;
 
+extern settingIndex *settingIndexSf;
+extern t1CharValues *charValuesSf;
+extern t2BinValues *binValuesSf;
+extern int totalCharItemsSf;
+extern int totalBinItemsSf;
+
 extern menuDef *settingsMenu;
 extern int settingsMenuSize;
 extern wchar_t *settingsMenuLabel;
@@ -247,7 +253,7 @@ void show_file_inputs()
         }
         updateView();
       } else if (*pc == menuHotkeyLookup(fileMenu, "f_config", fileMenuSize)){
-        settingsMenuView();
+        settingsMenuView(settingsMenuLabel, &settingIndexSf, &charValuesSf, &binValuesSf, totalCharItemsSf, totalBinItemsSf, generateSettingsVars());
         wPrintMenu(0, 0, fileMenuLabel);
         if(wrap){
           leftcol = 1;

@@ -66,6 +66,12 @@ extern char fileName[4096];
 
 int resized = 0;
 
+extern settingIndex *settingIndexSf;
+extern t1CharValues *charValuesSf;
+extern t2BinValues *binValuesSf;
+extern int totalCharItemsSf;
+extern int totalBinItemsSf;
+
 extern FILE *file;
 
 extern int enableCtrlC;
@@ -90,6 +96,10 @@ extern char globalConfLocation[4096];
 extern char homeConfLocation[4096];
 
 extern char themeName[256];
+
+extern menuDef *settingsMenu;
+extern int settingsMenuSize;
+extern wchar_t *settingsMenuLabel;
 
 void sigwinchHandle(int sig)
 {
@@ -220,7 +230,7 @@ int main(int argc, char *argv[])
   keypad(stdscr, TRUE);
 
   if (launchSettingsMenu == 1) {
-    settingsMenuView();
+    settingsMenuView(settingsMenuLabel, &settingIndexSf, &charValuesSf, &binValuesSf, totalCharItemsSf, totalBinItemsSf, generateSettingsVars());
   } else {
     if (optind < argc){
       snprintf(fileName, 4096, "%s", argv[optind]);
