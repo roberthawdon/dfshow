@@ -97,9 +97,9 @@ extern char homeConfLocation[4096];
 
 extern char themeName[256];
 
-extern menuDef *settingsMenu;
-extern int settingsMenuSize;
-extern wchar_t *settingsMenuLabel;
+extern menuDef *sfSettingsMenu;
+extern int sfSettingsMenuSize;
+extern wchar_t *sfSettingsMenuLabel;
 
 void sigwinchHandle(int sig)
 {
@@ -230,7 +230,7 @@ int main(int argc, char *argv[])
   keypad(stdscr, TRUE);
 
   if (launchSettingsMenu == 1) {
-    settingsMenuView(settingsMenuLabel, &settingIndexSf, &charValuesSf, &binValuesSf, totalCharItemsSf, totalBinItemsSf, generateSfSettingsVars(), "sf");
+    settingsMenuView(sfSettingsMenuLabel, sfSettingsMenuSize, sfSettingsMenu, &settingIndexSf, &charValuesSf, &binValuesSf, totalCharItemsSf, totalBinItemsSf, generateSfSettingsVars(), "sf");
   } else {
     if (optind < argc){
       snprintf(fileName, 4096, "%s", argv[optind]);

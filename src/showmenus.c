@@ -177,13 +177,13 @@ extern menuDef *colorMenu;
 extern int colorMenuSize;
 extern wchar_t *colorMenuLabel;
 
-extern menuDef *settingsMenu;
-extern int settingsMenuSize;
-extern wchar_t *settingsMenuLabel;
+menuDef *showSettingsMenu;
+int showSettingsMenuSize;
+wchar_t *showSettingsMenuLabel;
 
 void modify_owner_input();
 
-void generageDefaultShowMenus(){
+void generateDefaultShowMenus(){
   // Global Menu
   addMenuItem(&globalMenu, &globalMenuSize, "g_colors", _("c!Olors"), 'o');
   addMenuItem(&globalMenu, &globalMenuSize, "g_config", _("!Config"), 'c');
@@ -259,9 +259,9 @@ void generageDefaultShowMenus(){
   addMenuItem(&colorMenu, &colorMenuSize, "c_use", _("!Use"), 'u');
 
   // Setings Menu
-  addMenuItem(&settingsMenu, &settingsMenuSize, "s_quit", _("!Quit"), 'q');
-  addMenuItem(&settingsMenu, &settingsMenuSize, "s_revert", _("!Revert"), 'r');
-  addMenuItem(&settingsMenu, &settingsMenuSize, "s_save", _("!Save"), 's');
+  addMenuItem(&showSettingsMenu, &showSettingsMenuSize, "s_quit", _("!Quit"), 'q');
+  addMenuItem(&showSettingsMenu, &showSettingsMenuSize, "s_revert", _("!Revert"), 'r');
+  addMenuItem(&showSettingsMenu, &showSettingsMenuSize, "s_save", _("!Save"), 's');
 }
 
 void refreshShowMenuLabels(){
@@ -275,7 +275,7 @@ void refreshShowMenuLabels(){
   touchMenuLabel = genMenuDisplayLabel(_("Set Time -"), touchMenu, touchMenuSize, _("(enter = B)"), 1);
   touchDateConfirmMenuLabel = genMenuDisplayLabel(_("Set Time?"), touchDateConfirmMenu, touchDateConfirmMenuSize, _("(enter = N)"), -1);
   colorMenuLabel = genMenuDisplayLabel("", colorMenu, colorMenuSize, "", 1);
-  settingsMenuLabel = genMenuDisplayLabel(_("SHOW Settings Menu -"), settingsMenu, settingsMenuSize, "", 1);
+  showSettingsMenuLabel = genMenuDisplayLabel(_("SHOW Settings Menu -"), showSettingsMenu, showSettingsMenuSize, "", 1);
 }
 
 void unloadShowMenuLabels(){
@@ -288,7 +288,7 @@ void unloadShowMenuLabels(){
   free(touchMenuLabel);
   free(touchDateConfirmMenuLabel);
   free(colorMenuLabel);
-  free(settingsMenuLabel);
+  free(showSettingsMenuLabel);
 }
 
 int sanitizeTopFileRef(int topfileref)
@@ -1965,7 +1965,7 @@ void global_menu_inputs()
           global_menu_inputs();
         }
       } else if (*pc == menuHotkeyLookup(globalMenu, "g_config", globalMenuSize)) {
-          settingsMenuView(settingsMenuLabel, &settingIndexShow, &charValuesShow, &binValuesShow, totalCharItemsShow, totalBinItemsShow, generateShowSettingsVars(), "show");
+          settingsMenuView(showSettingsMenuLabel, showSettingsMenuSize, showSettingsMenu, &settingIndexShow, &charValuesShow, &binValuesShow, totalCharItemsShow, totalBinItemsShow, generateShowSettingsVars(), "show");
         if (historyref == 0){
           clear();
           global_menu_inputs();

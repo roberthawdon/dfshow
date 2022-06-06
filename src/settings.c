@@ -36,10 +36,6 @@
 #include "banned.h"
 #include "i18n.h"
 
-menuDef *settingsMenu;
-int settingsMenuSize = 0;
-wchar_t *settingsMenuLabel;
-
 int settingsPos = 0;
 int settingsBinPos = -1;
 int settingsFreePos = -1;
@@ -373,7 +369,7 @@ int textValueLookup(t1CharValues **values, int *items, char *refLabel, char *val
   return -1;
 }
 
-void settingsMenuView(wchar_t *settingsMenuLabel, settingIndex **settings, t1CharValues **charValues, t2BinValues **binValues, int totalCharItems, int totalBinItems, int totalItems, char *application)
+void settingsMenuView(wchar_t *settingsMenuLabel, int settingsMenuSize, menuDef *settingsMenu, settingIndex **settings, t1CharValues **charValues, t2BinValues **binValues, int totalCharItems, int totalBinItems, int totalItems, char *application)
 {
   int count = 0;
   int x = 2;

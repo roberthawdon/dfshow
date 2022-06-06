@@ -45,6 +45,8 @@ menuDef *caseMenu;
 int caseMenuSize = 0;
 wchar_t *caseMenuLabel;
 
+extern bool parentShow;
+
 extern int c;
 extern int * pc;
 
@@ -56,9 +58,9 @@ extern t2BinValues *binValuesSf;
 extern int totalCharItemsSf;
 extern int totalBinItemsSf;
 
-extern menuDef *settingsMenu;
-extern int settingsMenuSize;
-extern wchar_t *settingsMenuLabel;
+menuDef *sfSettingsMenu;
+int sfSettingsMenuSize;
+wchar_t *sfSettingsMenuLabel;
 
 extern char regexinput[1024];
 extern FILE *file;
@@ -101,21 +103,21 @@ void generateDefaultSfMenus(){
   addMenuItem(&caseMenu, &caseMenuSize, "c2_sensitive", _("!Case-sensitive"), 'c');
 
   // Setings Menu
-  addMenuItem(&settingsMenu, &settingsMenuSize, "s_quit", _("!Quit"), 'q');
-  addMenuItem(&settingsMenu, &settingsMenuSize, "s_revert", _("!Revert"), 'r');
-  addMenuItem(&settingsMenu, &settingsMenuSize, "s_save", _("!Save"), 's');
+  addMenuItem(&sfSettingsMenu, &sfSettingsMenuSize, "s_quit", _("!Quit"), 'q');
+  addMenuItem(&sfSettingsMenu, &sfSettingsMenuSize, "s_revert", _("!Revert"), 'r');
+  addMenuItem(&sfSettingsMenu, &sfSettingsMenuSize, "s_save", _("!Save"), 's');
 }
 
 void refreshSfMenuLabels(){
   sfFileMenuLabel     = genMenuDisplayLabel("", sfFileMenu, sfFileMenuSize, "", 1);
   caseMenuLabel     = genMenuDisplayLabel("", caseMenu, caseMenuSize, _("(enter = I)"), 0);
-  settingsMenuLabel = genMenuDisplayLabel(_("SF Settings Menu -"), settingsMenu, settingsMenuSize, "", 1);
+  sfSettingsMenuLabel = genMenuDisplayLabel(_("SF Settings Menu -"), sfSettingsMenu, sfSettingsMenuSize, "", 1);
 }
 
 void unloadSfMenuLabels(){
   free(sfFileMenuLabel);
   free(caseMenuLabel);
-  free(settingsMenuLabel);
+  free(sfSettingsMenuLabel);
 }
 
 void show_file_find(bool charcase, bool useLast)
@@ -253,7 +255,7 @@ void show_file_inputs()
         }
         updateView();
       } else if (*pc == menuHotkeyLookup(sfFileMenu, "f_config", sfFileMenuSize)){
-        settingsMenuView(settingsMenuLabel, &settingIndexSf, &charValuesSf, &binValuesSf, totalCharItemsSf, totalBinItemsSf, generateSfSettingsVars(), "sf");
+        settingsMenuView(sfSettingsMenuLabel, sfSettingsMenuSize, sfSettingsMenu, &settingIndexSf, &charValuesSf, &binValuesSf, totalCharItemsSf, totalBinItemsSf, generateSfSettingsVars(), "sf");
         wPrintMenu(0, 0, sfFileMenuLabel);
         if(wrap){
           leftcol = 1;
@@ -264,7 +266,11 @@ void show_file_inputs()
         free(longline);
         free(filePos);
         fclose(stream);
-        exittoshell();
+	if (!parentShow){
+          exittoshell();
+	} else {
+          return;
+	}
       } else if (*pc == menuHotkeyLookup(sfFileMenu, "f_wrap", sfFileMenuSize)){
         if (wrap){
           updateMenuItem(&sfFileMenu, &sfFileMenuSize, "f_wrap", _("!Wrap-on"));

@@ -1,4 +1,4 @@
-void generageDefaultShowMenus();
+void generateDefaultShowMenus();
 void refreshShowMenuLabels();
 void unloadShowMenuLabels();
 int touchType();

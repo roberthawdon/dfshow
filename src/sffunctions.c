@@ -54,7 +54,6 @@ int tabsize = 8;
 int wrap = 0;
 int wrapmode = LINE_WRAP;
 
-char fileName[4096];
 
 FILE *stream;
 char *line = NULL;
@@ -74,6 +73,8 @@ t1CharValues *charValuesSf;
 t2BinValues *binValuesSf;
 int totalCharItemsSf;
 int totalBinItemsSf;
+
+extern char fileName[4096];
 
 extern int displaysize;
 extern int displaycount;
@@ -123,7 +124,7 @@ void readSfConfig(const char * confFile)
       }
     }
     // Now for program specific
-    group = config_lookup(&cfg, PROGRAM_NAME);
+    group = config_lookup(&cfg, "sf");
     if (group){
       // Check Wrap
       setting = config_setting_get_member(group, "wrap");
@@ -147,10 +148,10 @@ void saveSfConfig(const char * confFile, settingIndex **settings, t1CharValues *
   config_read_file(&cfg, confFile);
   root = config_root_setting(&cfg);
 
-  group = config_setting_get_member(root, PROGRAM_NAME);
+  group = config_setting_get_member(root, "sf");
 
   if (!group){
-    group = config_setting_add(root, PROGRAM_NAME, CONFIG_TYPE_GROUP);
+    group = config_setting_add(root, "sf", CONFIG_TYPE_GROUP);
   }
 
   for (i = 0; i < items; i++){

@@ -46,6 +46,8 @@ FILE *file;
 int c;
 int * pc = &c;
 
+bool parentShow = false;
+
 int exitCode = 0;
 int enableCtrlC = 0;
 
@@ -63,6 +65,8 @@ int i, s;
 int abortinput = 0;
 
 int displaysize;
+
+char fileName[4096];
 
 extern int * pc;
 

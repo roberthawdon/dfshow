@@ -46,6 +46,7 @@
 #include "display.h"
 #include "config.h"
 #include "showfunctions.h"
+#include "sffunctions.h"
 #include "showmenus.h"
 #include "colors.h"
 #include "show.h"
@@ -163,6 +164,10 @@ int visibleOffset;
 
 int listLen;
 entryLines *el;
+
+extern char fileName[4096];
+
+extern bool parentShow;
 
 extern int displaysize; // Calculate area to print
 
@@ -1573,15 +1578,15 @@ int SendToPager(char* object)
 
   if (access(object, R_OK) == 0){
     originalCmd = malloc(sizeof(char) + 1);
-    if (can_run_command("sf")){
-      if (!useEnvPager){
-        setenv("DFS_THEME_OVERRIDE", "TRUE", 1);
-        originalCmd = realloc(originalCmd, sizeof(char) * 3);
-        snprintf(originalCmd, 3, "sf");
-        noOfArgs = countArguments(originalCmd);
-      }
-    } else {
-      useEnvPager = 1;
+    if (!useEnvPager){
+      // setenv("DFS_THEME_OVERRIDE", "TRUE", 1);
+      // originalCmd = realloc(originalCmd, sizeof(char) * 3);
+      // snprintf(originalCmd, 3, "sf");
+      // noOfArgs = countArguments(originalCmd);
+      snprintf(fileName, 4096, "%s", object);
+      parentShow = true;
+      file_view(fileName);
+      return(0);
     }
   
     if (useEnvPager){

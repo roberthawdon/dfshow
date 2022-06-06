@@ -33,6 +33,7 @@
 #include "config.h"
 #include "showfunctions.h"
 #include "showmenus.h"
+#include "sfmenus.h"
 #include "colors.h"
 #include "menu.h"
 #include "display.h"
@@ -120,9 +121,9 @@ extern int settingsPos;
 extern int settingsBinPos;
 extern int settingsFreePos;
 
-extern menuDef *settingsMenu;
-extern int settingsMenuSize;
-extern wchar_t *settingsMenuLabel;
+extern menuDef *showSettingsMenu;
+extern int showSettingsMenuSize;
+extern wchar_t *showSettingsMenuLabel;
 
 extern int * pc;
 
@@ -1183,11 +1184,14 @@ Valid arguments are:\n\
 
   // Writing Menus
 
-  generageDefaultShowMenus();
+  generateDefaultShowMenus();
+  generateDefaultSfMenus();
+
   set_escdelay(10);
 
   newterm(NULL, stderr, stdin); 
   refreshShowMenuLabels();
+  refreshSfMenuLabels();
 
   memset(&sa, 0, sizeof(struct sigaction));
   sa.sa_handler = sigwinchHandle;
@@ -1212,7 +1216,7 @@ Valid arguments are:\n\
     theme_menu_inputs();
     exittoshell();
   } else if (launchSettingsMenu == 1) {
-    settingsMenuView(settingsMenuLabel, &settingIndexShow, &charValuesShow, &binValuesShow, totalCharItemsShow, totalBinItemsShow, generateShowSettingsVars(), "show");
+    settingsMenuView(showSettingsMenuLabel, showSettingsMenuSize, showSettingsMenu, &settingIndexShow, &charValuesShow, &binValuesShow, totalCharItemsShow, totalBinItemsShow, generateShowSettingsVars(), "show");
     exittoshell();
   } else {
     // Remaining arguments passed as working directory
