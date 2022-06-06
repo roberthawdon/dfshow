@@ -1,6 +1,6 @@
-void generateDefaultMenus();
-void refreshMenuLabels();
-void unloadMenuLabels();
+void generateDefaultSfMenus();
+void refreshSfMenuLabels();
+void unloadSfMenuLabels();
 void show_file_find(bool charcase, bool useLast);
 int show_file_find_case_input();
 void show_file_position_input(int currentpos);

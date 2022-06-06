@@ -20,6 +20,7 @@ typedef struct node {
   struct node * next;
 } node_t;
 
+void refreshScreen(char *application);
 int getch10th (void);
 int setDynamicChar(char **str, const char *format, ...);
 int splitPath(pathDirs **dirStruct, char *path);

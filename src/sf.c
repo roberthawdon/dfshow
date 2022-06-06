@@ -103,7 +103,7 @@ extern wchar_t *settingsMenuLabel;
 
 void sigwinchHandle(int sig)
 {
-  // refreshScreen();
+  // refreshScreenSf();
   resized = 1;
 }
 
@@ -136,8 +136,8 @@ int main(int argc, char *argv[])
 
   // Read the config
 
-  readConfig(globalConfLocation);
-  readConfig(homeConfLocation);
+  readSfConfig(globalConfLocation);
+  readSfConfig(homeConfLocation);
 
   // Check for theme env variable
   if ( getenv("DFS_THEME")) {
@@ -196,7 +196,7 @@ int main(int argc, char *argv[])
     }
   }
 
-  generateDefaultMenus();
+  generateDefaultSfMenus();
 
   set_escdelay(10);
   //ESCDELAY = 10;
@@ -209,7 +209,7 @@ int main(int argc, char *argv[])
   newterm(NULL, stderr, stdin); 
   // initscr();
 
-  refreshMenuLabels();
+  refreshSfMenuLabels();
 
   memset(&sa, 0, sizeof(struct sigaction));
   sa.sa_handler = sigwinchHandle;
@@ -230,7 +230,7 @@ int main(int argc, char *argv[])
   keypad(stdscr, TRUE);
 
   if (launchSettingsMenu == 1) {
-    settingsMenuView(settingsMenuLabel, &settingIndexSf, &charValuesSf, &binValuesSf, totalCharItemsSf, totalBinItemsSf, generateSettingsVars());
+    settingsMenuView(settingsMenuLabel, &settingIndexSf, &charValuesSf, &binValuesSf, totalCharItemsSf, totalBinItemsSf, generateSfSettingsVars(), "sf");
   } else {
     if (optind < argc){
       snprintf(fileName, 4096, "%s", argv[optind]);

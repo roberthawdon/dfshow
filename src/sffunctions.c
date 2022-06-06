@@ -42,7 +42,6 @@
 #include "i18n.h"
 
 
-int displaysize;
 int topline = 1;
 int leftcol = 1;
 int totallines = 0;
@@ -63,10 +62,8 @@ wchar_t *longline = NULL;
 size_t len = 0;
 ssize_t nread;
 int count;
-int displaycount;
 int top, left;
 int lasttop;
-int i, s;
 
 char regexinput[1024];
 
@@ -78,10 +75,15 @@ t2BinValues *binValuesSf;
 int totalCharItemsSf;
 int totalBinItemsSf;
 
+extern int displaysize;
+extern int displaycount;
+
+extern int i, s;
+
 extern FILE *file;
 extern int exitCode;
 
-extern wchar_t *fileMenuLabel;
+extern wchar_t *sfFileMenuLabel;
 extern char themeName[256];
 extern int enableCtrlC;
 
@@ -97,7 +99,7 @@ extern menuDef *settingsMenu;
 extern int settingsMenuSize;
 extern wchar_t *settingsMenuLabel;
 
-void readConfig(const char * confFile)
+void readSfConfig(const char * confFile)
 {
   config_t cfg;
   config_setting_t *setting, *group;
@@ -134,7 +136,7 @@ void readConfig(const char * confFile)
   }
 }
 
-void saveConfig(const char * confFile, settingIndex **settings, t1CharValues **values, t2BinValues **bins, int items, int charIndex, int binIndex)
+void saveSfConfig(const char * confFile, settingIndex **settings, t1CharValues **values, t2BinValues **bins, int items, int charIndex, int binIndex)
 {
   config_t cfg;
   config_setting_t *root, *setting, *group;
@@ -172,9 +174,8 @@ void saveConfig(const char * confFile, settingIndex **settings, t1CharValues **v
 
 }
 
-int generateSettingsVars()
+int generateSfSettingsVars()
 {
-  uid_t uid=getuid(), euid=geteuid();
   int items = 0;
   int charValuesCount = 0;
   int binValuesCount = 0;
@@ -186,23 +187,23 @@ int generateSettingsVars()
   return items;
 }
 
-void freeSettingVars()
-{
-  return;
-}
+// void freeSettingVars()
+// {
+//   return;
+// }
 
-void refreshScreen()
+void refreshScreenSf()
 {
   endwin();
   clear();
   refresh();
   displaysize = LINES - 2;
-  unloadMenuLabels();
-  refreshMenuLabels();
+  unloadSfMenuLabels();
+  refreshSfMenuLabels();
   if (viewmode == 0){
     mvprintw(0,0,_("Show File - Enter pathname:"));
   } else if (viewmode > 0){
-    wPrintMenu(0, 0, fileMenuLabel);
+    wPrintMenu(0, 0, sfFileMenuLabel);
     loadFile(fileName);
   }
 }
@@ -388,7 +389,7 @@ void file_view(char * currentfile)
   return;
 }
 
-void applySettings(settingIndex **settings, t1CharValues **values, int items, int valuesCount)
+void applySfSettings(settingIndex **settings, t1CharValues **values, int items, int valuesCount)
 {
   int i;
   for (i = 0; i < items; i++){

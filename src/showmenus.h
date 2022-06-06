@@ -1,6 +1,6 @@
-void generateDefaultMenus();
-void refreshMenuLabels();
-void unloadMenuLabels();
+void generageDefaultShowMenus();
+void refreshShowMenuLabels();
+void unloadShowMenuLabels();
 int touchType();
 time_t touchTimeInput(int type);
 int symLinkLocation();

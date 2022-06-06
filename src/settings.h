@@ -35,6 +35,7 @@ typedef struct {
   char settingLabel[16];
 } t3TextValues;
 
+void settingsAction(char *action, char *application, wchar_t *settingsMenuLabel, settingIndex **settings, t1CharValues **charValues, t2BinValues **binValues, int totalCharItems, int totalBinItems, int totalItems, const char * confFile);
 void addT1CharValue(t1CharValues **values, int *totalItems, int *maxItem, char *refLabel, char *value);
 void addT2BinValue(t2BinValues **values, int *totalItems, int *maxItem, char *refLabel, char *settingLabel, int reset);
 void populateBool(t2BinValues **values, char *refLabel, int setting, int maxValue);
@@ -44,4 +45,4 @@ void updateSetting(settingIndex **settings, int index, int type, int intSetting)
 int intSettingValue(int *setting, int newValue);
 void printSetting(int line, int col, settingIndex **settings, t1CharValues **values, t2BinValues **bins, int index, int charIndex, int binIndex, int type, int invert);
 int textValueLookup(t1CharValues **values, int *items, char *refLabel, char *value);
-void settingsMenuView(wchar_t *settingsMenuLabel, settingIndex **settings, t1CharValues **charValues, t2BinValues **binValues, int totalCharItems, int totalBinItems, int totalItems);
+void settingsMenuView(wchar_t *settingsMenuLabel, settingIndex **settings, t1CharValues **charValues, t2BinValues **binValues, int totalCharItems, int totalBinItems, int totalItems, char *application);

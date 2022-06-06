@@ -144,7 +144,7 @@ extern int exitCode;
 extern int enableCtrlC;
 
 extern wchar_t *globalMenuLabel;
-extern wchar_t *fileMenuLabel;
+extern wchar_t *showFileMenuLabel;
 extern wchar_t *functionMenuLabel;
 extern wchar_t *modifyMenuLabel;
 extern wchar_t *sortMenuLabel;
@@ -156,7 +156,7 @@ extern int xattrPos;
 int setMarked(char* markedinput);
 int checkStyle(char* styleinput);
 
-void readConfig(const char * confFile)
+void readShowConfig(const char * confFile)
 {
   config_t cfg;
   config_setting_t *setting, *group, *array;
@@ -379,7 +379,7 @@ void readConfig(const char * confFile)
   config_destroy(&cfg);
 }
 
-void saveConfig(const char * confFile, settingIndex **settings, t1CharValues **values, t2BinValues **bins, int items, int charIndex, int binIndex)
+void saveShowConfig(const char * confFile, settingIndex **settings, t1CharValues **values, t2BinValues **bins, int items, int charIndex, int binIndex)
 {
   config_t cfg;
   config_setting_t *root, *setting, *group, *subgroup;
@@ -473,7 +473,7 @@ void saveConfig(const char * confFile, settingIndex **settings, t1CharValues **v
   config_destroy(&cfg);
 }
 
-void applySettings(settingIndex **settings, t1CharValues **values, int items, int valuesCount)
+void applyShowSettings(settingIndex **settings, t1CharValues **values, int items, int valuesCount)
 {
   int i, j;
   for (i = 0; i < items; i++){
@@ -539,7 +539,7 @@ void applySettings(settingIndex **settings, t1CharValues **values, int items, in
   }
 }
 
-int generateSettingsVars()
+int generateShowSettingsVars()
 {
   uid_t uid=getuid(), euid=geteuid();
   int items = 0;
@@ -618,7 +618,7 @@ int directory_view(char * currentpwd)
   setColors(COMMAND_PAIR);
 
 
-  wPrintMenu(0, 0, fileMenuLabel);
+  wPrintMenu(0, 0, showFileMenuLabel);
 
   set_history(currentpwd, "", "", 0, 0);
   freeResults(ob, totalfilecount);
@@ -774,7 +774,7 @@ int setBlockSize(const char * arg){
     return returnCode;
 }
 
-void refreshScreen()
+void refreshScreenShow()
 {
   endwin();
   clear();
@@ -783,12 +783,12 @@ void refreshScreen()
   curs_set(FALSE);
   keypad(stdscr, TRUE);
   refresh();
-  unloadMenuLabels();
-  refreshMenuLabels();
+  unloadShowMenuLabels();
+  refreshShowMenuLabels();
   switch(viewMode)
     {
     case 0:
-      wPrintMenu(0, 0, fileMenuLabel);
+      wPrintMenu(0, 0, showFileMenuLabel);
       wPrintMenu(LINES-1, 0, functionMenuLabel);
       resizeDisplayDir(ob);
       break;
@@ -891,11 +891,11 @@ Exit status:\n\
   printf ("\nPlease report any bugs to: <%s>\n", PACKAGE_BUGREPORT);
 }
 
-void freeSettingVars()
-{
-  free(visualPath);
-  return;
-}
+// void freeSettingVars()
+// {
+//   free(visualPath);
+//   return;
+// }
 
 int main(int argc, char *argv[])
 {
@@ -957,8 +957,8 @@ int main(int argc, char *argv[])
 
   // Read the config
 
-  readConfig(globalConfLocation);
-  readConfig(homeConfLocation);
+  readShowConfig(globalConfLocation);
+  readShowConfig(homeConfLocation);
 
   // Check for theme env variable
   if ( getenv("DFS_THEME")) {
@@ -1183,11 +1183,11 @@ Valid arguments are:\n\
 
   // Writing Menus
 
-  generateDefaultMenus();
+  generageDefaultShowMenus();
   set_escdelay(10);
 
   newterm(NULL, stderr, stdin); 
-  refreshMenuLabels();
+  refreshShowMenuLabels();
 
   memset(&sa, 0, sizeof(struct sigaction));
   sa.sa_handler = sigwinchHandle;
@@ -1205,14 +1205,14 @@ Valid arguments are:\n\
   curs_set(FALSE); // Hide Curser (Will want to bring it back later)
   keypad(stdscr, TRUE);
 
-  generateSettingsVars();
+  generateShowSettingsVars();
 
   if (launchThemeEditor == 1){
     themeBuilder();
     theme_menu_inputs();
     exittoshell();
   } else if (launchSettingsMenu == 1) {
-    settingsMenuView(settingsMenuLabel, &settingIndexShow, &charValuesShow, &binValuesShow, totalCharItemsShow, totalBinItemsShow, generateSettingsVars());
+    settingsMenuView(settingsMenuLabel, &settingIndexShow, &charValuesShow, &binValuesShow, totalCharItemsShow, totalBinItemsShow, generateShowSettingsVars(), "show");
     exittoshell();
   } else {
     // Remaining arguments passed as working directory

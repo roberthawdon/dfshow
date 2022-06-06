@@ -126,8 +126,6 @@ int topfileref = 0;
 int lineStart = 0;
 int hpos = 0;
 int maxdisplaywidth;
-int displaysize; // Calculate area to print
-int displaycount;
 int historyref = 0;
 int sessionhistory = 0;
 int displaystart;
@@ -165,6 +163,10 @@ int visibleOffset;
 
 int listLen;
 entryLines *el;
+
+extern int displaysize; // Calculate area to print
+
+extern int displaycount;
 
 extern char block_unit[4];
 
@@ -1503,7 +1505,7 @@ void LaunchShell()
   // write(STDOUT_FILENO, "\nUse 'exit' to return to Show.\n\n", 32);
   printf(_("\nUse 'exit' to return to Show.\n\n"));
   system(getenv("SHELL"));
-  refreshScreen();
+  refreshScreenShow();
 }
 
 void LaunchExecutable(const char* object, const char* args)
@@ -1513,7 +1515,7 @@ void LaunchExecutable(const char* object, const char* args)
   system("clear"); // Just to be sure
   system(command);
   free(command);
-  refreshScreen();
+  refreshScreenShow();
 }
 
 void copy_file(char *source_input, char *target_input, mode_t mode)

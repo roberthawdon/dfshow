@@ -43,6 +43,9 @@
 DIR *folder;
 FILE *file;
 
+int c;
+int * pc = &c;
+
 int exitCode = 0;
 int enableCtrlC = 0;
 
@@ -53,22 +56,41 @@ char themeName[128] = "default";
 
 char *errmessage;
 
+int displaycount;
+
+int i, s;
+
+int abortinput = 0;
+
+int displaysize;
+
 extern int * pc;
 
 extern int resized;
 
-void refreshScreen(); // This reference needs to exist to allow getch10th to be common.
+void refreshScreenShow();
+void refreshScreenSf();
 
-void unloadMenuLabels();
+void refreshScreen(char *application)
+{
 
-void freeSettingVars();
+  if ( !strcmp(application, "show") ){
+    refreshScreenShow();
+  } else if ( !strcmp(application, "sf" ) ) {
+    refreshScreenSf();
+  }
+}
+
+// void unloadMenuLabels();
+
+// void freeSettingVars();
 
 int getch10th (void) {
   int ch;
   do {
     if (resized) {
       resized = 0;
-      refreshScreen();
+      refreshScreen("show");
     }
     halfdelay (1);
     ch = getch();
@@ -214,8 +236,8 @@ void setConfLocations()
 int exittoshell()
 {
   clear();
-  unloadMenuLabels();
-  freeSettingVars();
+  // unloadMenuLabels();
+  // freeSettingVars();
   endwin();
   exit(exitCode);
   return exitCode;
@@ -683,7 +705,7 @@ int launchExternalCommand(char *cmd, char **args, ushort_t mode)
     waitpid(pid, &status, 0);
     sigprocmask(SIG_SETMASK, &oldMask, NULL);
   }
-  refreshScreen();
+  refreshScreen("show");
   return 0;
 }
 

@@ -29,7 +29,8 @@ LDADD += -lselinux
 endif
 
 bin_PROGRAMS = $(top_builddir)/bin/show $(top_builddir)/bin/sf
-__top_builddir__bin_show_SOURCES = $(top_builddir)/src/show.c $(top_builddir)/src/showfunctions.c $(top_builddir)/src/sffunctions.c $(top_builddir)/src/showmenus.c $(top_builddir)/src/colors.c $(top_builddir)/src/common.c $(top_builddir)/src/menu.c $(top_builddir)/src/input.c $(top_builddir)/src/display.c $(top_builddir)/src/settings.c $(top_builddir)/src/i18n.c
+__top_builddir__bin_show_SOURCES = $(top_builddir)/src/show.c $(top_builddir)/src/showfunctions.c $(top_builddir)/src/sffunctions.c $(top_builddir)/src/showmenus.c $(top_builddir)/src/sfmenus.c $(top_builddir)/src/colors.c $(top_builddir)/src/common.c $(top_builddir)/src/menu.c $(top_builddir)/src/input.c $(top_builddir)/src/display.c $(top_builddir)/src/settings.c $(top_builddir)/src/i18n.c
+# __top_builddir__bin_show_SOURCES = $(top_builddir)/src/show.c $(top_builddir)/src/showfunctions.c $(top_builddir)/src/showmenus.c $(top_builddir)/src/colors.c $(top_builddir)/src/common.c $(top_builddir)/src/menu.c $(top_builddir)/src/input.c $(top_builddir)/src/display.c $(top_builddir)/src/settings.c $(top_builddir)/src/i18n.c
 __top_builddir__bin_show_LDADD = $(LDADD)
 __top_builddir__bin_sf_SOURCES = $(top_builddir)/src/sf.c $(top_builddir)/src/sffunctions.c $(top_builddir)/src/sfmenus.c $(top_builddir)/src/colors.c $(top_builddir)/src/common.c $(top_builddir)/src/menu.c $(top_builddir)/src/input.c $(top_builddir)/src/display.c $(top_builddir)/src/settings.c $(top_builddir)/src/i18n.c
 __top_builddir__bin_sf_LDADD = $(LDADD)

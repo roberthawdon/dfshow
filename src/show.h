@@ -23,18 +23,18 @@ enum
    GETOPT_BLOCKSIZE_CHAR = (CHAR_MIN - 18)
   };
 
-void readConfig(const char * confFile);
-void saveConfig(const char * confFile, settingIndex **settings, t1CharValues **values, t2BinValues **bins, int items, int charIndex, int binIndex);
+void readShowConfig(const char * confFile);
+void saveShowConfig(const char * confFile, settingIndex **settings, t1CharValues **values, t2BinValues **bins, int items, int charIndex, int binIndex);
 int directory_view(char * currentpwd);
 char *getcwd(char *buf, size_t size);
 int global_menu();
-void refreshScreen();
+void refreshScreenShow();
 int exittoshell();
 int setBlockSize(const char * arg);
 void printHelp(char* programName);
 int checkStyle(char* styleinput);
 int setColor(char* colorinput);
 int setMarked(char* markedinput);
-void applySettings(settingIndex **settings, t1CharValues **values, int items, int valuesCount);
-int generateSettingsVars();
-void freeSettingVars();
+void applyShowSettings(settingIndex **settings, t1CharValues **values, int items, int valuesCount);
+int generateShowSettingsVars();
+// void freeSettingVars();

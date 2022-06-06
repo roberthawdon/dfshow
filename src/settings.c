@@ -49,19 +49,52 @@ extern int * pc;
 extern char globalConfLocation[4096];
 extern char homeConfLocation[4096];
 
-void readConfig(const char * confFile);
-
-void generateSettingsVars();
-
-void applySettings(settingIndex **settings, t1CharValues **values, int items, int valuesCount);
-
-void saveConfig(const char * confFile, settingIndex **settings, t1CharValues **values, t2BinValues **bins, int items, int charIndex, int binIndex);
-
 void updateSetting(settingIndex **settings, int index, int type, int intSetting)
 {
   // To-Do, do a verification on the type
 
   (*settings)[index].intSetting = intSetting;
+}
+
+void readShowConfig(const char * confFile);
+void readSfConfig(const char * confFile);
+
+void generateShowSettingsVars();
+void generateSfSettingsVars();
+
+void applyShowSettings(settingIndex **settings, t1CharValues **values, int items, int valuesCount);
+void applySfSettings(settingIndex **settings, t1CharValues **values, int items, int valuesCount);
+
+void saveShowConfig(const char * confFile, settingIndex **settings, t1CharValues **values, t2BinValues **bins, int items, int charIndex, int binIndex);
+void saveSfConfig(const char * confFile, settingIndex **settings, t1CharValues **values, t2BinValues **bins, int items, int charIndex, int binIndex);
+
+void settingsAction(char *action, char *application, wchar_t *settingsMenuLabel, settingIndex **settings, t1CharValues **charValues, t2BinValues **binValues, int totalCharItems, int totalBinItems, int totalItems, const char * confFile)
+{
+  if ( !strcmp(action, "generate" ) ){
+    if ( !strcmp(application, "show" )){
+      generateShowSettingsVars();
+    } else if ( !strcmp(application, "sf" ) ) {
+      generateSfSettingsVars();
+    }
+  } else if ( !strcmp(action, "apply" ) ) {
+    if ( !strcmp(application, "show" )){
+      applyShowSettings(settings, charValues, totalItems, totalCharItems);
+    } else if ( !strcmp(application, "sf" ) ) {
+      applySfSettings(settings, charValues, totalItems, totalCharItems);
+    }
+  } else if ( !strcmp(action, "save" ) ) {
+    if ( !strcmp(application, "show" )){
+      saveShowConfig(confFile, settings, charValues, binValues, totalItems, totalCharItems, totalBinItems);
+    } else if ( !strcmp(application, "sf" ) ) {
+      saveSfConfig(confFile, settings, charValues, binValues, totalItems, totalCharItems, totalBinItems);
+    }
+  } else if ( !strcmp(action, "read" ) ) {
+    if ( !strcmp(application, "show" )){
+      readShowConfig(confFile);
+    } else if ( !strcmp(application, "sf" ) ) {
+      readSfConfig(confFile);
+    }
+  }
 }
 
 void addT1CharValue(t1CharValues **values, int *totalItems, int *maxItem, char *refLabel, char *value)
@@ -340,7 +373,7 @@ int textValueLookup(t1CharValues **values, int *items, char *refLabel, char *val
   return -1;
 }
 
-void settingsMenuView(wchar_t *settingsMenuLabel, settingIndex **settings, t1CharValues **charValues, t2BinValues **binValues, int totalCharItems, int totalBinItems, int totalItems)
+void settingsMenuView(wchar_t *settingsMenuLabel, settingIndex **settings, t1CharValues **charValues, t2BinValues **binValues, int totalCharItems, int totalBinItems, int totalItems, char *application)
 {
   int count = 0;
   int x = 2;
@@ -366,21 +399,21 @@ void settingsMenuView(wchar_t *settingsMenuLabel, settingIndex **settings, t1Cha
       *pc = getch10th();
       if (*pc == menuHotkeyLookup(settingsMenu, "s_quit", settingsMenuSize)){
         curs_set(FALSE);
-        applySettings(settings, charValues, totalItems, totalCharItems);
+        settingsAction("apply", application, NULL, settings, charValues, NULL, totalCharItems, 0, totalItems, NULL);
         // free(settings);
         return;
       } else if (*pc == menuHotkeyLookup(settingsMenu, "s_revert", settingsMenuSize)){
         // free(settings);
         // TODO call the settings loader
-        readConfig(globalConfLocation);
-        readConfig(homeConfLocation);
-        generateSettingsVars();
+        settingsAction("read", NULL, NULL, NULL, NULL, NULL, 0, 0, 0, globalConfLocation);
+        settingsAction("read", NULL, NULL, NULL, NULL, NULL, 0, 0, 0, homeConfLocation);
+        settingsAction("generate", application, NULL, NULL, NULL, NULL, 0, 0, 0, NULL);
       } else if (*pc == menuHotkeyLookup(settingsMenu, "s_save", settingsMenuSize)){
-        applySettings(settings, charValues, totalItems, totalCharItems);
+        settingsAction("apply", application, NULL, settings, charValues, NULL, totalCharItems, 0, totalItems, NULL);
         if (access(dirFromPath(homeConfLocation), W_OK) != 0) {
           createParentDirs(homeConfLocation);
         }
-        saveConfig(homeConfLocation, settings, charValues, binValues, totalItems, totalCharItems, totalBinItems);
+        settingsAction("save", application, NULL, settings, charValues, binValues, totalCharItems, totalBinItems, totalItems, homeConfLocation);
         curs_set(FALSE);
         topLineMessage(_("Settings saved."));
         curs_set(TRUE);
