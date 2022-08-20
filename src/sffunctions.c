@@ -368,9 +368,11 @@ void loadFile(const char * currentfile)
 void file_view(char * currentfile)
 {
   char *notFoundMessage;
+
+  topline = 1;
+
   clear();
   setColors(COMMAND_PAIR);
-
 
   displaysize = LINES - 2;
 

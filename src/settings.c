@@ -69,31 +69,47 @@ void settingsAction(char *action, char *application, wchar_t *settingsMenuLabel,
 
   if ( !strcmp(action, "generate" ) ){
     #ifdef APPLICATION_SHOW
-      generateShowSettingsVars();
+      if (!strcmp(application, "show")) {
+        generateShowSettingsVars();
+      }
     #endif
     #ifdef APPLICATION_SF
-      generateSfSettingsVars();
+      if (!strcmp(application, "sf")) {
+        generateSfSettingsVars();
+      }
     #endif
   } else if ( !strcmp(action, "apply" ) ) {
     #ifdef APPLICATION_SHOW
-      applyShowSettings(settings, charValues, totalItems, totalCharItems);
+      if (!strcmp(application, "show")) {
+        applyShowSettings(settings, charValues, totalItems, totalCharItems);
+      }
     #endif
     #ifdef APPLICATION_SF
-      applySfSettings(settings, charValues, totalItems, totalCharItems);
+      if (!strcmp(application, "sf")) {
+        applySfSettings(settings, charValues, totalItems, totalCharItems);
+      }
     #endif
   } else if ( !strcmp(action, "save" ) ) {
     #ifdef APPLICATION_SHOW
-      saveShowConfig(confFile, settings, charValues, binValues, totalItems, totalCharItems, totalBinItems);
+      if (!strcmp(application, "show")) {
+        saveShowConfig(confFile, settings, charValues, binValues, totalItems, totalCharItems, totalBinItems);
+      }
     #endif
     #ifdef APPLICATION_SF
-      saveSfConfig(confFile, settings, charValues, binValues, totalItems, totalCharItems, totalBinItems);
+      if (!strcmp(application, "sf")) {
+        saveSfConfig(confFile, settings, charValues, binValues, totalItems, totalCharItems, totalBinItems);
+      }
     #endif
   } else if ( !strcmp(action, "read" ) ) {
     #ifdef APPLICATION_SHOW
-      readShowConfig(confFile);
+      if (!strcmp(application, "show")) {
+        readShowConfig(confFile);
+      }
     #endif
     #ifdef APPLICATION_SF
-      readSfConfig(confFile);
+      if (!strcmp(application, "sf")) {
+        readSfConfig(confFile);
+      }
     #endif
   }
 }
