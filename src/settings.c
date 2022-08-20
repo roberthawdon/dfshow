@@ -55,8 +55,8 @@ void updateSetting(settingIndex **settings, int index, int type, int intSetting)
 void readShowConfig(const char * confFile);
 void readSfConfig(const char * confFile);
 
-void generateShowSettingsVars();
-void generateSfSettingsVars();
+int generateShowSettingsVars();
+int generateSfSettingsVars();
 
 void applyShowSettings(settingIndex **settings, t1CharValues **values, int items, int valuesCount);
 void applySfSettings(settingIndex **settings, t1CharValues **values, int items, int valuesCount);
@@ -66,30 +66,35 @@ void saveSfConfig(const char * confFile, settingIndex **settings, t1CharValues *
 
 void settingsAction(char *action, char *application, wchar_t *settingsMenuLabel, settingIndex **settings, t1CharValues **charValues, t2BinValues **binValues, int totalCharItems, int totalBinItems, int totalItems, const char * confFile)
 {
+
   if ( !strcmp(action, "generate" ) ){
-    if ( !strcmp(application, "show" )){
+    #ifdef APPLICATION_SHOW
       generateShowSettingsVars();
-    } else if ( !strcmp(application, "sf" ) ) {
+    #endif
+    #ifdef APPLICATION_SF
       generateSfSettingsVars();
-    }
+    #endif
   } else if ( !strcmp(action, "apply" ) ) {
-    if ( !strcmp(application, "show" )){
+    #ifdef APPLICATION_SHOW
       applyShowSettings(settings, charValues, totalItems, totalCharItems);
-    } else if ( !strcmp(application, "sf" ) ) {
+    #endif
+    #ifdef APPLICATION_SF
       applySfSettings(settings, charValues, totalItems, totalCharItems);
-    }
+    #endif
   } else if ( !strcmp(action, "save" ) ) {
-    if ( !strcmp(application, "show" )){
+    #ifdef APPLICATION_SHOW
       saveShowConfig(confFile, settings, charValues, binValues, totalItems, totalCharItems, totalBinItems);
-    } else if ( !strcmp(application, "sf" ) ) {
+    #endif
+    #ifdef APPLICATION_SF
       saveSfConfig(confFile, settings, charValues, binValues, totalItems, totalCharItems, totalBinItems);
-    }
+    #endif
   } else if ( !strcmp(action, "read" ) ) {
-    if ( !strcmp(application, "show" )){
+    #ifdef APPLICATION_SHOW
       readShowConfig(confFile);
-    } else if ( !strcmp(application, "sf" ) ) {
+    #endif
+    #ifdef APPLICATION_SF
       readSfConfig(confFile);
-    }
+    #endif
   }
 }
 

@@ -77,12 +77,16 @@ void refreshScreenSf();
 
 void refreshScreen(char *application)
 {
-
-  if ( !strcmp(application, "show") ){
-    refreshScreenShow();
-  } else if ( !strcmp(application, "sf" ) ) {
-    refreshScreenSf();
-  }
+  #ifdef APPLICATION_SHOW
+    if (!strcmp(application, "show")) {
+      refreshScreenShow();
+    }
+  #endif
+  #ifdef APPLICATION_SF
+    if (!strcmp(application, "sf")) {
+      refreshScreenSf();
+    }
+  #endif
 }
 
 // void unloadMenuLabels();
