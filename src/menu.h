@@ -1,11 +1,5 @@
 #include <wchar.h>
-
-typedef struct {
-  char refLabel[16];
-  wchar_t displayLabel[32];
-  int hotKey;
-  int displayLabelSize;
-} menuDef;
+#include "customtypes.h"
 
 int cmp_menu_ref(const void *lhs, const void *rhs);
 void addMenuItem(menuDef **dfMenu, int *pos, char* refLabel, char* displayLabel, int defaultHotKey);

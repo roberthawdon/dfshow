@@ -45,9 +45,6 @@
 #include "banned.h"
 #include "i18n.h"
 
-int c;
-int * pc = &c;
-
 char chpwd[4096];
 char selfile[4096];
 
@@ -57,17 +54,28 @@ char uids[24];
 char gids[24];
 char currentfilename[512];
 
-int s;
 char *buf;
 char *rewrite;
 
 int blockstart = -1;
 int blockend = -1;
 
-int abortinput = 0;
 
 struct utimbuf touchDate;
 time_t touchTime;
+
+extern int c;
+extern int * pc;
+
+extern int abortinput;
+
+extern int s;
+
+extern settingIndex *settingIndexShow;
+extern t1CharValues *charValuesShow;
+extern t2BinValues *binValuesShow;
+extern int totalCharItemsShow;
+extern int totalBinItemsShow;
 
 extern char *errmessage;
 
@@ -131,9 +139,9 @@ menuDef *globalMenu;
 int globalMenuSize = 0;
 wchar_t *globalMenuLabel;
 
-menuDef *fileMenu;
-int fileMenuSize = 0;
-wchar_t *fileMenuLabel;
+menuDef *showFileMenu;
+int showFileMenuSize = 0;
+wchar_t *showFileMenuLabel;
 
 menuDef *functionMenu;
 int functionMenuSize = 0;
@@ -169,13 +177,13 @@ extern menuDef *colorMenu;
 extern int colorMenuSize;
 extern wchar_t *colorMenuLabel;
 
-extern menuDef *settingsMenu;
-extern int settingsMenuSize;
-extern wchar_t *settingsMenuLabel;
+menuDef *showSettingsMenu;
+int showSettingsMenuSize;
+wchar_t *showSettingsMenuLabel;
 
 void modify_owner_input();
 
-void generateDefaultMenus(){
+void generateDefaultShowMenus(){
   // Global Menu
   addMenuItem(&globalMenu, &globalMenuSize, "g_colors", _("c!Olors"), 'o');
   addMenuItem(&globalMenu, &globalMenuSize, "g_config", _("!Config"), 'c');
@@ -188,21 +196,21 @@ void generateDefaultMenus(){
   addMenuItem(&globalMenu, &globalMenuSize, "g_touch", _("!Touch file"), 't');
 
   // File Menu
-  addMenuItem(&fileMenu, &fileMenuSize, "f_copy", _("!Copy"), 'c');
-  addMenuItem(&fileMenu, &fileMenuSize, "f_delete", _("!Delete"), 'd');
-  addMenuItem(&fileMenu, &fileMenuSize, "f_edit", _("!Edit"), 'e');
-  addMenuItem(&fileMenu, &fileMenuSize, "f_hidden", _("!Hidden"), 'h');
-  addMenuItem(&fileMenu, &fileMenuSize, "f_link", _("!Link"), 'l');
-  addMenuItem(&fileMenu, &fileMenuSize, "f_modify", _("!Modify"), 'm');
+  addMenuItem(&showFileMenu, &showFileMenuSize, "f_copy", _("!Copy"), 'c');
+  addMenuItem(&showFileMenu, &showFileMenuSize, "f_delete", _("!Delete"), 'd');
+  addMenuItem(&showFileMenu, &showFileMenuSize, "f_edit", _("!Edit"), 'e');
+  addMenuItem(&showFileMenu, &showFileMenuSize, "f_hidden", _("!Hidden"), 'h');
+  addMenuItem(&showFileMenu, &showFileMenuSize, "f_link", _("!Link"), 'l');
+  addMenuItem(&showFileMenu, &showFileMenuSize, "f_modify", _("!Modify"), 'm');
   if (plugins){
-    addMenuItem(&fileMenu, &fileMenuSize, "f_plugin", _("!Plugin"), 'p');
+    addMenuItem(&showFileMenu, &showFileMenuSize, "f_plugin", _("!Plugin"), 'p');
   }
-  addMenuItem(&fileMenu, &fileMenuSize, "f_quit", _("!Quit"), 'q');
-  addMenuItem(&fileMenu, &fileMenuSize, "f_rename", _("!Rename"), 'r');
-  addMenuItem(&fileMenu, &fileMenuSize, "f_show", _("!Show"), 's');
-  addMenuItem(&fileMenu, &fileMenuSize, "f_touch", _("!Touch"), 't');
-  addMenuItem(&fileMenu, &fileMenuSize, "f_uhunt", _("h!Unt"), 'u');
-  addMenuItem(&fileMenu, &fileMenuSize, "f_xexec", _("e!Xec"), 'x');
+  addMenuItem(&showFileMenu, &showFileMenuSize, "f_quit", _("!Quit"), 'q');
+  addMenuItem(&showFileMenu, &showFileMenuSize, "f_rename", _("!Rename"), 'r');
+  addMenuItem(&showFileMenu, &showFileMenuSize, "f_show", _("!Show"), 's');
+  addMenuItem(&showFileMenu, &showFileMenuSize, "f_touch", _("!Touch"), 't');
+  addMenuItem(&showFileMenu, &showFileMenuSize, "f_uhunt", _("h!Unt"), 'u');
+  addMenuItem(&showFileMenu, &showFileMenuSize, "f_xexec", _("e!Xec"), 'x');
 
   // Function Menu
   addMenuItem(&functionMenu, &functionMenuSize, "f_01", _("<F1>-Down"), 265);
@@ -251,14 +259,14 @@ void generateDefaultMenus(){
   addMenuItem(&colorMenu, &colorMenuSize, "c_use", _("!Use"), 'u');
 
   // Setings Menu
-  addMenuItem(&settingsMenu, &settingsMenuSize, "s_quit", _("!Quit"), 'q');
-  addMenuItem(&settingsMenu, &settingsMenuSize, "s_revert", _("!Revert"), 'r');
-  addMenuItem(&settingsMenu, &settingsMenuSize, "s_save", _("!Save"), 's');
+  addMenuItem(&showSettingsMenu, &showSettingsMenuSize, "s_quit", _("!Quit"), 'q');
+  addMenuItem(&showSettingsMenu, &showSettingsMenuSize, "s_revert", _("!Revert"), 'r');
+  addMenuItem(&showSettingsMenu, &showSettingsMenuSize, "s_save", _("!Save"), 's');
 }
 
-void refreshMenuLabels(){
+void refreshShowMenuLabels(){
   globalMenuLabel = genMenuDisplayLabel("", globalMenu, globalMenuSize, "", 1);
-  fileMenuLabel = genMenuDisplayLabel("", fileMenu, fileMenuSize, "", 1);
+  showFileMenuLabel = genMenuDisplayLabel("", showFileMenu, showFileMenuSize, "", 1);
   functionMenuLabel = genMenuDisplayLabel("", functionMenu, functionMenuSize, "", 0);
   modifyMenuLabel = genMenuDisplayLabel(_("Modify -"), modifyMenu, modifyMenuSize, "", 1);
   sortMenuLabel = genMenuDisplayLabel(_("Sort list by -"), sortMenu, sortMenuSize, _("(<shift> = reverse)"), 1);
@@ -267,12 +275,12 @@ void refreshMenuLabels(){
   touchMenuLabel = genMenuDisplayLabel(_("Set Time -"), touchMenu, touchMenuSize, _("(enter = B)"), 1);
   touchDateConfirmMenuLabel = genMenuDisplayLabel(_("Set Time?"), touchDateConfirmMenu, touchDateConfirmMenuSize, _("(enter = N)"), -1);
   colorMenuLabel = genMenuDisplayLabel("", colorMenu, colorMenuSize, "", 1);
-  settingsMenuLabel = genMenuDisplayLabel(_("SHOW Settings Menu -"), settingsMenu, settingsMenuSize, "", 1);
+  showSettingsMenuLabel = genMenuDisplayLabel(_("SHOW Settings Menu -"), showSettingsMenu, showSettingsMenuSize, "", 1);
 }
 
-void unloadMenuLabels(){
+void unloadShowMenuLabels(){
   free(globalMenuLabel);
-  free(fileMenuLabel);
+  free(showFileMenuLabel);
   free(functionMenuLabel);
   free(modifyMenuLabel);
   free(sortMenuLabel);
@@ -280,7 +288,7 @@ void unloadMenuLabels(){
   free(touchMenuLabel);
   free(touchDateConfirmMenuLabel);
   free(colorMenuLabel);
-  free(settingsMenuLabel);
+  free(showSettingsMenuLabel);
 }
 
 int sanitizeTopFileRef(int topfileref)
@@ -1490,10 +1498,10 @@ void directory_view_menu_inputs()
   viewMode = 0;
   while(1)
     {
-      wPrintMenu(0, 0, fileMenuLabel);
+      wPrintMenu(0, 0, showFileMenuLabel);
       wPrintMenu(LINES-1, 0, functionMenuLabel);
       *pc = getch10th();
-      if (*pc == menuHotkeyLookup(fileMenu, "f_copy", fileMenuSize)){
+      if (*pc == menuHotkeyLookup(showFileMenu, "f_copy", showFileMenuSize)){
         if ( (CheckMarked(ob) > 0) ) {
           copy_multi_file_input(ob, currentpwd);
         } else {
@@ -1506,7 +1514,7 @@ void directory_view_menu_inputs()
             copy_file_input(selfile, ob[selected].mode);
           }
         }
-      } else if (*pc == menuHotkeyLookup(fileMenu, "f_delete", fileMenuSize)){
+      } else if (*pc == menuHotkeyLookup(showFileMenu, "f_delete", showFileMenuSize)){
         if ( (CheckMarked(ob) > 0) ) {
           delete_multi_file_confirm_input(ob);
           refreshDirectory(sortmode, lineStart, selected, 1);
@@ -1523,7 +1531,7 @@ void directory_view_menu_inputs()
             delete_directory_confirm_input(selfile);
           }
         }
-      } else if (*pc == menuHotkeyLookup(fileMenu, "f_edit", fileMenuSize)){
+      } else if (*pc == menuHotkeyLookup(showFileMenu, "f_edit", showFileMenuSize)){
         memcpy(chpwd, currentpwd, 4096);
         if (!check_last_char(chpwd, "/")){
           snprintf(chpwd + strlen(chpwd), 4096, "%s", "/");
@@ -1533,7 +1541,7 @@ void directory_view_menu_inputs()
           SendToEditor(chpwd);
           refreshDirectory(sortmode, lineStart, selected, 1);
         }
-      } else if (*pc == menuHotkeyLookup(fileMenu, "f_hidden", fileMenuSize)){
+      } else if (*pc == menuHotkeyLookup(showFileMenu, "f_hidden", showFileMenuSize)){
         snprintf(currentfilename, 512, "%s", ob[selected].name);
         if (showhidden == 0) {
           showhidden = 1;
@@ -1555,16 +1563,16 @@ void directory_view_menu_inputs()
           }
         }
         refreshDirectory(sortmode, lineStart, selected, 0);
-      } else if (*pc == menuHotkeyLookup(fileMenu, "f_link", fileMenuSize)){
+      } else if (*pc == menuHotkeyLookup(showFileMenu, "f_link", showFileMenuSize)){
         if ( !(CheckMarked(ob) > 0) ) {
           link_key_menu_inputs();
         } else {
           topLineMessage("Error: Links can only be made against single files.");
         }
-      } else if (*pc == menuHotkeyLookup(fileMenu, "f_modify", fileMenuSize)){
+      } else if (*pc == menuHotkeyLookup(showFileMenu, "f_modify", showFileMenuSize)){
         //printMenu(0, 0, modifyMenuText);
         modify_key_menu_inputs();
-      } else if (*pc == menuHotkeyLookup(fileMenu, "f_quit", fileMenuSize)){
+      } else if (*pc == menuHotkeyLookup(showFileMenu, "f_quit", showFileMenuSize)){
       handleMissingDir:
           if (historyref > 1){
             snprintf(chpwd, 4096, "%s", hs[historyref - 2].path);
@@ -1598,7 +1606,7 @@ void directory_view_menu_inputs()
             historyref = 0; // Reset historyref here. A hacky workaround due to the value occasionally dipping to minus numbers.
             global_menu();
           }
-      } else if (*pc == menuHotkeyLookup(fileMenu, "f_rename", fileMenuSize)){
+      } else if (*pc == menuHotkeyLookup(showFileMenu, "f_rename", showFileMenuSize)){
         if ( (CheckMarked(ob) > 0) ) {
           rename_multi_file_input(ob, currentpwd);
         } else {
@@ -1609,7 +1617,7 @@ void directory_view_menu_inputs()
           snprintf(selfile + strlen(selfile), 4096, "%s", ob[selected].name);
           rename_file_input(selfile);
         }
-      } else if (*pc == menuHotkeyLookup(fileMenu, "f_show", fileMenuSize)){
+      } else if (*pc == menuHotkeyLookup(showFileMenu, "f_show", showFileMenuSize)){
         showCommand:
           memcpy(chpwd, currentpwd, 4096);
           if (!check_last_char(chpwd, "/")){
@@ -1651,7 +1659,7 @@ void directory_view_menu_inputs()
               // display_dir(currentpwd, ob);
             }
           }
-      } else if (*pc == menuHotkeyLookup(fileMenu, "f_touch", fileMenuSize)){
+      } else if (*pc == menuHotkeyLookup(showFileMenu, "f_touch", showFileMenuSize)){
         e = touchType();
         // Add what to do with result.
         if (e > -1){
@@ -1680,14 +1688,14 @@ void directory_view_menu_inputs()
           }
         }
         refreshDirectory(sortmode, lineStart, selected, 0);
-      } else if (*pc == menuHotkeyLookup(fileMenu, "f_uhunt", fileMenuSize)){
+      } else if (*pc == menuHotkeyLookup(showFileMenu, "f_uhunt", showFileMenuSize)){
         e = huntCaseSelectInput();
         if (e != -1){
           huntInput(selected, e);
         }
         abortinput = 0;
         display_dir(currentpwd, ob);
-      } else if (*pc == menuHotkeyLookup(fileMenu, "f_xexec", fileMenuSize)){
+      } else if (*pc == menuHotkeyLookup(showFileMenu, "f_xexec", showFileMenuSize)){
         memcpy(chpwd, currentpwd, 4096);
         if (!check_last_char(chpwd, "/")){
           snprintf(chpwd + strlen(chpwd), 4096, "%s", "/");
@@ -1957,7 +1965,7 @@ void global_menu_inputs()
           global_menu_inputs();
         }
       } else if (*pc == menuHotkeyLookup(globalMenu, "g_config", globalMenuSize)) {
-        settingsMenuView();
+          settingsMenuView(showSettingsMenuLabel, showSettingsMenuSize, showSettingsMenu, &settingIndexShow, &charValuesShow, &binValuesShow, totalCharItemsShow, totalBinItemsShow, generateShowSettingsVars(), "show");
         if (historyref == 0){
           clear();
           global_menu_inputs();
@@ -1984,7 +1992,7 @@ void global_menu_inputs()
         }
       } else if (*pc == menuHotkeyLookup(globalMenu, "g_help", globalMenuSize)) {
         showManPage("show");
-        refreshScreen();
+        refreshScreenShow();
         if (historyref == 0){
           wPrintMenu(0,0,globalMenuLabel);
         } else {

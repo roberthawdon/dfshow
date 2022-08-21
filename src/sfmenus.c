@@ -29,30 +29,38 @@
 #include "display.h"
 #include "settings.h"
 #include "common.h"
-#include "sf.h"
 #include "colors.h"
 #include "input.h"
 #include "i18n.h"
+#include "sffunctions.h"
 #include "banned.h"
-
-int c;
-int * pc = &c;
-
-int abortinput = 0;
 
 bool findSet = false;
 
-menuDef *fileMenu;
-int fileMenuSize = 0;
-wchar_t *fileMenuLabel;
+menuDef *sfFileMenu;
+int sfFileMenuSize = 0;
+wchar_t *sfFileMenuLabel;
 
 menuDef *caseMenu;
 int caseMenuSize = 0;
 wchar_t *caseMenuLabel;
 
-extern menuDef *settingsMenu;
-extern int settingsMenuSize;
-extern wchar_t *settingsMenuLabel;
+extern bool parentShow;
+
+extern int c;
+extern int * pc;
+
+extern int abortinput;
+
+extern settingIndex *settingIndexSf;
+extern t1CharValues *charValuesSf;
+extern t2BinValues *binValuesSf;
+extern int totalCharItemsSf;
+extern int totalBinItemsSf;
+
+menuDef *sfSettingsMenu;
+int sfSettingsMenuSize;
+wchar_t *sfSettingsMenuLabel;
 
 extern char regexinput[1024];
 extern FILE *file;
@@ -73,21 +81,21 @@ extern char *line;
 extern long int *filePos;
 extern wchar_t *longline;
 
-void generateDefaultMenus(){
+void generateDefaultSfMenus(){
   // File Menu
-  addMenuItem(&fileMenu, &fileMenuSize, "f_01", _("<F1>-Down"), 265);
-  addMenuItem(&fileMenu, &fileMenuSize, "f_02", _("<F2>-Up"), 266);
-  addMenuItem(&fileMenu, &fileMenuSize, "f_03", _("<F3>-Top"), 267);
-  addMenuItem(&fileMenu, &fileMenuSize, "f_04", _("<F4>-Bottom"), 268);
-  addMenuItem(&fileMenu, &fileMenuSize, "f_config", _("!Config"), 'c');
-  addMenuItem(&fileMenu, &fileMenuSize, "f_find", _("!Find"), 'f');
-  addMenuItem(&fileMenu, &fileMenuSize, "f_help", _("!Help"), 'h');
-  addMenuItem(&fileMenu, &fileMenuSize, "f_position", _("!Position"), 'p');
-  addMenuItem(&fileMenu, &fileMenuSize, "f_quit", _("!Quit"), 'q');
+  addMenuItem(&sfFileMenu, &sfFileMenuSize, "f_01", _("<F1>-Down"), 265);
+  addMenuItem(&sfFileMenu, &sfFileMenuSize, "f_02", _("<F2>-Up"), 266);
+  addMenuItem(&sfFileMenu, &sfFileMenuSize, "f_03", _("<F3>-Top"), 267);
+  addMenuItem(&sfFileMenu, &sfFileMenuSize, "f_04", _("<F4>-Bottom"), 268);
+  addMenuItem(&sfFileMenu, &sfFileMenuSize, "f_config", _("!Config"), 'c');
+  addMenuItem(&sfFileMenu, &sfFileMenuSize, "f_find", _("!Find"), 'f');
+  addMenuItem(&sfFileMenu, &sfFileMenuSize, "f_help", _("!Help"), 'h');
+  addMenuItem(&sfFileMenu, &sfFileMenuSize, "f_position", _("!Position"), 'p');
+  addMenuItem(&sfFileMenu, &sfFileMenuSize, "f_quit", _("!Quit"), 'q');
   if (wrap){
-    addMenuItem(&fileMenu, &fileMenuSize, "f_wrap", _("!Wrap-off"), 'w');
+    addMenuItem(&sfFileMenu, &sfFileMenuSize, "f_wrap", _("!Wrap-off"), 'w');
   } else {
-    addMenuItem(&fileMenu, &fileMenuSize, "f_wrap", _("!Wrap-on"), 'w');
+    addMenuItem(&sfFileMenu, &sfFileMenuSize, "f_wrap", _("!Wrap-on"), 'w');
   }
 
   // Case Menu
@@ -95,21 +103,21 @@ void generateDefaultMenus(){
   addMenuItem(&caseMenu, &caseMenuSize, "c2_sensitive", _("!Case-sensitive"), 'c');
 
   // Setings Menu
-  addMenuItem(&settingsMenu, &settingsMenuSize, "s_quit", _("!Quit"), 'q');
-  addMenuItem(&settingsMenu, &settingsMenuSize, "s_revert", _("!Revert"), 'r');
-  addMenuItem(&settingsMenu, &settingsMenuSize, "s_save", _("!Save"), 's');
+  addMenuItem(&sfSettingsMenu, &sfSettingsMenuSize, "s_quit", _("!Quit"), 'q');
+  addMenuItem(&sfSettingsMenu, &sfSettingsMenuSize, "s_revert", _("!Revert"), 'r');
+  addMenuItem(&sfSettingsMenu, &sfSettingsMenuSize, "s_save", _("!Save"), 's');
 }
 
-void refreshMenuLabels(){
-  fileMenuLabel     = genMenuDisplayLabel("", fileMenu, fileMenuSize, "", 1);
+void refreshSfMenuLabels(){
+  sfFileMenuLabel     = genMenuDisplayLabel("", sfFileMenu, sfFileMenuSize, "", 1);
   caseMenuLabel     = genMenuDisplayLabel("", caseMenu, caseMenuSize, _("(enter = I)"), 0);
-  settingsMenuLabel = genMenuDisplayLabel(_("SF Settings Menu -"), settingsMenu, settingsMenuSize, "", 1);
+  sfSettingsMenuLabel = genMenuDisplayLabel(_("SF Settings Menu -"), sfSettingsMenu, sfSettingsMenuSize, "", 1);
 }
 
-void unloadMenuLabels(){
-  free(fileMenuLabel);
+void unloadSfMenuLabels(){
+  free(sfFileMenuLabel);
   free(caseMenuLabel);
-  free(settingsMenuLabel);
+  free(sfSettingsMenuLabel);
 }
 
 void show_file_find(bool charcase, bool useLast)
@@ -211,34 +219,34 @@ void show_file_position_input(int currentpos)
       }
     }
   }
-  wPrintMenu(0, 0, fileMenuLabel);
+  wPrintMenu(0, 0, sfFileMenuLabel);
 }
 
 void show_file_inputs()
 {
   int e = 0;
-  wPrintMenu(0, 0, fileMenuLabel);
+  wPrintMenu(0, 0, sfFileMenuLabel);
   while(1)
     {
       *pc = getch10th();
-      if (*pc == menuHotkeyLookup(fileMenu,"f_find", fileMenuSize)){
+      if (*pc == menuHotkeyLookup(sfFileMenu,"f_find", sfFileMenuSize)){
         e = show_file_find_case_input();
         if (e != -1){
           show_file_find(e, false);
         } else {
           abortinput = 0;
         }
-        wPrintMenu(0, 0, fileMenuLabel);
+        wPrintMenu(0, 0, sfFileMenuLabel);
       } else if (*pc == 6){
         if (findSet){
           show_file_find(false, true);
         }
-        wPrintMenu(0, 0, fileMenuLabel);
-      } else if (*pc == menuHotkeyLookup(fileMenu, "f_help", fileMenuSize)){
+        wPrintMenu(0, 0, sfFileMenuLabel);
+      } else if (*pc == menuHotkeyLookup(sfFileMenu, "f_help", sfFileMenuSize)){
         showManPage("sf");
-        wPrintMenu(0, 0, fileMenuLabel);
-        refreshScreen();
-      } else if (*pc == menuHotkeyLookup(fileMenu, "f_position", fileMenuSize)){
+        wPrintMenu(0, 0, sfFileMenuLabel);
+        refreshScreenSf();
+      } else if (*pc == menuHotkeyLookup(sfFileMenu, "f_position", sfFileMenuSize)){
         show_file_position_input(topline);
         if (topline > totallines + 1){
           topline = totallines + 1;
@@ -246,48 +254,52 @@ void show_file_inputs()
           topline = 1;
         }
         updateView();
-      } else if (*pc == menuHotkeyLookup(fileMenu, "f_config", fileMenuSize)){
-        settingsMenuView();
-        wPrintMenu(0, 0, fileMenuLabel);
+      } else if (*pc == menuHotkeyLookup(sfFileMenu, "f_config", sfFileMenuSize)){
+        settingsMenuView(sfSettingsMenuLabel, sfSettingsMenuSize, sfSettingsMenu, &settingIndexSf, &charValuesSf, &binValuesSf, totalCharItemsSf, totalBinItemsSf, generateSfSettingsVars(), "sf");
+        wPrintMenu(0, 0, sfFileMenuLabel);
         if(wrap){
           leftcol = 1;
         }
-        refreshScreen();
+        refreshScreenSf();
         // updateView();
-      } else if (*pc == menuHotkeyLookup(fileMenu, "f_quit", fileMenuSize)){
+      } else if (*pc == menuHotkeyLookup(sfFileMenu, "f_quit", sfFileMenuSize)){
         free(longline);
         free(filePos);
         fclose(stream);
-        exittoshell();
-      } else if (*pc == menuHotkeyLookup(fileMenu, "f_wrap", fileMenuSize)){
+	if (!parentShow){
+          exittoshell();
+	} else {
+          return;
+	}
+      } else if (*pc == menuHotkeyLookup(sfFileMenu, "f_wrap", sfFileMenuSize)){
         if (wrap){
-          updateMenuItem(&fileMenu, &fileMenuSize, "f_wrap", _("!Wrap-on"));
+          updateMenuItem(&sfFileMenu, &sfFileMenuSize, "f_wrap", _("!Wrap-on"));
           wrap = 0;
         } else {
-          updateMenuItem(&fileMenu, &fileMenuSize, "f_wrap", _("!Wrap-off"));
+          updateMenuItem(&sfFileMenu, &sfFileMenuSize, "f_wrap", _("!Wrap-off"));
           leftcol = 1;
           wrap = 1;
         }
-        unloadMenuLabels();
-        refreshMenuLabels();
-        wPrintMenu(0,0,fileMenuLabel);
+        unloadSfMenuLabels();
+        refreshSfMenuLabels();
+        wPrintMenu(0,0,sfFileMenuLabel);
         updateView();
-      } else if (*pc == menuHotkeyLookup(fileMenu, "f_01", fileMenuSize) || *pc == 338){
+      } else if (*pc == menuHotkeyLookup(sfFileMenu, "f_01", sfFileMenuSize) || *pc == 338){
         topline = topline + displaysize;
         if (topline > totallines + 1){
           topline = totallines + 1;
         }
         updateView();
-      } else if (*pc == menuHotkeyLookup(fileMenu, "f_02", fileMenuSize) || *pc == 339){
+      } else if (*pc == menuHotkeyLookup(sfFileMenu, "f_02", sfFileMenuSize) || *pc == 339){
         topline = topline - displaysize;
         if (topline < 1){
           topline = 1;
         }
         updateView();
-      } else if (*pc == menuHotkeyLookup(fileMenu, "f_03", fileMenuSize)){
+      } else if (*pc == menuHotkeyLookup(sfFileMenu, "f_03", sfFileMenuSize)){
         topline = 1;
         updateView();
-      } else if (*pc == menuHotkeyLookup(fileMenu, "f_04", fileMenuSize)){
+      } else if (*pc == menuHotkeyLookup(sfFileMenu, "f_04", sfFileMenuSize)){
         topline = totallines + 1; // Show EOF
         updateView();
       } else if (*pc == 258){

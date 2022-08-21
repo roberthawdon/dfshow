@@ -33,6 +33,7 @@
 #include "config.h"
 #include "showfunctions.h"
 #include "showmenus.h"
+#include "sfmenus.h"
 #include "colors.h"
 #include "menu.h"
 #include "display.h"
@@ -108,15 +109,21 @@ results *ob;
 int segOrder[10] = {COL_MARK, COL_INODE, COL_SIZEBLOCKS, COL_ATTR, COL_HLINK, COL_OWNER, COL_CONTEXT, COL_SIZE, COL_DATE, COL_NAME};
 // int segOrder[10] = {COL_MARK, COL_NAME, COL_SIZE, COL_DATE, COL_ATTR}; // Emulating NET-DF-EDIT's XENIX layout
 
+settingIndex *settingIndexShow;
+t1CharValues *charValuesShow;
+t2BinValues *binValuesShow;
+int totalCharItemsShow;
+int totalBinItemsShow;
+
 extern int skippable;
 
 extern int settingsPos;
 extern int settingsBinPos;
 extern int settingsFreePos;
 
-extern menuDef *settingsMenu;
-extern int settingsMenuSize;
-extern wchar_t *settingsMenuLabel;
+extern menuDef *showSettingsMenu;
+extern int showSettingsMenuSize;
+extern wchar_t *showSettingsMenuLabel;
 
 extern int * pc;
 
@@ -138,7 +145,7 @@ extern int exitCode;
 extern int enableCtrlC;
 
 extern wchar_t *globalMenuLabel;
-extern wchar_t *fileMenuLabel;
+extern wchar_t *showFileMenuLabel;
 extern wchar_t *functionMenuLabel;
 extern wchar_t *modifyMenuLabel;
 extern wchar_t *sortMenuLabel;
@@ -150,7 +157,7 @@ extern int xattrPos;
 int setMarked(char* markedinput);
 int checkStyle(char* styleinput);
 
-void readConfig(const char * confFile)
+void readShowConfig(const char * confFile)
 {
   config_t cfg;
   config_setting_t *setting, *group, *array;
@@ -373,7 +380,7 @@ void readConfig(const char * confFile)
   config_destroy(&cfg);
 }
 
-void saveConfig(const char * confFile, settingIndex **settings, t1CharValues **values, t2BinValues **bins, int items, int charIndex, int binIndex)
+void saveShowConfig(const char * confFile, settingIndex **settings, t1CharValues **values, t2BinValues **bins, int items, int charIndex, int binIndex)
 {
   config_t cfg;
   config_setting_t *root, *setting, *group, *subgroup;
@@ -467,7 +474,7 @@ void saveConfig(const char * confFile, settingIndex **settings, t1CharValues **v
   config_destroy(&cfg);
 }
 
-void applySettings(settingIndex **settings, t1CharValues **values, int items, int valuesCount)
+void applyShowSettings(settingIndex **settings, t1CharValues **values, int items, int valuesCount)
 {
   int i, j;
   for (i = 0; i < items; i++){
@@ -533,166 +540,69 @@ void applySettings(settingIndex **settings, t1CharValues **values, int items, in
   }
 }
 
-void settingsMenuView(){
+int generateShowSettingsVars()
+{
   uid_t uid=getuid(), euid=geteuid();
-  int items, count = 0;
-  int x = 2;
-  int y = 3;
-  settingIndex *settingIndex;
-  t1CharValues *charValues;
-  t2BinValues *binValues;
-  int markedCount, sortmodeCount, timestyleCount, ownerCount;
-  int charValuesCount;
-  int binValuesCount;
-  int sortmodeInt, timestyleInt;
-  int e;
-  char charTempValue[1024];
+  int items = 0;
+  int markedCount = 0, sortmodeCount = 0, timestyleCount = 0, ownerCount = 0;
+  int sortmodeInt = 0, timestyleInt = 0;
+  int charValuesCount = 0;
+  int binValuesCount = 0;
 
- reloadSettings:
+  addT1CharValue(&charValuesShow, &charValuesCount, &markedCount, "marked", _("never"));
+  addT1CharValue(&charValuesShow, &charValuesCount, &markedCount, "marked", _("always"));
+  addT1CharValue(&charValuesShow, &charValuesCount, &markedCount, "marked", _("auto"));
 
-  items = charValuesCount = binValuesCount = markedCount = sortmodeCount = timestyleCount = ownerCount = 0;
+  addT1CharValue(&charValuesShow, &charValuesCount, &sortmodeCount, "sortmode", _("name"));
+  addT1CharValue(&charValuesShow, &charValuesCount, &sortmodeCount, "sortmode", _("date"));
+  addT1CharValue(&charValuesShow, &charValuesCount, &sortmodeCount, "sortmode", _("size"));
+  addT1CharValue(&charValuesShow, &charValuesCount, &sortmodeCount, "sortmode", _("unsorted"));
 
-  clear();
-  wPrintMenu(0,0,settingsMenuLabel);
-  // mvprintw(2, 10, "SHOW Settings Menu");
+  addT1CharValue(&charValuesShow, &charValuesCount, &timestyleCount, "timestyle", _("locale"));
+  addT1CharValue(&charValuesShow, &charValuesCount, &timestyleCount, "timestyle", _("iso"));
+  addT1CharValue(&charValuesShow, &charValuesCount, &timestyleCount, "timestyle", _("long-iso"));
+  addT1CharValue(&charValuesShow, &charValuesCount, &timestyleCount, "timestyle", _("full-iso"));
 
-  addT1CharValue(&charValues, &charValuesCount, &markedCount, "marked", _("never"));
-  addT1CharValue(&charValues, &charValuesCount, &markedCount, "marked", _("always"));
-  addT1CharValue(&charValues, &charValuesCount, &markedCount, "marked", _("auto"));
+  addT2BinValue(&binValuesShow, &binValuesCount, &ownerCount, "owner", "owner", 1);
+  addT2BinValue(&binValuesShow, &binValuesCount, &ownerCount, "owner", "group", 0);
+  addT2BinValue(&binValuesShow, &binValuesCount, &ownerCount, "owner", "author", 0);
 
-  addT1CharValue(&charValues, &charValuesCount, &sortmodeCount, "sortmode", _("name"));
-  addT1CharValue(&charValues, &charValuesCount, &sortmodeCount, "sortmode", _("date"));
-  addT1CharValue(&charValues, &charValuesCount, &sortmodeCount, "sortmode", _("size"));
-  addT1CharValue(&charValues, &charValuesCount, &sortmodeCount, "sortmode", _("unsorted"));
+  sortmodeInt = textValueLookup(&charValuesShow, &charValuesCount, "sortmode", sortmode);
+  timestyleInt = textValueLookup(&charValuesShow, &charValuesCount, "timestyle", timestyle);
 
-  addT1CharValue(&charValues, &charValuesCount, &timestyleCount, "timestyle", _("locale"));
-  addT1CharValue(&charValues, &charValuesCount, &timestyleCount, "timestyle", _("iso"));
-  addT1CharValue(&charValues, &charValuesCount, &timestyleCount, "timestyle", _("long-iso"));
-  addT1CharValue(&charValues, &charValuesCount, &timestyleCount, "timestyle", _("full-iso"));
-
-  addT2BinValue(&binValues, &binValuesCount, &ownerCount, "owner", "owner", 1);
-  addT2BinValue(&binValues, &binValuesCount, &ownerCount, "owner", "group", 0);
-  addT2BinValue(&binValues, &binValuesCount, &ownerCount, "owner", "author", 0);
-
-  sortmodeInt = textValueLookup(&charValues, &charValuesCount, "sortmode", sortmode);
-  timestyleInt = textValueLookup(&charValues, &charValuesCount, "timestyle", timestyle);
-
-  importSetting(&settingIndex, &items, "color",          _("Display file colors"), SETTING_BOOL, NULL, filecolors, -1, 0);
-  importSetting(&settingIndex, &items, "marked",         _("Show marked file info"), SETTING_SELECT, NULL, markedinfo, markedCount, 0);
-  importSetting(&settingIndex, &items, "sortmode",       _("Sorting mode"), SETTING_SELECT, NULL, sortmodeInt, sortmodeCount, 0);
-  importSetting(&settingIndex, &items, "reverse",        _("Reverse sorting order"), SETTING_BOOL, NULL, reverse, -1, 0);
-  importSetting(&settingIndex, &items, "timestyle",      _("Time style"), SETTING_SELECT, NULL, timestyleInt, timestyleCount, 0);
-  importSetting(&settingIndex, &items, "hidden",         _("Show hidden files"), SETTING_BOOL, NULL, showhidden, -1, 0);
-  importSetting(&settingIndex, &items, "ignore-backups", _("Hide backup files"), SETTING_BOOL, NULL, showbackup, -1, 1);
-  importSetting(&settingIndex, &items, "no-sf",          _("Use 3rd party pager over SF"), SETTING_BOOL, NULL, useEnvPager, -1, 0);
+  importSetting(&settingIndexShow, &items, "color",          _("Display file colors"), SETTING_BOOL, NULL, filecolors, -1, 0);
+  importSetting(&settingIndexShow, &items, "marked",         _("Show marked file info"), SETTING_SELECT, NULL, markedinfo, markedCount, 0);
+  importSetting(&settingIndexShow, &items, "sortmode",       _("Sorting mode"), SETTING_SELECT, NULL, sortmodeInt, sortmodeCount, 0);
+  importSetting(&settingIndexShow, &items, "reverse",        _("Reverse sorting order"), SETTING_BOOL, NULL, reverse, -1, 0);
+  importSetting(&settingIndexShow, &items, "timestyle",      _("Time style"), SETTING_SELECT, NULL, timestyleInt, timestyleCount, 0);
+  importSetting(&settingIndexShow, &items, "hidden",         _("Show hidden files"), SETTING_BOOL, NULL, showhidden, -1, 0);
+  importSetting(&settingIndexShow, &items, "ignore-backups", _("Hide backup files"), SETTING_BOOL, NULL, showbackup, -1, 1);
+  importSetting(&settingIndexShow, &items, "no-sf",          _("Use 3rd party pager over SF"), SETTING_BOOL, NULL, useEnvPager, -1, 0);
   if (uid == 0 || euid == 0){
-    importSetting(&settingIndex, &items, "no-danger",      _("Hide danger lines as root"), SETTING_BOOL, NULL, danger, -1, 1);
+    importSetting(&settingIndexShow, &items, "no-danger",      _("Hide danger lines as root"), SETTING_BOOL, NULL, danger, -1, 1);
   }
-  importSetting(&settingIndex, &items, "si",             _("Use SI units"), SETTING_BOOL, NULL, si, -1, 0);
-  importSetting(&settingIndex, &items, "human-readable", _("Human readable sizes"), SETTING_BOOL, NULL, human, -1, 0);
-  importSetting(&settingIndex, &items, "showInodes",     _("Show Inode"), SETTING_BOOL, NULL, showInodes, -1, 0);
-  importSetting(&settingIndex, &items, "show-on-enter",  _("Enter key acts like Show"), SETTING_BOOL, NULL, enterAsShow, -1, 0);
-  importSetting(&settingIndex, &items, "owner",          _("Owner Column"), SETTING_MULTI, NULL, ogavis, ownerCount, 0);
-  importSetting(&settingIndex, &items, "context",        _("Show security context of files"), SETTING_BOOL, NULL, showContext, -1, 0);
-  importSetting(&settingIndex, &items, "skip-to-first",  _("Skip to the first object"), SETTING_BOOL, NULL, skipToFirstFile, -1, 0);
+  importSetting(&settingIndexShow, &items, "si",             _("Use SI units"), SETTING_BOOL, NULL, si, -1, 0);
+  importSetting(&settingIndexShow, &items, "human-readable", _("Human readable sizes"), SETTING_BOOL, NULL, human, -1, 0);
+  importSetting(&settingIndexShow, &items, "showInodes",     _("Show Inode"), SETTING_BOOL, NULL, showInodes, -1, 0);
+  importSetting(&settingIndexShow, &items, "show-on-enter",  _("Enter key acts like Show"), SETTING_BOOL, NULL, enterAsShow, -1, 0);
+  importSetting(&settingIndexShow, &items, "owner",          _("Owner Column"), SETTING_MULTI, NULL, ogavis, ownerCount, 0);
+  importSetting(&settingIndexShow, &items, "context",        _("Show security context of files"), SETTING_BOOL, NULL, showContext, -1, 0);
+  importSetting(&settingIndexShow, &items, "skip-to-first",  _("Skip to the first object"), SETTING_BOOL, NULL, skipToFirstFile, -1, 0);
 #ifdef HAVE_ACL_TYPE_EXTENDED
-  importSetting(&settingIndex, &items, "showXAttrs",     _("Display extended attribute keys and sizes"), SETTING_BOOL, NULL, showXAttrs, -1, 0);
+  importSetting(&settingIndexShow, &items, "showXAttrs",     _("Display extended attribute keys and sizes"), SETTING_BOOL, NULL, showXAttrs, -1, 0);
 #endif
-  importSetting(&settingIndex, &items, "only-dirs",      _("Display only directories"), SETTING_BOOL, NULL, dirOnly, -1, 0);
-  importSetting(&settingIndex, &items, "sizeblocks",     _("Show allocated size in blocks"), SETTING_BOOL, NULL, showSizeBlocks, -1, 0);
-  importSetting(&settingIndex, &items, "defined-editor", _("Override default editor"), SETTING_BOOL, NULL, useDefinedEditor, -1, 0);
-  importSetting(&settingIndex, &items, "visualPath",     _("Editor utility program command"), SETTING_FREE, visualPath, -1, -1, 0);
-  importSetting(&settingIndex, &items, "defined-pager",  _("Override default pager"), SETTING_BOOL, NULL, useDefinedPager, -1, 0);
-  importSetting(&settingIndex, &items, "pagerPath",      _("Pager utility program command"), SETTING_FREE, pagerPath, -1, -1, 0);
+  importSetting(&settingIndexShow, &items, "only-dirs",      _("Display only directories"), SETTING_BOOL, NULL, dirOnly, -1, 0);
+  importSetting(&settingIndexShow, &items, "sizeblocks",     _("Show allocated size in blocks"), SETTING_BOOL, NULL, showSizeBlocks, -1, 0);
+  importSetting(&settingIndexShow, &items, "defined-editor", _("Override default editor"), SETTING_BOOL, NULL, useDefinedEditor, -1, 0);
+  importSetting(&settingIndexShow, &items, "visualPath",     _("Editor utility program command"), SETTING_FREE, visualPath, -1, -1, 0);
+  importSetting(&settingIndexShow, &items, "defined-pager",  _("Override default pager"), SETTING_BOOL, NULL, useDefinedPager, -1, 0);
+  importSetting(&settingIndexShow, &items, "pagerPath",      _("Pager utility program command"), SETTING_FREE, pagerPath, -1, -1, 0);
 
-  populateBool(&binValues, "owner", ogavis, binValuesCount);
+  populateBool(&binValuesShow, "owner", ogavis, binValuesCount);
 
-  while(1)
-    {
-      for (count = 0; count < items; count++){
-        printSetting(2 + count, 3, &settingIndex, &charValues, &binValues, count, charValuesCount, binValuesCount, settingIndex[count].type, settingIndex[count].invert);
-      }
-
-      move(x + settingsPos, y + 1);
-      *pc = getch10th();
-      if (*pc == menuHotkeyLookup(settingsMenu, "s_quit", settingsMenuSize)){
-        curs_set(FALSE);
-        applySettings(&settingIndex, &charValues, items, charValuesCount);
-        free(settingIndex);
-        return;
-      } else if (*pc == menuHotkeyLookup(settingsMenu, "s_revert", settingsMenuSize)){
-        free(settingIndex);
-        goto reloadSettings;
-      } else if (*pc == menuHotkeyLookup(settingsMenu, "s_save", settingsMenuSize)){
-        applySettings(&settingIndex, &charValues, items, charValuesCount);
-        if (access(dirFromPath(homeConfLocation), W_OK) != 0) {
-          createParentDirs(homeConfLocation);
-        }
-        saveConfig(homeConfLocation, &settingIndex, &charValues, &binValues, items, charValuesCount, binValuesCount);
-        curs_set(FALSE);
-        topLineMessage("Settings saved.");
-        curs_set(TRUE);
-        wPrintMenu(0,0,settingsMenuLabel);
-      } else if (*pc == 258 || *pc == 10){
-        if (settingsPos < (items -1 )){
-          settingsBinPos = -1;
-          settingsPos++;
-        }
-      } else if (*pc == 32 || *pc == 260 || *pc == 261){
-        // Adjust
-        if (settingIndex[settingsPos].type == SETTING_BOOL){
-          if (settingIndex[settingsPos].intSetting > 0){
-            updateSetting(&settingIndex, settingsPos, 0, 0);
-          } else {
-            updateSetting(&settingIndex, settingsPos, 0, 1);
-          }
-        } else if (settingIndex[settingsPos].type == SETTING_SELECT){
-          if (*pc == 32 || *pc == 261){
-            if (settingIndex[settingsPos].intSetting < (settingIndex[settingsPos].maxValue) - 1){
-              updateSetting(&settingIndex, settingsPos, 1, (settingIndex[settingsPos].intSetting) + 1);
-            } else {
-              updateSetting(&settingIndex, settingsPos, 1, 0);
-            }
-          } else {
-            if (settingIndex[settingsPos].intSetting > 0){
-              updateSetting(&settingIndex, settingsPos, 1, (settingIndex[settingsPos].intSetting) - 1);
-            } else {
-              updateSetting(&settingIndex, settingsPos, 1, (settingIndex[settingsPos].maxValue - 1));
-            }
-          }
-        } else if (settingIndex[settingsPos].type == SETTING_MULTI){
-          if (*pc == 261 && (settingsBinPos < (settingIndex[settingsPos].maxValue -1))){
-            settingsBinPos++;
-          } else if (*pc == 260 && (settingsBinPos > -1)){
-            settingsBinPos--;
-          } else if (*pc == 32 && (settingsBinPos > -1)){
-            // Not fond of this, but it should work
-            if (!strcmp(settingIndex[settingsPos].refLabel, "owner")){
-              adjustBinSetting(&settingIndex, &binValues, "owner", &ogavis, binValuesCount);
-            }
-          }
-        } else if (settingIndex[settingsPos].type == SETTING_FREE){
-          if (*pc == 32 || *pc == 261) {
-            settingsFreePos = 0;
-            move(x + settingsPos, y + wcslen(settingIndex[settingsPos].textLabel) + 6);
-            e = readline(charTempValue, 1024, settingIndex[settingsPos].charSetting);
-            if (strcmp(charTempValue, "")){
-              free(settingIndex[settingsPos].charSetting);
-              settingIndex[settingsPos].charSetting = malloc(sizeof(char) * (strlen(charTempValue) + 1));
-              snprintf(settingIndex[settingsPos].charSetting, (strlen(charTempValue) + 1), "%s", charTempValue);
-            }
-            move(x + settingsPos, 0);
-            clrtoeol();
-            settingsFreePos = -1;
-          }
-        }
-      } else if (*pc == 259){
-        if (settingsPos > 0){
-          settingsBinPos = -1;
-          settingsPos--;
-        }
-      }
-    }
+  totalBinItemsShow = binValuesCount;
+  totalCharItemsShow = charValuesCount;
+  return items;
 }
 
 int directory_view(char * currentpwd)
@@ -709,7 +619,7 @@ int directory_view(char * currentpwd)
   setColors(COMMAND_PAIR);
 
 
-  wPrintMenu(0, 0, fileMenuLabel);
+  wPrintMenu(0, 0, showFileMenuLabel);
 
   set_history(currentpwd, "", "", 0, 0);
   freeResults(ob, totalfilecount);
@@ -865,7 +775,7 @@ int setBlockSize(const char * arg){
     return returnCode;
 }
 
-void refreshScreen()
+void refreshScreenShow()
 {
   endwin();
   clear();
@@ -874,12 +784,12 @@ void refreshScreen()
   curs_set(FALSE);
   keypad(stdscr, TRUE);
   refresh();
-  unloadMenuLabels();
-  refreshMenuLabels();
+  unloadShowMenuLabels();
+  refreshShowMenuLabels();
   switch(viewMode)
     {
     case 0:
-      wPrintMenu(0, 0, fileMenuLabel);
+      wPrintMenu(0, 0, showFileMenuLabel);
       wPrintMenu(LINES-1, 0, functionMenuLabel);
       resizeDisplayDir(ob);
       break;
@@ -930,7 +840,6 @@ Options shared with ls:\n"), stdout);
                                  see SIZE format below\n\
   -B, --ignore-backups         do not list implied entries ending with ~\n\
       --color[=WHEN]           colorize the output, see the color section below\n\
-  -d, --directory              show only directories\n\
   -f                           do not sort, enables -aU\n\
       --full-time              display time as full-iso format\n\
   -g                           only show group\n\
@@ -958,6 +867,7 @@ Using color to highlight file attributes is disabled by default and with\n\
 --color=never. With --color or --color=always this function is enabled.\n"), stdout);
   fputs (("\n\
 Options specific to show:\n\
+      --directories-only       show only directories\n\
       --theme=[THEME]          color themes, see the THEME section below for\n\
                                  valid themes\n\
       --no-danger              turns off danger colors when running with\n\
@@ -982,11 +892,11 @@ Exit status:\n\
   printf ("\nPlease report any bugs to: <%s>\n", PACKAGE_BUGREPORT);
 }
 
-void freeSettingVars()
-{
-  free(visualPath);
-  return;
-}
+// void freeSettingVars()
+// {
+//   free(visualPath);
+//   return;
+// }
 
 int main(int argc, char *argv[])
 {
@@ -998,9 +908,9 @@ int main(int argc, char *argv[])
   initI18n();
 
 #ifdef HAVE_ACL_TYPE_EXTENDED
-  snprintf(options, 21, "%s", "@aABdfgGhilrsStUZ1");
+  snprintf(options, 21, "%s", "@aABfgGhilrsStUZ1");
 #else
-  snprintf(options, 21, "%s", "aABdfgGhilrsStUZ1");
+  snprintf(options, 21, "%s", "aABfgGhilrsStUZ1");
 #endif
 
   // Setting the default editor
@@ -1048,8 +958,11 @@ int main(int argc, char *argv[])
 
   // Read the config
 
-  readConfig(globalConfLocation);
-  readConfig(homeConfLocation);
+  
+  settingsAction("read", "all", NULL, NULL, NULL, NULL, 0, 0, 0, globalConfLocation);
+  settingsAction("read", "all", NULL, NULL, NULL, NULL, 0, 0, 0, homeConfLocation);
+  // readShowConfig(globalConfLocation);
+  // readShowConfig(homeConfLocation);
 
   // Check for theme env variable
   if ( getenv("DFS_THEME")) {
@@ -1061,33 +974,33 @@ int main(int argc, char *argv[])
     {
       static struct option long_options[] =
         {
-         {"all",            no_argument,       0, 'a'},
-         {"almost-all",     no_argument,       0, 'A'},
-         {"author",         no_argument,       0, GETOPT_AUTHOR_CHAR},
-         {"block-size",     required_argument, 0, GETOPT_BLOCKSIZE_CHAR},
-         {"ignore-backups", no_argument,       0, 'B'},
-         {"directory",      no_argument,       0, 'd'},
-         {"human-readable", no_argument,       0, 'h'},
-         {"inode",          no_argument,       0, 'i'},
-         {"no-group",       no_argument,       0, 'G'},
-         {"reverse",        no_argument,       0, 'r'},
-         {"size",           no_argument,       0, 's'},
-         {"time-style",     required_argument, 0, GETOPT_TIMESTYLE_CHAR},
-         {"si",             no_argument,       0, GETOPT_SI_CHAR},
-         {"help",           no_argument,       0, GETOPT_HELP_CHAR},
-         {"version",        no_argument,       0, GETOPT_VERSION_CHAR},
-         {"no-danger",      no_argument,       0, GETOPT_NODANGER_CHAR},
-         {"color",          optional_argument, 0, GETOPT_COLOR_CHAR},
-         {"theme",          optional_argument, 0, GETOPT_THEME_CHAR},
-         {"marked",         optional_argument, 0, GETOPT_MARKED_CHAR},
-         {"no-sf",          no_argument,       0, GETOPT_ENVPAGER_CHAR},
-         {"show-on-enter",  no_argument,       0, GETOPT_SHOWONENTER_CHAR},
-         {"running",        no_argument,       0, GETOPT_SHOWRUNNING_CHAR},
-         {"full-time",      no_argument,       0, GETOPT_FULLTIME_CHAR},
-         {"edit-themes",    no_argument,       0, GETOPT_THEMEEDIT_CHAR},
-         {"settings-menu",  no_argument,       0, GETOPT_OPTIONSMENU_CHAR},
-         {"contect",        no_argument,       0, 'Z'},
-         {"skip-to-first",  no_argument,       0, GETOPT_SKIPTOFIRST_CHAR},
+         {"all",              no_argument,       0, 'a'},
+         {"almost-all",       no_argument,       0, 'A'},
+         {"author",           no_argument,       0, GETOPT_AUTHOR_CHAR},
+         {"block-size",       required_argument, 0, GETOPT_BLOCKSIZE_CHAR},
+         {"ignore-backups",   no_argument,       0, 'B'},
+         {"directories-only", no_argument,       0, GETOPT_DIRONLY_CHAR},
+         {"human-readable",   no_argument,       0, 'h'},
+         {"inode",            no_argument,       0, 'i'},
+         {"no-group",         no_argument,       0, 'G'},
+         {"reverse",          no_argument,       0, 'r'},
+         {"size",             no_argument,       0, 's'},
+         {"time-style",       required_argument, 0, GETOPT_TIMESTYLE_CHAR},
+         {"si",               no_argument,       0, GETOPT_SI_CHAR},
+         {"help",             no_argument,       0, GETOPT_HELP_CHAR},
+         {"version",          no_argument,       0, GETOPT_VERSION_CHAR},
+         {"no-danger",        no_argument,       0, GETOPT_NODANGER_CHAR},
+         {"color",            optional_argument, 0, GETOPT_COLOR_CHAR},
+         {"theme",            optional_argument, 0, GETOPT_THEME_CHAR},
+         {"marked",           optional_argument, 0, GETOPT_MARKED_CHAR},
+         {"no-sf",            no_argument,       0, GETOPT_ENVPAGER_CHAR},
+         {"show-on-enter",    no_argument,       0, GETOPT_SHOWONENTER_CHAR},
+         {"running",          no_argument,       0, GETOPT_SHOWRUNNING_CHAR},
+         {"full-time",        no_argument,       0, GETOPT_FULLTIME_CHAR},
+         {"edit-themes",      no_argument,       0, GETOPT_THEMEEDIT_CHAR},
+         {"settings-menu",    no_argument,       0, GETOPT_OPTIONSMENU_CHAR},
+         {"contect",          no_argument,       0, 'Z'},
+         {"skip-to-first",    no_argument,       0, GETOPT_SKIPTOFIRST_CHAR},
          {0, 0, 0, 0}
         };
       int option_index = 0;
@@ -1144,7 +1057,7 @@ Valid arguments are:\n\
         exit(2);
       }
       break;
-    case 'd':
+    case GETOPT_DIRONLY_CHAR:
       dirOnly = 1;
       break;
     case 'f':
@@ -1274,11 +1187,14 @@ Valid arguments are:\n\
 
   // Writing Menus
 
-  generateDefaultMenus();
+  generateDefaultShowMenus();
+  generateDefaultSfMenus();
+
   set_escdelay(10);
 
   newterm(NULL, stderr, stdin); 
-  refreshMenuLabels();
+  refreshShowMenuLabels();
+  refreshSfMenuLabels();
 
   memset(&sa, 0, sizeof(struct sigaction));
   sa.sa_handler = sigwinchHandle;
@@ -1296,13 +1212,14 @@ Valid arguments are:\n\
   curs_set(FALSE); // Hide Curser (Will want to bring it back later)
   keypad(stdscr, TRUE);
 
+  generateShowSettingsVars();
 
   if (launchThemeEditor == 1){
     themeBuilder();
     theme_menu_inputs();
     exittoshell();
   } else if (launchSettingsMenu == 1) {
-    settingsMenuView();
+    settingsMenuView(showSettingsMenuLabel, showSettingsMenuSize, showSettingsMenu, &settingIndexShow, &charValuesShow, &binValuesShow, totalCharItemsShow, totalBinItemsShow, generateShowSettingsVars(), "show");
     exittoshell();
   } else {
     // Remaining arguments passed as working directory

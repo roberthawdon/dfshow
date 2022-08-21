@@ -5,21 +5,9 @@
 #define M_NONE 0x00
 #define M_NORMAL 0x01
 
-/* TYPE DEFINITIONS */
-typedef unsigned int uint_t;
-typedef unsigned char uchar_t;
-typedef unsigned short ushort_t;
-typedef unsigned long long ullong_t;
+#include "customtypes.h"
 
-typedef struct {
-  char directories[256];
-} pathDirs;
-
-typedef struct node {
-  int val;
-  struct node * next;
-} node_t;
-
+void refreshScreen(char *application);
 int getch10th (void);
 int setDynamicChar(char **str, const char *format, ...);
 int splitPath(pathDirs **dirStruct, char *path);
