@@ -136,8 +136,10 @@ int main(int argc, char *argv[])
 
   // Read the config
 
-  readSfConfig(globalConfLocation);
-  readSfConfig(homeConfLocation);
+  settingsAction("read", "sf", NULL, NULL, NULL, NULL, 0, 0, 0, globalConfLocation);
+  settingsAction("read", "sf", NULL, NULL, NULL, NULL, 0, 0, 0, homeConfLocation);
+  // readSfConfig(globalConfLocation);
+  // readSfConfig(homeConfLocation);
 
   // Check for theme env variable
   if ( getenv("DFS_THEME")) {

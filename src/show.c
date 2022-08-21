@@ -958,8 +958,11 @@ int main(int argc, char *argv[])
 
   // Read the config
 
-  readShowConfig(globalConfLocation);
-  readShowConfig(homeConfLocation);
+  
+  settingsAction("read", "all", NULL, NULL, NULL, NULL, 0, 0, 0, globalConfLocation);
+  settingsAction("read", "all", NULL, NULL, NULL, NULL, 0, 0, 0, homeConfLocation);
+  // readShowConfig(globalConfLocation);
+  // readShowConfig(homeConfLocation);
 
   // Check for theme env variable
   if ( getenv("DFS_THEME")) {

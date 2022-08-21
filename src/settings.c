@@ -102,12 +102,12 @@ void settingsAction(char *action, char *application, wchar_t *settingsMenuLabel,
     #endif
   } else if ( !strcmp(action, "read" ) ) {
     #ifdef APPLICATION_SHOW
-      if (!strcmp(application, "show")) {
+      if (!strcmp(application, "show") || !strcmp(application, "all")) {
         readShowConfig(confFile);
       }
     #endif
     #ifdef APPLICATION_SF
-      if (!strcmp(application, "sf")) {
+      if (!strcmp(application, "sf") || !strcmp(application, "all")) {
         readSfConfig(confFile);
       }
     #endif
@@ -404,6 +404,9 @@ void settingsMenuView(wchar_t *settingsMenuLabel, int settingsMenuSize, menuDef 
   wPrintMenu(0,0,settingsMenuLabel);
 
   // TODO call the settings loader
+  settingsAction("read", application, NULL, NULL, NULL, NULL, 0, 0, 0, globalConfLocation);
+  settingsAction("read", application, NULL, NULL, NULL, NULL, 0, 0, 0, homeConfLocation);
+  settingsAction("generate", application, NULL, NULL, NULL, NULL, 0, 0, 0, NULL);
 
   while(1)
     {
@@ -422,8 +425,8 @@ void settingsMenuView(wchar_t *settingsMenuLabel, int settingsMenuSize, menuDef 
       } else if (*pc == menuHotkeyLookup(settingsMenu, "s_revert", settingsMenuSize)){
         // free(settings);
         // TODO call the settings loader
-        settingsAction("read", NULL, NULL, NULL, NULL, NULL, 0, 0, 0, globalConfLocation);
-        settingsAction("read", NULL, NULL, NULL, NULL, NULL, 0, 0, 0, homeConfLocation);
+        settingsAction("read", application, NULL, NULL, NULL, NULL, 0, 0, 0, globalConfLocation);
+        settingsAction("read", application, NULL, NULL, NULL, NULL, 0, 0, 0, homeConfLocation);
         settingsAction("generate", application, NULL, NULL, NULL, NULL, 0, 0, 0, NULL);
       } else if (*pc == menuHotkeyLookup(settingsMenu, "s_save", settingsMenuSize)){
         settingsAction("apply", application, NULL, settings, charValues, NULL, totalCharItems, 0, totalItems, NULL);
