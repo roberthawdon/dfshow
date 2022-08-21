@@ -840,7 +840,6 @@ Options shared with ls:\n"), stdout);
                                  see SIZE format below\n\
   -B, --ignore-backups         do not list implied entries ending with ~\n\
       --color[=WHEN]           colorize the output, see the color section below\n\
-  -d, --directory              show only directories\n\
   -f                           do not sort, enables -aU\n\
       --full-time              display time as full-iso format\n\
   -g                           only show group\n\
@@ -868,6 +867,7 @@ Using color to highlight file attributes is disabled by default and with\n\
 --color=never. With --color or --color=always this function is enabled.\n"), stdout);
   fputs (("\n\
 Options specific to show:\n\
+      --directories-only       show only directories\n\
       --theme=[THEME]          color themes, see the THEME section below for\n\
                                  valid themes\n\
       --no-danger              turns off danger colors when running with\n\
@@ -908,9 +908,9 @@ int main(int argc, char *argv[])
   initI18n();
 
 #ifdef HAVE_ACL_TYPE_EXTENDED
-  snprintf(options, 21, "%s", "@aABdfgGhilrsStUZ1");
+  snprintf(options, 21, "%s", "@aABfgGhilrsStUZ1");
 #else
-  snprintf(options, 21, "%s", "aABdfgGhilrsStUZ1");
+  snprintf(options, 21, "%s", "aABfgGhilrsStUZ1");
 #endif
 
   // Setting the default editor
@@ -974,33 +974,33 @@ int main(int argc, char *argv[])
     {
       static struct option long_options[] =
         {
-         {"all",            no_argument,       0, 'a'},
-         {"almost-all",     no_argument,       0, 'A'},
-         {"author",         no_argument,       0, GETOPT_AUTHOR_CHAR},
-         {"block-size",     required_argument, 0, GETOPT_BLOCKSIZE_CHAR},
-         {"ignore-backups", no_argument,       0, 'B'},
-         {"directory",      no_argument,       0, 'd'},
-         {"human-readable", no_argument,       0, 'h'},
-         {"inode",          no_argument,       0, 'i'},
-         {"no-group",       no_argument,       0, 'G'},
-         {"reverse",        no_argument,       0, 'r'},
-         {"size",           no_argument,       0, 's'},
-         {"time-style",     required_argument, 0, GETOPT_TIMESTYLE_CHAR},
-         {"si",             no_argument,       0, GETOPT_SI_CHAR},
-         {"help",           no_argument,       0, GETOPT_HELP_CHAR},
-         {"version",        no_argument,       0, GETOPT_VERSION_CHAR},
-         {"no-danger",      no_argument,       0, GETOPT_NODANGER_CHAR},
-         {"color",          optional_argument, 0, GETOPT_COLOR_CHAR},
-         {"theme",          optional_argument, 0, GETOPT_THEME_CHAR},
-         {"marked",         optional_argument, 0, GETOPT_MARKED_CHAR},
-         {"no-sf",          no_argument,       0, GETOPT_ENVPAGER_CHAR},
-         {"show-on-enter",  no_argument,       0, GETOPT_SHOWONENTER_CHAR},
-         {"running",        no_argument,       0, GETOPT_SHOWRUNNING_CHAR},
-         {"full-time",      no_argument,       0, GETOPT_FULLTIME_CHAR},
-         {"edit-themes",    no_argument,       0, GETOPT_THEMEEDIT_CHAR},
-         {"settings-menu",  no_argument,       0, GETOPT_OPTIONSMENU_CHAR},
-         {"contect",        no_argument,       0, 'Z'},
-         {"skip-to-first",  no_argument,       0, GETOPT_SKIPTOFIRST_CHAR},
+         {"all",              no_argument,       0, 'a'},
+         {"almost-all",       no_argument,       0, 'A'},
+         {"author",           no_argument,       0, GETOPT_AUTHOR_CHAR},
+         {"block-size",       required_argument, 0, GETOPT_BLOCKSIZE_CHAR},
+         {"ignore-backups",   no_argument,       0, 'B'},
+         {"directories-only", no_argument,       0, GETOPT_DIRONLY_CHAR},
+         {"human-readable",   no_argument,       0, 'h'},
+         {"inode",            no_argument,       0, 'i'},
+         {"no-group",         no_argument,       0, 'G'},
+         {"reverse",          no_argument,       0, 'r'},
+         {"size",             no_argument,       0, 's'},
+         {"time-style",       required_argument, 0, GETOPT_TIMESTYLE_CHAR},
+         {"si",               no_argument,       0, GETOPT_SI_CHAR},
+         {"help",             no_argument,       0, GETOPT_HELP_CHAR},
+         {"version",          no_argument,       0, GETOPT_VERSION_CHAR},
+         {"no-danger",        no_argument,       0, GETOPT_NODANGER_CHAR},
+         {"color",            optional_argument, 0, GETOPT_COLOR_CHAR},
+         {"theme",            optional_argument, 0, GETOPT_THEME_CHAR},
+         {"marked",           optional_argument, 0, GETOPT_MARKED_CHAR},
+         {"no-sf",            no_argument,       0, GETOPT_ENVPAGER_CHAR},
+         {"show-on-enter",    no_argument,       0, GETOPT_SHOWONENTER_CHAR},
+         {"running",          no_argument,       0, GETOPT_SHOWRUNNING_CHAR},
+         {"full-time",        no_argument,       0, GETOPT_FULLTIME_CHAR},
+         {"edit-themes",      no_argument,       0, GETOPT_THEMEEDIT_CHAR},
+         {"settings-menu",    no_argument,       0, GETOPT_OPTIONSMENU_CHAR},
+         {"contect",          no_argument,       0, 'Z'},
+         {"skip-to-first",    no_argument,       0, GETOPT_SKIPTOFIRST_CHAR},
          {0, 0, 0, 0}
         };
       int option_index = 0;
@@ -1057,7 +1057,7 @@ Valid arguments are:\n\
         exit(2);
       }
       break;
-    case 'd':
+    case GETOPT_DIRONLY_CHAR:
       dirOnly = 1;
       break;
     case 'f':
