@@ -94,6 +94,8 @@ int showAcls = 0; // Might end up not implementing this.
 
 bool showInodes = false;
 
+bool numericIds = false;
+
 #ifdef HAVE_GNU_BLOCKSIZE
 int block_size = 1024;
 #else
@@ -267,6 +269,13 @@ void readShowConfig(const char * confFile)
           showInodes = true;
         }
       }
+      // Check Numeric Ids
+      setting = config_setting_get_member(group, "numericIds");
+      if (setting){
+        if (config_setting_get_int(setting)){
+          numericIds = true;
+        }
+      }
       // Check Enter As Show
       setting = config_setting_get_member(group, "show-on-enter");
       if (setting){
@@ -420,6 +429,8 @@ void saveShowConfig(const char * confFile, settingIndex **settings, t1CharValues
         config_setting_set_int(setting, human);
       } else if (!strcmp((*settings)[i].refLabel, "showInodes")){
         config_setting_set_int(setting, showInodes);
+      } else if (!strcmp((*settings)[i].refLabel, "numericIds")){
+        config_setting_set_int(setting, numericIds);
       } else if (!strcmp((*settings)[i].refLabel, "show-on-enter")){
         config_setting_set_int(setting, enterAsShow);
       } else if (!strcmp((*settings)[i].refLabel, "context")){
@@ -496,6 +507,8 @@ void applyShowSettings(settingIndex **settings, t1CharValues **values, int items
       human = (*settings)[i].intSetting;
     } else if (!strcmp((*settings)[i].refLabel, "showInodes")){
       showInodes = (*settings)[i].intSetting;
+    } else if (!strcmp((*settings)[i].refLabel, "numericIds")){
+      numericIds = (*settings)[i].intSetting;
     } else if (!strcmp((*settings)[i].refLabel, "show-on-enter")){
       enterAsShow = (*settings)[i].intSetting;
     } else if (!strcmp((*settings)[i].refLabel, "marked")){
@@ -584,6 +597,7 @@ int generateShowSettingsVars()
   importSetting(&settingIndexShow, &items, "si",             _("Use SI units"), SETTING_BOOL, NULL, si, -1, 0);
   importSetting(&settingIndexShow, &items, "human-readable", _("Human readable sizes"), SETTING_BOOL, NULL, human, -1, 0);
   importSetting(&settingIndexShow, &items, "showInodes",     _("Show Inode"), SETTING_BOOL, NULL, showInodes, -1, 0);
+  importSetting(&settingIndexShow, &items, "numericIds",     _("Use numeric UID and GIDs"), SETTING_BOOL, NULL, numericIds, -1, 0);
   importSetting(&settingIndexShow, &items, "show-on-enter",  _("Enter key acts like Show"), SETTING_BOOL, NULL, enterAsShow, -1, 0);
   importSetting(&settingIndexShow, &items, "owner",          _("Owner Column"), SETTING_MULTI, NULL, ogavis, ownerCount, 0);
   importSetting(&settingIndexShow, &items, "context",        _("Show security context of files"), SETTING_BOOL, NULL, showContext, -1, 0);
@@ -847,6 +861,7 @@ Options shared with ls:\n"), stdout);
   -h, --human-readable         print sizes like 1K 234M 2G etc.\n\
   -i, --inode                  print index number of each file\n\
       --si                     as above, but use powers of 1000 not 1024\n\
+  -n, --numeric-uid-gid        show numeric values for user and group IDs\n\
   -r, --reverse                reverse order while sorting\n\
   -s, --size                   display the allocated size of files, in blocks\n\
   -S                           sort file by size, largest first\n\
@@ -908,9 +923,9 @@ int main(int argc, char *argv[])
   initI18n();
 
 #ifdef HAVE_ACL_TYPE_EXTENDED
-  snprintf(options, 21, "%s", "@aABfgGhilrsStUZ1");
+  snprintf(options, 21, "%s", "@aABfgGhilnrsStUZ1");
 #else
-  snprintf(options, 21, "%s", "aABfgGhilrsStUZ1");
+  snprintf(options, 21, "%s", "aABfgGhilnrsStUZ1");
 #endif
 
   // Setting the default editor
@@ -983,6 +998,7 @@ int main(int argc, char *argv[])
          {"human-readable",   no_argument,       0, 'h'},
          {"inode",            no_argument,       0, 'i'},
          {"no-group",         no_argument,       0, 'G'},
+         {"numeric-uid-gid",  no_argument,       0, 'n'},
          {"reverse",          no_argument,       0, 'r'},
          {"size",             no_argument,       0, 's'},
          {"time-style",       required_argument, 0, GETOPT_TIMESTYLE_CHAR},
@@ -1107,6 +1123,9 @@ Valid arguments are:\n\
     case GETOPT_SI_CHAR:
       human = 1;
       si = 1;
+      break;
+    case 'n':
+      numericIds = true;
       break;
     case 'r':
       reverse = 1;

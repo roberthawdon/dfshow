@@ -209,6 +209,7 @@ extern bool scaleSize;
 extern bool useDefinedEditor;
 extern bool useDefinedPager;
 extern bool showInodes;
+extern bool numericIds;
 extern char * visualPath;
 extern char * pagerPath;
 
@@ -679,7 +680,7 @@ void writeResultStruct(results* ob, const char * filename, struct stat buffer, i
   *ob[count].hlink = buffer.st_nlink;
   *ob[count].hlinklens = strlen(hlinkstr);
 
-  if (!getpwuid(buffer.st_uid)){
+  if (!getpwuid(buffer.st_uid) || numericIds){
     ob[count].owner = malloc(sizeof(char) * 6);
     snprintf(ob[count].owner, 6, "%i", buffer.st_uid);
   } else {
@@ -688,7 +689,7 @@ void writeResultStruct(results* ob, const char * filename, struct stat buffer, i
     snprintf(ob[count].owner, (strlen(pw->pw_name) + 1), "%s", pw->pw_name);
   }
 
-  if (!getgrgid(buffer.st_gid)){
+  if (!getgrgid(buffer.st_gid) || numericIds){
     ob[count].group = malloc(sizeof(char) * 6);
     snprintf(ob[count].group, 6, "%i", buffer.st_gid);
   } else {
@@ -697,7 +698,7 @@ void writeResultStruct(results* ob, const char * filename, struct stat buffer, i
     snprintf(ob[count].group, (strlen(gr->gr_name) + 1), "%s", gr->gr_name);
   }
 
-  if (!getpwuid(buffer.st_author)){
+  if (!getpwuid(buffer.st_author) || numericIds){
     ob[count].author = malloc(sizeof(char) * 6);
     snprintf(ob[count].author, 6, "%i", buffer.st_author);
   } else {
