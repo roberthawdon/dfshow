@@ -904,7 +904,6 @@ void printXattr(int start, int selected, int listref, int currentItem, int subIn
   char *tmpXattrPrint;
   char *tmpXattrSize;
   int tmpXattrSizeLen;
-  char *tmpXattrPadding;
   int linepadding;
   char *xattrKeySegment;
   char xattrPrePad[13] = "            ";
@@ -947,7 +946,6 @@ void printXattr(int start, int selected, int listref, int currentItem, int subIn
   }
   free(tmpXattrPrint);
   free(tmpXattrSize);
-  free(tmpXattrPadding);
 
   free(xattrKeySegment);
 
