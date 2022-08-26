@@ -336,7 +336,7 @@ void loadFile(const char * currentfile)
   viewmode = 1;
   totallines = 0;
 
-  filePos = malloc(sizeof(long int) * 1); // Initial isze of lookup
+  filePos = malloc(sizeof(long int) + 1); // Initial size of lookup
   filePos[0] = 0;
 
   stream = fopen(currentfile, "rb");
@@ -350,11 +350,11 @@ void loadFile(const char * currentfile)
 
   while ((nread = getline(&line, &len, stream)) != -1) {
     totallines++;
-    filePos = realloc(filePos, sizeof(long int) * totallines + 1);
+    filePos = realloc(filePos, sizeof(long int) * (totallines + 1));
     filePos[totallines] = ftell(stream);
     if (nread > longestline){
       longestline = nread;
-      longline = realloc(longline, sizeof(wchar_t) * longestline +1);
+      longline = realloc(longline, sizeof(wchar_t) * (longestline + 1));
     }
     mbstowcs(longline, line, len);
     if (wcslen(longline) > longestlongline){
