@@ -372,6 +372,7 @@ void file_view(char * currentfile)
   topline = 1;
 
   clear();
+  wPrintMenu(0, 0, sfFileMenuLabel);
   setColors(COMMAND_PAIR);
 
   displaysize = LINES - 2;
