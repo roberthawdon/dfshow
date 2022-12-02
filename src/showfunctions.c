@@ -322,6 +322,7 @@ char *getRelativePath(char *file, char *target)
   int i, j, e, c, targetUp, fileUp;
   pathDirs *fileStruct, *targetStruct;
   int  fileLen, targetLen, commonPath = 0;
+  int resultLen = 0;
 
   targetUp = fileUp = 0;
 
@@ -353,7 +354,8 @@ char *getRelativePath(char *file, char *target)
   targetUp = (targetLen - commonPath - 1);
   fileUp = (fileLen - commonPath);
   if (targetUp > 0){
-    result = realloc(result, sizeof(char) * (targetUp * 3) + 1);
+    resultLen = sizeof(char) * ((targetUp * 3) + 1);
+    result = realloc(result, resultLen);
     for (i = 0; i < targetUp; i++){
       if (c == 0){
         snprintf(result, ((targetUp * 3) + 1), "%s/", "..");
@@ -364,7 +366,8 @@ char *getRelativePath(char *file, char *target)
     }
     for(i=(fileLen - fileUp); i < fileLen; i++){
       j = strlen(fileStruct[i].directories);
-      result = realloc(result, sizeof(char) * (strlen(result) + j + 2));
+      resultLen = sizeof(char) * (resultLen + j + 2);
+      result = realloc(result, resultLen);
       if (i == fileLen - 1){
         snprintf(result + strlen(result), (strlen(result) + j + 2), "%s%c", fileStruct[i].directories, '\0');
       } else {
@@ -374,7 +377,8 @@ char *getRelativePath(char *file, char *target)
   } else if ((targetUp < 1) && (fileUp > 1)){
     for(i=commonPath; i < fileLen; i++){
       j = strlen(fileStruct[i].directories);
-      result = realloc(result, sizeof(char) * (strlen(result) + j + 2));
+      resultLen = sizeof(char) * (resultLen + j + 2);
+      result = realloc(result, resultLen);
       if (c == 0){
         snprintf(result, (strlen(result) + j + 2), "%s/%c", fileStruct[i].directories, '\0');
       } else if (i == fileLen - 1){
@@ -387,7 +391,8 @@ char *getRelativePath(char *file, char *target)
   } else {
     // Assume we're in the same directory at this point
     j = strlen(fileStruct[fileLen - 1].directories);
-    result = realloc(result, sizeof(char) * (j + 1));
+    resultLen = sizeof(char) * (j + 1);
+    result = realloc(result, resultLen);
     snprintf(result, (j + 1), "%s", fileStruct[fileLen - 1].directories);
   }
 
