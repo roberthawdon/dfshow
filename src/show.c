@@ -803,32 +803,32 @@ void refreshScreenShow()
   switch(viewMode)
     {
     case 0:
+      resizeDisplayDir(ob);
       wPrintMenu(0, 0, showFileMenuLabel);
       wPrintMenu(LINES-1, 0, functionMenuLabel);
-      resizeDisplayDir(ob);
       break;
     case 1:
+      resizeDisplayDir(ob);
       wPrintMenu(0,0,globalMenuLabel);
       wPrintMenu(LINES-1, 0, functionMenuLabel);
-      resizeDisplayDir(ob);
       break;
     case 2:
+      resizeDisplayDir(ob);
       wPrintMenu(0, 0, modifyMenuLabel);
       wPrintMenu(LINES-1, 0, functionMenuLabel);
-      resizeDisplayDir(ob);
       break;
     case 3:
+      resizeDisplayDir(ob);
       wPrintMenu(0, 0, sortMenuLabel);
       wPrintMenu(LINES-1, 0, functionMenuLabel);
-      resizeDisplayDir(ob);
       break;
     case 4:
       wPrintMenu(0,0,globalMenuLabel);
       break;
     case 5:
+      resizeDisplayDir(ob);
       wPrintMenu(0, 0, linkMenuLabel);
       wPrintMenu(LINES-1, 0, functionMenuLabel);
-      resizeDisplayDir(ob);
       break;
     }
 }
