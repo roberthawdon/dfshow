@@ -225,6 +225,9 @@ void generateDefaultShowMenus(){
   addMenuItem(&functionMenu, &functionMenuSize, "f_10", _("<F10>-Block"), 274);
 
   // Modify Menu
+  #if HAVE_SELINUX_SELINUX_H
+  addMenuItem(&modifyMenu, &modifyMenuSize, "m_context", _("!Context"), 'c');
+  #endif
   addMenuItem(&modifyMenu, &modifyMenuSize, "m_owner", _("!Owner/Group"), 'o');
   addMenuItem(&modifyMenu, &modifyMenuSize, "m_perms", _("!Permissions"), 'p');
 
