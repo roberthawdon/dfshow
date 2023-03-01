@@ -69,7 +69,7 @@ void updateMenuItem(menuDef **dfMenu, int *menuSize, char* refLabel, char* displ
   return;
 }
 
-void addMenuItem(menuDef **dfMenu, int *pos, char* refLabel, char* displayLabel, int defaultHotKey){
+void addMenuItem(menuDef **dfMenu, int *pos, char* refLabel, char* displayLabel, int defaultHotKey, bool sort){
 
   int menuPos = *pos;
   int charCount = 0;
@@ -110,7 +110,9 @@ void addMenuItem(menuDef **dfMenu, int *pos, char* refLabel, char* displayLabel,
     }
   (*dfMenu)[menuPos].displayLabelSize = charCount;
 
-  qsort((*dfMenu), menuPos + 1, sizeof(menuDef), cmp_menu_ref);
+  if (sort){
+      qsort((*dfMenu), menuPos + 1, sizeof(menuDef), cmp_menu_ref);
+  }
 
   ++*pos;
 

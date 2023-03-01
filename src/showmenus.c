@@ -172,6 +172,10 @@ menuDef *touchDateConfirmMenu;
 int touchDateConfirmMenuSize = 0;
 wchar_t *touchDateConfirmMenuLabel;
 
+menuDef *contextMenu;
+int contextMenuSize = 0;
+wchar_t *contextMenuLabel;
+
 wchar_t *tmpMenuLabel;
 
 extern menuDef *colorMenu;
@@ -186,86 +190,93 @@ void modify_owner_input();
 
 void generateDefaultShowMenus(){
   // Global Menu
-  addMenuItem(&globalMenu, &globalMenuSize, "g_colors", _("c!Olors"), 'o');
-  addMenuItem(&globalMenu, &globalMenuSize, "g_config", _("!Config"), 'c');
-  addMenuItem(&globalMenu, &globalMenuSize, "g_run", _("!Run"), 'r');
-  addMenuItem(&globalMenu, &globalMenuSize, "g_edit", _("!Edit file"), 'e');
-  addMenuItem(&globalMenu, &globalMenuSize, "g_help", _("!Help"), 'h');
-  addMenuItem(&globalMenu, &globalMenuSize, "g_mkdir", _("!Make dir"), 'm');
-  addMenuItem(&globalMenu, &globalMenuSize, "g_quit", _("!Quit"), 'q');
-  addMenuItem(&globalMenu, &globalMenuSize, "g_show", _("!Show dir"), 's');
-  addMenuItem(&globalMenu, &globalMenuSize, "g_touch", _("!Touch file"), 't');
+  addMenuItem(&globalMenu, &globalMenuSize, "g_colors", _("c!Olors"), 'o', 1);
+  addMenuItem(&globalMenu, &globalMenuSize, "g_config", _("!Config"), 'c', 1);
+  addMenuItem(&globalMenu, &globalMenuSize, "g_run", _("!Run"), 'r', 1);
+  addMenuItem(&globalMenu, &globalMenuSize, "g_edit", _("!Edit file"), 'e', 1);
+  addMenuItem(&globalMenu, &globalMenuSize, "g_help", _("!Help"), 'h', 1);
+  addMenuItem(&globalMenu, &globalMenuSize, "g_mkdir", _("!Make dir"), 'm', 1);
+  addMenuItem(&globalMenu, &globalMenuSize, "g_quit", _("!Quit"), 'q', 1);
+  addMenuItem(&globalMenu, &globalMenuSize, "g_show", _("!Show dir"), 's', 1);
+  addMenuItem(&globalMenu, &globalMenuSize, "g_touch", _("!Touch file"), 't', 1);
 
   // File Menu
-  addMenuItem(&showFileMenu, &showFileMenuSize, "f_copy", _("!Copy"), 'c');
-  addMenuItem(&showFileMenu, &showFileMenuSize, "f_delete", _("!Delete"), 'd');
-  addMenuItem(&showFileMenu, &showFileMenuSize, "f_edit", _("!Edit"), 'e');
-  addMenuItem(&showFileMenu, &showFileMenuSize, "f_hidden", _("!Hidden"), 'h');
-  addMenuItem(&showFileMenu, &showFileMenuSize, "f_link", _("!Link"), 'l');
-  addMenuItem(&showFileMenu, &showFileMenuSize, "f_modify", _("!Modify"), 'm');
+  addMenuItem(&showFileMenu, &showFileMenuSize, "f_copy", _("!Copy"), 'c', 1);
+  addMenuItem(&showFileMenu, &showFileMenuSize, "f_delete", _("!Delete"), 'd', 1);
+  addMenuItem(&showFileMenu, &showFileMenuSize, "f_edit", _("!Edit"), 'e', 1);
+  addMenuItem(&showFileMenu, &showFileMenuSize, "f_hidden", _("!Hidden"), 'h', 1);
+  addMenuItem(&showFileMenu, &showFileMenuSize, "f_link", _("!Link"), 'l', 1);
+  addMenuItem(&showFileMenu, &showFileMenuSize, "f_modify", _("!Modify"), 'm', 1);
   if (plugins){
-    addMenuItem(&showFileMenu, &showFileMenuSize, "f_plugin", _("!Plugin"), 'p');
+    addMenuItem(&showFileMenu, &showFileMenuSize, "f_plugin", _("!Plugin"), 'p', 1);
   }
-  addMenuItem(&showFileMenu, &showFileMenuSize, "f_quit", _("!Quit"), 'q');
-  addMenuItem(&showFileMenu, &showFileMenuSize, "f_rename", _("!Rename"), 'r');
-  addMenuItem(&showFileMenu, &showFileMenuSize, "f_show", _("!Show"), 's');
-  addMenuItem(&showFileMenu, &showFileMenuSize, "f_touch", _("!Touch"), 't');
-  addMenuItem(&showFileMenu, &showFileMenuSize, "f_uhunt", _("h!Unt"), 'u');
-  addMenuItem(&showFileMenu, &showFileMenuSize, "f_xexec", _("e!Xec"), 'x');
+  addMenuItem(&showFileMenu, &showFileMenuSize, "f_quit", _("!Quit"), 'q', 1);
+  addMenuItem(&showFileMenu, &showFileMenuSize, "f_rename", _("!Rename"), 'r', 1);
+  addMenuItem(&showFileMenu, &showFileMenuSize, "f_show", _("!Show"), 's', 1);
+  addMenuItem(&showFileMenu, &showFileMenuSize, "f_touch", _("!Touch"), 't', 1);
+  addMenuItem(&showFileMenu, &showFileMenuSize, "f_uhunt", _("h!Unt"), 'u', 1);
+  addMenuItem(&showFileMenu, &showFileMenuSize, "f_xexec", _("e!Xec"), 'x', 1);
 
   // Function Menu
-  addMenuItem(&functionMenu, &functionMenuSize, "f_01", _("<F1>-Down"), 265);
-  addMenuItem(&functionMenu, &functionMenuSize, "f_02", _("<F2>-Up"), 266);
-  addMenuItem(&functionMenu, &functionMenuSize, "f_03", _("<F3>-Top"), 267);
-  addMenuItem(&functionMenu, &functionMenuSize, "f_04", _("<F4>-Bottom"), 268);
-  addMenuItem(&functionMenu, &functionMenuSize, "f_05", _("<F5>-Refresh"), 269);
-  addMenuItem(&functionMenu, &functionMenuSize, "f_06", _("<F6>-Mark/Unmark"), 270);
-  addMenuItem(&functionMenu, &functionMenuSize, "f_07", _("<F7>-All"), 271);
-  addMenuItem(&functionMenu, &functionMenuSize, "f_08", _("<F8>-None"), 272);
-  addMenuItem(&functionMenu, &functionMenuSize, "f_09", _("<F9>-Sort"), 273);
-  addMenuItem(&functionMenu, &functionMenuSize, "f_10", _("<F10>-Block"), 274);
+  addMenuItem(&functionMenu, &functionMenuSize, "f_01", _("<F1>-Down"), 265, 1);
+  addMenuItem(&functionMenu, &functionMenuSize, "f_02", _("<F2>-Up"), 266, 1);
+  addMenuItem(&functionMenu, &functionMenuSize, "f_03", _("<F3>-Top"), 267, 1);
+  addMenuItem(&functionMenu, &functionMenuSize, "f_04", _("<F4>-Bottom"), 268, 1);
+  addMenuItem(&functionMenu, &functionMenuSize, "f_05", _("<F5>-Refresh"), 269, 1);
+  addMenuItem(&functionMenu, &functionMenuSize, "f_06", _("<F6>-Mark/Unmark"), 270, 1);
+  addMenuItem(&functionMenu, &functionMenuSize, "f_07", _("<F7>-All"), 271, 1);
+  addMenuItem(&functionMenu, &functionMenuSize, "f_08", _("<F8>-None"), 272, 1);
+  addMenuItem(&functionMenu, &functionMenuSize, "f_09", _("<F9>-Sort"), 273, 1);
+  addMenuItem(&functionMenu, &functionMenuSize, "f_10", _("<F10>-Block"), 274, 1);
 
   // Modify Menu
   #ifdef HAVE_SELINUX_SELINUX_H
-  addMenuItem(&modifyMenu, &modifyMenuSize, "m_context", _("!Context"), 'c');
+    addMenuItem(&modifyMenu, &modifyMenuSize, "m_context", _("!Context"), 'c', 1);
   #endif
-  addMenuItem(&modifyMenu, &modifyMenuSize, "m_owner", _("!Owner/Group"), 'o');
-  addMenuItem(&modifyMenu, &modifyMenuSize, "m_perms", _("!Permissions"), 'p');
+  addMenuItem(&modifyMenu, &modifyMenuSize, "m_owner", _("!Owner/Group"), 'o', 1);
+  addMenuItem(&modifyMenu, &modifyMenuSize, "m_perms", _("!Permissions"), 'p', 1);
 
   // Sort Menu
-  addMenuItem(&sortMenu, &sortMenuSize, "s_date", _("!Date & time"), 'd');
-  addMenuItem(&sortMenu, &sortMenuSize, "s_name", _("!Name"), 'n');
-  addMenuItem(&sortMenu, &sortMenuSize, "s_size", _("!Size"), 's');
+  addMenuItem(&sortMenu, &sortMenuSize, "s_date", _("!Date & time"), 'd', 1);
+  addMenuItem(&sortMenu, &sortMenuSize, "s_name", _("!Name"), 'n', 1);
+  addMenuItem(&sortMenu, &sortMenuSize, "s_size", _("!Size"), 's', 1);
 
   // Link Menu
-  addMenuItem(&linkMenu, &linkMenuSize, "l_hard", _("!Hard"), 'h');
-  addMenuItem(&linkMenu, &linkMenuSize, "l_symbolic", _("!Symbolic"), 's');
+  addMenuItem(&linkMenu, &linkMenuSize, "l_hard", _("!Hard"), 'h', 1);
+  addMenuItem(&linkMenu, &linkMenuSize, "l_symbolic", _("!Symbolic"), 's', 1);
 
   // Link Location Menu
-  addMenuItem(&linkLocationMenu, &linkLocationMenuSize, "l_absolute", _("!Absolute"), 'a');
-  addMenuItem(&linkLocationMenu, &linkLocationMenuSize, "l_relative", _("!Relative"), 'r');
+  addMenuItem(&linkLocationMenu, &linkLocationMenuSize, "l_absolute", _("!Absolute"), 'a', 1);
+  addMenuItem(&linkLocationMenu, &linkLocationMenuSize, "l_relative", _("!Relative"), 'r', 1);
 
   // Touch Menu
-  addMenuItem(&touchMenu, &touchMenuSize, "t_accessed", _("!Accessed"), 'a');
-  addMenuItem(&touchMenu, &touchMenuSize, "t_both", _("!Both"), 'b');
-  addMenuItem(&touchMenu, &touchMenuSize, "t_modified", _("!Modified"), 'm');
+  addMenuItem(&touchMenu, &touchMenuSize, "t_accessed", _("!Accessed"), 'a', 1);
+  addMenuItem(&touchMenu, &touchMenuSize, "t_both", _("!Both"), 'b', 1);
+  addMenuItem(&touchMenu, &touchMenuSize, "t_modified", _("!Modified"), 'm', 1);
 
   // Touch Set Date Confirm
-  addMenuItem(&touchDateConfirmMenu, &touchDateConfirmMenuSize, "t_1", _("!Yes/"), 'y');
-  addMenuItem(&touchDateConfirmMenu, &touchDateConfirmMenuSize, "t_2", _("!No"), 'n');
+  addMenuItem(&touchDateConfirmMenu, &touchDateConfirmMenuSize, "t_1", _("!Yes/"), 'y', 1);
+  addMenuItem(&touchDateConfirmMenu, &touchDateConfirmMenuSize, "t_2", _("!No"), 'n', 1);
 
   // Color Menu
-  addMenuItem(&colorMenu, &colorMenuSize, "c_color", _("Color number"), -1);
-  addMenuItem(&colorMenu, &colorMenuSize, "c_load", _("!Load"), 'l');
-  addMenuItem(&colorMenu, &colorMenuSize, "c_quit", _("!Quit"), 'q');
-  addMenuItem(&colorMenu, &colorMenuSize, "c_save", _("!Save"), 's');
-  addMenuItem(&colorMenu, &colorMenuSize, "c_toggle", _("!Toggle"), 't');
-  addMenuItem(&colorMenu, &colorMenuSize, "c_use", _("!Use"), 'u');
+  addMenuItem(&colorMenu, &colorMenuSize, "c_color", _("Color number"), -1, 1);
+  addMenuItem(&colorMenu, &colorMenuSize, "c_load", _("!Load"), 'l', 1);
+  addMenuItem(&colorMenu, &colorMenuSize, "c_quit", _("!Quit"), 'q', 1);
+  addMenuItem(&colorMenu, &colorMenuSize, "c_save", _("!Save"), 's', 1);
+  addMenuItem(&colorMenu, &colorMenuSize, "c_toggle", _("!Toggle"), 't', 1);
+  addMenuItem(&colorMenu, &colorMenuSize, "c_use", _("!Use"), 'u', 1);
 
   // Setings Menu
-  addMenuItem(&showSettingsMenu, &showSettingsMenuSize, "s_quit", _("!Quit"), 'q');
-  addMenuItem(&showSettingsMenu, &showSettingsMenuSize, "s_revert", _("!Revert"), 'r');
-  addMenuItem(&showSettingsMenu, &showSettingsMenuSize, "s_save", _("!Save"), 's');
+  addMenuItem(&showSettingsMenu, &showSettingsMenuSize, "s_quit", _("!Quit"), 'q', 1);
+  addMenuItem(&showSettingsMenu, &showSettingsMenuSize, "s_revert", _("!Revert"), 'r', 1);
+  addMenuItem(&showSettingsMenu, &showSettingsMenuSize, "s_save", _("!Save"), 's', 1);
+
+  // Context Menu (SELinux)
+  addMenuItem(&contextMenu, &contextMenuSize, "c_user", _("!User"), 'u', 0);
+  addMenuItem(&contextMenu, &contextMenuSize, "c_role", _("!Role"), 'r', 0);
+  addMenuItem(&contextMenu, &contextMenuSize, "c_type", _("!Type"), 't', 0);
+  addMenuItem(&contextMenu, &contextMenuSize, "c_level", _("!Level"), 'l', 0);
+  addMenuItem(&contextMenu, &contextMenuSize, "c_string", _("Raw !String"), 's', 0);
 }
 
 void refreshShowMenuLabels(){
@@ -278,6 +289,7 @@ void refreshShowMenuLabels(){
   linkLocationMenuLabel = genMenuDisplayLabel(_("Link Location -"), linkLocationMenu, linkLocationMenuSize, _("(enter = R)"), 1);
   touchMenuLabel = genMenuDisplayLabel(_("Set Time -"), touchMenu, touchMenuSize, _("(enter = B)"), 1);
   touchDateConfirmMenuLabel = genMenuDisplayLabel(_("Set Time?"), touchDateConfirmMenu, touchDateConfirmMenuSize, _("(enter = N)"), -1);
+  contextMenuLabel = genMenuDisplayLabel(_("Set Context -"), contextMenu, contextMenuSize, "", 1);
   colorMenuLabel = genMenuDisplayLabel("", colorMenu, colorMenuSize, "", 1);
   showSettingsMenuLabel = genMenuDisplayLabel(_("SHOW Settings Menu -"), showSettingsMenu, showSettingsMenuSize, "", 1);
 }
@@ -291,6 +303,7 @@ void unloadShowMenuLabels(){
   free(linkLocationMenuLabel);
   free(touchMenuLabel);
   free(touchDateConfirmMenuLabel);
+  free(contextMenuLabel);
   free(colorMenuLabel);
   free(showSettingsMenuLabel);
 }
@@ -1476,6 +1489,19 @@ void link_key_menu_inputs()
     }
 }
 
+void modify_context_menu_inputs()
+{
+    wPrintMenu(0,0,contextMenuLabel);
+    while(1)
+      {
+        *pc = getch10th();
+        if (*pc == 27){
+        // ESC Key
+        directory_view_menu_inputs();
+        }
+      }
+}
+
 void modify_key_menu_inputs()
 {
   viewMode = 2;
@@ -1487,6 +1513,8 @@ void modify_key_menu_inputs()
         modify_owner_input();
       } else if (*pc == menuHotkeyLookup(modifyMenu, "m_perms", modifyMenuSize)){
         modify_permissions_input();
+      } else if (*pc == menuHotkeyLookup(modifyMenu, "m_context", modifyMenuSize)){
+        modify_context_menu_inputs();
       } else if (*pc == 27){
         // ESC Key
         directory_view_menu_inputs();

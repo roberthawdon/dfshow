@@ -83,29 +83,29 @@ extern wchar_t *longline;
 
 void generateDefaultSfMenus(){
   // File Menu
-  addMenuItem(&sfFileMenu, &sfFileMenuSize, "f_01", _("<F1>-Down"), 265);
-  addMenuItem(&sfFileMenu, &sfFileMenuSize, "f_02", _("<F2>-Up"), 266);
-  addMenuItem(&sfFileMenu, &sfFileMenuSize, "f_03", _("<F3>-Top"), 267);
-  addMenuItem(&sfFileMenu, &sfFileMenuSize, "f_04", _("<F4>-Bottom"), 268);
-  addMenuItem(&sfFileMenu, &sfFileMenuSize, "f_config", _("!Config"), 'c');
-  addMenuItem(&sfFileMenu, &sfFileMenuSize, "f_find", _("!Find"), 'f');
-  addMenuItem(&sfFileMenu, &sfFileMenuSize, "f_help", _("!Help"), 'h');
-  addMenuItem(&sfFileMenu, &sfFileMenuSize, "f_position", _("!Position"), 'p');
-  addMenuItem(&sfFileMenu, &sfFileMenuSize, "f_quit", _("!Quit"), 'q');
+  addMenuItem(&sfFileMenu, &sfFileMenuSize, "f_01", _("<F1>-Down"), 265, 1);
+  addMenuItem(&sfFileMenu, &sfFileMenuSize, "f_02", _("<F2>-Up"), 266, 1);
+  addMenuItem(&sfFileMenu, &sfFileMenuSize, "f_03", _("<F3>-Top"), 267, 1);
+  addMenuItem(&sfFileMenu, &sfFileMenuSize, "f_04", _("<F4>-Bottom"), 268, 1);
+  addMenuItem(&sfFileMenu, &sfFileMenuSize, "f_config", _("!Config"), 'c', 1);
+  addMenuItem(&sfFileMenu, &sfFileMenuSize, "f_find", _("!Find"), 'f', 1);
+  addMenuItem(&sfFileMenu, &sfFileMenuSize, "f_help", _("!Help"), 'h', 1);
+  addMenuItem(&sfFileMenu, &sfFileMenuSize, "f_position", _("!Position"), 'p', 1);
+  addMenuItem(&sfFileMenu, &sfFileMenuSize, "f_quit", _("!Quit"), 'q', 1);
   if (wrap){
-    addMenuItem(&sfFileMenu, &sfFileMenuSize, "f_wrap", _("!Wrap-off"), 'w');
+    addMenuItem(&sfFileMenu, &sfFileMenuSize, "f_wrap", _("!Wrap-off"), 'w', 1);
   } else {
-    addMenuItem(&sfFileMenu, &sfFileMenuSize, "f_wrap", _("!Wrap-on"), 'w');
+    addMenuItem(&sfFileMenu, &sfFileMenuSize, "f_wrap", _("!Wrap-on"), 'w', 1);
   }
 
   // Case Menu
-  addMenuItem(&caseMenu, &caseMenuSize, "c1_ignore", _("!Ignore-case"), 'i');
-  addMenuItem(&caseMenu, &caseMenuSize, "c2_sensitive", _("!Case-sensitive"), 'c');
+  addMenuItem(&caseMenu, &caseMenuSize, "c1_ignore", _("!Ignore-case"), 'i', 1);
+  addMenuItem(&caseMenu, &caseMenuSize, "c2_sensitive", _("!Case-sensitive"), 'c', 1);
 
   // Setings Menu
-  addMenuItem(&sfSettingsMenu, &sfSettingsMenuSize, "s_quit", _("!Quit"), 'q');
-  addMenuItem(&sfSettingsMenu, &sfSettingsMenuSize, "s_revert", _("!Revert"), 'r');
-  addMenuItem(&sfSettingsMenu, &sfSettingsMenuSize, "s_save", _("!Save"), 's');
+  addMenuItem(&sfSettingsMenu, &sfSettingsMenuSize, "s_quit", _("!Quit"), 'q', 1);
+  addMenuItem(&sfSettingsMenu, &sfSettingsMenuSize, "s_revert", _("!Revert"), 'r', 1);
+  addMenuItem(&sfSettingsMenu, &sfSettingsMenuSize, "s_save", _("!Save"), 's', 1);
 }
 
 void refreshSfMenuLabels(){

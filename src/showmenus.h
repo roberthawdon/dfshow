@@ -10,6 +10,7 @@ void modify_key_menu_inputs();
 void modify_owner_input();
 void modify_group_input();
 void modify_permissions_input();
+void modify_context_menu_inputs();
 void show_directory_input();
 void directory_view_menu_inputs();
 void global_menu_inputs();
