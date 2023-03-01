@@ -34,6 +34,7 @@
 #include <utime.h>
 #include <libintl.h>
 #include <locale.h>
+#include "config.h"
 #include "menu.h"
 #include "display.h"
 #include "settings.h"
