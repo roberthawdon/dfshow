@@ -187,13 +187,14 @@ To support this project, you can make a donation to its current maintainer:
 
 Donations are also greatly appreciated via the following crypto currencies:
 
-<details>
-    <summary>
-        <img src="misc/donate/logos/btc-logo.png" width="16" height="16"> Bitcoin
-    </summary>
-    <br>bc1qxgy074cwdsvekg98fkqzju99kgyxzcyuqgqm6p
-    <br><img src="misc/donate/addresses/bitcoin-qr.png"><br>
-</details>
+.. raw:: html
+   <details>
+       <summary>
+           <img src="misc/donate/logos/btc-logo.png" width="16" height="16"> Bitcoin
+       </summary>
+       <br>bc1qxgy074cwdsvekg98fkqzju99kgyxzcyuqgqm6p
+       <br><img src="misc/donate/addresses/bitcoin-qr.png"><br>
+   </details>
 
 .. |PayPal| image:: https://user-images.githubusercontent.com/4301139/91666536-6fb15080-eaf5-11ea-974b-f0eb997615b4.gif
    :target: https://paypal.me/RIHawdon
