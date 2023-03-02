@@ -1,6 +1,9 @@
 #include <wchar.h>
 #include "customtypes.h"
 
+#define NOSORT 0
+#define SORT 1
+
 int cmp_menu_ref(const void *lhs, const void *rhs);
 void addMenuItem(menuDef **dfMenu, int *pos, char* refLabel, char* displayLabel, int defaultHotKey, bool sort);
 void updateMenuItem(menuDef **dfMenu, int *menuSize, char* refLabel, char* displayLabel);

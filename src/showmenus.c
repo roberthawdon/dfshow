@@ -18,6 +18,13 @@
 */
 
 #define _GNU_SOURCE
+
+#define SE_USER 0
+#define SE_ROLE 1
+#define SE_TYPE 2
+#define SE_LEVEL 3
+#define SE_RAW 4
+
 #include <ncurses.h>
 #include <unistd.h>
 #include <string.h>
@@ -1489,6 +1496,36 @@ void link_key_menu_inputs()
     }
 }
 
+void modify_context_inputs(int mode)
+{
+    char *menuLabel;
+    char newContext[256];
+    int curPos = 0;
+
+    if (mode == SE_USER) {
+        setDynamicChar(&menuLabel, "Set User Context:");
+    } else if (mode == SE_ROLE) {
+        setDynamicChar(&menuLabel, "Set Role Context:");
+    } else if (mode == SE_TYPE) {
+        setDynamicChar(&menuLabel, "Set Type Context:");
+    } else if (mode == SE_LEVEL) {
+        setDynamicChar(&menuLabel, "Set Level Context:");
+    } else if (mode == SE_RAW) {
+        setDynamicChar(&menuLabel, "Set Context:");
+    }
+
+    move(0,0);
+    clrtoeol();
+    curPos = (printMenu(0, 0, menuLabel) + 1);
+    free(menuLabel);
+    move(0,curPos);
+    readline(newContext, 256, "");
+    // TO DO - Write function
+
+    directory_view_menu_inputs();
+
+}
+
 void modify_context_menu_inputs()
 {
     wPrintMenu(0,0,contextMenuLabel);
@@ -1497,7 +1534,17 @@ void modify_context_menu_inputs()
         *pc = getch10th();
         if (*pc == 27){
         // ESC Key
-        directory_view_menu_inputs();
+            directory_view_menu_inputs();
+        } else if (*pc == menuHotkeyLookup(contextMenu, "c_user", contextMenuSize)){
+            modify_context_inputs(SE_USER);
+        } else if (*pc == menuHotkeyLookup(contextMenu, "c_role", contextMenuSize)){
+            modify_context_inputs(SE_ROLE);
+        } else if (*pc == menuHotkeyLookup(contextMenu, "c_type", contextMenuSize)){
+            modify_context_inputs(SE_TYPE);
+        } else if (*pc == menuHotkeyLookup(contextMenu, "c_level", contextMenuSize)){
+            modify_context_inputs(SE_LEVEL);
+        } else if (*pc == menuHotkeyLookup(contextMenu, "c_string", contextMenuSize)){
+            modify_context_inputs(SE_RAW);
         }
       }
 }
