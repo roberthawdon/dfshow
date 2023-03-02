@@ -188,6 +188,7 @@ To support this project, you can make a donation to its current maintainer:
 Donations are also greatly appreciated via the following crypto currencies:
 
 .. raw:: html
+
    <details>
        <summary>
            <img src="misc/donate/logos/btc-logo.png" width="16" height="16"> Bitcoin
