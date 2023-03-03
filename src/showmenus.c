@@ -434,7 +434,7 @@ void show_directory_input()
   memcpy(oldpwd, currentpwd, (strlen(currentpwd) + 1));
   move(0,0);
   clrtoeol();
-  curPos = (printMenu(0, 0, "Show Directory - Enter pathname:") + 1);
+  curPos = (printMenu(0, 0, _("Show Directory - Enter pathname:")) + 1);
   curs_set(TRUE);
   move(0,curPos);
   readline(currentpwd, 4096, oldpwd);
@@ -468,7 +468,7 @@ void show_directory_input()
       chdir(currentpwd);
       refreshDirectory(sortmode, 0, selected, -2);
     } else {
-      setDynamicChar(&direrror, "The location %s cannot be opened or is not a directory\n", currentpwd);
+      setDynamicChar(&direrror, _("The location %s cannot be opened or is not a directory\n"), currentpwd);
       memcpy(currentpwd, oldpwd, (strlen(oldpwd) + 1));
       topLineMessage(direrror);
     }
@@ -488,7 +488,7 @@ void show_directory_input()
 int replace_file_confirm_input(char *filename)
 {
   char *message = malloc(sizeof(char) * 1);
-  setDynamicChar(&message, "Replace file [<%s>]? (!Yes/!No)", filename);
+  setDynamicChar(&message, _("Replace file [<%s>]? (!Yes/!No)"), filename);
   printMenu(0,0, message);
   free(message);
   while(1)
@@ -514,7 +514,7 @@ void copy_file_input(char *file, mode_t mode)
   int curPos = 0;
   move(0,0);
   clrtoeol();
-  curPos = (printMenu(0, 0, "Copy file to:") + 1);
+  curPos = (printMenu(0, 0, _("Copy file to:")) + 1);
   curs_set(TRUE);
   move(0,curPos);
   readline(newfile, 4096, file);
@@ -546,12 +546,12 @@ void copy_file_input(char *file, mode_t mode)
           createParentDirs(newfile);
           goto copyFile;
         } else {
-          setDynamicChar(&errmessage, "Error: %s", strerror(errno));
+          setDynamicChar(&errmessage, _("Error: %s"), strerror(errno));
           topLineMessage(errmessage);
           free(errmessage);
         }
       } else {
-        setDynamicChar(&errmessage, "Error: %s", strerror(errno));
+        setDynamicChar(&errmessage, _("Error: %s"), strerror(errno));
         topLineMessage(errmessage);
         free(errmessage);
       }
@@ -568,7 +568,7 @@ void copy_multi_file_input(results* ob, char *input)
   char destfile[4096];
   move(0,0);
   clrtoeol();
-  curPos = (printMenu(0, 0, "Copy multiple files to:") + 1);
+  curPos = (printMenu(0, 0, _("Copy multiple files to:")) + 1);
   curs_set(TRUE);
   move(0, curPos);
   readline(dest, 4096, input);
@@ -614,7 +614,7 @@ void copy_multi_file_input(results* ob, char *input)
         mk_dir(dest); // Needed as the final element is omitted by the above
         goto copyMultiFile;
       } else {
-        topLineMessage("Error: Directory Not Found.");
+        topLineMessage(_("Error: Directory Not Found."));
       }
     }
   }
@@ -629,7 +629,7 @@ void rename_multi_file_input(results* ob, char *input)
   char destfile[4096];
   move(0,0);
   clrtoeol();
-  curPos = (printMenu(0, 0, "Rename multiple files to:") + 1);
+  curPos = (printMenu(0, 0, _("Rename multiple files to:")) + 1);
   curs_set(TRUE);
   move(0, curPos);
   readline(dest, 4096, input);
@@ -674,7 +674,7 @@ void rename_multi_file_input(results* ob, char *input)
         mk_dir(dest); // Needed as the final element is omitted by the above
         goto renameMultiFile;
       } else {
-        topLineMessage("Error: Directory Not Found.");
+        topLineMessage(_("Error: Directory Not Found."));
       }
     }
     refreshDirectory(sortmode, 0, selected, 1);
@@ -689,7 +689,7 @@ void edit_file_input()
   int curPos = 0;
   move(0,0);
   clrtoeol();
-  curPos = (printMenu(0, 0, "Edit File - Enter pathname:") + 1);
+  curPos = (printMenu(0, 0, _("Edit File - Enter pathname:")) + 1);
   curs_set(TRUE);
   move(0,curPos);
   readline(filepath, 4096, "");
@@ -706,7 +706,7 @@ void rename_file_input(char *file)
   int e;
   move(0,0);
   clrtoeol();
-  curPos = (printMenu(0, 0, "Rename file to:") + 1);
+  curPos = (printMenu(0, 0, _("Rename file to:")) + 1);
   curs_set(TRUE);
   move(0,curPos);
   readline(dest, 4096, file);
@@ -739,12 +739,12 @@ void rename_file_input(char *file)
           createParentDirs(dest);
           goto renameFile;
         } else {
-          setDynamicChar(&errmessage, "Error: %s", strerror(errno));
+          setDynamicChar(&errmessage, _("Error: %s"), strerror(errno));
           topLineMessage(errmessage);
           free(errmessage);
         }
       } else {
-        setDynamicChar(&errmessage, "Error: %s", strerror(errno));
+        setDynamicChar(&errmessage, _("Error: %s"), strerror(errno));
         topLineMessage(errmessage);
         free(errmessage);
       }
@@ -762,7 +762,7 @@ void make_directory_input()
   int e;
   move(0,0);
   clrtoeol();
-  curPos = (printMenu(0, 0, "Make Directory - Enter pathname:") + 1);
+  curPos = (printMenu(0, 0, _("Make Directory - Enter pathname:")) + 1);
   move (0,curPos);
   setDynamicChar(&tmpPwd, "%s/", currentpwd);
   readline(newdir, 4096, tmpPwd);
@@ -783,12 +783,12 @@ void make_directory_input()
           createParentDirs(newdir);
           goto makeDir;
         } else {
-          setDynamicChar(&errmessage, "Error: %s", strerror(errno));
+          setDynamicChar(&errmessage, _("Error: %s"), strerror(errno));
           topLineMessage(errmessage);
           free(errmessage);
         }
       } else {
-        setDynamicChar(&errmessage, "Error: %s", strerror(errno));
+        setDynamicChar(&errmessage, _("Error: %s"), strerror(errno));
         topLineMessage(errmessage);
         free(errmessage);
       }
@@ -811,11 +811,11 @@ time_t touchTimeInput(int type)
   time_t newTime, tmpTime;
   int curPos = 0;
   if (type == 1){
-    snprintf(menuTitle, 32, "Set Access Time:");
+    snprintf(menuTitle, 32, _("Set Access Time:"));
   } else if (type == 2){
-    snprintf(menuTitle, 32, "Set Modified Time:");
+    snprintf(menuTitle, 32, _("Set Modified Time:"));
   } else {
-    snprintf(menuTitle, 32, "Set Time:");
+    snprintf(menuTitle, 32, _("Set Time:"));
   }
   move(0,0);
   clrtoeol();
@@ -839,7 +839,7 @@ time_t touchTimeInput(int type)
       time(&newTime);
     } else {
       abortinput = 1;
-      topLineMessage("Error parsing time");
+      topLineMessage(_("Error parsing time"));
       time(&newTime);
     }
   } else {
@@ -883,7 +883,7 @@ void touch_file_input()
   int curPos = 0;
   move(0,0);
   clrtoeol();
-  curPos = (printMenu(0, 0, "Touch File - Enter pathname:") + 1);
+  curPos = (printMenu(0, 0, _("Touch File - Enter pathname:")) + 1);
   move (0, curPos);
   setDynamicChar(&tmpPwd, "%s/", currentpwd);
   if (readline(touchFile, 4096, tmpPwd) != -1){
@@ -925,12 +925,12 @@ void touch_file_input()
           createParentDirs(touchFile);
           goto touchFile;
         } else {
-          setDynamicChar(&errmessage, "Error: %s", strerror(errno));
+          setDynamicChar(&errmessage, _("Error: %s"), strerror(errno));
           topLineMessage(errmessage);
           free(errmessage);
         }
       } else {
-        setDynamicChar(&errmessage, "Error: %s", strerror(errno));
+        setDynamicChar(&errmessage, _("Error: %s"), strerror(errno));
         topLineMessage(errmessage);
         free(errmessage);
       }
@@ -953,7 +953,7 @@ char * execute_argument_input(const char *exec)
   int curPos = 0;
   strout = malloc(sizeof(char) * 1024);
   message = malloc(sizeof(char) * 1);
-  setDynamicChar(&message, "Args to pass to %s:", exec);
+  setDynamicChar(&message, _("Args to pass to %s:"), exec);
   move(0,0);
   clrtoeol();
   curPos = (printMenu(0, 0, message) + 1);
@@ -971,7 +971,7 @@ int huntCaseSelectInput()
 {
   int result = 0;
   char *message;
-  setDynamicChar(&message, "Case Sensitive, !Yes/!No/<ESC> (enter = no)");
+  setDynamicChar(&message, _("Case Sensitive, !Yes/!No/<ESC> (enter = no)"));
   printMenu(0,0, message);
   while(1)
     {
@@ -1007,10 +1007,10 @@ void huntInput(int selected, int charcase)
   char *inputmessage;
   if (charcase){
     regexcase = 0;
-    setDynamicChar(&inputmessage, "Match Case - Enter string:");
+    setDynamicChar(&inputmessage, _("Match Case - Enter string:"));
   } else {
     regexcase = REG_ICASE;
-    setDynamicChar(&inputmessage, "Ignore Case - Enter string:");
+    setDynamicChar(&inputmessage, _("Ignore Case - Enter string:"));
   }
   move(0,0);
   clrtoeol();
@@ -1051,7 +1051,7 @@ void huntInput(int selected, int charcase)
 
 void delete_file_confirm_input(char *file)
 {
-  printMenu(0,0, "Delete file? (!Yes/!No)");
+  printMenu(0,0, _("Delete file? (!Yes/!No)"));
   while(1)
     {
       *pc = getch10th();
@@ -1071,7 +1071,7 @@ void delete_file_confirm_input(char *file)
 void delete_directory_confirm_input(char *directory)
 {
   int e;
-  printMenu(0,0, "Delete directory? (!Yes/!No)");
+  printMenu(0,0, _("Delete directory? (!Yes/!No)"));
   while(1)
     {
       *pc = getch10th();
@@ -1080,7 +1080,7 @@ void delete_directory_confirm_input(char *directory)
         case 'y':
           e = rmdir(directory);
           if (e != 0){
-            setDynamicChar(&errmessage, "Error: %s", strerror(errno));
+            setDynamicChar(&errmessage, _("Error: %s"), strerror(errno));
             topLineMessage(errmessage);
             free(errmessage);
           }
@@ -1113,7 +1113,7 @@ void delete_multi_file_confirm_input(results* ob)
             {
               delete_file(selfile);
             } else {
-            setDynamicChar(&message, "Delete file [<%s>]? (!Yes/!No/!All/!Stop)", selfile);
+            setDynamicChar(&message, _("Delete file [<%s>]? (!Yes/!No/!All/!Stop)"), selfile);
             printMenu(0,0, message);
             free(message);
             k = 1;
@@ -1195,7 +1195,7 @@ void modify_group_input()
  groupInputLoop:
   move(0,0);
   clrtoeol();
-  setDynamicChar(&message, "Set Group (%s):", ownerinput);
+  setDynamicChar(&message, _("Set Group (%s):"), ownerinput);
   curPos = (printMenu(0, 0, message) + 1);
   free(message);
   curs_set(TRUE);
@@ -1223,7 +1223,7 @@ void modify_group_input()
     free(buf);
     if (gresult == NULL){
       if (s == 0){
-        setDynamicChar(&errmessage, "Invalid group: %s", groupinput);
+        setDynamicChar(&errmessage, _("Invalid group: %s"), groupinput);
         topLineMessage(errmessage);
         free(errmessage);
         goto groupInputLoop;
@@ -1255,7 +1255,7 @@ void modify_group_input()
         snprintf(ofile + strlen(ofile), (strlen(currentpwd) + strlen(ob[selected].name) + 2), "%s", ob[selected].name);
 
         if (UpdateOwnerGroup(ofile, uids, gids) == -1) {
-          setDynamicChar(&errmessage, "Error: %s", strerror(errno));
+          setDynamicChar(&errmessage, _("Error: %s"), strerror(errno));
           topLineMessage(errmessage);
           free(errmessage);
         }
@@ -1281,7 +1281,7 @@ void modify_owner_input()
  ownerInputLoop:
   move(0,0);
   clrtoeol();
-  curPos = (printMenu(0, 0, "Set Owner:") + 1);
+  curPos = (printMenu(0, 0, _("Set Owner:")) + 1);
   curs_set(TRUE);
   move(0,curPos);
   status = readline(ownerinput, 256, "");
@@ -1304,7 +1304,7 @@ void modify_owner_input()
     free(buf);
     if (presult == NULL){
       if (s == 0){
-        setDynamicChar(&errmessage, "Invalid user: %s", ownerinput);
+        setDynamicChar(&errmessage, _("Invalid user: %s"), ownerinput);
         topLineMessage(errmessage);
         free(errmessage);
         goto ownerInputLoop;
@@ -1327,7 +1327,7 @@ void modify_permissions_input()
   int curPos;
   move(0,0);
   clrtoeol();
-  curPos = (printMenu(0, 0, "Modify Permissions:") + 1);
+  curPos = (printMenu(0, 0, _("Modify Permissions:")) + 1);
   curs_set(TRUE);
   move(0,curPos);
   status = readline(perms, 5, "");
@@ -1391,8 +1391,7 @@ int symLinkLocation()
 
 void linktext_input(char *file, int symbolic)
 {
-  char inputmessage[32];
-  char typeText[9];
+  char *inputmessage;
   char target[4096];
   int relative, e;
   char *relativeFile;
@@ -1402,14 +1401,14 @@ void linktext_input(char *file, int symbolic)
     snprintf(target + strlen(target), 4096, "/");
   }
   if (symbolic){
-    snprintf(typeText, 9, "Symbolic");
+    setDynamicChar(&inputmessage, _("Symbolic link to:"));
   } else {
-    snprintf(typeText, 9, "Hard");
+    setDynamicChar(&inputmessage, _("Hard link to:"));
   }
-  snprintf(inputmessage, 32, "%s link to:", typeText);
   move(0,0);
   clrtoeol();
   curPos = (printMenu(0,0,inputmessage) + 1);
+  free(inputmessage);
   move(0, curPos);
   if (readline(target, 4096, target) != -1){
 
@@ -1429,7 +1428,7 @@ void linktext_input(char *file, int symbolic)
     makeSymlink:
     if (access(dirFromPath(target), W_OK) == 0){
       if (check_file(target)){
-        topLineMessage("Error: File exists.");
+        topLineMessage(_("Error: File exists."));
       } else {
         if (symbolic){
           relative = symLinkLocation();
@@ -1453,12 +1452,12 @@ void linktext_input(char *file, int symbolic)
           createParentDirs(target);
           goto makeSymlink;
         } else {
-          setDynamicChar(&errmessage, "Error: %s", strerror(errno));
+          setDynamicChar(&errmessage, _("Error: %s"), strerror(errno));
           topLineMessage(errmessage);
           free(errmessage);
         }
       } else {
-        setDynamicChar(&errmessage, "Error: %s", strerror(errno));
+        setDynamicChar(&errmessage, _("Error: %s"), strerror(errno));
         topLineMessage(errmessage);
         free(errmessage);
       }
@@ -1483,7 +1482,7 @@ void link_key_menu_inputs()
         if (!check_dir(selfile)){
           linktext_input(selfile, 0);
         } else {
-          topLineMessage("Error: Selected object is a directory.");
+          topLineMessage(_("Error: Selected object is a directory."));
           directory_view_menu_inputs();
         }
       } else if (*pc == menuHotkeyLookup(linkMenu, "l_symbolic", linkMenuSize) || *pc == 10){
@@ -1503,15 +1502,15 @@ void modify_context_inputs(int mode)
     int curPos = 0;
 
     if (mode == SE_USER) {
-        setDynamicChar(&menuLabel, "Set User Context:");
+        setDynamicChar(&menuLabel, _("Set User Context:"));
     } else if (mode == SE_ROLE) {
-        setDynamicChar(&menuLabel, "Set Role Context:");
+        setDynamicChar(&menuLabel, _("Set Role Context:"));
     } else if (mode == SE_TYPE) {
-        setDynamicChar(&menuLabel, "Set Type Context:");
+        setDynamicChar(&menuLabel, _("Set Type Context:"));
     } else if (mode == SE_LEVEL) {
-        setDynamicChar(&menuLabel, "Set Level Context:");
+        setDynamicChar(&menuLabel, _("Set Level Context:"));
     } else if (mode == SE_RAW) {
-        setDynamicChar(&menuLabel, "Set Context:");
+        setDynamicChar(&menuLabel, _("Set Context:"));
     }
 
     move(0,0);
@@ -1646,7 +1645,7 @@ void directory_view_menu_inputs()
         if ( !(CheckMarked(ob) > 0) ) {
           link_key_menu_inputs();
         } else {
-          topLineMessage("Error: Links can only be made against single files.");
+          topLineMessage(_("Error: Links can only be made against single files."));
         }
       } else if (*pc == menuHotkeyLookup(showFileMenu, "f_modify", showFileMenuSize)){
         //printMenu(0, 0, modifyMenuText);
@@ -1789,7 +1788,7 @@ void directory_view_menu_inputs()
           abortinput = 0;
           display_dir(currentpwd, ob);
         } else {
-          topLineMessage("Error: Permission denied");
+          topLineMessage(_("Error: Permission denied"));
         }
       } else if (*pc == menuHotkeyLookup(functionMenu, "f_01", functionMenuSize) || *pc == 338){
         if (selected < (totalfilecount - 1) ) {
