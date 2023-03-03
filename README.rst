@@ -205,6 +205,20 @@ Donations are also greatly appreciated via the following crypto currencies:
    </details>
    <details>
        <summary>
+           <img src="misc/donate/logos/lrc-logo.png" width="16" height="16"> Loopring (Layers 1 and 2)
+       </summary>
+       <br>0xF282bccB7FEdA4BaCc84F75478dA84D61980DDab
+       <br><img src="misc/donate/addresses/erc20-qr.png"><br>
+   </details>
+   <details>
+       <summary>
+           <img src="misc/donate/logos/imx-logo.png" width="16" height="16"> Immutable X (Layers 1 and 2)
+       </summary>
+       <br>0xF282bccB7FEdA4BaCc84F75478dA84D61980DDab
+       <br><img src="misc/donate/addresses/erc20-qr.png"><br>
+   </details>
+   <details>
+       <summary>
            <img src="misc/donate/logos/bch-logo.png" width="16" height="16"> Bitcoin Cash
        </summary>
        <br>qpmmdn9xvurp8dt2j4sadnzulun8jvjsjv5ymt2uk4
