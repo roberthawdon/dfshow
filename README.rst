@@ -1,7 +1,7 @@
 DF-SHOW
 =======
 
-|Maintenance yes| |GPLv3 license| |Travis Build| |Documentation|
+|Maintenance yes| |GPLv3 license| |Travis Build| |Documentation| |Contributor Covenant|
 
 .. |Maintenance yes| image:: https://img.shields.io/badge/Maintained%3F-yes-green.svg
    :target: https://github.com/roberthawdon/dfshow/graphs/commit-activity
@@ -14,6 +14,9 @@ DF-SHOW
 
 .. |Documentation| image:: https://readthedocs.org/projects/dfshow/badge/?version=latest
    :target: https://dfshow.readthedocs.io/en/latest/?badge=latest
+
+.. |Contributor Covenant| image:: https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg
+   :target: CODE_OF_CONDUCT.md
 
 :Author: Robert Ian Hawdon (git@robertianhawdon.me.uk)
 :Source: https://github.com/roberthawdon/dfshow
