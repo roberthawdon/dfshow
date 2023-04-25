@@ -10,7 +10,7 @@
 void refreshScreen(char *application);
 int getch10th (void);
 int setDynamicChar(char **str, const char *format, ...);
-int splitString(splitStrStruct **dirStruct, char *path, int splitChar);
+int splitString(splitStrStruct **result, char *input, int splitChar, bool filePath);
 int createParentsInput(char *path);
 void createParentDirs(char *path);
 void mk_dir(char *path);

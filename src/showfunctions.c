@@ -343,11 +343,11 @@ char *getRelativePath(char *file, char *target)
   targetUp = fileUp = 0;
 
   // Store sections of file in structure
-  e = splitString(&fileStruct, file, '/');
+  e = splitString(&fileStruct, file, '/', true);
   fileLen = e + 1;
 
   // Store sections of target in structure
-  e = splitString(&targetStruct, target, '/');
+  e = splitString(&targetStruct, target, '/', true);
   targetLen = e + 1;
 
   // Find the smallest of our structures
