@@ -336,18 +336,18 @@ char *getRelativePath(char *file, char *target)
 {
   char *result = malloc(sizeof(char) + 1);
   int i, j, e, c, targetUp, fileUp;
-  pathDirs *fileStruct, *targetStruct;
+  splitStrStruct *fileStruct, *targetStruct;
   int  fileLen, targetLen, commonPath = 0;
   int resultLen = 0;
 
   targetUp = fileUp = 0;
 
   // Store sections of file in structure
-  e = splitPath(&fileStruct, file);
+  e = splitString(&fileStruct, file, '/');
   fileLen = e + 1;
 
   // Store sections of target in structure
-  e = splitPath(&targetStruct, target);
+  e = splitString(&targetStruct, target, '/');
   targetLen = e + 1;
 
   // Find the smallest of our structures
@@ -359,7 +359,7 @@ char *getRelativePath(char *file, char *target)
 
   // Count the common directories
   for(i = 0; i < c; i++){
-    if (!strcmp(fileStruct[i].directories, targetStruct[i].directories)){
+    if (!strcmp(fileStruct[i].subString, targetStruct[i].subString)){
       commonPath++;
     } else {
       break;
@@ -381,35 +381,35 @@ char *getRelativePath(char *file, char *target)
       c++;
     }
     for(i=(fileLen - fileUp); i < fileLen; i++){
-      j = strlen(fileStruct[i].directories);
+      j = strlen(fileStruct[i].subString);
       resultLen = sizeof(char) * (resultLen + j + 2);
       result = realloc(result, resultLen);
       if (i == fileLen - 1){
-        snprintf(result + strlen(result), (strlen(result) + j + 2), "%s%c", fileStruct[i].directories, '\0');
+        snprintf(result + strlen(result), (strlen(result) + j + 2), "%s%c", fileStruct[i].subString, '\0');
       } else {
-        snprintf(result + strlen(result), (strlen(result) + j + 2), "%s/%c", fileStruct[i].directories, '\0');
+        snprintf(result + strlen(result), (strlen(result) + j + 2), "%s/%c", fileStruct[i].subString, '\0');
       }
     }
   } else if ((targetUp < 1) && (fileUp > 1)){
     for(i=commonPath; i < fileLen; i++){
-      j = strlen(fileStruct[i].directories);
+      j = strlen(fileStruct[i].subString);
       resultLen = sizeof(char) * (resultLen + j + 2);
       result = realloc(result, resultLen);
       if (c == 0){
-        snprintf(result, (strlen(result) + j + 2), "%s/%c", fileStruct[i].directories, '\0');
+        snprintf(result, (strlen(result) + j + 2), "%s/%c", fileStruct[i].subString, '\0');
       } else if (i == fileLen - 1){
-        snprintf(result + strlen(result), (strlen(result) + j + 2), "%s%c", fileStruct[i].directories, '\0');
+        snprintf(result + strlen(result), (strlen(result) + j + 2), "%s%c", fileStruct[i].subString, '\0');
       } else {
-        snprintf(result + strlen(result), (strlen(result) + j + 2), "%s/%c", fileStruct[i].directories, '\0');
+        snprintf(result + strlen(result), (strlen(result) + j + 2), "%s/%c", fileStruct[i].subString, '\0');
       }
       c++;
     }
   } else {
     // Assume we're in the same directory at this point
-    j = strlen(fileStruct[fileLen - 1].directories);
+    j = strlen(fileStruct[fileLen - 1].subString);
     resultLen = sizeof(char) * (j + 1);
     result = realloc(result, resultLen);
-    snprintf(result, (j + 1), "%s", fileStruct[fileLen - 1].directories);
+    snprintf(result, (j + 1), "%s", fileStruct[fileLen - 1].subString);
   }
 
   // result[resultLen - 1] = '\0'; // This seems to cause no end of grief on FreeBSD and I can't even remember why it's here.

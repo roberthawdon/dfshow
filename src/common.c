@@ -124,11 +124,11 @@ int setDynamicChar(char **str, const char *format, ...)
   return(length);
 }
 
-int splitPath(pathDirs **dirStruct, char *path){
+int splitString(splitStrStruct **dirStruct, char *path, int splitChar){
   int e, i, j, c;
-  pathDirs *tmp;
+  splitStrStruct *tmp;
 
-  tmp = malloc(sizeof(pathDirs));
+  tmp = malloc(sizeof(splitStrStruct));
   if (tmp){
     *dirStruct = tmp;
   }
@@ -138,36 +138,36 @@ int splitPath(pathDirs **dirStruct, char *path){
   c = strlen(path);
 
   for(i = 0; i < c; i++){
-    if (path[i] == '/'){
+    if (path[i] == splitChar){
       if (e > -1){
-        (*dirStruct)[e].directories[j] = '\0';
-        if(!strcmp((*dirStruct)[e].directories, "..")){
+        (*dirStruct)[e].subString[j] = '\0';
+        if(!strcmp((*dirStruct)[e].subString, "..")){
           // assmue .. and remove the element before
           (*dirStruct)[e] = (*dirStruct)[e - 1];
           (*dirStruct)[e - 1] = (*dirStruct)[e - 2];
           e--;
-          (*dirStruct) = realloc((*dirStruct), sizeof(pathDirs) * (2 + e));
-        } else if (!strcmp((*dirStruct)[e].directories, ".")){
+          (*dirStruct) = realloc((*dirStruct), sizeof(splitStrStruct) * (2 + e));
+        } else if (!strcmp((*dirStruct)[e].subString, ".")){
           // strip single .
-          (*dirStruct)[e].directories[0]=0;
+          (*dirStruct)[e].subString[0]=0;
         } else {
           // If element created is NOT ..
           e++;
-          (*dirStruct) = realloc((*dirStruct), sizeof(pathDirs) * (2 + e));
+          (*dirStruct) = realloc((*dirStruct), sizeof(splitStrStruct) * (2 + e));
         }
       } else {
         e++;
-        (*dirStruct) = realloc((*dirStruct), sizeof(pathDirs) * (2 + e));
+        (*dirStruct) = realloc((*dirStruct), sizeof(splitStrStruct) * (2 + e));
       }
       j=0;
     } else {
-      (*dirStruct)[e].directories[j] = path[i];
+      (*dirStruct)[e].subString[j] = path[i];
       j++;
     }
   }
-  (*dirStruct)[e].directories[j] = '\0';
-  if (!strcmp((*dirStruct)[e].directories, ".")){
-    (*dirStruct)[e].directories[0]=0;
+  (*dirStruct)[e].subString[j] = '\0';
+  if (!strcmp((*dirStruct)[e].subString, ".")){
+    (*dirStruct)[e].subString[0]=0;
     e--;
   }
 
@@ -202,16 +202,16 @@ int createParentsInput(char *path)
 }
 
 void createParentDirs(char *path){
-  pathDirs *targetPath;
+  splitStrStruct *targetPath;
   char *tempPath = malloc(sizeof(char) * 1);
   char *tempPathWork;
   int e, i, t = 0;
 
-  e = splitPath(&targetPath, path);
+  e = splitString(&targetPath, path, '/');
 
   tempPath[0]=0;
   for (i = 0; i < e; i++){
-    t = setDynamicChar(&tempPathWork, "%s/%s", tempPath, targetPath[i].directories);
+    t = setDynamicChar(&tempPathWork, "%s/%s", tempPath, targetPath[i].subString);
     tempPath = realloc(tempPath, sizeof(char) + t);
     memcpy(tempPath, tempPathWork, t);
     free(tempPathWork);

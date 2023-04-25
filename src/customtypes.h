@@ -7,8 +7,8 @@ typedef unsigned short ushort_t;
 typedef unsigned long long ullong_t;
 
 typedef struct {
-  char directories[256];
-} pathDirs;
+  char subString[256];
+} splitStrStruct;
 
 typedef struct node {
   int val;
