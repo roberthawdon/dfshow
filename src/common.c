@@ -156,6 +156,9 @@ int splitString(splitStrStruct **result, char *input, int splitChar, bool filePa
             e++;
             (*result) = realloc((*result), sizeof(splitStrStruct) * (2 + e));
           }
+        } else {
+          e++;
+          (*result) = realloc((*result), sizeof(splitStrStruct) * (2 + e));
         }
       } else {
         e++;

@@ -1504,6 +1504,7 @@ void modify_context_inputs(int mode)
     char *menuLabel;
     char contextInput[256];
     char *newContext;
+    char *tempContext; //hacky hack to avoid major rewriting of splitString
     int curPos = 0;
     char *workingFile;
     splitStrStruct *splitContext;
@@ -1536,9 +1537,11 @@ void modify_context_inputs(int mode)
         if ( *ob[i].marked ) {
           setDynamicChar(&workingFile, "%s/%s", currentpwd, ob[i].name);
           if (mode != SE_RAW){
-            splitString(&splitContext, ob[selected].contextText, ':', false);
-            snprintf(&splitContext->subString[mode], (strlen(contextInput) + 1), "%s", contextInput);
-            setDynamicChar(&newContext, "%s:%s:%s:%s", splitContext->subString[SE_USER], splitContext->subString[SE_ROLE], splitContext->subString[SE_TYPE], splitContext->subString[SE_LEVEL]);
+            setDynamicChar(&tempContext, ":%s", ob[i].contextText);
+            splitString(&splitContext, tempContext, ':', false);
+            free(tempContext);
+            snprintf(splitContext[mode].subString, (strlen(contextInput) + 1), "%s", contextInput);
+            setDynamicChar(&newContext, "%s:%s:%s:%s", splitContext[SE_USER].subString, splitContext[SE_ROLE].subString, splitContext[SE_TYPE].subString, splitContext[SE_LEVEL].subString);
             free(splitContext);
           }
           #if HAVE_SELINUX_SELINUX_H
@@ -1550,9 +1553,11 @@ void modify_context_inputs(int mode)
     } else {
       setDynamicChar(&workingFile, "%s/%s", currentpwd, ob[selected].name);
       if (mode != SE_RAW){
-        splitString(&splitContext, ob[selected].contextText, ':', false);
-        snprintf(&splitContext->subString[mode], (strlen(contextInput) + 1), "%s", contextInput);
-        setDynamicChar(&newContext, "%s:%s:%s:%s", splitContext->subString[SE_USER], splitContext->subString[SE_ROLE], splitContext->subString[SE_TYPE], splitContext->subString[SE_LEVEL]);
+        setDynamicChar(&tempContext, ":%s", ob[selected].contextText);
+        splitString(&splitContext, tempContext, ':', false);
+        free(tempContext);
+        snprintf(splitContext[mode].subString, (strlen(contextInput) + 1), "%s", contextInput);
+        setDynamicChar(&newContext, "%s:%s:%s:%s", splitContext[SE_USER].subString, splitContext[SE_ROLE].subString, splitContext[SE_TYPE].subString, splitContext[SE_LEVEL].subString);
         free(splitContext);
       }
       #if HAVE_SELINUX_SELINUX_H
