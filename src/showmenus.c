@@ -53,6 +53,10 @@
 #include "banned.h"
 #include "i18n.h"
 
+#if HAVE_SELINUX_SELINUX_H
+# include <selinux/selinux.h>
+#endif
+
 char chpwd[4096];
 char selfile[4096];
 
@@ -1498,8 +1502,12 @@ void link_key_menu_inputs()
 void modify_context_inputs(int mode)
 {
     char *menuLabel;
-    char newContext[256];
+    char contextInput[256];
+    char *newContext;
     int curPos = 0;
+    char *workingFile;
+    splitStrStruct *splitContext;
+    int e, i;
 
     if (mode == SE_USER) {
         setDynamicChar(&menuLabel, _("Set User Context:"));
@@ -1518,8 +1526,49 @@ void modify_context_inputs(int mode)
     curPos = (printMenu(0, 0, menuLabel) + 1);
     free(menuLabel);
     move(0,curPos);
-    readline(newContext, 256, "");
+    readline(contextInput, 256, "");
+    if (mode == SE_RAW) {
+      setDynamicChar(&newContext, "%s", contextInput);
+    }
     // TO DO - Write function
+    if (CheckMarked(ob) > 0) {
+      for (i = 0; i < totalfilecount; i++){
+        if ( *ob[i].marked ) {
+          setDynamicChar(&workingFile, "%s/%s", currentpwd, ob[i].name);
+          if (mode != SE_RAW){
+            splitString(&splitContext, ob[selected].contextText, ':', false);
+            snprintf(&splitContext->subString[mode], (strlen(contextInput) + 1), "%s", contextInput);
+            setDynamicChar(&newContext, "%s:%s:%s:%s", splitContext->subString[SE_USER], splitContext->subString[SE_ROLE], splitContext->subString[SE_TYPE], splitContext->subString[SE_LEVEL]);
+            free(splitContext);
+          }
+          #if HAVE_SELINUX_SELINUX_H
+          e = lsetfilecon(workingFile, newContext);
+          #endif
+          free(workingFile);
+        }
+      }
+    } else {
+      setDynamicChar(&workingFile, "%s/%s", currentpwd, ob[selected].name);
+      if (mode != SE_RAW){
+        splitString(&splitContext, ob[selected].contextText, ':', false);
+        snprintf(&splitContext->subString[mode], (strlen(contextInput) + 1), "%s", contextInput);
+        setDynamicChar(&newContext, "%s:%s:%s:%s", splitContext->subString[SE_USER], splitContext->subString[SE_ROLE], splitContext->subString[SE_TYPE], splitContext->subString[SE_LEVEL]);
+        free(splitContext);
+      }
+      #if HAVE_SELINUX_SELINUX_H
+      e = lsetfilecon(workingFile, newContext);
+      #endif
+      free(workingFile);
+    }
+    free(newContext);
+
+    if (e != 0){
+      setDynamicChar(&errmessage, _("Error: %s"), strerror(errno));
+      topLineMessage(errmessage);
+      free(errmessage);
+    }
+
+    refreshDirectory(sortmode, lineStart, selected, 0);
 
     directory_view_menu_inputs();
 
