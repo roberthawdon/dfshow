@@ -2146,7 +2146,7 @@ results* get_dir(char *pwd)
   int seLinuxCon = 0;
   int xattrsNum;
   #ifdef HAVE_SELINUX_SELINUX_H
-    security_context_t context;
+    char * context;
   #endif
   char *contextText;
   char *fullFilePath;
