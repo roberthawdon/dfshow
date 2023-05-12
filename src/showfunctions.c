@@ -801,10 +801,10 @@ char *dateString(time_t date, char *style)
   return (outputString);
 }
 
-char *readableSize(double size, ssize_t bufSize, char *buf, int si){
+char *readableSize(long double size, ssize_t bufSize, char *buf, int si){
   int i = 0;
   int powers = 1024;
-  const char* units[] = {"", "K", "M", "G", "T", "P", "E", "Z", "Y"};
+  const char* units[] = {"", "K", "M", "G", "T", "P", "E", "Z", "Y", "R", "Q"};
   char unitOut[2];
   if (si){
     powers = 1000;
@@ -813,7 +813,7 @@ char *readableSize(double size, ssize_t bufSize, char *buf, int si){
     size /= powers;
     i++;
     if ( i == 10 ){
-      break; // Come back and see me when 1024+ YB is an everyday occurance
+      break; // Come back and see me when 1024+ QB is an everyday occurance (2023-05-12: Yeah, now `ls` supports Ronnabytes and Queccabytes, I've had to update this sarcastic quote!)
     }
   }
   snprintf(unitOut, 2, "%s", units[i]);
@@ -821,7 +821,7 @@ char *readableSize(double size, ssize_t bufSize, char *buf, int si){
     // si units used
     unitOut[0] = tolower(*unitOut);
   }
-  snprintf(buf, bufSize, "%.*f%s", i, size, unitOut);
+  snprintf(buf, bufSize, "%.*Lf%s", i, size, unitOut);
   return (buf);
 }
 

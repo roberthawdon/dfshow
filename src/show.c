@@ -766,6 +766,12 @@ int setBlockSize(const char * arg){
       case 'Y':
         power = 8;
         break;
+      case 'R':
+        power = 9;
+        break;
+      case 'Q':
+        power = 10;
+        break;
       case '\0':
         power = 0;
         break;
@@ -874,7 +880,7 @@ Options shared with ls:\n"), stdout);
       --version                displays version, then exits\n"), stdout);
   fputs (("\n\
 The SIZE agrument is an integer and optional unit (for example: 10K = 10*1024).\n\
-The units are K,M,G,T,P,E,Z,Y (powers of 1024) or KB,MB, etc. (powers of 1000).\n"), stdout);
+Units are K,M,G,T,P,E,Z,Y,R,Q (powers of 1024) or KB,MB, etc. (powers of 1000).\n"), stdout);
   fputs (("\n\
 The TIME_STYLE argument can be: full-iso; long-iso; iso; locale.\n"), stdout);
   fputs (("\n\
