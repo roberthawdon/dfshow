@@ -69,4 +69,5 @@ void lowColorCheck();
 void theme_menu_inputs();
 void setDefaultTheme();
 void setColors(int pair);
+void setCursorPos(int prev);
 void themeBuilder();

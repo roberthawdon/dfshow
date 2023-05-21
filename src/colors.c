@@ -678,12 +678,12 @@ void theme_menu_inputs()
       } else if (*pc == 258 || *pc ==10){
         if (colorThemePos < totalItemCount){
           colorThemePos++;
-          themeBuilder();
+          setCursorPos(colorThemePos - 1);
         }
       } else if (*pc == 259){
         if (colorThemePos > 0) {
           colorThemePos--;
-          themeBuilder();
+          setCursorPos(colorThemePos + 1);
         }
       } else if (*pc == 260 || *pc == 261){
         // Do Nothing
@@ -755,6 +755,18 @@ void setColors(int pair)
   } else {
     attroff(A_BOLD);
   }
+}
+
+void setCursorPos(int prev)
+{
+  setColors(DISPLAY_PAIR);
+  if (prev >= 0){
+    // attroff(A_REVERSE);
+    mvprintw(prev + 2, 1, " ");
+  }
+  attron(A_REVERSE);
+  mvprintw(colorThemePos + 2, 1, " ");
+  attroff(A_REVERSE);
 }
 
 void themeBuilder()
@@ -842,9 +854,6 @@ void themeBuilder()
   setColors(DEFAULT_BOLD_PAIR);
   mvprintw(22, 22, _("Select 0 to F for desired %s color"), fgbgLabel);
 
-  attron(A_REVERSE);
-  mvprintw(colorThemePos + 2, 1, " ");
-  attroff(A_REVERSE);
-
+  setCursorPos(-1);
 
 }
