@@ -70,6 +70,7 @@ int launchThemeEditor = 0;
 int launchSettingsMenu = 0;
 int oneLine = 0;
 int skipToFirstFile = 0;
+bool currentDirOnly = false;
 bool useDefinedEditor = 0;
 bool useDefinedPager = 0;
 
@@ -304,6 +305,13 @@ void readShowConfig(const char * confFile)
           showXAttrs = 1;
         }
       }
+      // Check Showing Only Current Directory
+      setting = config_setting_get_member(group, "directory");
+      if (setting){
+        if (config_setting_get_int(setting)){
+          currentDirOnly = 1;
+        }
+      }
       // Check Showing Only Directories
       setting = config_setting_get_member(group, "only-dirs");
       if (setting){
@@ -439,6 +447,8 @@ void saveShowConfig(const char * confFile, settingIndex **settings, t1CharValues
         config_setting_set_int(setting, skipToFirstFile);
       } else if (!strcmp((*settings)[i].refLabel, "showXAttrs")){
         config_setting_set_int(setting, showXAttrs);
+      } else if (!strcmp((*settings)[i].refLabel, "directory")){
+        config_setting_set_int(setting, currentDirOnly);
       } else if (!strcmp((*settings)[i].refLabel, "only-dirs")){
         config_setting_set_int(setting, dirOnly);
       } else if (!strcmp((*settings)[i].refLabel, "sizeblocks")){
@@ -533,6 +543,8 @@ void applyShowSettings(settingIndex **settings, t1CharValues **values, int items
       ogavis = (*settings)[i].intSetting;
     } else if (!strcmp((*settings)[i].refLabel, "showXAttrs")){
       showXAttrs = (*settings)[i].intSetting;
+    } else if (!strcmp((*settings)[i].refLabel, "directory")){
+      currentDirOnly = (*settings)[i].intSetting;
     } else if (!strcmp((*settings)[i].refLabel, "only-dirs")){
       dirOnly = (*settings)[i].intSetting;
     } else if (!strcmp((*settings)[i].refLabel, "sizeblocks")){
@@ -605,6 +617,7 @@ int generateShowSettingsVars()
 #ifdef HAVE_ACL_TYPE_EXTENDED
   importSetting(&settingIndexShow, &items, "showXAttrs",     _("Display extended attribute keys and sizes"), SETTING_BOOL, NULL, showXAttrs, -1, 0);
 #endif
+  importSetting(&settingIndexShow, &items, "directory",      _("Display only current directory"), SETTING_BOOL, NULL, currentDirOnly, -1, 0);
   importSetting(&settingIndexShow, &items, "only-dirs",      _("Display only directories"), SETTING_BOOL, NULL, dirOnly, -1, 0);
   importSetting(&settingIndexShow, &items, "sizeblocks",     _("Show allocated size in blocks"), SETTING_BOOL, NULL, showSizeBlocks, -1, 0);
   importSetting(&settingIndexShow, &items, "defined-editor", _("Override default editor"), SETTING_BOOL, NULL, useDefinedEditor, -1, 0);
@@ -860,6 +873,7 @@ Options shared with ls:\n"), stdout);
                                  see SIZE format below\n\
   -B, --ignore-backups         do not list implied entries ending with ~\n\
       --color[=WHEN]           colorize the output, see the color section below\n\
+  -d, --directory              list the directory only, not the contents\n\
   -f                           do not sort, enables -aU\n\
       --full-time              display time as full-iso format\n\
   -g                           only show group\n\
@@ -924,14 +938,14 @@ int main(int argc, char *argv[])
   uid_t uid=getuid(), euid=geteuid();
   int c;
   char * tmpPwd;
-  char options[21];
+  char options[22];
 
   initI18n();
 
 #ifdef HAVE_ACL_TYPE_EXTENDED
-  snprintf(options, 21, "%s", "@aABfgGhilnrsStUZ1");
+  snprintf(options, 22, "%s", "@aABdfgGhilnrsStUZ1");
 #else
-  snprintf(options, 21, "%s", "aABfgGhilnrsStUZ1");
+  snprintf(options, 22, "%s", "aABdfgGhilnrsStUZ1");
 #endif
 
   // Setting the default editor
@@ -1000,6 +1014,7 @@ int main(int argc, char *argv[])
          {"author",           no_argument,       0, GETOPT_AUTHOR_CHAR},
          {"block-size",       required_argument, 0, GETOPT_BLOCKSIZE_CHAR},
          {"ignore-backups",   no_argument,       0, 'B'},
+         {"directory",        no_argument,       0, 'd'},
          {"directories-only", no_argument,       0, GETOPT_DIRONLY_CHAR},
          {"human-readable",   no_argument,       0, 'h'},
          {"inode",            no_argument,       0, 'i'},
@@ -1078,6 +1093,9 @@ Valid arguments are:\n\
         listThemes();
         exit(2);
       }
+      break;
+    case 'd':
+      currentDirOnly = true;
       break;
     case GETOPT_DIRONLY_CHAR:
       dirOnly = 1;

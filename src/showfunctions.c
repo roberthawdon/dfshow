@@ -204,6 +204,7 @@ extern int oneLine;
 extern int skipToFirstFile;
 extern int showXAttrs;
 extern int showAcls;
+extern bool currentDirOnly;
 extern bool dirOnly;
 extern bool scaleSize;
 extern bool useDefinedEditor;
@@ -2191,20 +2192,24 @@ results* get_dir(char *pwd)
           haveAcl = 0;
           contextText = malloc(sizeof(char) * 2);
           lstat(res->d_name, &sb);
-          if ( showhidden == 0 && check_first_char(res->d_name, ".") && strcmp(res->d_name, ".") && strcmp(res->d_name, "..") ) {
-            continue; // Skipping hidden files
-          }
-          if ( !showbackup && check_last_char(res->d_name, "~") ) {
-            continue; // Skipping backup files
-          }
-          if ( dirOnly ) {
-            if (!S_ISDIR(sb.st_mode)){
-              continue;
+          if ( currentDirOnly && strcmp(res->d_name, ".") ) {
+            continue; // Skipping all but `.`
+          } else {
+            if ( showhidden == 0 && check_first_char(res->d_name, ".") && strcmp(res->d_name, ".") && strcmp(res->d_name, "..") ) {
+              continue; // Skipping hidden files
             }
-          }
-          if ( strcmp(objectWild, "")){
-            if (!wildcard(res->d_name, objectWild) && strcmp(res->d_name, ".") && strcmp(res->d_name, "..")){
-              continue;
+            if ( !showbackup && check_last_char(res->d_name, "~") ) {
+              continue; // Skipping backup files
+            }
+            if ( dirOnly ) {
+              if (!S_ISDIR(sb.st_mode)){
+                continue;
+              }
+            }
+            if ( strcmp(objectWild, "")){
+              if (!wildcard(res->d_name, objectWild) && strcmp(res->d_name, ".") && strcmp(res->d_name, "..")){
+                continue;
+              }
             }
           }
           if (pass == 0){
