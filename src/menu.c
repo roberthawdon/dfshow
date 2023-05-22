@@ -92,22 +92,22 @@ void addMenuItem(menuDef **dfMenu, int *pos, char* refLabel, char* displayLabel,
 
   snprintf((*dfMenu)[menuPos].refLabel, 16, "%s", refLabel);
   swprintf((*dfMenu)[menuPos].displayLabel, 32, L"%ls", wideLabel);
-  free(wideLabel);
   (*dfMenu)[menuPos].hotKey = defaultHotKey; // Set the hotkey to the one we've provided first
 
-  for (i = 0; i < strlen(displayLabel); i++)
+  for (i = 0; i < wcslen(wideLabel); i++)
     {
-      if ( displayLabel[i] == '!' || displayLabel[i] == '<' || displayLabel[i] == '>' || displayLabel[i] == '\\') {
-        if (displayLabel[i] == '!' && !hotKeyFound){
-          (*dfMenu)[menuPos].hotKey = tolower(displayLabel[i + 1]);
+      if ( wideLabel[i] == '!' || wideLabel[i] == '<' || wideLabel[i] == '>' || wideLabel[i] == '\\') {
+        if (wideLabel[i] == '!' && !hotKeyFound){
+          (*dfMenu)[menuPos].hotKey = tolower(wideLabel[i + 1]);
           hotKeyFound = true;
         }
         i++;
-        charCount++;
+        charCount = charCount + wcwidth(wideLabel[i]);
       } else {
-        charCount++;
+        charCount = charCount + wcwidth(wideLabel[i]);
       }
     }
+  free(wideLabel);
   (*dfMenu)[menuPos].displayLabelSize = charCount;
 
   if (sort){
@@ -219,26 +219,26 @@ int wPrintMenu(int line, int col, wchar_t *menustring)
         i++;
         mvprintw(line, col + charcount, "%lc", menustring[i]);
         setColors(COMMAND_PAIR);
-        charcount++;
+        charcount = charcount + wcwidth(menustring[i]);
       } else if ( menustring[i] == '<' ) {
         setColors(HILITE_PAIR);
         i++;
         mvprintw(line, col + charcount, "%lc", menustring[i]);
-        charcount++;
+        charcount = charcount + wcwidth(menustring[i]);
       } else if ( menustring[i] == '>' ) {
         setColors(COMMAND_PAIR);
         if (i < (len - 1)){
           i++;
           mvprintw(line, col + charcount, "%lc", menustring[i]);
-          charcount++;
+          charcount = charcount + wcwidth(menustring[i]);
         }
       } else if ( menustring[i] == '\\' ) {
         i++;
         mvprintw(line, col + charcount, "%lc", menustring[i]);
-        charcount++;
+        charcount = charcount + wcwidth(menustring[i]);
       } else {
         mvprintw(line, col + charcount, "%lc", menustring[i]);
-        charcount++;
+        charcount = charcount + wcwidth(menustring[i]);
       }
     }
   returnChars = charcount;
