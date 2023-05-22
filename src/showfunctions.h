@@ -80,7 +80,7 @@ typedef struct {
   wchar_t *name;
   int linkStat;
   wchar_t *link;
-  char *padding;
+  wchar_t *padding;
 } nameStruct;
 
 typedef struct {
@@ -130,6 +130,7 @@ void printEntry(int start, int inodelen, int hlinklen, int sizeblocklen, int own
 void printXattr(int start, int selected, int listref, int currentItem, int subIndex, xattrList* xa, results* ob);
 void padstring(char *str, int len, char c);
 char *genPadding(int num_of_spaces);
+wchar_t *wGenPadding(int num_of_spaces);
 void resizeDisplayDir(results* ob);
 char *readableSize(long double size, ssize_t bufSize, char *buf, int si);
 int writePermsEntry(char * perms, mode_t mode, int axFlag, int sLinkCheck);

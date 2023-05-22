@@ -855,6 +855,23 @@ char *genPadding(int num_of_spaces) {
   return dest;
 }
 
+wchar_t *wGenPadding(int num_of_spaces) {
+  wchar_t *dest;
+  int i;
+  if (num_of_spaces < 1){
+    i = 1;
+  } else {
+    i = num_of_spaces;
+  }
+  dest = malloc (sizeof (wchar_t) * (i + 1));
+  if (num_of_spaces > 0){
+    swprintf(dest, (i + 1), L"%*ls", num_of_spaces, L" ");
+  } else {
+    dest[0]=0;
+  }
+  return dest;
+}
+
 wchar_t *wWriteSegment(int segLen, wchar_t *text, int align){
   wchar_t *segment;
   int paddingLen;
@@ -1271,9 +1288,9 @@ void printEntry(int start, int inodelen, int hlinklen, int sizeblocklen, int own
     swprintf(nameSegmentData[0].link, (strlen(ob[currentitem].slink) + 1), L"%s", ob[currentitem].slink);
   }
   if ( nameSegmentData[0].linkStat ){
-    nameCombineLen = (wcslen(nameSegmentData[0].name) + wcslen(nameSegmentData[0].link) + 4);
+    nameCombineLen = (wcswidth(nameSegmentData[0].name, wcslen(nameSegmentData[0].name)) + wcswidth(nameSegmentData[0].link, wcslen(nameSegmentData[0].link)) + 4);
   } else {
-    nameCombineLen = wcslen(nameSegmentData[0].name);
+    nameCombineLen = wcswidth(nameSegmentData[0].name, wcslen(nameSegmentData[0].name));
   }
   if (nameSegLen > nameminlen){
     nameFullSegPadding = nameSegLen - nameCombineLen + 1;
@@ -1285,7 +1302,7 @@ void printEntry(int start, int inodelen, int hlinklen, int sizeblocklen, int own
   if ( nameFullSegPadding < 1 ){
     nameFullSegPadding = 1;
   }
-  nameSegmentData[0].padding = genPadding(nameFullSegPadding);
+  nameSegmentData[0].padding = wGenPadding(nameFullSegPadding);
 
 
   entryNameLen = snprintf(NULL, 0, "%s", ob[currentitem].name) + 1;
@@ -1294,7 +1311,7 @@ void printEntry(int start, int inodelen, int hlinklen, int sizeblocklen, int own
 
   swprintf(entryName, (entryNameLen + 1), L"%s", ob[currentitem].name);
 
-  entryNameLen = wcslen(entryName);
+  entryNameLen = wcswidth(entryName, wcslen(entryName));
 
   if ( !strcmp(ob[currentitem].slink, "") ){
     entrySLinkLen = 1;
@@ -1303,7 +1320,7 @@ void printEntry(int start, int inodelen, int hlinklen, int sizeblocklen, int own
     entrySLinkLen = snprintf(NULL, 0, "%s", ob[currentitem].slink);
     entrySLink = realloc(entrySLink, sizeof(wchar_t) * (entrySLinkLen + 1));
     swprintf(entrySLink, (entrySLinkLen + 1), L"%s\0", ob[currentitem].slink);
-    entrySLinkLen = wcslen(entrySLink);
+    entrySLinkLen = wcswidth(entrySLink, wcslen(entrySLink));
   }
 
   // Setting highlight
@@ -1414,8 +1431,8 @@ void printEntry(int start, int inodelen, int hlinklen, int sizeblocklen, int own
 
       for ( i = 0; i < maxlen; i++ ){
         mvprintw(displaystart + listref, start + charPos, "%lc", nameSegmentData[0].name[i]);
-        charPos++;
-        if ( i == wcslen(nameSegmentData[0].name) - 1 ){
+        charPos = charPos + wcwidth(nameSegmentData[0].name[i]);
+        if ( i == wcswidth(nameSegmentData[0].name, wcslen(nameSegmentData[0].name)) - 1 ){
           break;
         }
       }
@@ -1446,8 +1463,8 @@ void printEntry(int start, int inodelen, int hlinklen, int sizeblocklen, int own
 
           for ( i = 0; i < maxlen; i++ ){
             mvprintw(displaystart + listref, start + charPos,"%lc", nameSegmentData[0].link[i]);
-            charPos++;
-            if ( i == wcslen(nameSegmentData[0].link) - 1 ){
+            charPos = charPos + wcwidth(nameSegmentData[0].link[i]);
+            if ( i == wcswidth(nameSegmentData[0].link, wcslen(nameSegmentData[0].link)) - 1 ){
               break;
             }
           }
@@ -1458,9 +1475,9 @@ void printEntry(int start, int inodelen, int hlinklen, int sizeblocklen, int own
       }
 
       for ( i = 0; i < maxlen; i++){
-        mvprintw(displaystart + listref, start + charPos, "%c", nameSegmentData[0].padding[i]);
-        charPos++;
-        if ( i == strlen(nameSegmentData[0].padding) - 1 ){
+        mvprintw(displaystart + listref, start + charPos, "%lc", nameSegmentData[0].padding[i]);
+        charPos = charPos + wcwidth(nameSegmentData[0].padding[i]);
+        if ( i == wcswidth(nameSegmentData[0].padding, wcslen(nameSegmentData[0].padding)) - 1 ){
           break;
         }
       }
