@@ -302,7 +302,7 @@ void updateView()
         if (line[i] == '\t'){
           s = s + calculateTab(s);
         } else {
-          s++;
+          s = s + wcwidth(longline[i]);
         }
         if ( s == COLS + left){
           if ( wrap ) {
