@@ -20,7 +20,7 @@
 # -- Project information -----------------------------------------------------
 
 project = 'Directory File Show (DF-SHOW)'
-copyright = '2022, Robert Ian Hawdon'
+copyright = '2023, Robert Ian Hawdon'
 author = 'Robert Ian Hawdon'
 
 # The short X.Y version
@@ -139,7 +139,9 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'directoryfileshowdf-show', 'Directory File Show (DF-SHOW) Documentation',
+    ('show', 'show', 'An interactive directory/file browser written for Unix-like systems.',
+     [author], 1),
+    ('sf', 'sf', 'An interactive file viewer written for Unix-like systems.',
      [author], 1)
 ]
 
