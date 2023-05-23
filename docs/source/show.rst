@@ -663,6 +663,7 @@ The following screen is displayed.
       [ ] Use numeric UID and GIDs
       [ ] Enter key acts like Show
       < > Owner Column: <owner> <group> <author>
+      [ ] Show security context of files
       [ ] Skip to the first object
       [ ] Display only current directory
       [ ] Disply only directories
