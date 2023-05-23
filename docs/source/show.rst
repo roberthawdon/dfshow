@@ -23,7 +23,8 @@ The following options are shared with ``ls``:
 ``-a``, ``--all``
   Does not ignore files or directories starting with ``.``. The
   ``.`` and ``..`` objects are never hidden due to their
-  navigational functions in ``show``.
+  navigational functions in ``show`` unless the '-d' flag is passed
+  which results in only ``.`` being displayed.
 
 ``--author``
   Prints the author of the file in the output.
@@ -39,7 +40,7 @@ The following options are shared with ``ls``:
   or ``never``.
 
 ``-d``, ``--directory``
-  Displays only directories, not files.
+  Lists the current directory only, not its contents.
 
 ``-f``
   Does not sort the output, this is equivilent to running ``show``
@@ -59,8 +60,14 @@ The following options are shared with ``ls``:
   Displays the file sizes in a human readable format. For example,
   1024 Bytes will be represented as 1M.
 
+``-i``, ``--inode``
+  Prints the index number of each file
+
 ``--si``
   As above, but uses powers of 1000. (1000 = 1m)
+
+``-n``, ``-numeric-uid-gid``
+  Show numeric values for user and group IDs.
 
 ``-r``, ``--reverse``
   Reverse the order of sorting. Can be paird with ``-S`` or ``-t``
@@ -94,6 +101,9 @@ The following options are shared with ``ls``:
   Displays program version, then exits.
 
 The following options are specific to ``show``:
+
+``--directories-only``
+  Displays only directories, not files.
 
 ``--theme``\ =[THEME]
   Color themes. Passing this argument without an option will display
@@ -267,7 +277,11 @@ the command has any additional propts, they are also described here.
   object, or multiple objects. When invoked, the following prompt is
   displayed.
 
-  ``Modify: Owner/Group, Permissions``
+  ``Modify - Owner/Group, Permissions``
+
+  On systems with SELinux, the following prompt is displayed instead:
+
+  ``Modify - Context, Owner/Group, Permissions``
 
   Selecting "O" will bring up two prompts.
 
@@ -285,6 +299,14 @@ the command has any additional propts, they are also described here.
 
   The syntax is a 3 or 4 digit octect. See the ``man`` pages for
   ``chmod`` for further information.
+
+  If SELinux is available, then pressing "C" will bring up the following prompt:
+
+  ``Set Context - User, Role, Type, Level, Raw String``
+
+  Selecting "U", "R", "T", or "L" will allow you to modify individual parts of
+  the security context. Pressing "S" will let you modify the entire secuirty
+  context.
 
 ``Quit``
   Closes the current directory currently displayed. The application
@@ -637,9 +659,13 @@ The following screen is displayed.
       [ ] Use 3rd party pager over SF
       [ ] Use SI units
       [ ] Human readable sizes
+      [ ] Show Inode
+      [ ] Use numeric UID and GIDs
       [ ] Enter key acts like Show
       < > Owner Column: <owner> <group> <author>
       [ ] Skip to the first object
+      [ ] Display only current directory
+      [ ] Disply only directories
       [ ] Show allocated size in blocks
       [ ] Override default editor
        -> Editor utility program command: vi

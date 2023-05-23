@@ -325,6 +325,7 @@ void updateView()
   attroff(A_BOLD);
   fileShowStatus();
   free(line);
+  // free(longline);
 }
 
 void loadFile(const char * currentfile)
