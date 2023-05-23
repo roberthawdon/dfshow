@@ -1407,7 +1407,7 @@ void printEntry(int start, int inodelen, int hlinklen, int sizeblocklen, int own
     if (printSegment){
       for ( i = 0; i < maxlen; i++ ){
         mvprintw(displaystart + listref, start + charPos, "%lc", tmpSegment[i]);
-        charPos++;
+        charPos = charPos + wcwidth(tmpSegment[i]);
         if (i == tmpSegmentLen - 2){
           break;
         }
