@@ -26,7 +26,6 @@ po/Makevars.template
 po/POTFILES
 po/Rules-quot
 po/boldquot.sed
-po/dfshow.pot
 po/en@boldquot.header
 po/en@quot.header
 po/insert-header.sin
