@@ -1,16 +1,13 @@
 DF-SHOW
 =======
 
-|Maintenance yes| |GPLv3 license| |Travis Build| |Documentation| |Contributor Covenant|
+|Maintenance yes| |GPLv3 license| |Documentation| |Contributor Covenant|
 
 .. |Maintenance yes| image:: https://img.shields.io/badge/Maintained%3F-yes-green.svg
    :target: https://github.com/roberthawdon/dfshow/graphs/commit-activity
 
 .. |GPLv3 license| image:: https://img.shields.io/badge/License-GPLv3-blue.svg
    :target: https://raw.github.com/roberthawdon/dfshow/master/LICENSE
-
-.. |Travis Build| image:: https://api.travis-ci.org/roberthawdon/dfshow.svg?branch=master
-   :target: https://travis-ci.org/roberthawdon/dfshow
 
 .. |Documentation| image:: https://readthedocs.org/projects/dfshow/badge/?version=latest
    :target: https://dfshow.readthedocs.io/en/latest/?badge=latest
@@ -45,7 +42,7 @@ Features
 * **Delete files.** DF-SHOW also removes files at the user's request.
 * **Create directories.** Users' are also able to create new directories from within the DF-SHOW interface.
 * **Touch files.** Timestamps on files can be changed, as well as the creation of new blank files.
-* **Update permissions.** Owners, groups, and permissions can be set within the application.
+* **Update permissions.** Owners, groups, and permissions can be set within the application. SELinux security contexts can also be modified on supported systems.
 * **Hunt within files.** Find files in a directory containing a string.
 * **Execute applications.** Files with execution permissions can be launched from withing DF-SHOW.
 
@@ -147,11 +144,23 @@ On some BSD systems, you may need to pass extra parameters to configure and buil
 
     ./configure LDFLAGS="-L/usr/local/lib" CFLAGS="-I/usr/local/include"
 
+On macOS with Homebrew, the following needs to be passed when configuring:
+
+.. code-block:: bash
+
+   ./configure LDFLAGS="-L$(brew --prefix)/lib" CFLAGS="-I$(brew --prefix)/include" CC=clang
+
 Build DF-SHOW with
 
 .. code-block:: bash
 
     make
+
+Complie translations
+
+.. code-block:: bash
+
+   make update-po
 
 Install DF-SHOW
 
