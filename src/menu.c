@@ -25,6 +25,7 @@
 #include <wchar.h>
 #include <ctype.h>
 #include "colors.h"
+#include "common.h"
 #include "menu.h"
 #include "banned.h"
 
@@ -132,22 +133,25 @@ wchar_t * genMenuDisplayLabel(char* preMenu, menuDef* dfMenu, int size, char* po
   widePostMenu = malloc(sizeof(wchar_t) * (strlen(postMenu) + 1));
   mbstowcs(widePostMenu, postMenu, (strlen(postMenu) + 1));
 
-  output = malloc(sizeof(wchar_t) * ( wcslen(widePreMenu) + 2));
+  // output = malloc(sizeof(wchar_t) * ( wcslen(widePreMenu) + 2));
   if (wcscmp(widePreMenu, L"")){
-    wcscpy(output, widePreMenu);
-    wcscat(output, L" ");
+    // wcscpy(output, widePreMenu);
+    // wcscat(output, L" ");
+    setDynamicWChar(&output, L"%ls ", widePreMenu);
   } else {
-    wcscpy(output, L"\0");
+    // wcscpy(output, L"\0");
+    setDynamicWChar(&output, L"\0");
   }
   free(widePreMenu);
   for (i = 0; i < size ; i++){
-    output = realloc(output, ((i + 1) * sizeof(dfMenu[i].displayLabel) + wcslen(output) + 1) * sizeof(wchar_t) );
+    // output = realloc(output, ((i + 1) * sizeof(dfMenu[i].displayLabel) + wcslen(output) + 1) * sizeof(wchar_t) );
    if ( i == 0 ){
      currentLen = currentLen + dfMenu[i].displayLabelSize;
      if ( currentLen - 1 < COLS){
-       wcscat(output, dfMenu[i].displayLabel);
+       // wcscat(output, dfMenu[i].displayLabel);
+       setDynamicWChar(&output, L"%ls%ls", output, dfMenu[i].displayLabel);
      } else if ( currentLen +1 > COLS && i == 0){
-       wcscat(output, L"");
+       // wcscat(output, L"");
      }
    } else {
      if (comma == 1){
@@ -160,20 +164,25 @@ wchar_t * genMenuDisplayLabel(char* preMenu, menuDef* dfMenu, int size, char* po
      currentLen = currentLen + dfMenu[i].displayLabelSize + gapSize;
      if (currentLen - 1 < COLS){
        if (comma == 1){
-         wcscat(output, L", ");
+         // wcscat(output, L", ");
+         setDynamicWChar(&output, L"%ls%ls", output, L", ");
        } else if (comma == 0) {
-         wcscat(output, L" ");
+         // wcscat(output, L" ");
+         setDynamicWChar(&output, L"%ls%ls", output, L" ");
        }
-       wcscat(output, dfMenu[i].displayLabel);
+       // wcscat(output, dfMenu[i].displayLabel);
+       setDynamicWChar(&output, L"%ls%ls", output, dfMenu[i].displayLabel);
      }
    }
   }
-  output = realloc(output, (sizeof(wchar_t) * (wcslen(output) + wcslen(widePostMenu) + 2) ));
+  // output = realloc(output, (sizeof(wchar_t) * (wcslen(output) + wcslen(widePostMenu) + 2) ));
   if (wcscmp(widePostMenu, L"")){
-    wcscat(output, L" ");
-    wcscat(output, widePostMenu);
+    // wcscat(output, L" ");
+    // wcscat(output, widePostMenu);
+    setDynamicWChar(&output, L"%ls %ls", output, widePostMenu);
   } else {
-    wcscat(output, L"\0");
+    // wcscat(output, L"\0");
+    setDynamicWChar(&output, L"%ls\0", output);
   }
   free(widePostMenu);
   return output;

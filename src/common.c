@@ -106,6 +106,25 @@ int getch10th (void) {
   return ch;
 }
 
+int setDynamicWChar(wchar_t **str, const wchar_t *format, ...)
+{
+  int length = 0;
+  wchar_t tmpBuf[1024];
+  va_list pArg1, pArg2;
+  va_start(pArg1, format);
+  va_copy(pArg2, pArg1);
+
+  length = vswprintf(tmpBuf, 1024, format, pArg1);
+  length++; // Adds 1 for null terminator
+
+  *str = malloc(sizeof(wchar_t) * length);
+  vswprintf(*str, length, format, pArg2);
+
+  va_end(pArg1);
+  va_end(pArg2);
+  return(length);
+}
+
 int setDynamicChar(char **str, const char *format, ...)
 {
   int length = 0;

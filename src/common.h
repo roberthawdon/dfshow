@@ -9,6 +9,7 @@
 
 void refreshScreen(char *application);
 int getch10th (void);
+int setDynamicWChar(wchar_t **str, const wchar_t *format, ...);
 int setDynamicChar(char **str, const char *format, ...);
 int splitString(splitStrStruct **result, char *input, int splitChar, bool filePath);
 int createParentsInput(char *path);
