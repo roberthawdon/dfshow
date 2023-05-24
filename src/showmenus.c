@@ -1527,53 +1527,53 @@ void modify_context_inputs(int mode)
     curPos = (printMenu(0, 0, menuLabel) + 1);
     free(menuLabel);
     move(0,curPos);
-    readline(contextInput, 256, "");
-    if (mode == SE_RAW) {
-      setDynamicChar(&newContext, "%s", contextInput);
-    }
-    // TO DO - Write function
-    if (CheckMarked(ob) > 0) {
-      for (i = 0; i < totalfilecount; i++){
-        if ( *ob[i].marked ) {
-          setDynamicChar(&workingFile, "%s/%s", currentpwd, ob[i].name);
-          if (mode != SE_RAW){
-            setDynamicChar(&tempContext, ":%s", ob[i].contextText);
-            splitString(&splitContext, tempContext, ':', false);
-            free(tempContext);
-            snprintf(splitContext[mode].subString, (strlen(contextInput) + 1), "%s", contextInput);
-            setDynamicChar(&newContext, "%s:%s:%s:%s", splitContext[SE_USER].subString, splitContext[SE_ROLE].subString, splitContext[SE_TYPE].subString, splitContext[SE_LEVEL].subString);
-            free(splitContext);
+    if (readline(contextInput, 256, "") != -1){
+      if (mode == SE_RAW) {
+        setDynamicChar(&newContext, "%s", contextInput);
+      }
+      if (CheckMarked(ob) > 0) {
+        for (i = 0; i < totalfilecount; i++){
+          if ( *ob[i].marked ) {
+            setDynamicChar(&workingFile, "%s/%s", currentpwd, ob[i].name);
+            if (mode != SE_RAW){
+              setDynamicChar(&tempContext, ":%s", ob[i].contextText);
+              splitString(&splitContext, tempContext, ':', false);
+              free(tempContext);
+              snprintf(splitContext[mode].subString, (strlen(contextInput) + 1), "%s", contextInput);
+              setDynamicChar(&newContext, "%s:%s:%s:%s", splitContext[SE_USER].subString, splitContext[SE_ROLE].subString, splitContext[SE_TYPE].subString, splitContext[SE_LEVEL].subString);
+              free(splitContext);
+            }
+            #if HAVE_SELINUX_SELINUX_H
+            e = lsetfilecon(workingFile, newContext);
+            #endif
+            free(workingFile);
           }
-          #if HAVE_SELINUX_SELINUX_H
-          e = lsetfilecon(workingFile, newContext);
-          #endif
-          free(workingFile);
         }
+      } else {
+        setDynamicChar(&workingFile, "%s/%s", currentpwd, ob[selected].name);
+        if (mode != SE_RAW){
+          setDynamicChar(&tempContext, ":%s", ob[selected].contextText);
+          splitString(&splitContext, tempContext, ':', false);
+          free(tempContext);
+          snprintf(splitContext[mode].subString, (strlen(contextInput) + 1), "%s", contextInput);
+          setDynamicChar(&newContext, "%s:%s:%s:%s", splitContext[SE_USER].subString, splitContext[SE_ROLE].subString, splitContext[SE_TYPE].subString, splitContext[SE_LEVEL].subString);
+          free(splitContext);
+        }
+        #if HAVE_SELINUX_SELINUX_H
+        e = lsetfilecon(workingFile, newContext);
+        #endif
+        free(workingFile);
       }
-    } else {
-      setDynamicChar(&workingFile, "%s/%s", currentpwd, ob[selected].name);
-      if (mode != SE_RAW){
-        setDynamicChar(&tempContext, ":%s", ob[selected].contextText);
-        splitString(&splitContext, tempContext, ':', false);
-        free(tempContext);
-        snprintf(splitContext[mode].subString, (strlen(contextInput) + 1), "%s", contextInput);
-        setDynamicChar(&newContext, "%s:%s:%s:%s", splitContext[SE_USER].subString, splitContext[SE_ROLE].subString, splitContext[SE_TYPE].subString, splitContext[SE_LEVEL].subString);
-        free(splitContext);
+      free(newContext);
+
+      if (e != 0){
+        setDynamicChar(&errmessage, _("Error: %s"), strerror(errno));
+        topLineMessage(errmessage);
+        free(errmessage);
       }
-      #if HAVE_SELINUX_SELINUX_H
-      e = lsetfilecon(workingFile, newContext);
-      #endif
-      free(workingFile);
-    }
-    free(newContext);
 
-    if (e != 0){
-      setDynamicChar(&errmessage, _("Error: %s"), strerror(errno));
-      topLineMessage(errmessage);
-      free(errmessage);
+      refreshDirectory(sortmode, lineStart, selected, 0);
     }
-
-    refreshDirectory(sortmode, lineStart, selected, 0);
 
     directory_view_menu_inputs();
 
