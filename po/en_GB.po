@@ -176,11 +176,11 @@ msgstr "6-Cyan         "
 
 #: src//colors.c:836
 msgid "7-Light Gray   "
-msgstr "7-Light Gray   "
+msgstr "7-Light Grey   "
 
 #: src//colors.c:838
 msgid "8-Dark Gray    "
-msgstr "8-Dark Gray    "
+msgstr "8-Dark Grey    "
 
 #: src//colors.c:840
 msgid "9-Light Red    "
