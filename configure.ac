@@ -1,8 +1,12 @@
-AC_INIT([dfshow],[0.9.7],[https://github.com/roberthawdon/dfshow/issues])
+AC_INIT([dfshow],[0.10.0],[https://github.com/roberthawdon/dfshow/issues])
 AM_INIT_AUTOMAKE([subdir-objects])
 AC_PROG_CC
 AC_CONFIG_HEADERS([config.h:config.hin])
 AC_SUBST([AM_LDFLAGS])
+
+AM_GNU_GETTEXT([external])
+AM_GNU_GETTEXT_VERSION(0.17.18)
+AM_GNU_GETTEXT_REQUIRE_VERSION(0.17.18)
 
 # Check for ACL_TYPE_NFS4
 AC_CHECK_DECL([ACL_TYPE_NFS4],
@@ -94,5 +98,7 @@ AM_CONDITIONAL([DARWIN], [test $(uname) = "Darwin"])
 AM_CONDITIONAL([LINUX], [test $(uname) = "Linux"])
 AM_CONDITIONAL([HURD], [test $(uname) = "GNU"])
 AM_CONDITIONAL([SELINUX], [test "x$with_selinux" = "xyes"])
-AC_CONFIG_FILES([Makefile])
+AC_CONFIG_FILES([ po/Makefile.in
+  Makefile
+])
 AC_OUTPUT

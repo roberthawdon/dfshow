@@ -1,7 +1,7 @@
 /*
   DF-SHOW: An interactive directory/file browser written for Unix-like systems.
   Based on the applications from the PC-DOS DF-EDIT suite by Larry Kroeker.
-  Copyright (C) 2018-2022  Robert Ian Hawdon
+  Copyright (C) 2018-2023  Robert Ian Hawdon
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -20,30 +20,98 @@
 #define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <ncurses.h>
 #include <string.h>
 #include <libconfig.h>
 #include <wchar.h>
+#include <libintl.h>
 #include <math.h>
+#include "display.h"
 #include "menu.h"
 #include "settings.h"
 #include "colors.h"
 #include "input.h"
+#include "common.h"
 #include "banned.h"
-
-menuDef *settingsMenu;
-int settingsMenuSize = 0;
-wchar_t *settingsMenuLabel;
+#include "i18n.h"
 
 int settingsPos = 0;
 int settingsBinPos = -1;
 int settingsFreePos = -1;
+
+extern int * pc;
+
+extern char globalConfLocation[4096];
+extern char homeConfLocation[4096];
 
 void updateSetting(settingIndex **settings, int index, int type, int intSetting)
 {
   // To-Do, do a verification on the type
 
   (*settings)[index].intSetting = intSetting;
+}
+
+void readShowConfig(const char * confFile);
+void readSfConfig(const char * confFile);
+
+int generateShowSettingsVars();
+int generateSfSettingsVars();
+
+void applyShowSettings(settingIndex **settings, t1CharValues **values, int items, int valuesCount);
+void applySfSettings(settingIndex **settings, t1CharValues **values, int items, int valuesCount);
+
+void saveShowConfig(const char * confFile, settingIndex **settings, t1CharValues **values, t2BinValues **bins, int items, int charIndex, int binIndex);
+void saveSfConfig(const char * confFile, settingIndex **settings, t1CharValues **values, t2BinValues **bins, int items, int charIndex, int binIndex);
+
+void settingsAction(char *action, char *application, wchar_t *settingsMenuLabel, settingIndex **settings, t1CharValues **charValues, t2BinValues **binValues, int totalCharItems, int totalBinItems, int totalItems, const char * confFile)
+{
+
+  if ( !strcmp(action, "generate" ) ){
+    #ifdef APPLICATION_SHOW
+      if (!strcmp(application, "show")) {
+        generateShowSettingsVars();
+      }
+    #endif
+    #ifdef APPLICATION_SF
+      if (!strcmp(application, "sf")) {
+        generateSfSettingsVars();
+      }
+    #endif
+  } else if ( !strcmp(action, "apply" ) ) {
+    #ifdef APPLICATION_SHOW
+      if (!strcmp(application, "show")) {
+        applyShowSettings(settings, charValues, totalItems, totalCharItems);
+      }
+    #endif
+    #ifdef APPLICATION_SF
+      if (!strcmp(application, "sf")) {
+        applySfSettings(settings, charValues, totalItems, totalCharItems);
+      }
+    #endif
+  } else if ( !strcmp(action, "save" ) ) {
+    #ifdef APPLICATION_SHOW
+      if (!strcmp(application, "show")) {
+        saveShowConfig(confFile, settings, charValues, binValues, totalItems, totalCharItems, totalBinItems);
+      }
+    #endif
+    #ifdef APPLICATION_SF
+      if (!strcmp(application, "sf")) {
+        saveSfConfig(confFile, settings, charValues, binValues, totalItems, totalCharItems, totalBinItems);
+      }
+    #endif
+  } else if ( !strcmp(action, "read" ) ) {
+    #ifdef APPLICATION_SHOW
+      if (!strcmp(application, "show") || !strcmp(application, "all")) {
+        readShowConfig(confFile);
+      }
+    #endif
+    #ifdef APPLICATION_SF
+      if (!strcmp(application, "sf") || !strcmp(application, "all")) {
+        readSfConfig(confFile);
+      }
+    #endif
+  }
 }
 
 void addT1CharValue(t1CharValues **values, int *totalItems, int *maxItem, char *refLabel, char *value)
@@ -117,10 +185,14 @@ void addT2BinValue(t2BinValues **values, int *totalItems, int *maxItem, char *re
 
 }
 
-void importSetting(settingIndex **settings, int *items, char *refLabel, wchar_t *textLabel, int type, char *charSetting, int intSetting, int maxValue, int invert)
+void importSetting(settingIndex **settings, int *items, char *refLabel, char *textLabel, int type, char *charSetting, int intSetting, int maxValue, int invert)
 {
   settingIndex *tmp;
   int currentItem = *items;
+  wchar_t *wideTextLabel;
+
+  wideTextLabel = malloc(sizeof(wchar_t) * (strlen(textLabel) + 1));
+  mbstowcs(wideTextLabel, textLabel, (strlen(textLabel) + 1));
 
   if (*items == 0){
     tmp = malloc(sizeof(settingIndex) * 2);
@@ -134,7 +206,8 @@ void importSetting(settingIndex **settings, int *items, char *refLabel, wchar_t 
 
   (*settings)[currentItem].type = type;
   snprintf((*settings)[currentItem].refLabel, 16, "%s", refLabel);
-  swprintf((*settings)[currentItem].textLabel, 32, L"%ls", textLabel);
+  swprintf((*settings)[currentItem].textLabel, 32, L"%ls", wideTextLabel);
+  free(wideTextLabel);
   (*settings)[currentItem].intSetting = intSetting;
   (*settings)[currentItem].maxValue = maxValue;
   (*settings)[currentItem].invert = invert;
@@ -168,7 +241,7 @@ void populateBool(t2BinValues **values, char *refLabel, int setting, int maxValu
   }
 }
 
-void adjustBinSetting(settingIndex **settings, t2BinValues **values, char *refLabel, int *setting, int maxValue)
+void adjustBinSetting(settingIndex **settings, t2BinValues **values, char *refLabel, int maxValue)
 {
   int i;
 
@@ -316,3 +389,116 @@ int textValueLookup(t1CharValues **values, int *items, char *refLabel, char *val
 
   return -1;
 }
+
+void settingsMenuView(wchar_t *settingsMenuLabel, int settingsMenuSize, menuDef *settingsMenu, settingIndex **settings, t1CharValues **charValues, t2BinValues **binValues, int totalCharItems, int totalBinItems, int totalItems, char *application)
+{
+  int count = 0;
+  int x = 2;
+  int y = 3;
+  int markedCount, sortmodeCount, timestyleCount, ownerCount;
+  int sortmodeInt, timestyleInt;
+  int e;
+  char charTempValue[1024];
+
+  clear();
+  wPrintMenu(0,0,settingsMenuLabel);
+
+  // TODO call the settings loader
+  settingsAction("read", application, NULL, NULL, NULL, NULL, 0, 0, 0, globalConfLocation);
+  settingsAction("read", application, NULL, NULL, NULL, NULL, 0, 0, 0, homeConfLocation);
+  settingsAction("generate", application, NULL, NULL, NULL, NULL, 0, 0, 0, NULL);
+
+  while(1)
+    {
+      for (count = 0; count < totalItems; count++){
+      // printSetting(2 + count, 3, settings, charValues, binValues, count, totalCharItems, totalBinItems, settings[count]->type, settings[count]->invert);
+      printSetting(2 + count, 3, settings, charValues, binValues, count, totalCharItems, totalBinItems, (*settings)[count].type, (*settings)[count].invert);
+      }
+
+      move(x + settingsPos, y + 1);
+      *pc = getch10th();
+      if (*pc == menuHotkeyLookup(settingsMenu, "s_quit", settingsMenuSize)){
+        curs_set(FALSE);
+        settingsAction("apply", application, NULL, settings, charValues, NULL, totalCharItems, 0, totalItems, NULL);
+        // free(settings);
+        return;
+      } else if (*pc == menuHotkeyLookup(settingsMenu, "s_revert", settingsMenuSize)){
+        // free(settings);
+        // TODO call the settings loader
+        settingsAction("read", application, NULL, NULL, NULL, NULL, 0, 0, 0, globalConfLocation);
+        settingsAction("read", application, NULL, NULL, NULL, NULL, 0, 0, 0, homeConfLocation);
+        settingsAction("generate", application, NULL, NULL, NULL, NULL, 0, 0, 0, NULL);
+      } else if (*pc == menuHotkeyLookup(settingsMenu, "s_save", settingsMenuSize)){
+        settingsAction("apply", application, NULL, settings, charValues, NULL, totalCharItems, 0, totalItems, NULL);
+        if (access(dirFromPath(homeConfLocation), W_OK) != 0) {
+          createParentDirs(homeConfLocation);
+        }
+        settingsAction("save", application, NULL, settings, charValues, binValues, totalCharItems, totalBinItems, totalItems, homeConfLocation);
+        curs_set(FALSE);
+        topLineMessage(_("Settings saved."));
+        curs_set(TRUE);
+        wPrintMenu(0,0,settingsMenuLabel);
+      } else if (*pc == 258 || *pc == 10){
+        if (settingsPos < (totalItems -1 )){
+          settingsBinPos = -1;
+          settingsPos++;
+        }
+      } else if (*pc == 32 || *pc == 260 || *pc == 261){
+        // Adjust
+        if ((*settings)[settingsPos].type == SETTING_BOOL){
+          if ((*settings)[settingsPos].intSetting > 0){
+            updateSetting(settings, settingsPos, SETTING_BOOL, 0);
+          } else {
+            updateSetting(settings, settingsPos, SETTING_BOOL, 1);
+          }
+        } else if ((*settings)[settingsPos].type == SETTING_SELECT){
+          if (*pc == 32 || *pc == 261){
+            if ((*settings)[settingsPos].intSetting < ((*settings)[settingsPos].maxValue) - 1){
+              updateSetting(settings, settingsPos, SETTING_SELECT, ((*settings)[settingsPos].intSetting) + 1);
+            } else {
+              updateSetting(settings, settingsPos, SETTING_SELECT, 0);
+            }
+          } else {
+            if ((*settings)[settingsPos].intSetting > 0){
+              updateSetting(settings, settingsPos, SETTING_SELECT, ((*settings)[settingsPos].intSetting) - 1);
+            } else {
+              updateSetting(settings, settingsPos, SETTING_SELECT, ((*settings)[settingsPos].maxValue - 1));
+            }
+          }
+        } else if ((*settings)[settingsPos].type == SETTING_MULTI){
+          if (*pc == 261 && (settingsBinPos < ((*settings)[settingsPos].maxValue -1))){
+            settingsBinPos++;
+          } else if (*pc == 260 && (settingsBinPos > -1)){
+            settingsBinPos--;
+          } else if (*pc == 32 && (settingsBinPos > -1)){
+            // Not fond of this, but it should work
+            if (!strcmp((*settings)[settingsPos].refLabel, "owner")){
+              adjustBinSetting(settings, binValues, "owner", totalBinItems);
+            }
+          }
+        } else if ((*settings)[settingsPos].type == SETTING_FREE){
+          if (*pc == 32 || *pc == 261) {
+            settingsFreePos = 0;
+            move(x + settingsPos, y + wcslen((*settings)[settingsPos].textLabel) + 6);
+            e = readline(charTempValue, 1024, (*settings)[settingsPos].charSetting);
+            if (strcmp(charTempValue, "")){
+              free((*settings)[settingsPos].charSetting);
+              (*settings)[settingsPos].charSetting = malloc(sizeof(char) * (strlen(charTempValue) + 1));
+              snprintf((*settings)[settingsPos].charSetting, (strlen(charTempValue) + 1), "%s", charTempValue);
+            }
+            move(x + settingsPos, 0);
+            clrtoeol();
+            settingsFreePos = -1;
+          }
+        }
+      } else if (*pc == 259){
+        if (settingsPos > 0){
+          settingsBinPos = -1;
+          settingsPos--;
+        }
+      }
+    }
+
+}
+
+

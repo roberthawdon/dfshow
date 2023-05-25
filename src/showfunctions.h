@@ -15,14 +15,15 @@
 #define RIGHT 1
 
 #define COL_MARK       0
-#define COL_SIZEBLOCKS 1
-#define COL_ATTR       2
-#define COL_HLINK      3
-#define COL_OWNER      4
-#define COL_CONTEXT    5
-#define COL_SIZE       6
-#define COL_DATE       7
-#define COL_NAME       8
+#define COL_INODE      1
+#define COL_SIZEBLOCKS 2
+#define COL_ATTR       3
+#define COL_HLINK      4
+#define COL_OWNER      5
+#define COL_CONTEXT    6
+#define COL_SIZE       7
+#define COL_DATE       8
+#define COL_NAME       9
 
 #define ET_OBJECT 0
 #define ET_ACL    1
@@ -45,6 +46,7 @@ typedef struct {
   char *group;
   char *author;
   size_t size;
+  ino_t inode;
   blkcnt_t sizeBlocks;
   int sizelens[32];
   int major;
@@ -78,7 +80,7 @@ typedef struct {
   wchar_t *name;
   int linkStat;
   wchar_t *link;
-  char *padding;
+  wchar_t *padding;
 } nameStruct;
 
 typedef struct {
@@ -124,12 +126,13 @@ int RenameObject(char* source, char* dest);
 int CheckMarked(results* ob);
 wchar_t *wWriteSegment(int segLen, wchar_t *text, int align);
 char *writeSegment(int segLen, char *text, int align);
-void printEntry(int start, int hlinklen, int sizeblocklen, int ownerlen, int grouplen, int authorlen, int sizelen, int majorlen, int minorlen, int datelen, int namelen, int contextlen, int selected, int listref, int currentitem, results* ob);
+void printEntry(int start, int inodelen, int hlinklen, int sizeblocklen, int ownerlen, int grouplen, int authorlen, int sizelen, int majorlen, int minorlen, int datelen, int namelen, int contextlen, int selected, int listref, int currentitem, results* ob);
 void printXattr(int start, int selected, int listref, int currentItem, int subIndex, xattrList* xa, results* ob);
 void padstring(char *str, int len, char c);
 char *genPadding(int num_of_spaces);
+wchar_t *wGenPadding(int num_of_spaces);
 void resizeDisplayDir(results* ob);
-char *readableSize(double size, ssize_t bufSize, char *buf, int si);
+char *readableSize(long double size, ssize_t bufSize, char *buf, int si);
 int writePermsEntry(char * perms, mode_t mode, int axFlag, int sLinkCheck);
 void writeResultStruct(results* ob, const char * filename, struct stat buffer, int count, bool xAcl, ssize_t xattr, int seLinuxCon, char * contextText, char * xattrs, const int xattrsNum);
 char *markedDisplay(results* ob);

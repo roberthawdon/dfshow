@@ -1,7 +1,7 @@
 /*
   DF-SHOW: An interactive directory/file browser written for Unix-like systems.
   Based on the applications from the PC-DOS DF-EDIT suite by Larry Kroeker.
-  Copyright (C) 2018-2022  Robert Ian Hawdon
+  Copyright (C) 2018-2023  Robert Ian Hawdon
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -18,6 +18,13 @@
 */
 
 #define _GNU_SOURCE
+
+#define SE_USER 0
+#define SE_ROLE 1
+#define SE_TYPE 2
+#define SE_LEVEL 3
+#define SE_RAW 4
+
 #include <ncurses.h>
 #include <unistd.h>
 #include <string.h>
@@ -32,6 +39,9 @@
 #include <regex.h>
 #include <time.h>
 #include <utime.h>
+#include <libintl.h>
+#include <locale.h>
+#include "config.h"
 #include "menu.h"
 #include "display.h"
 #include "settings.h"
@@ -41,9 +51,11 @@
 #include "colors.h"
 #include "input.h"
 #include "banned.h"
+#include "i18n.h"
 
-int c;
-int * pc = &c;
+#if HAVE_SELINUX_SELINUX_H
+# include <selinux/selinux.h>
+#endif
 
 char chpwd[4096];
 char selfile[4096];
@@ -54,17 +66,28 @@ char uids[24];
 char gids[24];
 char currentfilename[512];
 
-int s;
 char *buf;
 char *rewrite;
 
 int blockstart = -1;
 int blockend = -1;
 
-int abortinput = 0;
 
 struct utimbuf touchDate;
 time_t touchTime;
+
+extern int c;
+extern int * pc;
+
+extern int abortinput;
+
+extern int s;
+
+extern settingIndex *settingIndexShow;
+extern t1CharValues *charValuesShow;
+extern t2BinValues *binValuesShow;
+extern int totalCharItemsShow;
+extern int totalBinItemsShow;
 
 extern char *errmessage;
 
@@ -128,9 +151,9 @@ menuDef *globalMenu;
 int globalMenuSize = 0;
 wchar_t *globalMenuLabel;
 
-menuDef *fileMenu;
-int fileMenuSize = 0;
-wchar_t *fileMenuLabel;
+menuDef *showFileMenu;
+int showFileMenuSize = 0;
+wchar_t *showFileMenuLabel;
 
 menuDef *functionMenu;
 int functionMenuSize = 0;
@@ -160,122 +183,140 @@ menuDef *touchDateConfirmMenu;
 int touchDateConfirmMenuSize = 0;
 wchar_t *touchDateConfirmMenuLabel;
 
+menuDef *contextMenu;
+int contextMenuSize = 0;
+wchar_t *contextMenuLabel;
+
+wchar_t *tmpMenuLabel;
+
 extern menuDef *colorMenu;
 extern int colorMenuSize;
 extern wchar_t *colorMenuLabel;
 
-extern menuDef *settingsMenu;
-extern int settingsMenuSize;
-extern wchar_t *settingsMenuLabel;
+menuDef *showSettingsMenu;
+int showSettingsMenuSize;
+wchar_t *showSettingsMenuLabel;
 
 void modify_owner_input();
 
-void generateDefaultMenus(){
+void generateDefaultShowMenus(){
   // Global Menu
-  addMenuItem(&globalMenu, &globalMenuSize, "g_colors", L"c!Olors", 'o');
-  addMenuItem(&globalMenu, &globalMenuSize, "g_config", L"!Config", 'c');
-  addMenuItem(&globalMenu, &globalMenuSize, "g_run", L"!Run", 'r');
-  addMenuItem(&globalMenu, &globalMenuSize, "g_edit", L"!Edit file", 'e');
-  addMenuItem(&globalMenu, &globalMenuSize, "g_help", L"!Help", 'h');
-  addMenuItem(&globalMenu, &globalMenuSize, "g_mkdir", L"!Make dir", 'm');
-  addMenuItem(&globalMenu, &globalMenuSize, "g_quit", L"!Quit", 'q');
-  addMenuItem(&globalMenu, &globalMenuSize, "g_show", L"!Show dir", 's');
-  addMenuItem(&globalMenu, &globalMenuSize, "g_touch", L"!Touch file", 't');
+  addMenuItem(&globalMenu, &globalMenuSize, "g_colors", _("c!Olors"), 'o', 1);
+  addMenuItem(&globalMenu, &globalMenuSize, "g_config", _("!Config"), 'c', 1);
+  addMenuItem(&globalMenu, &globalMenuSize, "g_run", _("!Run"), 'r', 1);
+  addMenuItem(&globalMenu, &globalMenuSize, "g_edit", _("!Edit file"), 'e', 1);
+  addMenuItem(&globalMenu, &globalMenuSize, "g_help", _("!Help"), 'h', 1);
+  addMenuItem(&globalMenu, &globalMenuSize, "g_mkdir", _("!Make dir"), 'm', 1);
+  addMenuItem(&globalMenu, &globalMenuSize, "g_quit", _("!Quit"), 'q', 1);
+  addMenuItem(&globalMenu, &globalMenuSize, "g_show", _("!Show dir"), 's', 1);
+  addMenuItem(&globalMenu, &globalMenuSize, "g_touch", _("!Touch file"), 't', 1);
 
   // File Menu
-  addMenuItem(&fileMenu, &fileMenuSize, "f_copy", L"!Copy", 'c');
-  addMenuItem(&fileMenu, &fileMenuSize, "f_delete", L"!Delete", 'd');
-  addMenuItem(&fileMenu, &fileMenuSize, "f_edit", L"!Edit", 'e');
-  addMenuItem(&fileMenu, &fileMenuSize, "f_hidden", L"!Hidden", 'h');
-  addMenuItem(&fileMenu, &fileMenuSize, "f_link", L"!Link", 'l');
-  addMenuItem(&fileMenu, &fileMenuSize, "f_modify", L"!Modify", 'm');
+  addMenuItem(&showFileMenu, &showFileMenuSize, "f_copy", _("!Copy"), 'c', 1);
+  addMenuItem(&showFileMenu, &showFileMenuSize, "f_delete", _("!Delete"), 'd', 1);
+  addMenuItem(&showFileMenu, &showFileMenuSize, "f_edit", _("!Edit"), 'e', 1);
+  addMenuItem(&showFileMenu, &showFileMenuSize, "f_hidden", _("!Hidden"), 'h', 1);
+  addMenuItem(&showFileMenu, &showFileMenuSize, "f_link", _("!Link"), 'l', 1);
+  addMenuItem(&showFileMenu, &showFileMenuSize, "f_modify", _("!Modify"), 'm', 1);
   if (plugins){
-    addMenuItem(&fileMenu, &fileMenuSize, "f_plugin", L"!Plugin", 'p');
+    addMenuItem(&showFileMenu, &showFileMenuSize, "f_plugin", _("!Plugin"), 'p', 1);
   }
-  addMenuItem(&fileMenu, &fileMenuSize, "f_quit", L"!Quit", 'q');
-  addMenuItem(&fileMenu, &fileMenuSize, "f_rename", L"!Rename", 'r');
-  addMenuItem(&fileMenu, &fileMenuSize, "f_show", L"!Show", 's');
-  addMenuItem(&fileMenu, &fileMenuSize, "f_touch", L"!Touch", 't');
-  addMenuItem(&fileMenu, &fileMenuSize, "f_uhunt", L"h!Unt", 'u');
-  addMenuItem(&fileMenu, &fileMenuSize, "f_xexec", L"e!Xec", 'x');
+  addMenuItem(&showFileMenu, &showFileMenuSize, "f_quit", _("!Quit"), 'q', 1);
+  addMenuItem(&showFileMenu, &showFileMenuSize, "f_rename", _("!Rename"), 'r', 1);
+  addMenuItem(&showFileMenu, &showFileMenuSize, "f_show", _("!Show"), 's', 1);
+  addMenuItem(&showFileMenu, &showFileMenuSize, "f_touch", _("!Touch"), 't', 1);
+  addMenuItem(&showFileMenu, &showFileMenuSize, "f_uhunt", _("h!Unt"), 'u', 1);
+  addMenuItem(&showFileMenu, &showFileMenuSize, "f_xexec", _("e!Xec"), 'x', 1);
 
   // Function Menu
-  addMenuItem(&functionMenu, &functionMenuSize, "f_01", L"<F1>-Down", 265);
-  addMenuItem(&functionMenu, &functionMenuSize, "f_02", L"<F2>-Up", 266);
-  addMenuItem(&functionMenu, &functionMenuSize, "f_03", L"<F3>-Top", 267);
-  addMenuItem(&functionMenu, &functionMenuSize, "f_04", L"<F4>-Bottom", 268);
-  addMenuItem(&functionMenu, &functionMenuSize, "f_05", L"<F5>-Refresh", 269);
-  addMenuItem(&functionMenu, &functionMenuSize, "f_06", L"<F6>-Mark/Unmark", 270);
-  addMenuItem(&functionMenu, &functionMenuSize, "f_07", L"<F7>-All", 271);
-  addMenuItem(&functionMenu, &functionMenuSize, "f_08", L"<F8>-None", 272);
-  addMenuItem(&functionMenu, &functionMenuSize, "f_09", L"<F9>-Sort", 273);
-  addMenuItem(&functionMenu, &functionMenuSize, "f_10", L"<F10>-Block", 274);
+  addMenuItem(&functionMenu, &functionMenuSize, "f_01", _("<F1>-Down"), 265, 1);
+  addMenuItem(&functionMenu, &functionMenuSize, "f_02", _("<F2>-Up"), 266, 1);
+  addMenuItem(&functionMenu, &functionMenuSize, "f_03", _("<F3>-Top"), 267, 1);
+  addMenuItem(&functionMenu, &functionMenuSize, "f_04", _("<F4>-Bottom"), 268, 1);
+  addMenuItem(&functionMenu, &functionMenuSize, "f_05", _("<F5>-Refresh"), 269, 1);
+  addMenuItem(&functionMenu, &functionMenuSize, "f_06", _("<F6>-Mark/Unmark"), 270, 1);
+  addMenuItem(&functionMenu, &functionMenuSize, "f_07", _("<F7>-All"), 271, 1);
+  addMenuItem(&functionMenu, &functionMenuSize, "f_08", _("<F8>-None"), 272, 1);
+  addMenuItem(&functionMenu, &functionMenuSize, "f_09", _("<F9>-Sort"), 273, 1);
+  addMenuItem(&functionMenu, &functionMenuSize, "f_10", _("<F10>-Block"), 274, 1);
 
   // Modify Menu
-  addMenuItem(&modifyMenu, &modifyMenuSize, "m_owner", L"!Owner/Group", 'o');
-  addMenuItem(&modifyMenu, &modifyMenuSize, "m_perms", L"!Permissions", 'p');
+  #ifdef HAVE_SELINUX_SELINUX_H
+    addMenuItem(&modifyMenu, &modifyMenuSize, "m_context", _("!Context"), 'c', 1);
+  #endif
+  addMenuItem(&modifyMenu, &modifyMenuSize, "m_owner", _("!Owner/Group"), 'o', 1);
+  addMenuItem(&modifyMenu, &modifyMenuSize, "m_perms", _("!Permissions"), 'p', 1);
 
   // Sort Menu
-  addMenuItem(&sortMenu, &sortMenuSize, "s_date", L"!Date & time", 'd');
-  addMenuItem(&sortMenu, &sortMenuSize, "s_name", L"!Name", 'n');
-  addMenuItem(&sortMenu, &sortMenuSize, "s_size", L"!Size", 's');
+  addMenuItem(&sortMenu, &sortMenuSize, "s_date", _("!Date & time"), 'd', 1);
+  addMenuItem(&sortMenu, &sortMenuSize, "s_name", _("!Name"), 'n', 1);
+  addMenuItem(&sortMenu, &sortMenuSize, "s_size", _("!Size"), 's', 1);
 
   // Link Menu
-  addMenuItem(&linkMenu, &linkMenuSize, "l_hard", L"!Hard", 'h');
-  addMenuItem(&linkMenu, &linkMenuSize, "l_symbolic", L"!Symbolic", 's');
+  addMenuItem(&linkMenu, &linkMenuSize, "l_hard", _("!Hard"), 'h', 1);
+  addMenuItem(&linkMenu, &linkMenuSize, "l_symbolic", _("!Symbolic"), 's', 1);
 
   // Link Location Menu
-  addMenuItem(&linkLocationMenu, &linkLocationMenuSize, "l_absolute", L"!Absolute", 'a');
-  addMenuItem(&linkLocationMenu, &linkLocationMenuSize, "l_relative", L"!Relative", 'r');
+  addMenuItem(&linkLocationMenu, &linkLocationMenuSize, "l_absolute", _("!Absolute"), 'a', 1);
+  addMenuItem(&linkLocationMenu, &linkLocationMenuSize, "l_relative", _("!Relative"), 'r', 1);
 
   // Touch Menu
-  addMenuItem(&touchMenu, &touchMenuSize, "t_accessed", L"!Accessed", 'a');
-  addMenuItem(&touchMenu, &touchMenuSize, "t_both", L"!Both", 'b');
-  addMenuItem(&touchMenu, &touchMenuSize, "t_modified", L"!Modified", 'm');
+  addMenuItem(&touchMenu, &touchMenuSize, "t_accessed", _("!Accessed"), 'a', 1);
+  addMenuItem(&touchMenu, &touchMenuSize, "t_both", _("!Both"), 'b', 1);
+  addMenuItem(&touchMenu, &touchMenuSize, "t_modified", _("!Modified"), 'm', 1);
 
   // Touch Set Date Confirm
-  addMenuItem(&touchDateConfirmMenu, &touchDateConfirmMenuSize, "t_1", L"!Yes/", 'y');
-  addMenuItem(&touchDateConfirmMenu, &touchDateConfirmMenuSize, "t_2", L"!No", 'n');
+  addMenuItem(&touchDateConfirmMenu, &touchDateConfirmMenuSize, "t_1", _("!Yes/"), 'y', 1);
+  addMenuItem(&touchDateConfirmMenu, &touchDateConfirmMenuSize, "t_2", _("!No"), 'n', 1);
 
   // Color Menu
-  addMenuItem(&colorMenu, &colorMenuSize, "c_color", L"Color number", -1);
-  addMenuItem(&colorMenu, &colorMenuSize, "c_load", L"!Load", 'l');
-  addMenuItem(&colorMenu, &colorMenuSize, "c_quit", L"!Quit", 'q');
-  addMenuItem(&colorMenu, &colorMenuSize, "c_save", L"!Save", 's');
-  addMenuItem(&colorMenu, &colorMenuSize, "c_toggle", L"!Toggle", 't');
-  addMenuItem(&colorMenu, &colorMenuSize, "c_use", L"!Use", 'u');
+  addMenuItem(&colorMenu, &colorMenuSize, "c_color", _("Color number"), -1, 1);
+  addMenuItem(&colorMenu, &colorMenuSize, "c_load", _("!Load"), 'l', 1);
+  addMenuItem(&colorMenu, &colorMenuSize, "c_quit", _("!Quit"), 'q', 1);
+  addMenuItem(&colorMenu, &colorMenuSize, "c_save", _("!Save"), 's', 1);
+  addMenuItem(&colorMenu, &colorMenuSize, "c_toggle", _("!Toggle"), 't', 1);
+  addMenuItem(&colorMenu, &colorMenuSize, "c_use", _("!Use"), 'u', 1);
 
   // Setings Menu
-  addMenuItem(&settingsMenu, &settingsMenuSize, "s_quit", L"!Quit", 'q');
-  addMenuItem(&settingsMenu, &settingsMenuSize, "s_revert", L"!Revert", 'r');
-  addMenuItem(&settingsMenu, &settingsMenuSize, "s_save", L"!Save", 's');
+  addMenuItem(&showSettingsMenu, &showSettingsMenuSize, "s_quit", _("!Quit"), 'q', 1);
+  addMenuItem(&showSettingsMenu, &showSettingsMenuSize, "s_revert", _("!Revert"), 'r', 1);
+  addMenuItem(&showSettingsMenu, &showSettingsMenuSize, "s_save", _("!Save"), 's', 1);
+
+  // Context Menu (SELinux)
+  addMenuItem(&contextMenu, &contextMenuSize, "c_user", _("!User"), 'u', 0);
+  addMenuItem(&contextMenu, &contextMenuSize, "c_role", _("!Role"), 'r', 0);
+  addMenuItem(&contextMenu, &contextMenuSize, "c_type", _("!Type"), 't', 0);
+  addMenuItem(&contextMenu, &contextMenuSize, "c_level", _("!Level"), 'l', 0);
+  addMenuItem(&contextMenu, &contextMenuSize, "c_string", _("Raw !String"), 's', 0);
 }
 
-void refreshMenuLabels(){
-  globalMenuLabel = genMenuDisplayLabel(L"", globalMenu, globalMenuSize, L"", 1);
-  fileMenuLabel = genMenuDisplayLabel(L"", fileMenu, fileMenuSize, L"", 1);
-  functionMenuLabel = genMenuDisplayLabel(L"", functionMenu, functionMenuSize, L"", 0);
-  modifyMenuLabel = genMenuDisplayLabel(L"Modify -", modifyMenu, modifyMenuSize, L"", 1);
-  sortMenuLabel = genMenuDisplayLabel(L"Sort list by -", sortMenu, sortMenuSize, L"", 1);
-  linkMenuLabel = genMenuDisplayLabel(L"Link Type -", linkMenu, linkMenuSize, L"(enter = S)", 1);
-  linkLocationMenuLabel = genMenuDisplayLabel(L"Link Location -", linkLocationMenu, linkLocationMenuSize, L"(enter = R)", 1);
-  touchMenuLabel = genMenuDisplayLabel(L"Set Time -", touchMenu, touchMenuSize, L"(enter = B)", 1);
-  touchDateConfirmMenuLabel = genMenuDisplayLabel(L"Set Time?", touchDateConfirmMenu, touchDateConfirmMenuSize, L"(enter = N)", -1);
-  colorMenuLabel = genMenuDisplayLabel(L"", colorMenu, colorMenuSize, L"", 1);
-  settingsMenuLabel = genMenuDisplayLabel(L"SHOW Settings Menu -", settingsMenu, settingsMenuSize, L"", 1);
+void refreshShowMenuLabels(){
+  globalMenuLabel = genMenuDisplayLabel("", globalMenu, globalMenuSize, "", 1);
+  showFileMenuLabel = genMenuDisplayLabel("", showFileMenu, showFileMenuSize, "", 1);
+  functionMenuLabel = genMenuDisplayLabel("", functionMenu, functionMenuSize, "", 0);
+  modifyMenuLabel = genMenuDisplayLabel(_("Modify -"), modifyMenu, modifyMenuSize, "", 1);
+  sortMenuLabel = genMenuDisplayLabel(_("Sort list by -"), sortMenu, sortMenuSize, _("(<shift> = reverse)"), 1);
+  linkMenuLabel = genMenuDisplayLabel(_("Link Type -"), linkMenu, linkMenuSize, _("(enter = S)"), 1);
+  linkLocationMenuLabel = genMenuDisplayLabel(_("Link Location -"), linkLocationMenu, linkLocationMenuSize, _("(enter = R)"), 1);
+  touchMenuLabel = genMenuDisplayLabel(_("Set Time -"), touchMenu, touchMenuSize, _("(enter = B)"), 1);
+  touchDateConfirmMenuLabel = genMenuDisplayLabel(_("Set Time?"), touchDateConfirmMenu, touchDateConfirmMenuSize, _("(enter = N)"), -1);
+  contextMenuLabel = genMenuDisplayLabel(_("Set Context -"), contextMenu, contextMenuSize, "", 1);
+  colorMenuLabel = genMenuDisplayLabel("", colorMenu, colorMenuSize, "", 1);
+  showSettingsMenuLabel = genMenuDisplayLabel(_("SHOW Settings Menu -"), showSettingsMenu, showSettingsMenuSize, "", 1);
 }
 
-void unloadMenuLabels(){
+void unloadShowMenuLabels(){
   free(globalMenuLabel);
-  free(fileMenuLabel);
+  free(showFileMenuLabel);
   free(functionMenuLabel);
   free(modifyMenuLabel);
   free(sortMenuLabel);
   free(linkLocationMenuLabel);
   free(touchMenuLabel);
   free(touchDateConfirmMenuLabel);
+  free(contextMenuLabel);
   free(colorMenuLabel);
-  free(settingsMenuLabel);
+  free(showSettingsMenuLabel);
 }
 
 int sanitizeTopFileRef(int topfileref)
@@ -397,7 +438,7 @@ void show_directory_input()
   memcpy(oldpwd, currentpwd, (strlen(currentpwd) + 1));
   move(0,0);
   clrtoeol();
-  curPos = (printMenu(0, 0, "Show Directory - Enter pathname:") + 1);
+  curPos = (printMenu(0, 0, _("Show Directory - Enter pathname:")) + 1);
   curs_set(TRUE);
   move(0,curPos);
   readline(currentpwd, 4096, oldpwd);
@@ -431,7 +472,7 @@ void show_directory_input()
       chdir(currentpwd);
       refreshDirectory(sortmode, 0, selected, -2);
     } else {
-      setDynamicChar(&direrror, "The location %s cannot be opened or is not a directory\n", currentpwd);
+      setDynamicChar(&direrror, _("The location %s cannot be opened or is not a directory\n"), currentpwd);
       memcpy(currentpwd, oldpwd, (strlen(oldpwd) + 1));
       topLineMessage(direrror);
     }
@@ -451,7 +492,7 @@ void show_directory_input()
 int replace_file_confirm_input(char *filename)
 {
   char *message = malloc(sizeof(char) * 1);
-  setDynamicChar(&message, "Replace file [<%s>]? (!Yes/!No)", filename);
+  setDynamicChar(&message, _("Replace file [<%s>]? (!Yes/!No)"), filename);
   printMenu(0,0, message);
   free(message);
   while(1)
@@ -477,7 +518,7 @@ void copy_file_input(char *file, mode_t mode)
   int curPos = 0;
   move(0,0);
   clrtoeol();
-  curPos = (printMenu(0, 0, "Copy file to:") + 1);
+  curPos = (printMenu(0, 0, _("Copy file to:")) + 1);
   curs_set(TRUE);
   move(0,curPos);
   readline(newfile, 4096, file);
@@ -509,12 +550,12 @@ void copy_file_input(char *file, mode_t mode)
           createParentDirs(newfile);
           goto copyFile;
         } else {
-          setDynamicChar(&errmessage, "Error: %s", strerror(errno));
+          setDynamicChar(&errmessage, _("Error: %s"), strerror(errno));
           topLineMessage(errmessage);
           free(errmessage);
         }
       } else {
-        setDynamicChar(&errmessage, "Error: %s", strerror(errno));
+        setDynamicChar(&errmessage, _("Error: %s"), strerror(errno));
         topLineMessage(errmessage);
         free(errmessage);
       }
@@ -531,7 +572,7 @@ void copy_multi_file_input(results* ob, char *input)
   char destfile[4096];
   move(0,0);
   clrtoeol();
-  curPos = (printMenu(0, 0, "Copy multiple files to:") + 1);
+  curPos = (printMenu(0, 0, _("Copy multiple files to:")) + 1);
   curs_set(TRUE);
   move(0, curPos);
   readline(dest, 4096, input);
@@ -577,7 +618,7 @@ void copy_multi_file_input(results* ob, char *input)
         mk_dir(dest); // Needed as the final element is omitted by the above
         goto copyMultiFile;
       } else {
-        topLineMessage("Error: Directory Not Found.");
+        topLineMessage(_("Error: Directory Not Found."));
       }
     }
   }
@@ -592,7 +633,7 @@ void rename_multi_file_input(results* ob, char *input)
   char destfile[4096];
   move(0,0);
   clrtoeol();
-  curPos = (printMenu(0, 0, "Rename multiple files to:") + 1);
+  curPos = (printMenu(0, 0, _("Rename multiple files to:")) + 1);
   curs_set(TRUE);
   move(0, curPos);
   readline(dest, 4096, input);
@@ -637,7 +678,7 @@ void rename_multi_file_input(results* ob, char *input)
         mk_dir(dest); // Needed as the final element is omitted by the above
         goto renameMultiFile;
       } else {
-        topLineMessage("Error: Directory Not Found.");
+        topLineMessage(_("Error: Directory Not Found."));
       }
     }
     refreshDirectory(sortmode, 0, selected, 1);
@@ -652,7 +693,7 @@ void edit_file_input()
   int curPos = 0;
   move(0,0);
   clrtoeol();
-  curPos = (printMenu(0, 0, "Edit File - Enter pathname:") + 1);
+  curPos = (printMenu(0, 0, _("Edit File - Enter pathname:")) + 1);
   curs_set(TRUE);
   move(0,curPos);
   readline(filepath, 4096, "");
@@ -669,7 +710,7 @@ void rename_file_input(char *file)
   int e;
   move(0,0);
   clrtoeol();
-  curPos = (printMenu(0, 0, "Rename file to:") + 1);
+  curPos = (printMenu(0, 0, _("Rename file to:")) + 1);
   curs_set(TRUE);
   move(0,curPos);
   readline(dest, 4096, file);
@@ -702,12 +743,12 @@ void rename_file_input(char *file)
           createParentDirs(dest);
           goto renameFile;
         } else {
-          setDynamicChar(&errmessage, "Error: %s", strerror(errno));
+          setDynamicChar(&errmessage, _("Error: %s"), strerror(errno));
           topLineMessage(errmessage);
           free(errmessage);
         }
       } else {
-        setDynamicChar(&errmessage, "Error: %s", strerror(errno));
+        setDynamicChar(&errmessage, _("Error: %s"), strerror(errno));
         topLineMessage(errmessage);
         free(errmessage);
       }
@@ -725,7 +766,7 @@ void make_directory_input()
   int e;
   move(0,0);
   clrtoeol();
-  curPos = (printMenu(0, 0, "Make Directory - Enter pathname:") + 1);
+  curPos = (printMenu(0, 0, _("Make Directory - Enter pathname:")) + 1);
   move (0,curPos);
   setDynamicChar(&tmpPwd, "%s/", currentpwd);
   readline(newdir, 4096, tmpPwd);
@@ -746,12 +787,12 @@ void make_directory_input()
           createParentDirs(newdir);
           goto makeDir;
         } else {
-          setDynamicChar(&errmessage, "Error: %s", strerror(errno));
+          setDynamicChar(&errmessage, _("Error: %s"), strerror(errno));
           topLineMessage(errmessage);
           free(errmessage);
         }
       } else {
-        setDynamicChar(&errmessage, "Error: %s", strerror(errno));
+        setDynamicChar(&errmessage, _("Error: %s"), strerror(errno));
         topLineMessage(errmessage);
         free(errmessage);
       }
@@ -774,11 +815,11 @@ time_t touchTimeInput(int type)
   time_t newTime, tmpTime;
   int curPos = 0;
   if (type == 1){
-    snprintf(menuTitle, 32, "Set Access Time:");
+    snprintf(menuTitle, 32, _("Set Access Time:"));
   } else if (type == 2){
-    snprintf(menuTitle, 32, "Set Modified Time:");
+    snprintf(menuTitle, 32, _("Set Modified Time:"));
   } else {
-    snprintf(menuTitle, 32, "Set Time:");
+    snprintf(menuTitle, 32, _("Set Time:"));
   }
   move(0,0);
   clrtoeol();
@@ -802,7 +843,7 @@ time_t touchTimeInput(int type)
       time(&newTime);
     } else {
       abortinput = 1;
-      topLineMessage("Error parsing time");
+      topLineMessage(_("Error parsing time"));
       time(&newTime);
     }
   } else {
@@ -846,7 +887,7 @@ void touch_file_input()
   int curPos = 0;
   move(0,0);
   clrtoeol();
-  curPos = (printMenu(0, 0, "Touch File - Enter pathname:") + 1);
+  curPos = (printMenu(0, 0, _("Touch File - Enter pathname:")) + 1);
   move (0, curPos);
   setDynamicChar(&tmpPwd, "%s/", currentpwd);
   if (readline(touchFile, 4096, tmpPwd) != -1){
@@ -888,12 +929,12 @@ void touch_file_input()
           createParentDirs(touchFile);
           goto touchFile;
         } else {
-          setDynamicChar(&errmessage, "Error: %s", strerror(errno));
+          setDynamicChar(&errmessage, _("Error: %s"), strerror(errno));
           topLineMessage(errmessage);
           free(errmessage);
         }
       } else {
-        setDynamicChar(&errmessage, "Error: %s", strerror(errno));
+        setDynamicChar(&errmessage, _("Error: %s"), strerror(errno));
         topLineMessage(errmessage);
         free(errmessage);
       }
@@ -916,7 +957,7 @@ char * execute_argument_input(const char *exec)
   int curPos = 0;
   strout = malloc(sizeof(char) * 1024);
   message = malloc(sizeof(char) * 1);
-  setDynamicChar(&message, "Args to pass to %s:", exec);
+  setDynamicChar(&message, _("Args to pass to %s:"), exec);
   move(0,0);
   clrtoeol();
   curPos = (printMenu(0, 0, message) + 1);
@@ -934,7 +975,7 @@ int huntCaseSelectInput()
 {
   int result = 0;
   char *message;
-  setDynamicChar(&message, "Case Sensitive, !Yes/!No/<ESC> (enter = no)");
+  setDynamicChar(&message, _("Case Sensitive, !Yes/!No/<ESC> (enter = no)"));
   printMenu(0,0, message);
   while(1)
     {
@@ -970,10 +1011,10 @@ void huntInput(int selected, int charcase)
   char *inputmessage;
   if (charcase){
     regexcase = 0;
-    setDynamicChar(&inputmessage, "Match Case - Enter string:");
+    setDynamicChar(&inputmessage, _("Match Case - Enter string:"));
   } else {
     regexcase = REG_ICASE;
-    setDynamicChar(&inputmessage, "Ignore Case - Enter string:");
+    setDynamicChar(&inputmessage, _("Ignore Case - Enter string:"));
   }
   move(0,0);
   clrtoeol();
@@ -1014,7 +1055,7 @@ void huntInput(int selected, int charcase)
 
 void delete_file_confirm_input(char *file)
 {
-  printMenu(0,0, "Delete file? (!Yes/!No)");
+  printMenu(0,0, _("Delete file? (!Yes/!No)"));
   while(1)
     {
       *pc = getch10th();
@@ -1034,7 +1075,7 @@ void delete_file_confirm_input(char *file)
 void delete_directory_confirm_input(char *directory)
 {
   int e;
-  printMenu(0,0, "Delete directory? (!Yes/!No)");
+  printMenu(0,0, _("Delete directory? (!Yes/!No)"));
   while(1)
     {
       *pc = getch10th();
@@ -1043,7 +1084,7 @@ void delete_directory_confirm_input(char *directory)
         case 'y':
           e = rmdir(directory);
           if (e != 0){
-            setDynamicChar(&errmessage, "Error: %s", strerror(errno));
+            setDynamicChar(&errmessage, _("Error: %s"), strerror(errno));
             topLineMessage(errmessage);
             free(errmessage);
           }
@@ -1076,7 +1117,7 @@ void delete_multi_file_confirm_input(results* ob)
             {
               delete_file(selfile);
             } else {
-            setDynamicChar(&message, "Delete file [<%s>]? (!Yes/!No/!All/!Stop)", selfile);
+            setDynamicChar(&message, _("Delete file [<%s>]? (!Yes/!No/!All/!Stop)"), selfile);
             printMenu(0,0, message);
             free(message);
             k = 1;
@@ -1158,7 +1199,7 @@ void modify_group_input()
  groupInputLoop:
   move(0,0);
   clrtoeol();
-  setDynamicChar(&message, "Set Group (%s):", ownerinput);
+  setDynamicChar(&message, _("Set Group (%s):"), ownerinput);
   curPos = (printMenu(0, 0, message) + 1);
   free(message);
   curs_set(TRUE);
@@ -1186,7 +1227,7 @@ void modify_group_input()
     free(buf);
     if (gresult == NULL){
       if (s == 0){
-        setDynamicChar(&errmessage, "Invalid group: %s", groupinput);
+        setDynamicChar(&errmessage, _("Invalid group: %s"), groupinput);
         topLineMessage(errmessage);
         free(errmessage);
         goto groupInputLoop;
@@ -1218,7 +1259,7 @@ void modify_group_input()
         snprintf(ofile + strlen(ofile), (strlen(currentpwd) + strlen(ob[selected].name) + 2), "%s", ob[selected].name);
 
         if (UpdateOwnerGroup(ofile, uids, gids) == -1) {
-          setDynamicChar(&errmessage, "Error: %s", strerror(errno));
+          setDynamicChar(&errmessage, _("Error: %s"), strerror(errno));
           topLineMessage(errmessage);
           free(errmessage);
         }
@@ -1244,7 +1285,7 @@ void modify_owner_input()
  ownerInputLoop:
   move(0,0);
   clrtoeol();
-  curPos = (printMenu(0, 0, "Set Owner:") + 1);
+  curPos = (printMenu(0, 0, _("Set Owner:")) + 1);
   curs_set(TRUE);
   move(0,curPos);
   status = readline(ownerinput, 256, "");
@@ -1267,7 +1308,7 @@ void modify_owner_input()
     free(buf);
     if (presult == NULL){
       if (s == 0){
-        setDynamicChar(&errmessage, "Invalid user: %s", ownerinput);
+        setDynamicChar(&errmessage, _("Invalid user: %s"), ownerinput);
         topLineMessage(errmessage);
         free(errmessage);
         goto ownerInputLoop;
@@ -1290,7 +1331,7 @@ void modify_permissions_input()
   int curPos;
   move(0,0);
   clrtoeol();
-  curPos = (printMenu(0, 0, "Modify Permissions:") + 1);
+  curPos = (printMenu(0, 0, _("Modify Permissions:")) + 1);
   curs_set(TRUE);
   move(0,curPos);
   status = readline(perms, 5, "");
@@ -1354,8 +1395,7 @@ int symLinkLocation()
 
 void linktext_input(char *file, int symbolic)
 {
-  char inputmessage[32];
-  char typeText[9];
+  char *inputmessage;
   char target[4096];
   int relative, e;
   char *relativeFile;
@@ -1365,14 +1405,14 @@ void linktext_input(char *file, int symbolic)
     snprintf(target + strlen(target), 4096, "/");
   }
   if (symbolic){
-    snprintf(typeText, 9, "Symbolic");
+    setDynamicChar(&inputmessage, _("Symbolic link to:"));
   } else {
-    snprintf(typeText, 9, "Hard");
+    setDynamicChar(&inputmessage, _("Hard link to:"));
   }
-  snprintf(inputmessage, 32, "%s link to:", typeText);
   move(0,0);
   clrtoeol();
   curPos = (printMenu(0,0,inputmessage) + 1);
+  free(inputmessage);
   move(0, curPos);
   if (readline(target, 4096, target) != -1){
 
@@ -1392,7 +1432,7 @@ void linktext_input(char *file, int symbolic)
     makeSymlink:
     if (access(dirFromPath(target), W_OK) == 0){
       if (check_file(target)){
-        topLineMessage("Error: File exists.");
+        topLineMessage(_("Error: File exists."));
       } else {
         if (symbolic){
           relative = symLinkLocation();
@@ -1416,12 +1456,12 @@ void linktext_input(char *file, int symbolic)
           createParentDirs(target);
           goto makeSymlink;
         } else {
-          setDynamicChar(&errmessage, "Error: %s", strerror(errno));
+          setDynamicChar(&errmessage, _("Error: %s"), strerror(errno));
           topLineMessage(errmessage);
           free(errmessage);
         }
       } else {
-        setDynamicChar(&errmessage, "Error: %s", strerror(errno));
+        setDynamicChar(&errmessage, _("Error: %s"), strerror(errno));
         topLineMessage(errmessage);
         free(errmessage);
       }
@@ -1446,7 +1486,7 @@ void link_key_menu_inputs()
         if (!check_dir(selfile)){
           linktext_input(selfile, 0);
         } else {
-          topLineMessage("Error: Selected object is a directory.");
+          topLineMessage(_("Error: Selected object is a directory."));
           directory_view_menu_inputs();
         }
       } else if (*pc == menuHotkeyLookup(linkMenu, "l_symbolic", linkMenuSize) || *pc == 10){
@@ -1457,6 +1497,109 @@ void link_key_menu_inputs()
         directory_view_menu_inputs();
       }
     }
+}
+
+void modify_context_inputs(int mode)
+{
+    char *menuLabel;
+    char contextInput[256];
+    char *newContext;
+    char *tempContext; //hacky hack to avoid major rewriting of splitString
+    int curPos = 0;
+    char *workingFile;
+    splitStrStruct *splitContext;
+    int e, i;
+
+    if (mode == SE_USER) {
+        setDynamicChar(&menuLabel, _("Set User Context:"));
+    } else if (mode == SE_ROLE) {
+        setDynamicChar(&menuLabel, _("Set Role Context:"));
+    } else if (mode == SE_TYPE) {
+        setDynamicChar(&menuLabel, _("Set Type Context:"));
+    } else if (mode == SE_LEVEL) {
+        setDynamicChar(&menuLabel, _("Set Level Context:"));
+    } else if (mode == SE_RAW) {
+        setDynamicChar(&menuLabel, _("Set Context:"));
+    }
+
+    move(0,0);
+    clrtoeol();
+    curPos = (printMenu(0, 0, menuLabel) + 1);
+    free(menuLabel);
+    move(0,curPos);
+    if (readline(contextInput, 256, "") != -1){
+      if (mode == SE_RAW) {
+        setDynamicChar(&newContext, "%s", contextInput);
+      }
+      if (CheckMarked(ob) > 0) {
+        for (i = 0; i < totalfilecount; i++){
+          if ( *ob[i].marked ) {
+            setDynamicChar(&workingFile, "%s/%s", currentpwd, ob[i].name);
+            if (mode != SE_RAW){
+              setDynamicChar(&tempContext, ":%s", ob[i].contextText);
+              splitString(&splitContext, tempContext, ':', false);
+              free(tempContext);
+              snprintf(splitContext[mode].subString, (strlen(contextInput) + 1), "%s", contextInput);
+              setDynamicChar(&newContext, "%s:%s:%s:%s", splitContext[SE_USER].subString, splitContext[SE_ROLE].subString, splitContext[SE_TYPE].subString, splitContext[SE_LEVEL].subString);
+              free(splitContext);
+            }
+            #if HAVE_SELINUX_SELINUX_H
+            e = lsetfilecon(workingFile, newContext);
+            #endif
+            free(workingFile);
+          }
+        }
+      } else {
+        setDynamicChar(&workingFile, "%s/%s", currentpwd, ob[selected].name);
+        if (mode != SE_RAW){
+          setDynamicChar(&tempContext, ":%s", ob[selected].contextText);
+          splitString(&splitContext, tempContext, ':', false);
+          free(tempContext);
+          snprintf(splitContext[mode].subString, (strlen(contextInput) + 1), "%s", contextInput);
+          setDynamicChar(&newContext, "%s:%s:%s:%s", splitContext[SE_USER].subString, splitContext[SE_ROLE].subString, splitContext[SE_TYPE].subString, splitContext[SE_LEVEL].subString);
+          free(splitContext);
+        }
+        #if HAVE_SELINUX_SELINUX_H
+        e = lsetfilecon(workingFile, newContext);
+        #endif
+        free(workingFile);
+      }
+      free(newContext);
+
+      if (e != 0){
+        setDynamicChar(&errmessage, _("Error: %s"), strerror(errno));
+        topLineMessage(errmessage);
+        free(errmessage);
+      }
+
+      refreshDirectory(sortmode, lineStart, selected, 0);
+    }
+
+    directory_view_menu_inputs();
+
+}
+
+void modify_context_menu_inputs()
+{
+    wPrintMenu(0,0,contextMenuLabel);
+    while(1)
+      {
+        *pc = getch10th();
+        if (*pc == 27){
+        // ESC Key
+            directory_view_menu_inputs();
+        } else if (*pc == menuHotkeyLookup(contextMenu, "c_user", contextMenuSize)){
+            modify_context_inputs(SE_USER);
+        } else if (*pc == menuHotkeyLookup(contextMenu, "c_role", contextMenuSize)){
+            modify_context_inputs(SE_ROLE);
+        } else if (*pc == menuHotkeyLookup(contextMenu, "c_type", contextMenuSize)){
+            modify_context_inputs(SE_TYPE);
+        } else if (*pc == menuHotkeyLookup(contextMenu, "c_level", contextMenuSize)){
+            modify_context_inputs(SE_LEVEL);
+        } else if (*pc == menuHotkeyLookup(contextMenu, "c_string", contextMenuSize)){
+            modify_context_inputs(SE_RAW);
+        }
+      }
 }
 
 void modify_key_menu_inputs()
@@ -1470,6 +1613,8 @@ void modify_key_menu_inputs()
         modify_owner_input();
       } else if (*pc == menuHotkeyLookup(modifyMenu, "m_perms", modifyMenuSize)){
         modify_permissions_input();
+      } else if (*pc == menuHotkeyLookup(modifyMenu, "m_context", modifyMenuSize)){
+        modify_context_menu_inputs();
       } else if (*pc == 27){
         // ESC Key
         directory_view_menu_inputs();
@@ -1485,10 +1630,10 @@ void directory_view_menu_inputs()
   viewMode = 0;
   while(1)
     {
-      wPrintMenu(0, 0, fileMenuLabel);
+      wPrintMenu(0, 0, showFileMenuLabel);
       wPrintMenu(LINES-1, 0, functionMenuLabel);
       *pc = getch10th();
-      if (*pc == menuHotkeyLookup(fileMenu, "f_copy", fileMenuSize)){
+      if (*pc == menuHotkeyLookup(showFileMenu, "f_copy", showFileMenuSize)){
         if ( (CheckMarked(ob) > 0) ) {
           copy_multi_file_input(ob, currentpwd);
         } else {
@@ -1501,7 +1646,7 @@ void directory_view_menu_inputs()
             copy_file_input(selfile, ob[selected].mode);
           }
         }
-      } else if (*pc == menuHotkeyLookup(fileMenu, "f_delete", fileMenuSize)){
+      } else if (*pc == menuHotkeyLookup(showFileMenu, "f_delete", showFileMenuSize)){
         if ( (CheckMarked(ob) > 0) ) {
           delete_multi_file_confirm_input(ob);
           refreshDirectory(sortmode, lineStart, selected, 1);
@@ -1518,7 +1663,7 @@ void directory_view_menu_inputs()
             delete_directory_confirm_input(selfile);
           }
         }
-      } else if (*pc == menuHotkeyLookup(fileMenu, "f_edit", fileMenuSize)){
+      } else if (*pc == menuHotkeyLookup(showFileMenu, "f_edit", showFileMenuSize)){
         memcpy(chpwd, currentpwd, 4096);
         if (!check_last_char(chpwd, "/")){
           snprintf(chpwd + strlen(chpwd), 4096, "%s", "/");
@@ -1528,7 +1673,7 @@ void directory_view_menu_inputs()
           SendToEditor(chpwd);
           refreshDirectory(sortmode, lineStart, selected, 1);
         }
-      } else if (*pc == menuHotkeyLookup(fileMenu, "f_hidden", fileMenuSize)){
+      } else if (*pc == menuHotkeyLookup(showFileMenu, "f_hidden", showFileMenuSize)){
         snprintf(currentfilename, 512, "%s", ob[selected].name);
         if (showhidden == 0) {
           showhidden = 1;
@@ -1550,16 +1695,16 @@ void directory_view_menu_inputs()
           }
         }
         refreshDirectory(sortmode, lineStart, selected, 0);
-      } else if (*pc == menuHotkeyLookup(fileMenu, "f_link", fileMenuSize)){
+      } else if (*pc == menuHotkeyLookup(showFileMenu, "f_link", showFileMenuSize)){
         if ( !(CheckMarked(ob) > 0) ) {
           link_key_menu_inputs();
         } else {
-          topLineMessage("Error: Links can only be made against single files.");
+          topLineMessage(_("Error: Links can only be made against single files."));
         }
-      } else if (*pc == menuHotkeyLookup(fileMenu, "f_modify", fileMenuSize)){
+      } else if (*pc == menuHotkeyLookup(showFileMenu, "f_modify", showFileMenuSize)){
         //printMenu(0, 0, modifyMenuText);
         modify_key_menu_inputs();
-      } else if (*pc == menuHotkeyLookup(fileMenu, "f_quit", fileMenuSize)){
+      } else if (*pc == menuHotkeyLookup(showFileMenu, "f_quit", showFileMenuSize)){
       handleMissingDir:
           if (historyref > 1){
             snprintf(chpwd, 4096, "%s", hs[historyref - 2].path);
@@ -1593,7 +1738,7 @@ void directory_view_menu_inputs()
             historyref = 0; // Reset historyref here. A hacky workaround due to the value occasionally dipping to minus numbers.
             global_menu();
           }
-      } else if (*pc == menuHotkeyLookup(fileMenu, "f_rename", fileMenuSize)){
+      } else if (*pc == menuHotkeyLookup(showFileMenu, "f_rename", showFileMenuSize)){
         if ( (CheckMarked(ob) > 0) ) {
           rename_multi_file_input(ob, currentpwd);
         } else {
@@ -1604,7 +1749,7 @@ void directory_view_menu_inputs()
           snprintf(selfile + strlen(selfile), 4096, "%s", ob[selected].name);
           rename_file_input(selfile);
         }
-      } else if (*pc == menuHotkeyLookup(fileMenu, "f_show", fileMenuSize)){
+      } else if (*pc == menuHotkeyLookup(showFileMenu, "f_show", showFileMenuSize)){
         showCommand:
           memcpy(chpwd, currentpwd, 4096);
           if (!check_last_char(chpwd, "/")){
@@ -1646,7 +1791,7 @@ void directory_view_menu_inputs()
               // display_dir(currentpwd, ob);
             }
           }
-      } else if (*pc == menuHotkeyLookup(fileMenu, "f_touch", fileMenuSize)){
+      } else if (*pc == menuHotkeyLookup(showFileMenu, "f_touch", showFileMenuSize)){
         e = touchType();
         // Add what to do with result.
         if (e > -1){
@@ -1675,14 +1820,14 @@ void directory_view_menu_inputs()
           }
         }
         refreshDirectory(sortmode, lineStart, selected, 0);
-      } else if (*pc == menuHotkeyLookup(fileMenu, "f_uhunt", fileMenuSize)){
+      } else if (*pc == menuHotkeyLookup(showFileMenu, "f_uhunt", showFileMenuSize)){
         e = huntCaseSelectInput();
         if (e != -1){
           huntInput(selected, e);
         }
         abortinput = 0;
         display_dir(currentpwd, ob);
-      } else if (*pc == menuHotkeyLookup(fileMenu, "f_xexec", fileMenuSize)){
+      } else if (*pc == menuHotkeyLookup(showFileMenu, "f_xexec", showFileMenuSize)){
         memcpy(chpwd, currentpwd, 4096);
         if (!check_last_char(chpwd, "/")){
           snprintf(chpwd + strlen(chpwd), 4096, "%s", "/");
@@ -1697,7 +1842,7 @@ void directory_view_menu_inputs()
           abortinput = 0;
           display_dir(currentpwd, ob);
         } else {
-          topLineMessage("Error: Permission denied");
+          topLineMessage(_("Error: Permission denied"));
         }
       } else if (*pc == menuHotkeyLookup(functionMenu, "f_01", functionMenuSize) || *pc == 338){
         if (selected < (totalfilecount - 1) ) {
@@ -1952,7 +2097,7 @@ void global_menu_inputs()
           global_menu_inputs();
         }
       } else if (*pc == menuHotkeyLookup(globalMenu, "g_config", globalMenuSize)) {
-        settingsMenuView();
+          settingsMenuView(showSettingsMenuLabel, showSettingsMenuSize, showSettingsMenu, &settingIndexShow, &charValuesShow, &binValuesShow, totalCharItemsShow, totalBinItemsShow, generateShowSettingsVars(), "show");
         if (historyref == 0){
           clear();
           global_menu_inputs();
@@ -1979,7 +2124,7 @@ void global_menu_inputs()
         }
       } else if (*pc == menuHotkeyLookup(globalMenu, "g_help", globalMenuSize)) {
         showManPage("show");
-        refreshScreen();
+        refreshScreenShow();
         if (historyref == 0){
           wPrintMenu(0,0,globalMenuLabel);
         } else {

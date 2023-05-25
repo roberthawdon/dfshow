@@ -1,590 +1,872 @@
-.\" generated with Ronn-NG/v0.9.1
-.\" http://github.com/apjanke/ronn-ng/tree/0.9.1
-.TH "SHOW" "1" "January 2022" ""
-.SH "NAME"
-\fBshow\fR \- An interactive directory/file browser written for Unix\-like systems\.
-.SH "USAGE"
-\fBshow\fR \fI<options\fR> [\fItarget\fR]
-.SH "DESCRIPTION"
-DF\-SHOW: An interactive directory/file browser written for Unix\-like systems\. Based on the applications from the PC\-DOS DF\-EDIT suite by Larry Kroeker\.
-.SH "OPTIONS"
-The following options are shared with \fBls\fR:
-.IP "\[ci]" 4
-\fB\-@\fR Displays extended atributes keys and sizes (macOS only)\.
-.IP "\[ci]" 4
-\fB\-a\fR, \fB\-\-all\fR: Does not ignore files or directories starting with \fB\.\fR\. The \fB\.\fR and \fB\.\.\fR objects are never hidden due to their navigational functions in \fBshow\fR\.
-.IP "\[ci]" 4
-\fB\-\-author\fR: Prints the author of the file in the output\.
-.IP "\[ci]" 4
-\fB\-\-block\-size\fR=SIZE: Scales sizes by SIZE when printing them; e\.g\., \'\-\-block\-size=M\'
-.IP "\[ci]" 4
-\fB\-B\fR, \fB\-\-ignore\-backups\fR: Hides files ending in \fB~\fR, often used as backup files\.
-.IP "\[ci]" 4
-\fB\-\-color\fR[=\fICOLOR\fR]: Sets colorizing of files and directories\. Can be set to \fBalways\fR or \fBnever\fR\.
-.IP "\[ci]" 4
-\fB\-d\fR, \fB\-\-directory\fR: Displays only directories, not files\.
-.IP "\[ci]" 4
-\fB\-f\fR: Does not sort the output, this is equivilent to running \fBshow\fR with \fB\-aU\fR\.
-.IP "\[ci]" 4
-\fB\-\-full\-time\fR: Sets the Time/Date format to \fBfull\-iso\fR\.
-.IP "\[ci]" 4
-\fB\-g\fR: Only displays the group of each object\. Can be paired with \fB\-\-author\fR\.
-.IP "\[ci]" 4
-\fB\-G\fR, \fB\-\-no\-group\fR: Omits the group of each object in the output\.
-.IP "\[ci]" 4
-\fB\-h\fR, \fB\-\-human\-readable\fR: Displays the file sizes in a human readable format\. For example, 1024 Bytes will be represented as 1M\.
-.IP "\[ci]" 4
-\fB\-\-si\fR: As above, but uses powers of 1000\. (1000 = 1m)
-.IP "\[ci]" 4
-\fB\-r\fR, \fB\-\-reverse\fR: Reverse the order of sorting\. Can be paired with \fB\-S\fR or \fB\-t\fR
-.IP "\[ci]" 4
-\fB\-s\fR, \fB\-\-size\fR: Displays file sizes in blocks\.
-.IP "\[ci]" 4
-\fB\-S\fR: Sorts files and directories by size, largest first\.
-.IP "\[ci]" 4
-\fB\-\-time\-style\fR=[\fITIME_STYLE\fR]: Time/Date format\. Can be set to \fBfull\-iso\fR, \fBlong\-iso\fR, \fBiso\fR, or \fBlocale\fR\.
-.IP "\[ci]" 4
-\fB\-t\fR: Sorts by modification time, newest first\.
-.IP "\[ci]" 4
-\fB\-U\fR: Displays output in the order they\'re found\.
-.IP "\[ci]" 4
-\fB\-Z\fR, \fB\-\-context\fR Shows the secuirty context of each file, if one is defined\.
-.IP "\[ci]" 4
-\fB\-1\fR Only shows the file name on display\.
-.IP "\[ci]" 4
-\fB\-\-help\fR: Displays help message, then exits\.
-.IP "\[ci]" 4
-\fB\-\-version\fR: Displays program version, then exits\.
-.IP "" 0
-.P
-The following options are specific to \fBshow\fR:
-.IP "\[ci]" 4
-\fB\-\-theme\fR=[\fITHEME\fR]: Color themes\. Passing this argument without an option will display available themes\.
-.IP "\[ci]" 4
-\fB\-\-no\-danger\fR: Disables the danger color scheme when running with elevated privileges\.
-.IP "\[ci]" 4
-\fB\-\-marked\fR=[\fIMARKED\fR]: Displays information about marked files\. Can be set to \fBalways\fR, \fBnever\fR, or \fBauto\fR\.
-.IP "\[ci]" 4
-\fB\-\-no\-sf\fR: Doesn\'t display files using \fBsf\fR (if installed) and defaults to the user\'s PAGER setting\.
-.IP "\[ci]" 4
-\fB\-\-show\-on\-enter\fR: Sets the enter key to launch the show command instead of moving the selection down by one\.
-.IP "\[ci]" 4
-\fB\-\-running\fR: Checks for parent instances of \fBshow\fR, this is useful when using the Run Command option\.
-.IP "\[ci]" 4
-\fB\-\-settings\-menu\fR: Launch \fBshow\fR directly into the settings menu\.
-.IP "\[ci]" 4
-\fB\-\-edit\-themes\fR: Launches \fBshow\fR directly into the theme editor\. (colors)
-.IP "\[ci]" 4
-\fB\-\-skip\-to\-first\fR Sets the highlighted item to the first object that isn\'t \fB\.\fR or \fB\.\.\fR
-.IP "" 0
-.SH "OVERVIEW"
-The \fBshow\fR application lets users view the names of files and directories on a disk with information about the files\. Files can be copied, moved, viewed, and edited (in your system\'s default editor)\. The application is run using the show command\. The output is similar to the \fBls\fR command\.
-.P
-The screen is devided into three parts\. The first is the command bar which displays the functions available, their hotkeys, and aditional prompts when requested\. The commands are described in more detail in the \fICOMMANDS\fR and \fIGLOBAL COMMANDS\fR sections\.
-.P
-The second part is the middle of the screen between the top and bottom rows\. This displays information for the files and directories and is known as the display window\. The top three rows of the display window are header lines which identify the information being displayed in each column, the number of objects in the current directory, the total space used by the files in the current directory, the remaining disk space on the mounted partition the directory resides, and the current path\. Each line gives the object\'s permissions, hard links, the owner and group information, size of the object, date and time of the last modification, as well as the name of each file or directory\.
-.P
-The third part is known as the function bar, each function can be accessed by its numeric function key\. The functions are described in more deatail in the \fIFUNCTIONS\fR section\.
-.SH "COMMANDS"
-Several commands are provided which can be used on a single file or multiple files\. These commands provide a lot of the functions supported by standard Unix commands, but in a convenient user interface\. The file to be operated on is selected by navigating the cursor on the line of the desired file\. The highlighed (first character) of the command is used to invoke its function\. Multiple files can be selected using the "Mark/Unmark" function\. The following is a list of valid commands and a brief description of each\.
+.\" Man page generated from reStructuredText.
+.
+.
+.nr rst2man-indent-level 0
+.
+.de1 rstReportMargin
+\\$1 \\n[an-margin]
+level \\n[rst2man-indent-level]
+level margin: \\n[rst2man-indent\\n[rst2man-indent-level]]
+-
+\\n[rst2man-indent0]
+\\n[rst2man-indent1]
+\\n[rst2man-indent2]
+..
+.de1 INDENT
+.\" .rstReportMargin pre:
+. RS \\$1
+. nr rst2man-indent\\n[rst2man-indent-level] \\n[an-margin]
+. nr rst2man-indent-level +1
+.\" .rstReportMargin post:
+..
+.de UNINDENT
+. RE
+.\" indent \\n[an-margin]
+.\" old: \\n[rst2man-indent\\n[rst2man-indent-level]]
+.nr rst2man-indent-level -1
+.\" new: \\n[rst2man-indent\\n[rst2man-indent-level]]
+.in \\n[rst2man-indent\\n[rst2man-indent-level]]u
+..
+.TH "SHOW" "1" "May 23, 2023" "0.10" "Directory File Show (DF-SHOW)"
+.SH NAME
+show \- An interactive directory/file browser written for Unix-like systems.
+.SH OVERVIEW
+.sp
+The \fBshow\fP application lets users view the names of files and directories on a disk with information about the files. Files can be copied, moved, viewed, and edited (in your system\(aqs default editor). The application is run using the show command. The output is similar to the \fBls\fP command.
+.sp
+The screen is devided into three parts. The first is the command bar which displays the functions available, their hotkeys, and aditional prompts when requested. The commands are described in more detail in the \fI\%commands\fP and \fI\%global commands\fP sections.
+.sp
+The second part is the middle of the screen between the top and bottom rows. This displays information for the files and directories and is known as the display window. The top three rows of the display window are header lines which identify the information being displayed in each column, the number of objects in the current directory, the total space used by the files in the current directory, the remaining disk space on the mounted partition the directory resides, and the current path. Each line gives the object\(aqs permissions, hard links, the owner and group information, size of the object, date and time of the last modification, as well as the name of each file or directory.
+.sp
+The third part is known as the function bar, each function can be accessed by its numeric function key. The functions are described in more deatail in the \fI\%functions\fP section.
+.SH COMMAND LINE ARGUMENTS
+.sp
+The following options are shared with \fBls\fP:
+.INDENT 0.0
 .TP
-\fBCopy\fR
-Copy file or marked files to a specified destination\.
+.B \fB\-@\fP
+Displays extended atributes keys and sizes (macOS only).
 .TP
-\fBDelete\fR
-Delete file or marked files\.
+.B \fB\-a\fP, \fB\-\-all\fP
+Does not ignore files or directories starting with \fB\&.\fP\&. The
+\fB\&.\fP and \fB\&..\fP objects are never hidden due to their
+navigational functions in \fBshow\fP unless the \(aq\-d\(aq flag is passed
+which results in only \fB\&.\fP being displayed.
 .TP
-\fBEdit\fR
-Invoke the system\'s text editor\.
+.B \fB\-\-author\fP
+Prints the author of the file in the output.
 .TP
-\fBHidden\fR
-Toggle the visibility of hidden objects\.
+.B \fB\-\-block\-size\fP=SIZE
+Scales sizes by SIZE when printing them; e.g., \(aq\-\-block\-size=M\(aq
 .TP
-\fBLink\fR
-Create a link between files or directories\.
+.B \fB\-B\fP, \fB\-\-ignore\-backups\fP
+Hides files ending in \fB~\fP, often used as backup files.
 .TP
-\fBModify\fR
-Change the owner/group or permissions of files\.
+.B \fB\-\-color\fP[=COLOR]
+Sets colorizing of files and directories. Can be set to \fBalways\fP
+or \fBnever\fP\&.
 .TP
-\fBQuit\fR
-Quit current directory\.
+.B \fB\-d\fP, \fB\-\-directory\fP
+Lists the current directory only, not its contents.
 .TP
-\fBRename\fR
-Rename/move file or marked files\.
+.B \fB\-f\fP
+Does not sort the output, this is equivilent to running \fBshow\fP
+with \fB\-aU\fP\&.
 .TP
-\fBShow\fR
-Show file or directory\.
+.B \fB\-\-full\-time\fP
+Sets the Time/Date format to \fBfull\-iso\fP\&.
 .TP
-\fBTouch\fR
-Change file timestamps\.
+.B \fB\-g\fP
+Only displays the group of each object. Can be paird with
+\fB\-\-author\fP\&.
 .TP
-\fBeXec\fR
-Runs files marked as executable\.
+.B \fB\-G\fP, \fB\-\-no\-group\fP
+Omits the group of each object in the output.
 .TP
-\fBhUnt\fR
-Searches and marks files matching a string\.
-.P
-Each of the commands are described in the following paragraphs\. If the command has any additional prompts, they are also described here\.
+.B \fB\-h\fP, \fB\-\-human\-readable\fP
+Displays the file sizes in a human readable format. For example,
+1024 Bytes will be represented as 1M.
 .TP
-\fBCopy\fR
-Copy the selected file, or marked files to another file location\. When using this command, only the destination must be specified\. The destination file name is requested by one of the following prompts\. An empty response to the prompt or the \fIESC\fR key is used to abort the command\. If there are no marked files, a single file copy is requested; otherwise, a multiple file copy is requested\.
-.IP
-\fBCopy file to:\fR
-.IP
-\fBCopy multiple files to:\fR
-.IP
-If the destination file already exists, confirmation to replace the file is requested by the following prompt\.
-.IP
-\fBReplace file [<file name>]? (Yes/No)\fR
+.B \fB\-i\fP, \fB\-\-inode\fP
+Prints the index number of each file
 .TP
-\fBDelete\fR
-Delete the selected file, or marked files\. As this is a destructive process, confirmation is requested by one of the following prompts\. If there are no marked files, a single file delete is requested; otherwise, a multiple delete is requested\.
-.IP
-\fBDelete file? (Yes/No)\fR
-.IP
-\fBDelete file [<file name>]? (Yes/No/All/Stop)\fR
-.IP
-For single files, a "Y" will delete files and anything else will abort the delete file operation\. For multiple files, confirmation for all files is requested\. A "Y" will delete the prompted file, an "N" will not delete the file, an "A" will delete all the marked files without further confirmation, and an "S" will stop the multiple delete command\.
+.B \fB\-\-si\fP
+As above, but uses powers of 1000. (1000 = 1m)
 .TP
-\fBEdit\fR
-This invokes the default text editor\. Please consult the \fBman\fR pages of your preferred editor for more information\. The edit command is set in show\'s configuration settings or can utilize the \fBVISUAL\fR or \fBEDITOR\fR environment variable\. If neither of these have been set, the following message is displayed\.
-.IP
-\fBPlease set a valid editor utility program command in settings\.\fR
-.IP
-To resolve this, set your preferred editor in show\'s configuration settings or set the following environment variable your shell\'s user preference file\.
-.IP
-\fBexport VISUAL=/usr/bin/vi\fR
+.B \fB\-n\fP, \fB\-numeric\-uid\-gid\fP
+Show numeric values for user and group IDs.
 .TP
-\fBHidden\fR
-This toggles the display of hidden files and directories\. This allows adjustment of the \fB\-a\fR option whilst in the application\. If the currently selected object is hidden by this toggle, the cursor is returned to the top of the directory\.
+.B \fB\-r\fP, \fB\-\-reverse\fP
+Reverse the order of sorting. Can be paird with \fB\-S\fP or \fB\-t\fP
 .TP
-\fBLink\fR
-Creates a link to the selected file\. The type of link is requested by the following prompt\.
-.IP
-\fBLink Type \- Hard, Symbolic (enter = S)\fR
-.IP
-Selecting "H" will bring up the following prompt\.
-.IP
-\fBHard link to:\fR
-.IP
-\fBshow\fR will then create a hard link to the selected file at the target specified\.
-.IP
-Selecting "S" will bring up the following prompt\.
-.IP
-\fBSymbolic link to:\fR
-.IP
-After a location is specified, the following prompt is shown to ask how to link to the target file\.
-.IP
-\fBLink Location \- Absolute, Relative (enter = R)\fR
-.IP
-Selecting "A" will link to the file directly relevent to the root directory (/)\.
-.IP
-Selecting "R" will instruct \fBshow\fR to link to the target file relative to the destination\.
+.B \fB\-s\fP, \fB\-\-size\fP
+Displays file sizes in blocks.
 .TP
-\fBModify\fR
-Modify the owner/group properties or changes the permissions of an object, or multiple objects\. When invoked, the following prompt is displayed\.
-.IP
-\fBModify: Owner/Group, Permissions\fR
-.IP
-Selecting "O" will bring up two prompts\.
-.IP
-\fBSet Owner:\fR
-.IP
-\fBSet Group (owner):\fR
-.IP
-If the names of the owner or group is invalid, an error will be displayed to the user\. If the group prompt is left blank, then it will use the value of the owner prompt\.
-.IP
-Selecting "P" will bring up the following prompt\.
-.IP
-\fBModify Permissions:\fR
-.IP
-The syntax is a 3 or 4 digit octect\. See the \fBman\fR pages for \fBchmod\fR for further information\.
+.B \fB\-S\fP
+Sorts files and directories by size, largest first.
 .TP
-\fBQuit\fR
-Closes the current directory currently displayed\. The application will return you to the previous directory you were viewing\. If there are no previous directory, a blank screen showing the global commands is displayed\.
+.B \fB\-\-time\-style\fP=[TIME_STYLE]
+Time/Date format. Can be set to \fBfull\-iso\fP, \fBlong\-iso\fP,
+\fBiso\fP, or \fBlocale\fP\&.
 .TP
-\fBRename\fR
-Rename the selected file, or marked files to a new file name\. The new file name is requested by one of the following prompts\. After a file is renamed, the new file information line is into the list (providing the file has been renamed to the same directory) and the old information line is removed\. Files can only be moved to locations on the same mounted partition\. An empty response to the prompt or the \fIESC\fR key will abort the command\. If there are no marked files, a single file rename is requested; otherwise a multiple file rename is requested\.
-.IP
-\fBRename file to:\fR
-.IP
-\fBRename multiple files to:\fR
+.B \fB\-t\fP
+Sorts by modification time, newset first.
 .TP
-\fBShow\fR
-Will either display the contents of a directory, or open the contents of a file\. The show file command is set in show\'s configuration but can also utilize the \fBPAGER\fR environment variable\. If neither of these have been set, or the command is invalid, the following message is displayed\.
-.IP
-\fBPlease set a valid pager utility program command in settings\.\fR
-.IP
-To resolve this, set your preferred pager in show\'s configuration settings or set the following environment variable your shell\'s user preference file\.
-.IP
-\fBexport PAGER=/usr/bin/less\fR
+.B \fB\-U\fP
+Displays output in the order they\(aqre found.
 .TP
-\fBTouch\fR
-Sets the timestamp of the selected file(s)\. When selected, the following prompt will be shown\.
-.IP
-\fBSet Time \- Accessed, Both, Modified (enter = B)\fR
-.IP
-By default, \fBshow\fR will modify both the access and modified times\. When one of the options is selected, one of the following prompts are shown\.
-.IP
-\fBSet Access Time:\fR \fBSet Modifed Time:\fR \fBSet Time:\fR
-.IP
-Set the desired time in one of the following formats: \fBYYYY\-MM\-DD HH:MM:SS\fR, \fBHH:MM:SS\fR
+.B \fB\-Z\fP, \fB\-\-context\fP
+Shows the secuirty context of each file, if one is defined.
 .TP
-\fBhUnt\fR
-Hunts the selected file, or marked files containing a regex string\. When used with a single file, the selected file will be marked if the string matches\. When using multiple files, any files not matching the string will be unselected\. Case sensitivity is requested by the following prompt, afterwards the user is asked to input the string to search\. To abort at this prompt, the \fIESC\fR key must be used\.
-.IP
-\fBCase Sensitive, Yes/No/ESC (enter = no)\fR
-.IP
-Following this selection, one of the following prompts will be displayed\.
-.IP
-\fBMatch Case \- Enter string:\fR
-.IP
-\fBIgnore Case \- Enter string:\fR
+.B \fB\-1\fP
+Only shows the file name on display.
 .TP
-\fBeXec\fR
-Will execute the selected file if it has the execute flag set and the current user running the \fBshow\fR process has permission to\. Arguments are requested by the following prompt\. Unlike other commands, an empty response will execute the file without arguments\. To abort at this prompt, the \fIESC\fR key must be used\.
-.IP
-\fBArgs to pass to <file>:\fR
-.IP
-The following error is displayed if the file does not have an executable flag, or the user does not have sufficient privileges to run\.
-.IP
-\fBError: Permission denied\fR
-.SS "Creating parent directories"
-A number of the commands above will display the following prompt to create parent directories if they are not present\.
-.P
-\fBDirectory [/path/to/directory] does not exist\. Create it? Yes/No (enter = no)\fR
-.P
-Selecting "Y" will instruct \fBshow\fR to create the missing parent directories required to complete the command\.
-.P
-Selecting "N" will abort the command due to the required parent directories not being available\. An error message will be shown\.
-.SH "FUNCTIONS"
-In order to select objects to be used by the commands described in the previous section, the cursor must be moved to the line of the desired object\. The functions to move the cursor and the list of files in the display window are described here\. A list of the valid functions and their associated function keys is given list\.
+.B \fB\-\-help\fP
+Displays help message, then exits.
 .TP
-\fBF1\fR, \fBPgDn\fR
+.B \fB\-\-version\fP
+Displays program version, then exits.
+.UNINDENT
+.sp
+The following options are specific to \fBshow\fP:
+.INDENT 0.0
+.TP
+.B \fB\-\-directories\-only\fP
+Displays only directories, not files.
+.TP
+.B \fB\-\-theme\fP=[THEME]
+Color themes. Passing this argument without an option will display
+available themes.
+.TP
+.B \fB\-\-no\-danger\fP
+Disables the danger color scheme when running with elevated
+privileges.
+.TP
+.B \fB\-\-marked\fP=[MARKED]
+Displays information about marked files. Can be set to \fBalways\fP,
+\fBnever\fP, or \fBauto\fP\&.
+.TP
+.B \fB\-\-no\-sf\fP
+Doesn\(aqt display files using \fBsf\fP (if installed) and defaults to
+the user\(aqs PAGER setting.
+.TP
+.B \fB\-\-show\-on\-enter\fP
+Sets the enter key to launch the show command instead of moving the
+selection down by one.
+.TP
+.B \fB\-\-running\fP
+Checks for parent instances of \fBshow\fP, this is useful when using
+the Run Command option.
+.TP
+.B \fB\-\-settings\-menu\fP
+Launch \fBshow\fP directly into the settings menu.
+.TP
+.B \fB\-\-edit\-themes\fP
+Launches \fBshow\fP directly into the theme editor. (colors)
+.TP
+.B \fB\-\-skip\-to\-first\fP
+Sets the highlighted item to the first object that isn\(aqt \fB\&.\fP or \fB\&..\fP
+.UNINDENT
+.SH COMMANDS
+.sp
+Several commands are provided which can be used on a single file or
+multiple files. These commands provide a lot of the functions
+supported by standard Unix commands, but in a convenient user
+interface. The file to be operated on is selected by navigating the
+cursor on the line of the desired file. The highlighed (first
+character) of the command is used to invoke its function. Multiple
+files can be selected using the \(dqMark/Unmark\(dq function. The following
+is a list of valid commands and a brief description of each.
+.INDENT 0.0
+.TP
+.B \fBCopy\fP
+Copy file or marked files to a specified destination.
+.TP
+.B \fBDelete\fP
+Delete file or marked files.
+.TP
+.B \fBEdit\fP
+Invoke the system\(aqs text editor.
+.TP
+.B \fBHidden\fP
+Toggle the visibility of hidden objects.
+.TP
+.B \fBLink\fP
+Create a link between files or directories.
+.TP
+.B \fBModify\fP
+Change the owner/group or permissions of files.
+.TP
+.B \fBQuit\fP
+Quit current directory.
+.TP
+.B \fBRename\fP
+Rename/move file or marked files.
+.TP
+.B \fBShow\fP
+Show file or directory.
+.TP
+.B \fBTouch\fP
+Change file timestamps.
+.TP
+.B \fBeXec\fP
+Runs files marked as executable.
+.TP
+.B \fBhUnt\fP
+Searches and marks files matching a string.
+.UNINDENT
+.sp
+Each of the commands are described in the following paragraphs. If
+the command has any additional propts, they are also described here.
+.INDENT 0.0
+.TP
+.B \fBCopy\fP
+Copy the selected file, or marked files to another file location.
+When using this command, only the destination must be specified.
+The destination file name is requested by one of the following
+prompts. An empty response to the prompt or the \fIESC\fP key is used
+to abort the command. If there are no marked files, a single file
+copy is requested; otherwise, a multiple file copy is requested.
+.sp
+\fBCopy file to:\fP
+.sp
+\fBCopy multiple files to:\fP
+.sp
+If the destination file already exists, confirmation to replace
+the file is requested by the following prompt.
+.sp
+\fBReplace file [<file name>]? (Yes/No)\fP
+.TP
+.B \fBDelete\fP
+Delete the selected file, or marked files. As this is a
+destructive process, confirmation is requested by one of the
+following prompts. If there are no marked files, a single file
+delete is requested; otherwise, a multiple delete is requested.
+.sp
+\fBDelete file? (Yes/No)\fP
+.sp
+\fBDelete file [<file name>]? (Yes/No/All/Stop)\fP
+.sp
+For single files, a \(dqY\(dq will delete files and anything else will
+abort the delete file operation. For multiple files, confirmation
+for all files is requested. A \(dqY\(dq will delete the prompted file,
+an \(dqN\(dq will not delete the file, an \(dqA\(dq will delete all the marked
+files without further confirmation, and an \(dqS\(dq will stop the
+multiple delete command.
+.TP
+.B \fBEdit\fP
+This invokes the default text editor. Please consult the \fBman\fP
+pages of your preferred editor for more information. The edit
+command is set in show\(aqs configuration settings or can utilize
+the \fBVISUAL\fP or \fBEDITOR\fP environment variable. If neither of
+these have been set, the following message is displayed.
+.sp
+\fBPlease set a valid editor utility program command in settings.\fP
+.sp
+To resolve this, set your preferred editor in show\(aqs configuration
+settings or set the following environment variable your shell\(aqs
+user preference file.
+.sp
+\fBexport VISUAL=/usr/bin/vi\fP
+.TP
+.B \fBHidden\fP
+This toggles the display of hidden files and directories. This
+allows adjustment of the \fB\-a\fP option whilst in the application.
+If the currently selected object is hidden by this toggle, the
+cursor is returned to the top of the directory.
+.TP
+.B \fBLink\fP
+Creates a link to the selected file. The type of link is requested
+by the following prompt.
+.sp
+\fBLink Type \- Hard, Symbolic (enter = S)\fP
+.sp
+Selecting \(dqH\(dq will bring up the following prompt.
+.sp
+\fBHard link to:\fP
+.sp
+\fBshow\fP will then create a hard link to the selected file at the target
+specified.
+.sp
+Selecting \(dqS\(dq will bring up the following prompt.
+.sp
+\fBSymbolic link to:\fP
+.sp
+After a location is specified, the following prompt is shown to ask how to
+link to the target file.
+.sp
+\fBLink Location \- Absolute, Relative (enter = R)\fP
+.sp
+Selecting \(dqA\(dq will link to the file directly relevent to the root directory
+(/).
+.sp
+Selecting \(dqR\(dq will instruct \fBshow\fP to link to the target file relative to the
+destination.
+.TP
+.B \fBModify\fP
+Modify the owner/group properties or changes the permissions of an
+object, or multiple objects. When invoked, the following prompt is
+displayed.
+.sp
+\fBModify \- Owner/Group, Permissions\fP
+.sp
+On systems with SELinux, the following prompt is displayed instead:
+.sp
+\fBModify \- Context, Owner/Group, Permissions\fP
+.sp
+Selecting \(dqO\(dq will bring up two prompts.
+.sp
+\fBSet Owner:\fP
+.sp
+\fBSet Group (owner):\fP
+.sp
+If the names of the owner or group is invalid, an error will be displayed to
+the user. If the group prompt is left blank, then it will use the value of
+the owner prompt.
+.sp
+Selecting \(dqP\(dq will bring up the following prompt.
+.sp
+\fBModify Permissions:\fP
+.sp
+The syntax is a 3 or 4 digit octect. See the \fBman\fP pages for
+\fBchmod\fP for further information.
+.sp
+If SELinux is available, then pressing \(dqC\(dq will bring up the following prompt:
+.sp
+\fBSet Context \- User, Role, Type, Level, Raw String\fP
+.sp
+Selecting \(dqU\(dq, \(dqR\(dq, \(dqT\(dq, or \(dqL\(dq will allow you to modify individual parts of
+the security context. Pressing \(dqS\(dq will let you modify the entire secuirty
+context.
+.TP
+.B \fBQuit\fP
+Closes the current directory currently displayed. The application
+will return you to the previous directory you were viewing. If
+there are no previous directory, a blank screen showing the global
+commands is displayed.
+.TP
+.B \fBRename\fP
+Rename the selected file, or marked files to a new file name. The
+new file name is requested by one of the following prompts. After
+a file is renamed, the new file information line is into the list
+(providing the file has been renamed to the same directory) and
+the old information line is removed. Files can only be moved to
+locations on the same mounted partition. An empty response to the
+prompt or the \fIESC\fP key will abort the command. If there are no
+marked files, a single file rename is requested; otherwise a
+multiple file rename is requested.
+.sp
+\fBRename file to:\fP
+.sp
+\fBRename multiple files to:\fP
+.TP
+.B \fBShow\fP
+Will either display the contents of a directory, or open the
+contents of a file. The show file command is set in show\(aqs
+configuration but can also utilize the \fBPAGER\fP environment
+variable. If neither of these have been set, or the command is
+invalid, the following message is displayed.
+.sp
+\fBPlease set a valid pager utility program command in settings.\fP
+.sp
+To resolve this, set your preferred pager in show\(aqs configuration
+settings or set the following environment variable your shell\(aqs
+user preference file.
+.sp
+\fBexport PAGER=/usr/bin/less\fP
+.TP
+.B \fBTouch\fP
+Sets the timestamp of the selected file(s). When selected, the following
+prompt will be shown.
+.sp
+\fBSet Time \- Accessed, Both, Modified (enter = B)\fP
+.sp
+By default, \fBshow\fP will modify both the access and modified times. When one
+of the options is selected, one of the following prompts are shown.
+.sp
+\fBSet Access Time:\fP
+\fBSet Modifed Time:\fP
+\fBSet Time:\fP
+.sp
+Set the desired time in one of the following formats:
+\fBYYYY\-MM\-DD HH:MM:SS\fP, \fBHH:MM:SS\fP
+.TP
+.B \fBhUnt\fP
+Hunts the selected file, or marked files containing a regex
+string. When used with a single file, the selected file will be
+marked if the string matches. When using multiple files, any files
+not matching the string will be unselected. Case sensitivity is
+requested by the following prompt, afterwards the user is asked to
+input the string to search. To abort at this prompt, the \fIESC\fP key
+must be used.
+.sp
+\fBCase Sensitive, Yes/No/ESC (enter = no)\fP
+.sp
+Following this selection, one of the following prompts will be
+displayed.
+.sp
+\fBMatch Case \- Enter string:\fP
+.sp
+\fBIgnore Case \- Enter string:\fP
+.TP
+.B \fBeXec\fP
+Will execute the selected file if it has the execute flag set and
+the current user running the \fBshow\fP process has permission to.
+Arguments are requested by the following prompt. Unlike other
+commands, an empty response will execute the file without
+arguments. To abort at this prompt, the \fIESC\fP key must be used.
+.sp
+\fBArgs to pass to <file>:\fP
+.sp
+The following error is displayed if the file does not have an
+executable flag, or the user does not have sufficient privileges
+to run.
+.sp
+\fBError: Permission denied\fP
+.UNINDENT
+.SS Creating parent directories
+.sp
+A number of the commands above will display the following prompt to create
+parent directories if they are not present.
+.INDENT 0.0
+.INDENT 3.5
+\fBDirectory [/path/to/directory] does not exist. Create it? Yes/No (enter = no)\fP
+.sp
+Selecting \(dqY\(dq will instruct \fBshow\fP to create the missing parent directories
+required to complete the command.
+.sp
+Selecting \(dqN\(dq will abort the command due to the required parent directories
+not being available. An error message will be shown.
+.UNINDENT
+.UNINDENT
+.SH FUNCTIONS
+.sp
+In order to select objects to be used by the commands described in
+the previous section, the cursor must be moved to the line of the
+desired object. The functions to move the cursor and the list of
+files in the display window are described here. A list of the valid
+functions and their associated function keys is given list.
+.INDENT 0.0
+.TP
+.B \fBF1\fP, \fBPgDn\fP
 Page Down
 .TP
-\fBF2\fR, \fBPgUp\fR
+.B \fBF2\fP, \fBPgUp\fP
 Page Up
 .TP
-\fBF3\fR
+.B \fBF3\fP
 Top of List
 .TP
-\fBF4\fR
+.B \fBF4\fP
 Bottom of List
 .TP
-\fBF5\fR
+.B \fBF5\fP
 Refresh Directory
 .TP
-\fBF6\fR
+.B \fBF6\fP
 Mark/Unmark File
 .TP
-\fBF7\fR
+.B \fBF7\fP
 Mark All Files
 .TP
-\fBF8\fR
+.B \fBF8\fP
 Unmark All Files
 .TP
-\fBF9\fR
+.B \fBF9\fP
 Sort List
 .TP
-\fBF10\fR
+.B \fBF10\fP
 Block Mark
 .TP
-\fBHOME\fR
+.B \fBHOME\fP
 Top of Display
 .TP
-\fBEND\fR
+.B \fBEND\fP
 Bottom of Display
 .TP
-\fBDown\fR, \fBRETURN\fR
-Down one line (\fBRETURN\fR can be repurposed to be the \fBShow\fR command using the \fB\-\-show\-on\-enter\fR argument)
+.B \fBDown\fP, \fBRETURN\fP
+Down one line (\fBRETURN\fP can be repurposed to be the \fBShow\fP command using the \fB\-\-show\-on\-enter\fP argument)
 .TP
-\fBUp\fR
+.B \fBUp\fP
 Up one line
 .TP
-\fBRight\fR
+.B \fBRight\fP
 Right one column
 .TP
-\fBLeft\fR
+.B \fBLeft\fP
 Left one column
 .TP
-\fBESC\fR
+.B \fBESC\fP
 Global Commands
-.P
-The display functions with their associated key assignments are described here\.
+.UNINDENT
+.sp
+The display functions with their associated key assignments are
+described here.
+.INDENT 0.0
 .TP
-\fBPage Down\fR
-\fBF1, PgDn\fR: Scroll the display window down or forward a page on the list of files\. The cursor is left in the same relative row of the window unless the end of the list is reached\. If the last file of the list is already displayed in the window, the list is not scrolled, but the cursor is placed on the last file in the list\.
+.B \fBPage Down\fP
+\fBF1, PgDn\fP: Scroll the display window down or forward a page on
+the list of files. The cursor is left in the same relative row of
+the window unless the end of the list is reached. If the last file
+of the list is already displayed in the window, the list is not
+scrolled, but the cursor is placed on the last file in the list.
 .TP
-\fBPage Up\fR
-\fBF2, PgUp\fR: Scroll the display window up or backward a page on the list of files\. The cursor is left in the same relative row of the window unless the beginning of the list is reached\. If the first file of the list is already displayed in the window, the list is not scrolled, but the cursor is placed on the first file in the list\.
+.B \fBPage Up\fP
+\fBF2, PgUp\fP: Scroll the display window up or backward a page on
+the list of files. The cursor is left in the same relative row of
+the window unless the beginning of the list is reached. If the
+first file of the list is already displayed in the window, the
+list is not scrolled, but the cursor is placed on the first file
+in the list.
 .TP
-\fBTop of List\fR
-\fBF3\fR: Display the beginning of the list of files in the window and place the cursor on the first file in the list\.
+.B \fBTop of List\fP
+\fBF3\fP: Display the beginning of the list of files in the window
+and place the cursor on the first file in the list.
 .TP
-\fBBottom of List\fR
-\fBF4\fR: Display the end of the list of files in the display window and place the cursor on the last file of the list\.
+.B \fBBottom of List\fP
+\fBF4\fP: Display the end of the list of files in the display window
+and place the cursor on the last file of the list.
 .TP
-\fBRefresh Directory\fR
-\fBF5\fR: Rereads the directory\. This function is useful to update the list of files after several new files have been created or updated outside of the application\.
+.B \fBRefresh Directory\fP
+\fBF5\fP: Rereads the directory. This function is useful to update
+the list of files after several new files have been created or
+updated outside of the application.
 .TP
-\fBMark/Unmark File\fR
-\fBF6\fR: Toggle the file mark on the current file\. The file mark is indicated with an "*" in front of the file name\.
+.B \fBMark/Unmark File\fP
+\fBF6\fP: Toggle the file mark on the current file. The file mark is
+indicated with an \(dq*\(dq in front of the file name.
 .TP
-\fBMark All Files\fR
-\fBF7\fR: Set the file mark on all the files but not directories in the list\.
+.B \fBMark All Files\fP
+\fBF7\fP: Set the file mark on all the files but not directories in
+the list.
 .TP
-\fBUnmark All Files\fR
-\fBF8\fR: Remove the file marks from all files in the list\.
+.B \fBUnmark All Files\fP
+\fBF8\fP: Remove the file marks from all files in the list.
 .TP
-\fBSort List\fR
-\fBF9\fR: Normally, the file list is sorted by file name alphabetically\. This function allows the files to be listed based on another sorting criteria which is requested by the following prompt\.
-.IP
-\fBSort list by \- Date & time, Name, Size\fR
-.IP
-The option is selected by using the first letter of the option name\.
-.IP
-\fBDate & time\fR: Sort the list on date and time so the newest files are at the top of the list\.
-.IP
-\fBName\fR: Sort the list on the file name\.
-.IP
-\fBSize\fR: Sort the list on file size so the largest are at the top of the list\.
-.IP
-Using \fISHIFT\fR whilst selecting an option performs that action in reverse order\.
+.B \fBSort List\fP
+\fBF9\fP: Normally, the file list is sorted by file name
+alphabetically. This function allows the files to be listed based
+on another sorting criteria which is requested by the following
+promt.
+.sp
+\fBSort list by \- Date & time, Name, Size\fP
+.sp
+The option is selected by using the first letter of the option
+name.
+.sp
+\fBDate & time\fP: Sort the list on date and time so the newest
+files are at the top of the list.
+.sp
+\fBName\fP: Sort the list on the file name.
+.sp
+\fBSize\fP: Sort the list on file size so the largest are at the top
+of the list.
+.sp
+Using \fISHIFT\fP whilst selecting an option performs that action in
+reverse order.
 .TP
-\fBBlock Mark\fR
-\fBF10\fR: Marks all files between two points\. Files marked will be indicated with an \fB*\fR in front of them\.
+.B \fBBlock Mark\fP
+\fBF10\fP: Marks all files between two points. Files marked will be
+indicated with an \fB*\fP in front of them.
 .TP
-\fBTop of Display\fR
-\fBHOME\fR: Move the cursor to the first file on the current display\.
+.B \fBTop of Display\fP
+\fBHOME\fP: Move the cursor to the first file on the current
+display.
 .TP
-\fBBottom of Display\fR
-\fBEND\fR: Move the cursor to the last file on the current display\.
+.B \fBBottom of Display\fP
+\fBEND\fP: Move the cursor to the last file on the current display.
 .TP
-\fBDown One Line\fR
-\fBDown Arrow, Return\fR: Move the cursor down one line to the next file in the display\. If the cursor is on the bottom row of the window, the window is scrolled down one line\. If the present line is the last file in the list, the cursor is not repositioned\.
+.B \fBDown One Line\fP
+\fBDown Arrow, Return\fP: Move the cursor down one line to the next
+file in the display. If the cursor is on the bottom row of the
+window, the window is scrolled down one line. If the present line
+is the last file in the list, the cursor is not repositioned.
 .TP
-\fBUp One Line\fR
-\fBUp Arrow\fR: Move the cursor up one line to the next file in the display\. If the cursor is on the top row of the window, the window is scrolled up one line\. If the present line is the first file in the list, the cursor is not repositioned\.
+.B \fBUp One Line\fP
+\fBUp Arrow\fP: Move the cursor up one line to the next file in the
+display. If the cursor is on the top row of the window, the window
+is scrolled up one line. If the present line is the first file in
+the list, the cursor is not repositioned.
 .TP
-\fBRight one column\fR
-\fBRight Arrow\fR: Moves the display area one column\. This occurs when an entry rolls off the edge of the display\. Scrolling will stop at the end of the longest entry\.
+.B \fBRight one column\fP
+\fBRight Arrow\fP: Moves the display area one column. This occurs
+when an entry rolls off the edge of the display. Scrolling will
+stop at the end of the longest entry.
 .TP
-\fBLeft one column\fR
-\fBLeft Arrow\fR: Moves the display area one column\.
+.B \fBLeft one column\fP
+\fBLeft Arrow\fP: Moves the display area one column.
 .TP
-\fBGlobal Commands\fR
-\fBESC\fR: Invoke the \fIGLOBAL COMMANDS\fR described in the next section\. This allows another directory to be displayed without terminating the current display\.
-.SH "GLOBAL COMMANDS"
-When a file group display is terminated with the Quit command, one of the following commands can be used to display another group of files, invoke the editor for a fire, or terminate the application completely\. The first character of the command is used to invoke the desired function\. The command line is shown below\.
-.P
-\fBcOlors, Config, Edit file, Help, Make dir, Quit, Run, Show dir, Touch file\fR
-.P
-These commands are desctibed below\.
+.B \fBGlobal Commands\fP
+\fBESC\fP: Invoke the \fI\%global commands\fP
+described in the next section. This allows another directory to be
+displayed without terminating the current display.
+.UNINDENT
+.SH GLOBAL COMMANDS
+.sp
+When a file group display is terminated with the Quit command, one of
+the following commands can be used to display another group of files,
+invoke the editor for a fire, or terminate the application
+completely. The first character of the command is used to invoke the
+desired function. The command line is shown below.
+.sp
+\fBcOlors, Config, Edit file, Help, Make dir, Quit, Run, Show dir, Touch file\fP
+.sp
+These commands are desctibed below.
+.INDENT 0.0
 .TP
-\fBcOlors\fR
-Launches an inbuilt color configuration utility which cusomizes the colors for the various display areas in all the utilities\. Further information can be found in the \fICOLORS\fR section\.
+.B \fBcOlors\fP
+Launches an inbuilt color configuration utility which cusomizes
+the colors for the various display areas in all the utilities.
+Further information can be found in the \fI\%colors\fP
+section.
 .TP
-\fBConfig\fR
-Launches \fBshow\fR\'s configuration menu\. From here, all aspects of \fBshow\fR can be configured, and settings saved so they will persist between sessions\. Further information can be found in the \fICONFIGURING SHOW\fR section\.
+.B \fBConfig\fP
+Launches \fIshow\fP\(aqs configuration menu. From here, all aspects of
+\fBshow\fP can be configured, and settings saved so they will persist
+between sessions. Further information can be found in the
+\fI\%configuring show\fP section.
 .TP
-\fBEdit file\fR
-Invoke the default text editor to edit the specified file\. The file name is requested by the following prompt\. An empty response is used to abort this command\.
-.IP
-\fBEdit File \- Enter pathname:\fR
+.B \fBEdit file\fP
+Invoke the default text editor to edit the specified file. The
+file name is requested by the following prompt. An empty response
+is used to abort this command.
+.sp
+\fBEdit File \- Enter pathname:\fP
 .TP
-\fBHelp\fR
-Launches the \fBman\fR pages for \fBshow\fR\.
+.B \fBHelp\fP
+Launches the \fBman\fP pages for \fBshow\fP\&.
 .TP
-\fBMake dir\fR
-Make a new directory\. The directory name is requested by the following prompt\. An empty response is used to abort this command\.
-.IP
-\fBMake Directory \- Enter pathname:\fR
+.B \fBMake dir\fP
+Make a new directory. The directory name is requested by the
+following prompt. An empty response is used to abort this command.
+.sp
+\fBMake Directory \- Enter pathname:\fP
 .TP
-\fBQuit\fR
-Terminate \fBshow\fR\.
+.B \fBQuit\fP
+Terminate \fBshow\fP\&.
 .TP
-\fBRun\fR
-Invoke your shell\. The \fBshow\fR application is still resident, so the "exit" command will return to the application\.
+.B \fBRun\fP
+Invoke your shell. The \fBshow\fP application is still resident, so
+the \(dqexit\(dq command will return to the application.
 .TP
-\fBShow dir\fR
-Invoke the application to display another directory\. The directory name is requested by the following prompt\. An empty response is used to abort this command\.
-.IP
-\fBShow Directory \- Enter pathname:\fR
+.B \fBShow dir\fP
+Invoke the application to display another directory. The directory
+name is requrested by the following prompt. An empty response is
+used to abort this command.
+.sp
+\fBShow Directory \- Enter pathname:\fP
 .TP
-\fBTouch file\fR
-Updates the timestamp of a specified file requested by the following prompt\. If the file doesn\'t exist, it will be created\.
-.IP
-\fBTouch File \- Enter pathname:\fR
-.IP
-The following prompt is shown to ask if the time should be set to a specific date\.
-.IP
-\fBSet Time? Yes/No (enter = N)\fR
-.IP
-Selecting No will set the file\'s access and modification time to the current time\.
-.SH "COLORS"
-The inbuilt Colors utility is used to customize the colors used in the applications\. It is accessed from the global menu of the \fBshow\fR utility\.
-.P
-The following screen is displayed after launch\.
-.P
-\fBColor number, Load, Quit, Save, Toggle, Use\fR
-.IP "" 4
+.B \fBTouch file\fP
+Updates the timestamp of a specified file requested by the following prompt.
+If the file doesn\(aqt exist, it will be created.
+.sp
+\fBTouch File \- Enter pathname:\fP
+.sp
+The following prompt is shown to ask if the time should be set to a specific
+date.
+.sp
+\fBSet Time? Yes/No (enter = N)\fP
+.sp
+Selecting No will set the file\(aqs access and modification time to the current
+time.
+.UNINDENT
+.SH CONFIGURING SHOW
+.sp
+\fBshow\fP features an inbuilt configuration menu where the user can tweak
+the default settings. It is accessed from the global menu.
+.sp
+The following screen is displayed.
+.INDENT 0.0
+.INDENT 3.5
+.sp
 .nf
-  Command lines                            !\-Default
-  Display lines                            ?\-Default Bold
-  Error messages                           0\-Black
-  Information lines                        1\-Red
-  Heading lines                            2\-Green
-  Danger lines                             3\-Brown
-  Selected block lines                     4\-Blue
-  Highlight                                5\-Magenta
-  Text input                               6\-Cyan
-  Directories                              7\-Light Gray
-  Symbolic links                           8\-Dark Gray
-  Orphened symbolic links                  9\-Light Red
-  Executable files                         A\-Light Green
-  Set user identification                  B\-Yellow
-  Set group identification                 C\-Light Blue
-  Sticky bit directory                     D\-Light Magenta
-  Sticky bit directory \- other writable    E\-Light Cyan
-                                           F\-White
+.ft C
+SHOW Settings Menu \- Quit, Revert, Save
+
+   [ ] Display file colors
+   <\-> Show marked file info: <never> <always> <auto>
+   <\-> Sorting mode: <name> <date> <size> <unsorted>
+   [ ] Reverse sorting order
+   <\-> Time style: <locale> <iso> <long\-iso> <full\-iso>
+   [ ] Show hidden files
+   [ ] Hide backup files
+   [ ] Use 3rd party pager over SF
+   [ ] Use SI units
+   [ ] Human readable sizes
+   [ ] Show Inode
+   [ ] Use numeric UID and GIDs
+   [ ] Enter key acts like Show
+   < > Owner Column: <owner> <group> <author>
+   [ ] Show security context of files
+   [ ] Skip to the first object
+   [ ] Display only current directory
+   [ ] Disply only directories
+   [ ] Show allocated size in blocks
+   [ ] Override default editor
+    \-> Editor utility program command: vi
+   [ ] Override default pager
+    \-> Pager utility program command: more
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+There are three types of configuration items, each denoted with a different
+symbol:
+.sp
+\fB[ ]\fP
+Indicates a toggle switch, when active, the switch will display \fB[*]\fP\&.
+To toggle a value, press \fISPACE\fP when the cursor is highlighed over a specific item.
+.sp
+\fB<\->\fP
+Indicates a single value option, the active item will be highlighted. To change
+the value, use either the arrow keys, or \fISPACE\fP to toggle through each available
+option.
+.sp
+\fB< >\fP
+Indicates a multi value option, the active items will be highlighted. To change
+their values, use the arrow keys to highlight the desired option and press
+\fISPACE\fP to toggle its activation status.
+.sp
+\fB\->\fP:
+Indicates a free text box. To change the value, press \fISPACE\fP and edit the value.
+When finished, press \fIENTER\fP to confirm the change. Pressing \fIESC\fP or setting a
+blank value will abort the change.
+.sp
+The following commands can be used within this menu.
+.sp
+\fBQuit\fP
+Applies changes and either returns to the previous screen.
+.sp
+\fBRevert\fP
+Reverts settings to their original value from when the settings menu was
+invoked.
+.sp
+\fBSave\fP
+Saves settings for future sessions.
+.sp
+The inbuilt Colors utility is used to customize the colors used in
+the applications. It is accessed from the global menu of the \fBshow\fP
+utility.
+.sp
+The following screen is displayed after launch.
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+Color number, Load, Quit, Save, Toggle, Use
+
+    Command lines                            !\-Default
+    Display lines                            ?\-Default Bold
+    Error messages                           0\-Black
+    Information lines                        1\-Red
+    Heading lines                            2\-Green
+    Danger lines                             3\-Brown
+    Selected block lines                     4\-Blue
+    Highlight                                5\-Magenta
+    Text input                               6\-Cyan
+    Directories                              7\-Light Gray
+    Symbolic links                           8\-Dark Gray
+    Orphened symbolic links                  9\-Light Red
+    Executable files                         A\-Light Green
+    Set user identification                  B\-Yellow
+    Set group identification                 C\-Light Blue
+    Sticky bit directory                     D\-Light Magenta
+    Sticky bit directory \- other writable    E\-Light Cyan
+                                             F\-White
 
 
-                    Select 0 to F for desired foreground color
+                   Select 0 to F for desired foreground color
+.ft P
 .fi
-.IP "" 0
-.P
-Initially, the cursor is positioned beside the "Command lines" string\. The cursor can be moved to each of the display types using the up and down cursor keys, and each color can be set by using the number of the desired color\. The background color can be set by using the \fBToggle\fR command\. Each of the types of lines are described below\.
+.UNINDENT
+.UNINDENT
+.sp
+Initially, the cursor is positioned beside the \(dqCommand lines\(dq
+string. The cursor can be moved to each of the display types using
+the up and down cursor keys, and each color can be set by using the
+number of the desired color. The background color can be set by using
+the \fBToggle\fP command. Each of the types of lines are described
+below.
+.INDENT 0.0
 .TP
-\fBCommand lines\fR
-The color of the top and bottom lines of each utility\. These lines display the valid command, function keys and other global information\.
+.B \fBCommand lines\fP
+The color of the top and bottom lines of each utility. These lines
+display the valid command, funcation keys and other global
+information.
 .TP
-\fBDisplay lines\fR
-The color for the main text lines in each utilities\' display\.
+.B \fBDisplay lines\fP
+The color for the main text lines in each utilities\(aq display.
 .TP
-\fBError messages\fR
-The color in which any error messages are displayed\.
+.B \fBError messages\fP
+The color in which any error messages are displayed.
 .TP
-\fBInformation lines\fR
-The color used to display general information such as the directory header information\.
+.B \fBInformation lines\fP
+The color used to display general information such as the
+directory header information.
 .TP
-\fBHeading lines\fR
-The color used to display the headings for each column in \fBshow\fR\.
+.B \fBHeading lines\fP
+The color used to display the headings for each column in
+\fBshow\fP\&.
 .TP
-\fBDanger lines\fR
-The color used to replace the information lines with a warning, such as when running as the root user\.
+.B \fBDanger lines\fP
+The color used to replace the informationa lines with a warning,
+such as when running as the root user.
 .TP
-\fBSelected block lines\fR
-The color of the selected block lines of the current file in the \fBshow\fR utility\.
+.B \fBSelected block lines\fP
+The color of the selected block lines of the current file in the
+\fBshow\fP utility.
 .TP
-\fBHighlight\fR
-The color of the command/function keys\.
+.B \fBHighlight\fP
+The color of the command/function keys.
 .TP
-\fBText input\fR
-The color of input text lines\.
-.P
-The following color settings are used when \fB\-\-color\fR argument is used\. They are used to differentiate object status:
-.IP "\[ci]" 4
-\fBDirectories\fR
-.IP "\[ci]" 4
-\fBSymbolic links\fR
-.IP "\[ci]" 4
-\fBOrphened symbolic links\fR
-.IP "\[ci]" 4
-\fBExecutable files\fR
-.IP "\[ci]" 4
-\fBSet user identification\fR
-.IP "\[ci]" 4
-\fBSet group identification\fR
-.IP "\[ci]" 4
-\fBSticky bit directory\fR
-.IP "\[ci]" 4
-\fBSticky bit directory \- other writable\fR
-.IP "" 0
-.P
-After each of the colors have been changed to the desired color, the theme must be saved with the \fBSave\fR command\. All the commands are described below\.
+.B \fBText input\fP
+The color of input text lines.
+.UNINDENT
+.sp
+The following color settings are used when \fB\-\-color\fP arguement is used.
+They are used to differentiate object status:
+.sp
+\fBDirectories\fP
+\fBSymbolic links\fP
+\fBOrphened symbolic links\fP
+\fBExecutable files\fP
+\fBSet user identification\fP
+\fBSet group identification\fP
+\fBSticky bit directory\fP
+\fBSticky bit directory \- other writable\fP
+.sp
+After each of the colors have been changed to the desired color, the
+theme must be saved with the \fBSave\fP command. All the commands are
+described below.
+.INDENT 0.0
 .TP
-\fBLoad\fR
-Loads a theme file so it can be modified or used\. The following prompt requests the data file name\.
-.IP
-\fBLoad Colors \- Enter file pathname:\fR
+.B \fBLoad\fP
+Loads a theme file so it can be modified or used. The following
+promt requests the data file name.
+.sp
+\fBLoad Colors \- Enter file pathname:\fP
 .TP
-\fBQuit\fR
-Quit the color modification utility and return to \fBshow\fR\.
+.B \fBQuit\fP
+Quit the color modification utility and return to \fBshow\fP\&.
 .TP
-\fBSave\fR
-Save the theme information in a data file for use by all the utilities\. The following prompt requests the data file name\.
-.IP
-\fBSave Colors \- Enter file pathname:\fR
+.B \fBSave\fP
+Save the theme information in a data file for use by all the
+utilities. The following promt requests the data file name.
+.sp
+\fBSave Colors \- Enter file pathname:\fP
 .TP
-\fBToggle\fR
-Switches between foreground and background selection\.
+.B \fBToggle\fP
+Switches between foreground and background selection.
 .TP
-\fBUse\fR
-Sets the theme as the default to persist between sessions\. The current theme needs to be saved before this command can be used\.
-.SH "CONFIGURING SHOW"
-\fBshow\fR features an inbuilt configuration menu where the user can tweak the default settings\. It is accessed from the global menu\.
-.P
-The following screen is displayed\.
-.P
-\fBSHOW Settings Menu \- Quit, Revert, Save\fR
-.IP "" 4
-.nf
-  [ ] Display file colors
-  <\-> Show marked file info: <never> <always> <auto>
-  <\-> Sorting mode: <name> <date> <size> <unsorted>
-  [ ] Reverse sorting order
-  <\-> Time style: <locale> <iso> <long\-iso> <full\-iso>
-  [ ] Show hidden files
-  [ ] Hide backup files
-  [ ] Use 3rd party pager over SF
-  [ ] Use SI units
-  [ ] Human readable sizes
-  [ ] Enter key acts like Show
-  < > Owner Column: <owner> <group> <author>
-  [ ] Skip to the first object
-  [ ] Display only directories
-  [ ] Show allocated size in blocks
-  [ ] Override default editor
-   \-> Editor utility program command: vi
-  [ ] Override default pager
-   \-> Pager utility program command: more
-.fi
-.IP "" 0
-.P
-There are three types of configuration items, each denoted with a different symbol:
-.TP
-\fB[ ]\fR
-Indicates a toggle switch, when active, the switch will display \fB[*]\fR\. To toggle a value, press \fISPACE\fR when the cursor is highlighed over a specific item\.
-.TP
-\fB<\->\fR
-Indicates a single value option, the active item will be highlighted\. To change the value, use either the arrow keys, or \fISPACE\fR to toggle through each available option\.
-.TP
-\fB< >\fR
-Indicates a multi value option, the active items will be highlighted\. To change their values, use the arrow keys to highlight the desired option and press \fISPACE\fR to toggle its activation status\.
-.TP
-\fB\->\fR
-Indicates a free text box\. To change the value, press \fISPACE\fR and edit the value\. When finished, press \fIENTER\fR to confirm the change\. Pressing \fIESC\fR or setting a blank value will abort the change\.
-.P
-The following commands can be used within this menu\.
-.TP
-\fBQuit\fR
-Applies changes and either returns to the previous screen\.
-.TP
-\fBRevert\fR
-Reverts settings to their original value from when the settings menu was invoked\.
-.TP
-\fBSave\fR
-Saves settings for future sessions\.
-.SH "SECURITY CONSIDERATIONS"
-DF\-SHOW is designed to be run as a non privileged user, and obeys restrictions set by the system\. It is possible to launch \fBshow\fR as root\. When this occurs, \fBshow\fR warns the user by displaying the informational messages in a different color\.
-.SH "AUTHOR"
-Written by Robert Ian Hawdon\.
-.SH "COPYRIGHT"
-Copyright (C) 2020 License GPLv3+: GNU GPL version 3 or later \fIhttps://gnu\.org/licenses/gpl\.html\fR\.
-.P
-This program comes with ABSOLUTELY NO WARRANTY\. This is free software, and you are welcome to redistribute it under certain conditions\.
-.SH "SEE ALSO"
-sf(1), chmod(1), chown(1)
-.P
-DF\-SHOW on GitHub: \fIhttps://github\.com/roberthawdon/dfshow\fR
+.B \fBUse\fP
+Sets the theme as the default to persist between sessions. The current
+theme needs to be saved before this command can be used.
+.UNINDENT
+.SH AUTHOR
+Robert Ian Hawdon
+.SH COPYRIGHT
+2023, Robert Ian Hawdon
+.\" Generated by docutils manpage writer.
+.

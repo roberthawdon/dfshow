@@ -1,7 +1,7 @@
 /*
   DF-SHOW: An interactive directory/file browser written for Unix-like systems.
   Based on the applications from the PC-DOS DF-EDIT suite by Larry Kroeker.
-  Copyright (C) 2018-2022  Robert Ian Hawdon
+  Copyright (C) 2018-2023  Robert Ian Hawdon
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -23,33 +23,44 @@
 #include <string.h>
 #include <ctype.h>
 #include <regex.h>
+#include <libintl.h>
+#include <locale.h>
 #include "menu.h"
 #include "display.h"
 #include "settings.h"
 #include "common.h"
-#include "sf.h"
 #include "colors.h"
 #include "input.h"
+#include "i18n.h"
+#include "sffunctions.h"
 #include "banned.h"
-
-int c;
-int * pc = &c;
-
-int abortinput = 0;
 
 bool findSet = false;
 
-menuDef *fileMenu;
-int fileMenuSize = 0;
-wchar_t *fileMenuLabel;
+menuDef *sfFileMenu;
+int sfFileMenuSize = 0;
+wchar_t *sfFileMenuLabel;
 
 menuDef *caseMenu;
 int caseMenuSize = 0;
 wchar_t *caseMenuLabel;
 
-extern menuDef *settingsMenu;
-extern int settingsMenuSize;
-extern wchar_t *settingsMenuLabel;
+extern bool parentShow;
+
+extern int c;
+extern int * pc;
+
+extern int abortinput;
+
+extern settingIndex *settingIndexSf;
+extern t1CharValues *charValuesSf;
+extern t2BinValues *binValuesSf;
+extern int totalCharItemsSf;
+extern int totalBinItemsSf;
+
+menuDef *sfSettingsMenu;
+int sfSettingsMenuSize;
+wchar_t *sfSettingsMenuLabel;
 
 extern char regexinput[1024];
 extern FILE *file;
@@ -70,43 +81,43 @@ extern char *line;
 extern long int *filePos;
 extern wchar_t *longline;
 
-void generateDefaultMenus(){
+void generateDefaultSfMenus(){
   // File Menu
-  addMenuItem(&fileMenu, &fileMenuSize, "f_01", L"<F1>-Down", 265);
-  addMenuItem(&fileMenu, &fileMenuSize, "f_02", L"<F2>-Up", 266);
-  addMenuItem(&fileMenu, &fileMenuSize, "f_03", L"<F3>-Top", 267);
-  addMenuItem(&fileMenu, &fileMenuSize, "f_04", L"<F4>-Bottom", 268);
-  addMenuItem(&fileMenu, &fileMenuSize, "f_config", L"!Config", 'c');
-  addMenuItem(&fileMenu, &fileMenuSize, "f_find", L"!Find", 'f');
-  addMenuItem(&fileMenu, &fileMenuSize, "f_help", L"!Help", 'h');
-  addMenuItem(&fileMenu, &fileMenuSize, "f_position", L"!Position", 'p');
-  addMenuItem(&fileMenu, &fileMenuSize, "f_quit", L"!Quit", 'q');
+  addMenuItem(&sfFileMenu, &sfFileMenuSize, "f_01", _("<F1>-Down"), 265, 1);
+  addMenuItem(&sfFileMenu, &sfFileMenuSize, "f_02", _("<F2>-Up"), 266, 1);
+  addMenuItem(&sfFileMenu, &sfFileMenuSize, "f_03", _("<F3>-Top"), 267, 1);
+  addMenuItem(&sfFileMenu, &sfFileMenuSize, "f_04", _("<F4>-Bottom"), 268, 1);
+  addMenuItem(&sfFileMenu, &sfFileMenuSize, "f_config", _("!Config"), 'c', 1);
+  addMenuItem(&sfFileMenu, &sfFileMenuSize, "f_find", _("!Find"), 'f', 1);
+  addMenuItem(&sfFileMenu, &sfFileMenuSize, "f_help", _("!Help"), 'h', 1);
+  addMenuItem(&sfFileMenu, &sfFileMenuSize, "f_position", _("!Position"), 'p', 1);
+  addMenuItem(&sfFileMenu, &sfFileMenuSize, "f_quit", _("!Quit"), 'q', 1);
   if (wrap){
-    addMenuItem(&fileMenu, &fileMenuSize, "f_wrap", L"!Wrap-off", 'w');
+    addMenuItem(&sfFileMenu, &sfFileMenuSize, "f_wrap", _("!Wrap-off"), 'w', 1);
   } else {
-    addMenuItem(&fileMenu, &fileMenuSize, "f_wrap", L"!Wrap-on", 'w');
+    addMenuItem(&sfFileMenu, &sfFileMenuSize, "f_wrap", _("!Wrap-on"), 'w', 1);
   }
 
   // Case Menu
-  addMenuItem(&caseMenu, &caseMenuSize, "c1_ignore", L"!Ignore-case", 'i');
-  addMenuItem(&caseMenu, &caseMenuSize, "c2_sensitive", L"!Case-sensitive", 'c');
+  addMenuItem(&caseMenu, &caseMenuSize, "c1_ignore", _("!Ignore-case"), 'i', 1);
+  addMenuItem(&caseMenu, &caseMenuSize, "c2_sensitive", _("!Case-sensitive"), 'c', 1);
 
   // Setings Menu
-  addMenuItem(&settingsMenu, &settingsMenuSize, "s_quit", L"!Quit", 'q');
-  addMenuItem(&settingsMenu, &settingsMenuSize, "s_revert", L"!Revert", 'r');
-  addMenuItem(&settingsMenu, &settingsMenuSize, "s_save", L"!Save", 's');
+  addMenuItem(&sfSettingsMenu, &sfSettingsMenuSize, "s_quit", _("!Quit"), 'q', 1);
+  addMenuItem(&sfSettingsMenu, &sfSettingsMenuSize, "s_revert", _("!Revert"), 'r', 1);
+  addMenuItem(&sfSettingsMenu, &sfSettingsMenuSize, "s_save", _("!Save"), 's', 1);
 }
 
-void refreshMenuLabels(){
-  fileMenuLabel     = genMenuDisplayLabel(L"", fileMenu, fileMenuSize, L"", 1);
-  caseMenuLabel     = genMenuDisplayLabel(L"", caseMenu, caseMenuSize, L"(enter = I)", 0);
-  settingsMenuLabel = genMenuDisplayLabel(L"SF Settings Menu -", settingsMenu, settingsMenuSize, L"", 1);
+void refreshSfMenuLabels(){
+  sfFileMenuLabel     = genMenuDisplayLabel("", sfFileMenu, sfFileMenuSize, "", 1);
+  caseMenuLabel     = genMenuDisplayLabel("", caseMenu, caseMenuSize, _("(enter = I)"), 0);
+  sfSettingsMenuLabel = genMenuDisplayLabel(_("SF Settings Menu -"), sfSettingsMenu, sfSettingsMenuSize, "", 1);
 }
 
-void unloadMenuLabels(){
-  free(fileMenuLabel);
+void unloadSfMenuLabels(){
+  free(sfFileMenuLabel);
   free(caseMenuLabel);
-  free(settingsMenuLabel);
+  free(sfSettingsMenuLabel);
 }
 
 void show_file_find(bool charcase, bool useLast)
@@ -114,19 +125,20 @@ void show_file_find(bool charcase, bool useLast)
   int regexcase;
   int result;
   int curPos = 0;
-  char inputmessage[32];
+  char *inputmessage;
   char *errormessage;
   if (!useLast){
     if (charcase){
       regexcase = 0;
-      snprintf(inputmessage, 32, "Match Case - Enter string:");
+      setDynamicChar(&inputmessage, _("Match Case - Enter string:"));
     } else {
       regexcase = REG_ICASE;
-      snprintf(inputmessage, 32, "Ignore Case - Enter string:");
+      setDynamicChar(&inputmessage, _("Ignore Case - Enter string:"));
     }
     move(0,0);
     clrtoeol();
     curPos = (printMenu(0, 0, inputmessage) + 1);
+    free(inputmessage);
     curs_set(TRUE);
     move(0, curPos);
     curs_set(FALSE);
@@ -142,7 +154,7 @@ void show_file_find(bool charcase, bool useLast)
       updateView();
     } else if ( result == -2 ){
       // Not a feature in DF-EDIT 2.3d, but a nice to have
-      setDynamicChar(&errormessage, "No further references to '%s' found.", regexinput);
+      setDynamicChar(&errormessage, _("No further references to '%s' found."), regexinput);
       topLineMessage(errormessage);
       free(errormessage);
     }
@@ -180,7 +192,7 @@ void show_file_position_input(int currentpos)
   int status;
   int curPos = 0;
   // Fun fact, in DF-EDIT 2.3d, the following text input typoed "absolute" as "absolue", this typo also exists in the Windows version from 1997 (2.3d-76), however, the 1986 documentation correctly writes it as "absolute".
-  setDynamicChar(&filePosText, "Position relative (<+num> || <-num>) or absolute (<num>):");
+  setDynamicChar(&filePosText, _("Position relative (<+num> || <-num>) or absolute (<num>):"));
   viewmode = 2;
   move(0,0);
   clrtoeol();
@@ -207,34 +219,34 @@ void show_file_position_input(int currentpos)
       }
     }
   }
-  wPrintMenu(0, 0, fileMenuLabel);
+  wPrintMenu(0, 0, sfFileMenuLabel);
 }
 
 void show_file_inputs()
 {
   int e = 0;
-  wPrintMenu(0, 0, fileMenuLabel);
+  wPrintMenu(0, 0, sfFileMenuLabel);
   while(1)
     {
       *pc = getch10th();
-      if (*pc == menuHotkeyLookup(fileMenu,"f_find", fileMenuSize)){
+      if (*pc == menuHotkeyLookup(sfFileMenu,"f_find", sfFileMenuSize)){
         e = show_file_find_case_input();
         if (e != -1){
           show_file_find(e, false);
         } else {
           abortinput = 0;
         }
-        wPrintMenu(0, 0, fileMenuLabel);
+        wPrintMenu(0, 0, sfFileMenuLabel);
       } else if (*pc == 6){
         if (findSet){
           show_file_find(false, true);
         }
-        wPrintMenu(0, 0, fileMenuLabel);
-      } else if (*pc == menuHotkeyLookup(fileMenu, "f_help", fileMenuSize)){
+        wPrintMenu(0, 0, sfFileMenuLabel);
+      } else if (*pc == menuHotkeyLookup(sfFileMenu, "f_help", sfFileMenuSize)){
         showManPage("sf");
-        wPrintMenu(0, 0, fileMenuLabel);
-        refreshScreen();
-      } else if (*pc == menuHotkeyLookup(fileMenu, "f_position", fileMenuSize)){
+        wPrintMenu(0, 0, sfFileMenuLabel);
+        refreshScreenSf();
+      } else if (*pc == menuHotkeyLookup(sfFileMenu, "f_position", sfFileMenuSize)){
         show_file_position_input(topline);
         if (topline > totallines + 1){
           topline = totallines + 1;
@@ -242,48 +254,52 @@ void show_file_inputs()
           topline = 1;
         }
         updateView();
-      } else if (*pc == menuHotkeyLookup(fileMenu, "f_config", fileMenuSize)){
-        settingsMenuView();
-        wPrintMenu(0, 0, fileMenuLabel);
+      } else if (*pc == menuHotkeyLookup(sfFileMenu, "f_config", sfFileMenuSize)){
+        settingsMenuView(sfSettingsMenuLabel, sfSettingsMenuSize, sfSettingsMenu, &settingIndexSf, &charValuesSf, &binValuesSf, totalCharItemsSf, totalBinItemsSf, generateSfSettingsVars(), "sf");
+        wPrintMenu(0, 0, sfFileMenuLabel);
         if(wrap){
           leftcol = 1;
         }
-        refreshScreen();
+        refreshScreenSf();
         // updateView();
-      } else if (*pc == menuHotkeyLookup(fileMenu, "f_quit", fileMenuSize)){
+      } else if (*pc == menuHotkeyLookup(sfFileMenu, "f_quit", sfFileMenuSize)){
         free(longline);
         free(filePos);
         fclose(stream);
-        exittoshell();
-      } else if (*pc == menuHotkeyLookup(fileMenu, "f_wrap", fileMenuSize)){
+	if (!parentShow){
+          exittoshell();
+	} else {
+          return;
+	}
+      } else if (*pc == menuHotkeyLookup(sfFileMenu, "f_wrap", sfFileMenuSize)){
         if (wrap){
-          updateMenuItem(&fileMenu, &fileMenuSize, "f_wrap", L"!Wrap-on");
+          updateMenuItem(&sfFileMenu, &sfFileMenuSize, "f_wrap", _("!Wrap-on"));
           wrap = 0;
         } else {
-          updateMenuItem(&fileMenu, &fileMenuSize, "f_wrap", L"!Wrap-off");
+          updateMenuItem(&sfFileMenu, &sfFileMenuSize, "f_wrap", _("!Wrap-off"));
           leftcol = 1;
           wrap = 1;
         }
-        unloadMenuLabels();
-        refreshMenuLabels();
-        wPrintMenu(0,0,fileMenuLabel);
+        unloadSfMenuLabels();
+        refreshSfMenuLabels();
+        wPrintMenu(0,0,sfFileMenuLabel);
         updateView();
-      } else if (*pc == menuHotkeyLookup(fileMenu, "f_01", fileMenuSize) || *pc == 338){
+      } else if (*pc == menuHotkeyLookup(sfFileMenu, "f_01", sfFileMenuSize) || *pc == 338){
         topline = topline + displaysize;
         if (topline > totallines + 1){
           topline = totallines + 1;
         }
         updateView();
-      } else if (*pc == menuHotkeyLookup(fileMenu, "f_02", fileMenuSize) || *pc == 339){
+      } else if (*pc == menuHotkeyLookup(sfFileMenu, "f_02", sfFileMenuSize) || *pc == 339){
         topline = topline - displaysize;
         if (topline < 1){
           topline = 1;
         }
         updateView();
-      } else if (*pc == menuHotkeyLookup(fileMenu, "f_03", fileMenuSize)){
+      } else if (*pc == menuHotkeyLookup(sfFileMenu, "f_03", sfFileMenuSize)){
         topline = 1;
         updateView();
-      } else if (*pc == menuHotkeyLookup(fileMenu, "f_04", fileMenuSize)){
+      } else if (*pc == menuHotkeyLookup(sfFileMenu, "f_04", sfFileMenuSize)){
         topline = totallines + 1; // Show EOF
         updateView();
       } else if (*pc == 258){
@@ -332,7 +348,7 @@ void show_file_file_input()
   int curPos = 0;
   move(0,0);
   clrtoeol(); // Probably not needed as this is only ever displayed when launching without a file
-  curPos = (printMenu(0,0,"Show File - Enter pathname:") + 1);
+  curPos = (printMenu(0,0,_("Show File - Enter pathname:")) + 1);
   curs_set(TRUE);
   move(0,curPos);
   readline(fileName, 4096, "");

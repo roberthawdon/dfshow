@@ -1,7 +1,7 @@
 /*
   DF-SHOW: An interactive directory/file browser written for Unix-like systems.
   Based on the applications from the PC-DOS DF-EDIT suite by Larry Kroeker.
-  Copyright (C) 2018-2022  Robert Ian Hawdon
+  Copyright (C) 2018-2023  Robert Ian Hawdon
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -32,14 +32,21 @@
 #include <signal.h>
 #include <math.h>
 #include <sys/wait.h>
+#include <libintl.h>
 #include "menu.h"
 #include "colors.h"
 #include "config.h"
 #include "common.h"
 #include "banned.h"
+#include "i18n.h"
 
 DIR *folder;
 FILE *file;
+
+int c;
+int * pc = &c;
+
+bool parentShow = false;
 
 int exitCode = 0;
 int enableCtrlC = 0;
@@ -49,29 +56,73 @@ char homeConfLocation[128];
 
 char themeName[128] = "default";
 
-char errmessage[256];
+char *errmessage;
+
+int displaycount;
+
+int i, s;
+
+int abortinput = 0;
+
+int displaysize;
+
+char fileName[4096];
 
 extern int * pc;
 
 extern int resized;
 
-void refreshScreen(); // This reference needs to exist to allow getch10th to be common.
+void refreshScreenShow();
+void refreshScreenSf();
 
-void unloadMenuLabels();
+void refreshScreen(char *application)
+{
+  #ifdef APPLICATION_SHOW
+    if (!strcmp(application, "show")) {
+      refreshScreenShow();
+    }
+  #endif
+  #ifdef APPLICATION_SF
+    if (!strcmp(application, "sf")) {
+      refreshScreenSf();
+    }
+  #endif
+}
 
-void freeSettingVars();
+// void unloadMenuLabels();
+
+// void freeSettingVars();
 
 int getch10th (void) {
   int ch;
   do {
     if (resized) {
       resized = 0;
-      refreshScreen();
+      refreshScreen("show");
     }
     halfdelay (1);
     ch = getch();
   } while (ch == ERR || ch == KEY_RESIZE);
   return ch;
+}
+
+int setDynamicWChar(wchar_t **str, const wchar_t *format, ...)
+{
+  int length = 0;
+  wchar_t tmpBuf[1024];
+  va_list pArg1, pArg2;
+  va_start(pArg1, format);
+  va_copy(pArg2, pArg1);
+
+  length = vswprintf(tmpBuf, 1024, format, pArg1);
+  length++; // Adds 1 for null terminator
+
+  *str = malloc(sizeof(wchar_t) * length);
+  vswprintf(*str, length, format, pArg2);
+
+  va_end(pArg1);
+  va_end(pArg2);
+  return(length);
 }
 
 int setDynamicChar(char **str, const char *format, ...)
@@ -92,50 +143,55 @@ int setDynamicChar(char **str, const char *format, ...)
   return(length);
 }
 
-int splitPath(pathDirs **dirStruct, char *path){
+int splitString(splitStrStruct **result, char *input, int splitChar, bool filePath){
   int e, i, j, c;
-  pathDirs *tmp;
+  splitStrStruct *tmp;
 
-  tmp = malloc(sizeof(pathDirs));
+  tmp = malloc(sizeof(splitStrStruct));
   if (tmp){
-    *dirStruct = tmp;
+    *result = tmp;
   }
 
   e = -1;
   j = 0;
-  c = strlen(path);
+  c = strlen(input);
 
   for(i = 0; i < c; i++){
-    if (path[i] == '/'){
+    if (input[i] == splitChar){
       if (e > -1){
-        (*dirStruct)[e].directories[j] = '\0';
-        if(!strcmp((*dirStruct)[e].directories, "..")){
-          // assmue .. and remove the element before
-          (*dirStruct)[e] = (*dirStruct)[e - 1];
-          (*dirStruct)[e - 1] = (*dirStruct)[e - 2];
-          e--;
-          (*dirStruct) = realloc((*dirStruct), sizeof(pathDirs) * (2 + e));
-        } else if (!strcmp((*dirStruct)[e].directories, ".")){
-          // strip single .
-          (*dirStruct)[e].directories[0]=0;
+        (*result)[e].subString[j] = '\0';
+        if (filePath){
+          if(!strcmp((*result)[e].subString, "..")){
+            // assmue .. and remove the element before
+            (*result)[e] = (*result)[e - 1];
+            (*result)[e - 1] = (*result)[e - 2];
+            e--;
+            (*result) = realloc((*result), sizeof(splitStrStruct) * (2 + e));
+          } else if (!strcmp((*result)[e].subString, ".")){
+            // strip single .
+            (*result)[e].subString[0]=0;
+          } else {
+            // If element created is NOT ..
+            e++;
+            (*result) = realloc((*result), sizeof(splitStrStruct) * (2 + e));
+          }
         } else {
-          // If element created is NOT ..
           e++;
-          (*dirStruct) = realloc((*dirStruct), sizeof(pathDirs) * (2 + e));
+          (*result) = realloc((*result), sizeof(splitStrStruct) * (2 + e));
         }
       } else {
         e++;
-        (*dirStruct) = realloc((*dirStruct), sizeof(pathDirs) * (2 + e));
+        (*result) = realloc((*result), sizeof(splitStrStruct) * (2 + e));
       }
       j=0;
     } else {
-      (*dirStruct)[e].directories[j] = path[i];
+      (*result)[e].subString[j] = input[i];
       j++;
     }
   }
-  (*dirStruct)[e].directories[j] = '\0';
-  if (!strcmp((*dirStruct)[e].directories, ".")){
-    (*dirStruct)[e].directories[0]=0;
+  (*result)[e].subString[j] = '\0';
+  if (!strcmp((*result)[e].subString, ".")){
+    (*result)[e].subString[0]=0;
     e--;
   }
 
@@ -145,15 +201,12 @@ int splitPath(pathDirs **dirStruct, char *path){
 int createParentsInput(char *path)
 {
   int result = 0;
-  int messageLen;
-  wchar_t *message = malloc(sizeof(wchar_t) * 1);
+  char *message;
 
-  messageLen = (strlen(path) + 64);
+  setDynamicChar(&message, _("Directory [<%s>] does not exist. Create it? !Yes/!No (enter = no)"), path);
 
-  message = realloc(message, sizeof(wchar_t) * (messageLen + 1));
+  printMenu(0,0, message);
 
-  swprintf(message, messageLen, L"Directory [<%s>] does not exist. Create it? !Yes/!No (enter = no)", path);
-  wPrintMenu(0,0, message);
   while(1)
     {
       *pc = getch10th();
@@ -173,16 +226,16 @@ int createParentsInput(char *path)
 }
 
 void createParentDirs(char *path){
-  pathDirs *targetPath;
+  splitStrStruct *targetPath;
   char *tempPath = malloc(sizeof(char) * 1);
   char *tempPathWork;
   int e, i, t = 0;
 
-  e = splitPath(&targetPath, path);
+  e = splitString(&targetPath, path, '/', true);
 
   tempPath[0]=0;
   for (i = 0; i < e; i++){
-    t = setDynamicChar(&tempPathWork, "%s/%s", tempPath, targetPath[i].directories);
+    t = setDynamicChar(&tempPathWork, "%s/%s", tempPath, targetPath[i].subString);
     tempPath = realloc(tempPath, sizeof(char) + t);
     memcpy(tempPath, tempPathWork, t);
     free(tempPathWork);
@@ -215,8 +268,8 @@ void setConfLocations()
 int exittoshell()
 {
   clear();
-  unloadMenuLabels();
-  freeSettingVars();
+  // unloadMenuLabels();
+  // freeSettingVars();
   endwin();
   exit(exitCode);
   return exitCode;
@@ -276,7 +329,7 @@ char * objectFromPath(const char *myStr){
 void printVersion(char* programName){
   printf (("Directory File Show (DF-SHOW) - %s %s\n"), programName, VERSION);
   fputs (("\
-Copyright (C) 2022 Robert Ian Hawdon\n\
+Copyright (C) 2023 Robert Ian Hawdon\n\
 License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.\n\
 This program comes with ABSOLUTELY NO WARRANTY. This is free software, and you\n\
 are welcome to redistribute it under certain conditions.\n"), stdout);
@@ -604,9 +657,6 @@ void buildCommandArguments(const char *cmd, char **args, size_t items)
     }
   }
 
-  // We need one more as the last argument MUST be NULL
-  // countArgs++;
-
   for (i = 0; i < (itemCount + 1); i++){
     tempStr = calloc(itemLen[i] + 1, sizeof(char));
     args[i] = calloc(itemLen[i] + 1, sizeof(char));
@@ -643,6 +693,7 @@ void buildCommandArguments(const char *cmd, char **args, size_t items)
     free(tempStr);
   }  
 
+  // The last argument MUST be NULL, so we'll add this here.
   args[itemCount + 1] = NULL;
 
   free(itemLen_copy);
@@ -686,7 +737,7 @@ int launchExternalCommand(char *cmd, char **args, ushort_t mode)
     waitpid(pid, &status, 0);
     sigprocmask(SIG_SETMASK, &oldMask, NULL);
   }
-  refreshScreen();
+  refreshScreen("show");
   return 0;
 }
 

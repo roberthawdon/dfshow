@@ -1,0 +1,13 @@
+./src//colors.c
+./src//common.c
+./src//display.c
+./src//i18n.c
+./src//input.c
+./src//menu.c
+./src//settings.c
+./src//sf.c
+./src//sffunctions.c
+./src//sfmenus.c
+./src//show.c
+./src//showfunctions.c
+./src//showmenus.c

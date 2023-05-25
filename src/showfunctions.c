@@ -1,7 +1,7 @@
 /*
   DF-SHOW: An interactive directory/file browser written for Unix-like systems.
   Based on the applications from the PC-DOS DF-EDIT suite by Larry Kroeker.
-  Copyright (C) 2018-2022  Robert Ian Hawdon
+  Copyright (C) 2018-2023  Robert Ian Hawdon
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -40,15 +40,18 @@
 #include <regex.h>
 #include <sys/acl.h>
 #include <stdint.h>
+#include <libintl.h>
 #include "settings.h"
 #include "common.h"
 #include "display.h"
 #include "config.h"
 #include "showfunctions.h"
+#include "sffunctions.h"
 #include "showmenus.h"
 #include "colors.h"
 #include "show.h"
 #include "banned.h"
+#include "i18n.h"
 
 #if HAVE_ACL_LIBACL_H
 # include <acl/libacl.h>
@@ -76,9 +79,14 @@
 # define st_author st_uid
 #endif
 
-char hlinkstr[6], sizestr[32], sizeblocksstr[32], majorstr[6], minorstr[6];
-char headAttrs[12], headOG[25], headSize[14], headDT[18], headName[13], headContext[14], headSizeBlocks[9];
+char hlinkstr[6], sizestr[32], sizeblocksstr[32], majorstr[6], minorstr[6], inodestr[32];
+// char headAttrs[12], headOG[25], headSize[14], headDT[18], headName[13], headContext[14], headSizeBlocks[9];
+// char headOG[25], headSize[14], headDT[18], headName[13], headContext[14], headSizeBlocks[9];
 
+char *headAttrs, *headOG, *headSize, *headDT, *headName, *headContext, *headSizeBlocks, *headInode;
+// char *headAttrs;
+
+int inodelen;
 int hlinklen;
 int ownerlen;
 int grouplen;
@@ -119,8 +127,6 @@ int topfileref = 0;
 int lineStart = 0;
 int hpos = 0;
 int maxdisplaywidth;
-int displaysize; // Calculate area to print
-int displaycount;
 int historyref = 0;
 int sessionhistory = 0;
 int displaystart;
@@ -136,7 +142,7 @@ int dirAbort = 0;
 
 int axDisplay = 0;
 
-int markedSegmentLen, sizeBlocksSegmentLen, attrSegmentLen, hlinkSegmentLen, ownerSegmentLen, contextSegmentLen, sizeSegmentLen, dateSegmentLen, nameSegmentDataLen, sizeBlocksSegmentLen, linkSegmentLen, tmpSegmentLen;
+int markedSegmentLen, sizeBlocksSegmentLen, attrSegmentLen, hlinkSegmentLen, ownerSegmentLen, contextSegmentLen, sizeSegmentLen, dateSegmentLen, nameSegmentDataLen, sizeBlocksSegmentLen, linkSegmentLen, inodeSegmentLen, tmpSegmentLen;
 
 uintmax_t savailable = 0;
 unsigned long int sused = 0;
@@ -159,11 +165,19 @@ int visibleOffset;
 int listLen;
 entryLines *el;
 
+extern char fileName[4096];
+
+extern bool parentShow;
+
+extern int displaysize; // Calculate area to print
+
+extern int displaycount;
+
 extern char block_unit[4];
 
 extern DIR *folder;
 
-extern int segOrder[9];
+extern int segOrder[10];
 
 extern int block_size;
 
@@ -190,10 +204,13 @@ extern int oneLine;
 extern int skipToFirstFile;
 extern int showXAttrs;
 extern int showAcls;
+extern bool currentDirOnly;
 extern bool dirOnly;
 extern bool scaleSize;
 extern bool useDefinedEditor;
 extern bool useDefinedPager;
+extern bool showInodes;
+extern bool numericIds;
 extern char * visualPath;
 extern char * pagerPath;
 
@@ -320,18 +337,18 @@ char *getRelativePath(char *file, char *target)
 {
   char *result = malloc(sizeof(char) + 1);
   int i, j, e, c, targetUp, fileUp;
-  pathDirs *fileStruct, *targetStruct;
+  splitStrStruct *fileStruct, *targetStruct;
   int  fileLen, targetLen, commonPath = 0;
   int resultLen = 0;
 
   targetUp = fileUp = 0;
 
   // Store sections of file in structure
-  e = splitPath(&fileStruct, file);
+  e = splitString(&fileStruct, file, '/', true);
   fileLen = e + 1;
 
   // Store sections of target in structure
-  e = splitPath(&targetStruct, target);
+  e = splitString(&targetStruct, target, '/', true);
   targetLen = e + 1;
 
   // Find the smallest of our structures
@@ -343,7 +360,7 @@ char *getRelativePath(char *file, char *target)
 
   // Count the common directories
   for(i = 0; i < c; i++){
-    if (!strcmp(fileStruct[i].directories, targetStruct[i].directories)){
+    if (!strcmp(fileStruct[i].subString, targetStruct[i].subString)){
       commonPath++;
     } else {
       break;
@@ -365,35 +382,35 @@ char *getRelativePath(char *file, char *target)
       c++;
     }
     for(i=(fileLen - fileUp); i < fileLen; i++){
-      j = strlen(fileStruct[i].directories);
+      j = strlen(fileStruct[i].subString);
       resultLen = sizeof(char) * (resultLen + j + 2);
       result = realloc(result, resultLen);
       if (i == fileLen - 1){
-        snprintf(result + strlen(result), (strlen(result) + j + 2), "%s%c", fileStruct[i].directories, '\0');
+        snprintf(result + strlen(result), (strlen(result) + j + 2), "%s%c", fileStruct[i].subString, '\0');
       } else {
-        snprintf(result + strlen(result), (strlen(result) + j + 2), "%s/%c", fileStruct[i].directories, '\0');
+        snprintf(result + strlen(result), (strlen(result) + j + 2), "%s/%c", fileStruct[i].subString, '\0');
       }
     }
   } else if ((targetUp < 1) && (fileUp > 1)){
     for(i=commonPath; i < fileLen; i++){
-      j = strlen(fileStruct[i].directories);
+      j = strlen(fileStruct[i].subString);
       resultLen = sizeof(char) * (resultLen + j + 2);
       result = realloc(result, resultLen);
       if (c == 0){
-        snprintf(result, (strlen(result) + j + 2), "%s/%c", fileStruct[i].directories, '\0');
+        snprintf(result, (strlen(result) + j + 2), "%s/%c", fileStruct[i].subString, '\0');
       } else if (i == fileLen - 1){
-        snprintf(result + strlen(result), (strlen(result) + j + 2), "%s%c", fileStruct[i].directories, '\0');
+        snprintf(result + strlen(result), (strlen(result) + j + 2), "%s%c", fileStruct[i].subString, '\0');
       } else {
-        snprintf(result + strlen(result), (strlen(result) + j + 2), "%s/%c", fileStruct[i].directories, '\0');
+        snprintf(result + strlen(result), (strlen(result) + j + 2), "%s/%c", fileStruct[i].subString, '\0');
       }
       c++;
     }
   } else {
     // Assume we're in the same directory at this point
-    j = strlen(fileStruct[fileLen - 1].directories);
+    j = strlen(fileStruct[fileLen - 1].subString);
     resultLen = sizeof(char) * (j + 1);
     result = realloc(result, resultLen);
-    snprintf(result, (j + 1), "%s", fileStruct[fileLen - 1].directories);
+    snprintf(result, (j + 1), "%s", fileStruct[fileLen - 1].subString);
   }
 
   // result[resultLen - 1] = '\0'; // This seems to cause no end of grief on FreeBSD and I can't even remember why it's here.
@@ -664,7 +681,7 @@ void writeResultStruct(results* ob, const char * filename, struct stat buffer, i
   *ob[count].hlink = buffer.st_nlink;
   *ob[count].hlinklens = strlen(hlinkstr);
 
-  if (!getpwuid(buffer.st_uid)){
+  if (!getpwuid(buffer.st_uid) || numericIds){
     ob[count].owner = malloc(sizeof(char) * 6);
     snprintf(ob[count].owner, 6, "%i", buffer.st_uid);
   } else {
@@ -673,7 +690,7 @@ void writeResultStruct(results* ob, const char * filename, struct stat buffer, i
     snprintf(ob[count].owner, (strlen(pw->pw_name) + 1), "%s", pw->pw_name);
   }
 
-  if (!getgrgid(buffer.st_gid)){
+  if (!getgrgid(buffer.st_gid) || numericIds){
     ob[count].group = malloc(sizeof(char) * 6);
     snprintf(ob[count].group, 6, "%i", buffer.st_gid);
   } else {
@@ -682,7 +699,7 @@ void writeResultStruct(results* ob, const char * filename, struct stat buffer, i
     snprintf(ob[count].group, (strlen(gr->gr_name) + 1), "%s", gr->gr_name);
   }
 
-  if (!getpwuid(buffer.st_author)){
+  if (!getpwuid(buffer.st_author) || numericIds){
     ob[count].author = malloc(sizeof(char) * 6);
     snprintf(ob[count].author, 6, "%i", buffer.st_author);
   } else {
@@ -695,6 +712,7 @@ void writeResultStruct(results* ob, const char * filename, struct stat buffer, i
   *ob[count].sizelens = strlen(sizestr);
 
   ob[count].sizeBlocks = (buffer.st_blocks * 512) / block_size;
+  ob[count].inode = buffer.st_ino;
 
   // Hacky workaround to show a size of 1 if the size is negligible
   if ( (ob[count].sizeBlocks == 0) && ((buffer.st_blocks * 512) != 0)) {
@@ -784,10 +802,10 @@ char *dateString(time_t date, char *style)
   return (outputString);
 }
 
-char *readableSize(double size, ssize_t bufSize, char *buf, int si){
+char *readableSize(long double size, ssize_t bufSize, char *buf, int si){
   int i = 0;
   int powers = 1024;
-  const char* units[] = {"", "K", "M", "G", "T", "P", "E", "Z", "Y"};
+  const char* units[] = {"", "K", "M", "G", "T", "P", "E", "Z", "Y", "R", "Q"};
   char unitOut[2];
   if (si){
     powers = 1000;
@@ -796,7 +814,7 @@ char *readableSize(double size, ssize_t bufSize, char *buf, int si){
     size /= powers;
     i++;
     if ( i == 10 ){
-      break; // Come back and see me when 1024+ YB is an everyday occurance
+      break; // Come back and see me when 1024+ QB is an everyday occurance (2023-05-12: Yeah, now `ls` supports Ronnabytes and Queccabytes, I've had to update this sarcastic quote!)
     }
   }
   snprintf(unitOut, 2, "%s", units[i]);
@@ -804,7 +822,7 @@ char *readableSize(double size, ssize_t bufSize, char *buf, int si){
     // si units used
     unitOut[0] = tolower(*unitOut);
   }
-  snprintf(buf, bufSize, "%.*f%s", i, size, unitOut);
+  snprintf(buf, bufSize, "%.*Lf%s", i, size, unitOut);
   return (buf);
 }
 
@@ -831,6 +849,23 @@ char *genPadding(int num_of_spaces) {
   dest = malloc (sizeof (char) * (i + 1));
   if (num_of_spaces > 0){
     snprintf(dest, (i + 1), "%*s", num_of_spaces, " ");
+  } else {
+    dest[0]=0;
+  }
+  return dest;
+}
+
+wchar_t *wGenPadding(int num_of_spaces) {
+  wchar_t *dest;
+  int i;
+  if (num_of_spaces < 1){
+    i = 1;
+  } else {
+    i = num_of_spaces;
+  }
+  dest = malloc (sizeof (wchar_t) * (i + 1));
+  if (num_of_spaces > 0){
+    swprintf(dest, (i + 1), L"%*ls", num_of_spaces, L" ");
   } else {
     dest[0]=0;
   }
@@ -887,7 +922,6 @@ void printXattr(int start, int selected, int listref, int currentItem, int subIn
   char *tmpXattrPrint;
   char *tmpXattrSize;
   int tmpXattrSizeLen;
-  char *tmpXattrPadding;
   int linepadding;
   char *xattrKeySegment;
   char xattrPrePad[13] = "            ";
@@ -930,7 +964,6 @@ void printXattr(int start, int selected, int listref, int currentItem, int subIn
   }
   free(tmpXattrPrint);
   free(tmpXattrSize);
-  free(tmpXattrPadding);
 
   free(xattrKeySegment);
 
@@ -948,7 +981,7 @@ void printXattr(int start, int selected, int listref, int currentItem, int subIn
   }
 }
 
-void printEntry(int start, int hlinklen, int sizeblocklen, int ownerlen, int grouplen, int authorlen, int sizelen, int majorlen, int minorlen, int datelen, int namelen, int contextlen, int selected, int listref, int currentitem, results* ob){
+void printEntry(int start, int inodelen, int hlinklen, int sizeblocklen, int ownerlen, int grouplen, int authorlen, int sizelen, int majorlen, int minorlen, int datelen, int namelen, int contextlen, int selected, int listref, int currentitem, results* ob){
 
   int i, n, t;
 
@@ -962,6 +995,7 @@ void printEntry(int start, int hlinklen, int sizeblocklen, int ownerlen, int gro
   int dateminlen = strlen(headDT); // Length of "Date" heading
   int contextminlen = strlen(headContext); // Length of "Context" heading
   int sizeblockminlen = strlen(headSizeBlocks); // Length of "Size (Blocks)" heading
+  int inodeminlen = strlen(headInode); // Length of "Inode" heading
 
   int oggap, gagap = 0;
 
@@ -986,6 +1020,8 @@ void printEntry(int start, int hlinklen, int sizeblocklen, int ownerlen, int gro
 
   char *sizeBlocksString;
 
+  char *inodeString;
+
   int printSegment, printNameSegment = 0;
 
   int nameCombineLen, nameFullSegPadding;
@@ -998,6 +1034,7 @@ void printEntry(int start, int hlinklen, int sizeblocklen, int ownerlen, int gro
   char *contextSegment;
   char *sizeSegment;
   wchar_t *dateSegment;
+  char *inodeSegment;
   nameStruct *nameSegmentData;
 
   wchar_t *tmpSegment;
@@ -1133,6 +1170,24 @@ void printEntry(int start, int hlinklen, int sizeblocklen, int ownerlen, int gro
     sizeBlocksSegment[0]=0;
   }
 
+  if (showInodes){
+    snprintf(inodestr, 32, "%ju", (uintmax_t)ob[currentitem].inode);
+    if (inodelen < inodeminlen) {
+      inodeSegmentLen = inodeminlen;
+    } else {
+      inodeSegmentLen = inodelen;
+    }
+    inodeString = malloc(sizeof(char) * inodeSegmentLen);
+    snprintf(inodeString, inodeSegmentLen, "%s", inodestr);
+    inodeSegment = writeSegment(inodeSegmentLen, inodeString, RIGHT);
+  } else {
+    inodeSegmentLen = 1;
+    inodeString = malloc(sizeof(char) * inodeSegmentLen);
+    inodeString[0]=0;
+    inodeSegment = malloc(sizeof(char) * inodeSegmentLen);
+    inodeSegment[0]=0;
+  }
+
   if (ob[currentitem].minor > 1){
     mmpad = sizelen - (log10(ob[currentitem].minor + 1)) + 2;
   } else {
@@ -1233,9 +1288,9 @@ void printEntry(int start, int hlinklen, int sizeblocklen, int ownerlen, int gro
     swprintf(nameSegmentData[0].link, (strlen(ob[currentitem].slink) + 1), L"%s", ob[currentitem].slink);
   }
   if ( nameSegmentData[0].linkStat ){
-    nameCombineLen = (wcslen(nameSegmentData[0].name) + wcslen(nameSegmentData[0].link) + 4);
+    nameCombineLen = (wcswidth(nameSegmentData[0].name, wcslen(nameSegmentData[0].name)) + wcswidth(nameSegmentData[0].link, wcslen(nameSegmentData[0].link)) + 4);
   } else {
-    nameCombineLen = wcslen(nameSegmentData[0].name);
+    nameCombineLen = wcswidth(nameSegmentData[0].name, wcslen(nameSegmentData[0].name));
   }
   if (nameSegLen > nameminlen){
     nameFullSegPadding = nameSegLen - nameCombineLen + 1;
@@ -1247,7 +1302,7 @@ void printEntry(int start, int hlinklen, int sizeblocklen, int ownerlen, int gro
   if ( nameFullSegPadding < 1 ){
     nameFullSegPadding = 1;
   }
-  nameSegmentData[0].padding = genPadding(nameFullSegPadding);
+  nameSegmentData[0].padding = wGenPadding(nameFullSegPadding);
 
 
   entryNameLen = snprintf(NULL, 0, "%s", ob[currentitem].name) + 1;
@@ -1256,7 +1311,7 @@ void printEntry(int start, int hlinklen, int sizeblocklen, int ownerlen, int gro
 
   swprintf(entryName, (entryNameLen + 1), L"%s", ob[currentitem].name);
 
-  entryNameLen = wcslen(entryName);
+  entryNameLen = wcswidth(entryName, wcslen(entryName));
 
   if ( !strcmp(ob[currentitem].slink, "") ){
     entrySLinkLen = 1;
@@ -1265,7 +1320,7 @@ void printEntry(int start, int hlinklen, int sizeblocklen, int ownerlen, int gro
     entrySLinkLen = snprintf(NULL, 0, "%s", ob[currentitem].slink);
     entrySLink = realloc(entrySLink, sizeof(wchar_t) * (entrySLinkLen + 1));
     swprintf(entrySLink, (entrySLinkLen + 1), L"%s\0", ob[currentitem].slink);
-    entrySLinkLen = wcslen(entrySLink);
+    entrySLinkLen = wcswidth(entrySLink, wcslen(entrySLink));
   }
 
   // Setting highlight
@@ -1283,6 +1338,14 @@ void printEntry(int start, int hlinklen, int sizeblocklen, int ownerlen, int gro
       tmpSegmentLen = markedSegmentLen + 2;
       tmpSegment = malloc(sizeof(wchar_t) * tmpSegmentLen);
       swprintf(tmpSegment, tmpSegmentLen, L"%s", markedSegment);
+      break;
+    case COL_INODE:
+      if (showInodes){
+        printSegment = 1;
+        tmpSegmentLen = inodeSegmentLen + 2;
+        tmpSegment = malloc(sizeof(wchar_t) * tmpSegmentLen);
+        swprintf(tmpSegment, tmpSegmentLen, L"%s", inodeSegment);
+      }
       break;
     case COL_SIZEBLOCKS:
       if (showSizeBlocks){
@@ -1344,7 +1407,7 @@ void printEntry(int start, int hlinklen, int sizeblocklen, int ownerlen, int gro
     if (printSegment){
       for ( i = 0; i < maxlen; i++ ){
         mvprintw(displaystart + listref, start + charPos, "%lc", tmpSegment[i]);
-        charPos++;
+        charPos = charPos + wcwidth(tmpSegment[i]);
         if (i == tmpSegmentLen - 2){
           break;
         }
@@ -1368,8 +1431,8 @@ void printEntry(int start, int hlinklen, int sizeblocklen, int ownerlen, int gro
 
       for ( i = 0; i < maxlen; i++ ){
         mvprintw(displaystart + listref, start + charPos, "%lc", nameSegmentData[0].name[i]);
-        charPos++;
-        if ( i == wcslen(nameSegmentData[0].name) - 1 ){
+        charPos = charPos + wcwidth(nameSegmentData[0].name[i]);
+        if ( i == wcswidth(nameSegmentData[0].name, wcslen(nameSegmentData[0].name)) - 1 ){
           break;
         }
       }
@@ -1400,8 +1463,8 @@ void printEntry(int start, int hlinklen, int sizeblocklen, int ownerlen, int gro
 
           for ( i = 0; i < maxlen; i++ ){
             mvprintw(displaystart + listref, start + charPos,"%lc", nameSegmentData[0].link[i]);
-            charPos++;
-            if ( i == wcslen(nameSegmentData[0].link) - 1 ){
+            charPos = charPos + wcwidth(nameSegmentData[0].link[i]);
+            if ( i == wcswidth(nameSegmentData[0].link, wcslen(nameSegmentData[0].link)) - 1 ){
               break;
             }
           }
@@ -1412,9 +1475,9 @@ void printEntry(int start, int hlinklen, int sizeblocklen, int ownerlen, int gro
       }
 
       for ( i = 0; i < maxlen; i++){
-        mvprintw(displaystart + listref, start + charPos, "%c", nameSegmentData[0].padding[i]);
-        charPos++;
-        if ( i == strlen(nameSegmentData[0].padding) - 1 ){
+        mvprintw(displaystart + listref, start + charPos, "%lc", nameSegmentData[0].padding[i]);
+        charPos = charPos + wcwidth(nameSegmentData[0].padding[i]);
+        if ( i == wcswidth(nameSegmentData[0].padding, wcslen(nameSegmentData[0].padding)) - 1 ){
           break;
         }
       }
@@ -1450,6 +1513,7 @@ void printEntry(int start, int hlinklen, int sizeblocklen, int ownerlen, int gro
   free(contextSegment);
   free(sizeSegment);
   free(dateSegment);
+  free(inodeSegment);
 
   free(sizestring);
   free(sizePadding);
@@ -1466,9 +1530,9 @@ void LaunchShell()
   clear();
   endwin();
   // write(STDOUT_FILENO, "\nUse 'exit' to return to Show.\n\n", 32);
-  printf("\nUse 'exit' to return to Show.\n\n");
+  printf(_("\nUse 'exit' to return to Show.\n\n"));
   system(getenv("SHELL"));
-  refreshScreen();
+  refreshScreenShow();
 }
 
 void LaunchExecutable(const char* object, const char* args)
@@ -1478,7 +1542,7 @@ void LaunchExecutable(const char* object, const char* args)
   system("clear"); // Just to be sure
   system(command);
   free(command);
-  refreshScreen();
+  refreshScreenShow();
 }
 
 void copy_file(char *source_input, char *target_input, mode_t mode)
@@ -1536,15 +1600,15 @@ int SendToPager(char* object)
 
   if (access(object, R_OK) == 0){
     originalCmd = malloc(sizeof(char) + 1);
-    if (can_run_command("sf")){
-      if (!useEnvPager){
-        setenv("DFS_THEME_OVERRIDE", "TRUE", 1);
-        originalCmd = realloc(originalCmd, sizeof(char) * 3);
-        snprintf(originalCmd, 3, "sf");
-        noOfArgs = countArguments(originalCmd);
-      }
-    } else {
-      useEnvPager = 1;
+    if (!useEnvPager){
+      // setenv("DFS_THEME_OVERRIDE", "TRUE", 1);
+      // originalCmd = realloc(originalCmd, sizeof(char) * 3);
+      // snprintf(originalCmd, 3, "sf");
+      // noOfArgs = countArguments(originalCmd);
+      snprintf(fileName, 4096, "%s", object);
+      parentShow = true;
+      file_view(fileName);
+      return(0);
     }
   
     if (useEnvPager){
@@ -1586,10 +1650,10 @@ int SendToPager(char* object)
       launchExternalCommand(args[0], args, M_NONE);
       free(fullCommand);
     } else {
-      topLineMessage("Please set a valid pager utility program command in settings.");
+      topLineMessage(_("Please set a valid pager utility program command in settings."));
     }
   } else {
-    topLineMessage("Error: Permission denied");
+    topLineMessage(_("Error: Permission denied"));
   }
   return 0;
 }
@@ -1648,10 +1712,10 @@ int SendToEditor(char* object)
         launchExternalCommand(args[0], args, M_NONE);
         free(fullCommand);
       } else {
-        topLineMessage("Please set a valid editor utility program command in settings.");
+        topLineMessage(_("Please set a valid editor utility program command in settings."));
       }
     } else {
-      topLineMessage("Error: Permission denied");
+      topLineMessage(_("Error: Permission denied"));
     }
   return 0;
 }
@@ -1715,6 +1779,10 @@ int seglength(const void *seg, char *segname, int LEN)
       else if (!strcmp(segname, "hlink")) {
         snprintf(hlinkstr, 6, "%d", *dfseg[i].hlink);
         len = strlen(hlinkstr);
+      }
+      else if (!strcmp(segname, "inode")) {
+        snprintf(inodestr, 32, "%ju", (uintmax_t)dfseg[i].inode);
+        len = strlen(inodestr);
       }
       else if (!strcmp(segname, "sizeBlocks")) {
         snprintf(sizeblocksstr, 32, "%ju", (uintmax_t)dfseg[i].sizeBlocks);
@@ -1937,14 +2005,14 @@ int RenameObject(char* source, char* dest)
         }
         return e;
       } else {
-        topLineMessage("Error: Unable to move file between mount points");
+        topLineMessage(_("Error: Unable to move file between mount points"));
         free(destPath);
         return 1;
       }
     }
   } else {
     // Destination directory not found
-    topLineMessage("Error: Invalid Destination");
+    topLineMessage(_("Error: Invalid Destination"));
     free(destPath);
     return 1;
   }
@@ -2060,16 +2128,16 @@ char *markedDisplay(results* ob)
   }
 
   if (markedNum == 1){
-    snprintf(filesWord, 6, "%s", "file");
+    snprintf(filesWord, 6, "%s", _("file"));
   } else {
-    snprintf(filesWord, 6, "%s", "files");
+    snprintf(filesWord, 6, "%s", _("files"));
   }
 
   snprintf(markedNumString, 12, "%lu", markedNum);
 
   outChar = realloc(outChar, sizeof(char) * ( strlen(markedNumString) + strlen(markedSizeString) + strlen(filesWord) + 16));
 
-  snprintf(outChar, ( strlen(markedNumString) + strlen(markedSizeString) + strlen(filesWord) + 16), "MARKED: %s in %s %s", markedSizeString, markedNumString, filesWord);
+  snprintf(outChar, ( strlen(markedNumString) + strlen(markedSizeString) + strlen(filesWord) + 16), _("MARKED: %s in %s %s"), markedSizeString, markedNumString, filesWord);
 
   free(markedSizeString);
 
@@ -2080,14 +2148,13 @@ results* get_dir(char *pwd)
 {
   int i;
   size_t count = 0;
-  size_t dirErrorSize = 0;
   struct dirent *res;
   struct stat sb;
   char *path = pwd;
   struct stat buffer;
   int         status;
   int         pass = 0;
-  char *dirError = malloc(sizeof(char) + 1);
+  char *dirError;
   acl_t acl;
   acl_entry_t dummy;
   int haveAcl;
@@ -2097,7 +2164,7 @@ results* get_dir(char *pwd)
   int seLinuxCon = 0;
   int xattrsNum;
   #ifdef HAVE_SELINUX_SELINUX_H
-    security_context_t context;
+    char * context;
   #endif
   char *contextText;
   char *fullFilePath;
@@ -2142,20 +2209,24 @@ results* get_dir(char *pwd)
           haveAcl = 0;
           contextText = malloc(sizeof(char) * 2);
           lstat(res->d_name, &sb);
-          if ( showhidden == 0 && check_first_char(res->d_name, ".") && strcmp(res->d_name, ".") && strcmp(res->d_name, "..") ) {
-            continue; // Skipping hidden files
-          }
-          if ( !showbackup && check_last_char(res->d_name, "~") ) {
-            continue; // Skipping backup files
-          }
-          if ( dirOnly ) {
-            if (!S_ISDIR(sb.st_mode)){
-              continue;
+          if ( currentDirOnly && strcmp(res->d_name, ".") ) {
+            continue; // Skipping all but `.`
+          } else {
+            if ( showhidden == 0 && check_first_char(res->d_name, ".") && strcmp(res->d_name, ".") && strcmp(res->d_name, "..") ) {
+              continue; // Skipping hidden files
             }
-          }
-          if ( strcmp(objectWild, "")){
-            if (!wildcard(res->d_name, objectWild) && strcmp(res->d_name, ".") && strcmp(res->d_name, "..")){
-              continue;
+            if ( !showbackup && check_last_char(res->d_name, "~") ) {
+              continue; // Skipping backup files
+            }
+            if ( dirOnly ) {
+              if (!S_ISDIR(sb.st_mode)){
+                continue;
+              }
+            }
+            if ( strcmp(objectWild, "")){
+              if (!wildcard(res->d_name, objectWild) && strcmp(res->d_name, ".") && strcmp(res->d_name, "..")){
+                continue;
+              }
             }
           }
           if (pass == 0){
@@ -2255,10 +2326,9 @@ results* get_dir(char *pwd)
 
         if ( count == 0 ) {
           // This is a hacky mitigation for drivefs returning 0 objects, it should prevent the crash of #82. However, it doesn't fix the inablity to load Google Drive Stream directories properly. The GNU version of 'ls' also has similar issues, so the bug is most likely in the underlying library rather than DF-SHOW itself.
-          dirErrorSize = 36;
-          dirError = realloc(dirError, sizeof(char) * dirErrorSize);
-          snprintf(dirError, dirErrorSize, "Error: Directory Returned 0 Objects" );
+          setDynamicChar(&dirError, _("Error: Directory Returned 0 Objects"));
           topLineMessage(dirError);
+          free(dirError);
           historyref--;
           if (historyref > 0){
             memcpy(path, hs[historyref - 1].path, strlen(hs[historyref - 1].path));
@@ -2280,10 +2350,9 @@ results* get_dir(char *pwd)
 
       }else{
         // May want to use error no. here.
-        dirErrorSize = 29;
-        dirError = realloc(dirError, sizeof(char) * dirErrorSize);
-        snprintf(dirError, dirErrorSize, "Could not open the directory" );
+        setDynamicChar(&dirError, _("Could not open the directory"));
         topLineMessage(dirError);
+        free(dirError);
         historyref--;
       }
     }
@@ -2296,10 +2365,9 @@ results* get_dir(char *pwd)
     goto fetch;
 
   } else {
-    dirErrorSize = snprintf(NULL, 0, "The location %s cannot be opened or is not a directory", path);
-    dirError = realloc(dirError, sizeof(char) * (dirErrorSize + 1));
-    snprintf(dirError, (dirErrorSize + 1), "The location %s cannot be opened or is not a directory", path);
+    setDynamicChar(&dirError, _("The location %s cannot be opened or is not a directory"), path);
     topLineMessage(dirError);
+    free(dirError);
     historyref--;
     if (historyref > 0){
       memcpy(path, hs[historyref - 1].path, strlen(hs[historyref - 1].path));
@@ -2311,6 +2379,7 @@ results* get_dir(char *pwd)
       exittoshell();
     }
   }
+  inodelen = seglength(ob, "inode", count);
   hlinklen = seglength(ob, "hlink", count);
   ownerlen = seglength(ob, "owner", count);
   grouplen = seglength(ob, "group", count);
@@ -2333,7 +2402,6 @@ results* get_dir(char *pwd)
     }
   }
 
-  free(dirError);
   free(res);
   return ob;
 }
@@ -2475,7 +2543,7 @@ void display_dir(char *pwd, results* ob){
   char *markedInfoLine;
   char *headerCombined = malloc(sizeof(char) + 1);
   int headerCombinedLen = 1;
-  char *markedHeadSeg, *attrHeadSeg, *hlinkHeadSeg, *ownerHeadSeg, *contextHeadSeg, *sizeHeadSeg, *dateHeadSeg, *nameHeadSeg, *sizeBlocksHeadSeg;
+  char *markedHeadSeg, *attrHeadSeg, *inodeHeadSeg, *hlinkHeadSeg, *ownerHeadSeg, *contextHeadSeg, *sizeHeadSeg, *dateHeadSeg, *nameHeadSeg, *sizeBlocksHeadSeg;
   int currentItem;
 
   maxdisplaywidth = 0;
@@ -2552,27 +2620,33 @@ void display_dir(char *pwd, results* ob){
     }
   }
 
-  snprintf(headAttrs, 12, "---Attrs---");
+  setDynamicChar(&headAttrs, _("---Attrs---"));
 
   if (showContext){
-    snprintf(headContext, 14, "---Context---");
+    setDynamicChar(&headContext, _("---Context---"));
   } else {
-    headContext[0]=0;
+    setDynamicChar(&headContext, "");
+  }
+
+  if (showInodes){
+    setDynamicChar(&headInode, _("--Inode--"));
+  } else {
+    setDynamicChar(&headInode, "");
   }
 
   if (showSizeBlocks){
-    snprintf(headSizeBlocks, 9, "-Blocks-");
+    setDynamicChar(&headSizeBlocks, _("-Blocks-"));
   } else {
-    headSizeBlocks[0]=0;
+    setDynamicChar(&headSizeBlocks, "");
   }
 
   if ( mmMode ){
-    snprintf(headSize, 14, "-Driver/Size-");
+    setDynamicChar(&headSize, _("-Driver/Size-"));
   } else {
-    snprintf(headSize, 14, "-Size-");
+    setDynamicChar(&headSize, _("-Size-"));
   }
-  snprintf(headDT, 18, "---Date & Time---");
-  snprintf(headName, 13, "----Name----");
+  setDynamicChar(&headDT, _("---Date & Time---"));
+  setDynamicChar(&headName, _("----Name----"));
 
   // Decide which owner header we need:
   switch(ogavis){
@@ -2580,35 +2654,35 @@ void display_dir(char *pwd, results* ob){
     headOG[0]=0;
     break;
   case 1:
-    snprintf(headOG, 25, "-Owner-");
+    setDynamicChar(&headOG, _("-Owner-"));
     ogalen = ownerlen;
     break;
   case 2:
-    snprintf(headOG, 25, "-Group-");
+    setDynamicChar(&headOG, _("-Group-"));
     ogalen = grouplen;
     break;
   case 3:
-    snprintf(headOG, 25, "-Owner & Group-");
+    setDynamicChar(&headOG, _("-Owner & Group-"));
     ogalen = ownerlen + grouplen;
     break;
   case 4:
-    snprintf(headOG, 25, "-Author-");
+    setDynamicChar(&headOG, _("-Author-"));
     ogalen = authorlen; //test
     break;
   case 5:
-    snprintf(headOG, 25, "-Owner & Author-");
+    setDynamicChar(&headOG, _("-Owner & Author-"));
     ogalen = ownerlen + authorlen;
     break;
   case 6:
-    snprintf(headOG, 25, "-Group & Author-");
+    setDynamicChar(&headOG, _("-Group & Author-"));
     ogalen = grouplen + authorlen;
     break;
   case 7:
-    snprintf(headOG, 25, "-Owner, Group, & Author-"); // I like the Oxford comma, deal with it.
+    setDynamicChar(&headOG, _("-Owner, Group, & Author-")); // I like the Oxford comma, deal with it.
     ogalen = ownerlen + grouplen + authorlen;
     break;
   default:
-    snprintf(headOG, 25, "-Owner & Group-"); // This should never be called, but we'd rather be safe.
+    setDynamicChar(&headOG, _("-Owner & Group-")); // This should never be called, but we'd rather be safe.
     ogalen = ownerlen + grouplen;
     break;
   }
@@ -2631,7 +2705,7 @@ void display_dir(char *pwd, results* ob){
       currentItem = el[(list_count + lineStart)].fileRef;
 
       if (el[(list_count + lineStart)].entryLineType == ET_OBJECT){
-        printEntry(displaypos, hlinklen, sizeblockslen, ownerlen, grouplen, authorlen, sizelen, majorlen, minorlen, datelen, namelen, contextlen, printSelect, list_count, currentItem, ob);
+        printEntry(displaypos, inodelen, hlinklen, sizeblockslen, ownerlen, grouplen, authorlen, sizelen, majorlen, minorlen, datelen, namelen, contextlen, printSelect, list_count, currentItem, ob);
       } else if (el[(list_count + lineStart)].entryLineType == ET_ACL) {
         // Not implemented yet
       } else if (el[(list_count + lineStart)].entryLineType == ET_XATTR) {
@@ -2683,21 +2757,30 @@ void display_dir(char *pwd, results* ob){
     padIntHeadDT = 1;
   }
 
-  sizeHeaderLen = snprintf(NULL, 0, "%i Objects   %s Used %s Available", totalfilecount, susedString, savailableString);
+  // sizeHeaderLen = snprintf(NULL, 0, "%i Objects   %s Used %s Available", totalfilecount, susedString, savailableString);
 
-  sizeHeader = realloc(sizeHeader, sizeof(char) * (sizeHeaderLen + 1));
+  // sizeHeader = realloc(sizeHeader, sizeof(char) * (sizeHeaderLen + 1));
 
-  snprintf(sizeHeader, (sizeHeaderLen + 1), "%i Objects   %s Used %s Available", totalfilecount, susedString, savailableString);
+  setDynamicChar(&sizeHeader, _("%i Objects   %s Used %s Available"), totalfilecount, susedString, savailableString);
 
   markedHeadSeg = writeSegment(3, "", RIGHT);
   attrHeadSeg = writeSegment(attrSegmentLen, headAttrs, LEFT);
+  free(headAttrs);
   hlinkHeadSeg = writeSegment(hlinkSegmentLen, "", RIGHT);
   ownerHeadSeg = writeSegment(ownerSegmentLen, headOG, LEFT);
+  free(headOG);
   contextHeadSeg = writeSegment(contextSegmentLen, headContext, LEFT);
+  free(headContext);
   sizeHeadSeg = writeSegment(sizeSegmentLen, headSize, RIGHT);
+  free(headSize);
   dateHeadSeg = writeSegment(dateSegmentLen, headDT, LEFT);
+  free(headDT);
   sizeBlocksHeadSeg = writeSegment(sizeBlocksSegmentLen, headSizeBlocks, RIGHT);
+  free(headSizeBlocks);
   nameHeadSeg = writeSegment(nameSegmentDataLen, headName, LEFT);
+  free(headName);
+  inodeHeadSeg = writeSegment(inodeSegmentLen, headInode, RIGHT);
+  free(headInode);
 
   headerCombined[0]=0;
   for ( n = 0; n < (sizeof(segOrder) / sizeof(segOrder[0])); n++){
@@ -2707,6 +2790,13 @@ void display_dir(char *pwd, results* ob){
       headerCombinedLen = (headerCombinedLen + strlen(markedHeadSeg));
       headerCombined = realloc(headerCombined, sizeof(char) * headerCombinedLen);
       snprintf(headerCombined + strlen(headerCombined), headerCombinedLen, "%s", markedHeadSeg);
+      break;
+    case COL_INODE:
+      if (showInodes){
+        headerCombinedLen = (headerCombinedLen + strlen(inodeHeadSeg));
+        headerCombined = realloc(headerCombined, sizeof(char) * headerCombinedLen);
+        snprintf(headerCombined + strlen(headerCombined), headerCombinedLen, "%s", inodeHeadSeg);
+      }
       break;
     case COL_SIZEBLOCKS:
       if (showSizeBlocks){

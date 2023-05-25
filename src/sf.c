@@ -1,7 +1,7 @@
 /*
   DF-SHOW: An interactive directory/file browser written for Unix-like systems.
   Based on the applications from the PC-DOS DF-EDIT suite by Larry Kroeker.
-  Copyright (C) 2018-2022  Robert Ian Hawdon
+  Copyright (C) 2018-2023  Robert Ian Hawdon
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -29,6 +29,8 @@
 #include <regex.h>
 #include <wchar.h>
 #include <libconfig.h>
+#include <libintl.h>
+#include "banned.h"
 #include "config.h"
 #include "colors.h"
 #include "settings.h"
@@ -37,181 +39,74 @@
 #include "display.h"
 #include "sfmenus.h"
 #include "sf.h"
+#include "sffunctions.h"
+#include "i18n.h"
 
 
-char regexinput[1024];
+extern char regexinput[1024];
 
 int colormode = 0;
 int messageBreak = 0;
-int displaysize;
-int topline = 1;
-int leftcol = 1;
-int totallines = 0;
-int longestline = 0;
-int longestlongline = 0;
-int viewmode = 0;
+extern int displaysize;
+extern int topline;
+extern int leftcol;
+extern int totallines;
+extern int longestline;
+extern int longestlongline;
+extern int viewmode;
 
-int tabsize = 8;
+extern int tabsize;
 
-int wrap = 0;
-int wrapmode = LINE_WRAP;
+extern int wrap;
+extern int wrapmode;
 
 int launchSettingsMenu = 0;
 
-char fileName[4096];
+extern char fileName[4096];
 
 int resized = 0;
 
+extern settingIndex *settingIndexSf;
+extern t1CharValues *charValuesSf;
+extern t2BinValues *binValuesSf;
+extern int totalCharItemsSf;
+extern int totalBinItemsSf;
+
 extern FILE *file;
 
-extern int exitCode;
 extern int enableCtrlC;
 
-FILE *stream;
-char *line = NULL;
-wchar_t *longline = NULL;
-size_t len = 0;
-ssize_t nread;
-int count;
-int displaycount;
-int top, left;
-int lasttop;
-int i, s;
+extern FILE *stream;
+extern char *line;
+extern wchar_t *longline;
+extern size_t len;
+extern ssize_t nread;
+extern int count;
+extern int displaycount;
+extern int top, left;
+extern int lasttop;
+extern int i, s;
 
 long int topPos;
-long int *filePos;
+extern long int *filePos;
 
 struct sigaction sa;
-
-extern int * pc;
-
-extern int settingsPos;
-extern int settingsBinPos;
 
 extern char globalConfLocation[4096];
 extern char homeConfLocation[4096];
 
 extern char themeName[256];
 
-extern wchar_t *fileMenuLabel;
-
-extern menuDef *settingsMenu;
-extern int settingsMenuSize;
-extern wchar_t *settingsMenuLabel;
-
-void readConfig(const char * confFile)
-{
-  config_t cfg;
-  config_setting_t *setting, *group;
-  char themeName[24];
-  config_init(&cfg);
-  if (config_read_file(&cfg, confFile)){
-    // Deal with the globals first
-    group = config_lookup(&cfg, "common");
-    if (group){
-      setting = config_setting_get_member(group, "theme");
-      if (setting){
-        if (!getenv("DFS_THEME_OVERRIDE")){
-          strcpy(themeName, config_setting_get_string(setting));
-          setenv("DFS_THEME", themeName, 1);
-        }
-      }
-      setting = config_setting_get_member(group, "sigint");
-      if (setting){
-        if (config_setting_get_int(setting)){
-          enableCtrlC = 1;
-        }
-      }
-    }
-    // Now for program specific
-    group = config_lookup(&cfg, PROGRAM_NAME);
-    if (group){
-      // Check Wrap
-      setting = config_setting_get_member(group, "wrap");
-      if (setting){
-        if (config_setting_get_int(setting)){
-          wrap = 1;
-        }
-      }
-    }
-  }
-}
-
-void refreshScreen()
-{
-  endwin();
-  clear();
-  refresh();
-  // newterm(NULL, stderr, stdin); 
-  // initscr();
-  displaysize = LINES - 2;
-  unloadMenuLabels();
-  refreshMenuLabels();
-  if (viewmode == 0){
-    mvprintw(0,0,"Show File - Enter pathname:");
-  } else if (viewmode > 0){
-    wPrintMenu(0, 0, fileMenuLabel);
-    loadFile(fileName);
-  }
-}
-
-int calculateTab(int pos)
-{
-  int currentpos;
-  int result;
-
-  // currentpos = pos + leftcol - 1;
-  currentpos = pos;
-
-  while (currentpos > tabsize){
-    currentpos = currentpos - tabsize;
-  }
-
-  result = tabsize - currentpos;
-
-  if (result <= 0){
-    result = tabsize;
-  }
-
-  return(result);
-}
+extern menuDef *sfSettingsMenu;
+extern int sfSettingsMenuSize;
+extern wchar_t *sfSettingsMenuLabel;
 
 void sigwinchHandle(int sig)
 {
-  // refreshScreen();
+  // refreshScreenSf();
   resized = 1;
 }
 
-int findInFile(const char * currentfile, const char * search, int charcase)
-{
-  regex_t regex;
-  int reti;
-
-  reti = regcomp(&regex, search, charcase);
-
-  if (reti) {
-    return(-1);
-  }
-
-  fseek(stream, filePos[top], SEEK_SET);
-  top = 0;
-  count = 0;
-
-  if ( stream ) {
-    while ((line = read_line(stream) )){
-      count++;
-      reti = regexec(&regex, line, 0, NULL, 0);
-      if (!reti && count > topline) {
-        regfree(&regex);
-        return(count);
-      }
-    }
-  }
-
-  regfree(&regex);
-  return (-2);
-
-}
 
 void printHelp(char* programName)
 {
@@ -231,297 +126,24 @@ The THEME argument can be:\n"), stdout);
   printf ("\nPlease report any bugs to: <%s>\n", PACKAGE_BUGREPORT);
 }
 
-void fileShowStatus()
-{
-  wchar_t statusText[5120];
-  if (wrap){
-    swprintf(statusText, 5120, L"File = <%s>  Top = <%i>", fileName, topline);
-  } else {
-    swprintf(statusText, 5120, L"File = <%s>  Top = <%i:%i>", fileName, topline, leftcol);
-  }
-  wPrintMenu(LINES - 1, 0, statusText);
-}
-
-void updateView()
-{
-  int longlinelen = 0;
-  top = topline;
-  left = leftcol;
-  len = 0;
-  top--;
-  left--;
-  displaycount = 0;
-
-  clear_workspace();
-  setColors(DISPLAY_PAIR);
-
-  fseek(stream, filePos[top], SEEK_SET);
-  top = 0;
-
-  line = malloc(sizeof(char) + 1); // Preallocating memory appears to fix a crash on FreeBSD, it might also fix the same issue on macOS
-
-  while ((nread = getline(&line, &len, stream)) != -1) {
-    s = 0;
-    mbstowcs(longline, line, len);
-    longlinelen = wcslen(longline);
-    if (displaycount < displaysize){
-      for(i = 0; i < longlinelen; i++){
-        mvprintw(displaycount + 1, s - left, "%lc", longline[i]);
-        // This doesn't increase the max line.
-        if (line[i] == '\t'){
-          s = s + calculateTab(s);
-        } else {
-          s++;
-        }
-        if ( s == COLS + left){
-          if ( wrap ) {
-            if ( wrapmode != WORD_WRAP ){
-              s = 0;
-              displaycount++;
-            }
-          } else {
-            break;
-          }
-        }
-      }
-      displaycount++;
-    } else {
-      break;
-    }
-  }
-  attron(A_BOLD);
-  mvprintw(displaycount + 1, 0, "*eof");
-  attroff(A_BOLD);
-  fileShowStatus();
-  free(line);
-}
-
-void loadFile(const char * currentfile)
-{
-
-  len = 0;
-  longestline = 0;
-  longestlongline = 0;
-  viewmode = 1;
-  totallines = 0;
-
-  filePos = malloc(sizeof(long int) * 1); // Initial isze of lookup
-  filePos[0] = 0;
-
-  stream = fopen(currentfile, "rb");
-  if (stream == NULL) {
-
-    return;
-    }
-
-  line = malloc(sizeof(char) + 1);
-  longline = malloc(sizeof(wchar_t));
-
-  while ((nread = getline(&line, &len, stream)) != -1) {
-    totallines++;
-    filePos = realloc(filePos, sizeof(long int) * totallines + 1);
-    filePos[totallines] = ftell(stream);
-    if (nread > longestline){
-      longestline = nread;
-      longline = realloc(longline, sizeof(wchar_t) * longestline +1);
-    }
-    mbstowcs(longline, line, len);
-    if (wcslen(longline) > longestlongline){
-      longestlongline = wcslen(longline);
-    }
-  }
-  free(line);
-  updateView();
-}
-
-void file_view(char * currentfile)
-{
-  char notFoundMessage[512];
-  clear();
-  setColors(COMMAND_PAIR);
-
-
-  displaysize = LINES - 2;
-
-  refresh();
-
-  if ( check_file(currentfile) && !check_dir(currentfile)){
-    loadFile(currentfile);
-    show_file_inputs();
-  } else {
-    sprintf(notFoundMessage, "File [%s] does not exist", currentfile);
-    topLineMessage(notFoundMessage);
-    exitCode = 1;
-  }
-  // sleep(10); // No function, so we'll pause for 10 seconds to display our menu
-
-  return;
-}
-
-void saveConfig(const char * confFile, settingIndex **settings, t1CharValues **values, t2BinValues **bins, int items, int charIndex, int binIndex)
-{
-  config_t cfg;
-  config_setting_t *root, *setting, *group;
-  int i;
-
-  config_init(&cfg);
-
-  config_read_file(&cfg, confFile);
-  root = config_root_setting(&cfg);
-
-  group = config_setting_get_member(root, PROGRAM_NAME);
-
-  if (!group){
-    group = config_setting_add(root, PROGRAM_NAME, CONFIG_TYPE_GROUP);
-  }
-
-  for (i = 0; i < items; i++){
-    config_setting_remove(group, (*settings)[i].refLabel);
-    if ((*settings)[i].type == SETTING_BOOL){
-      setting = config_setting_add(group, (*settings)[i].refLabel, CONFIG_TYPE_INT);
-
-      if (!strcmp((*settings)[i].refLabel, "wrap")){
-        config_setting_set_int(setting, wrap);
-      }
-    } else if ((*settings)[i].type == SETTING_SELECT){
-      // None of those in SF (yet?)
-    } else if ((*settings)[i].type == SETTING_MULTI){
-      // None of those in SF (yet?)
-    }
-  }
-
-  config_write_file(&cfg, confFile);
-
-  config_destroy(&cfg);
-
-}
-
-void applySettings(settingIndex **settings, t1CharValues **values, int items, int valuesCount)
-{
-  int i;
-  for (i = 0; i < items; i++){
-    if (!strcmp((*settings)[i].refLabel, "wrap")){
-      wrap = (*settings)[i].intSetting;
-    }
-  }
-}
-
-void settingsMenuView()
-{
-  int items, count = 0;
-  int x = 2;
-  int y = 3;
-  settingIndex *settingIndex;
-  t1CharValues *charValues;
-  t2BinValues *binValues;
-  int charValuesCount;
-  int binValuesCount;
-
- reloadSettings:
-
-  items = charValuesCount = binValuesCount = 0;
-
-  clear();
-  wPrintMenu(0,0,settingsMenuLabel);
-
-  importSetting(&settingIndex, &items, "wrap", L"Enable text wrapping", SETTING_BOOL, NULL, wrap, -1, 0);
-
-  while(1)
-    {
-      // if (settingsBinPos < 0){
-      //   curs_set(TRUE);
-      // } else {
-      //   curs_set(FALSE);
-      // }
-      for (count = 0; count < items; count++){
-        printSetting(2 + count, 3, &settingIndex, &charValues, &binValues, count, charValuesCount, binValuesCount, settingIndex[count].type, settingIndex[count].invert);
-      }
-
-      move(x + settingsPos, y + 1);
-      *pc = getch10th();
-      if (*pc == menuHotkeyLookup(settingsMenu, "s_quit", settingsMenuSize)){
-        curs_set(FALSE);
-        applySettings(&settingIndex, &charValues, items, charValuesCount);
-        free(settingIndex);
-        return;
-      } else if (*pc == menuHotkeyLookup(settingsMenu, "s_revert", settingsMenuSize)){
-        free(settingIndex);
-        goto reloadSettings;
-      } else if (*pc == menuHotkeyLookup(settingsMenu, "s_save", settingsMenuSize)){
-        applySettings(&settingIndex, &charValues, items, charValuesCount);
-        if (access(dirFromPath(homeConfLocation), W_OK) != 0) {
-          createParentDirs(homeConfLocation);
-        }
-        saveConfig(homeConfLocation, &settingIndex, &charValues, &binValues, items, charValuesCount, binValuesCount);
-        // Future task: ensure saving actually worked
-        curs_set(FALSE);
-        topLineMessage("Settings saved.");
-        curs_set(TRUE);
-        wPrintMenu(0,0,settingsMenuLabel);
-      } else if (*pc == 258 || *pc == 10){
-        if (settingsPos < (items -1 )){
-          settingsBinPos = -1;
-          settingsPos++;
-        }
-      } else if (*pc == 32 || *pc == 260 || *pc == 261){
-        // Adjust
-        if (settingIndex[settingsPos].type == 0){
-          if (settingIndex[settingsPos].intSetting > 0){
-            updateSetting(&settingIndex, settingsPos, 0, 0);
-          } else {
-            updateSetting(&settingIndex, settingsPos, 0, 1);
-          }
-        } else if (settingIndex[settingsPos].type == 1){
-          if (*pc == 32 || *pc == 261){
-            if (settingIndex[settingsPos].intSetting < (settingIndex[settingsPos].maxValue) - 1){
-              updateSetting(&settingIndex, settingsPos, 1, (settingIndex[settingsPos].intSetting) + 1);
-            } else {
-              updateSetting(&settingIndex, settingsPos, 1, 0);
-            }
-          } else {
-            if (settingIndex[settingsPos].intSetting > 0){
-              updateSetting(&settingIndex, settingsPos, 1, (settingIndex[settingsPos].intSetting) - 1);
-            } else {
-              updateSetting(&settingIndex, settingsPos, 1, (settingIndex[settingsPos].maxValue - 1));
-            }
-          }
-        } else if (settingIndex[settingsPos].type == 2){
-          if (*pc == 261 && (settingsBinPos < (settingIndex[settingsPos].maxValue -1))){
-            settingsBinPos++;
-          } else if (*pc == 260 && (settingsBinPos > -1)){
-            settingsBinPos--;
-          } else if (*pc == 32 && (settingsBinPos > -1)){
-            // Not fond of this, but it should work
-          }
-        }
-      } else if (*pc == 259){
-        if (settingsPos > 0){
-          settingsBinPos = -1;
-          settingsPos--;
-        }
-      }
-    }
-}
-
-void freeSettingVars()
-{
-  return;
-}
-
 int main(int argc, char *argv[])
 {
   int c;
 
+  initI18n();
+  
   setConfLocations();
 
   // Read the config
 
-  readConfig(globalConfLocation);
-  readConfig(homeConfLocation);
+  settingsAction("read", "sf", NULL, NULL, NULL, NULL, 0, 0, 0, globalConfLocation);
+  settingsAction("read", "sf", NULL, NULL, NULL, NULL, 0, 0, 0, homeConfLocation);
+  // readSfConfig(globalConfLocation);
+  // readSfConfig(homeConfLocation);
 
   // Check for theme env variable
   if ( getenv("DFS_THEME")) {
-    strcpy(themeName, getenv("DFS_THEME"));
+    snprintf(themeName, 256, "%s", getenv("DFS_THEME"));
   }
 
   while (1)
@@ -558,11 +180,11 @@ int main(int argc, char *argv[])
     case GETOPT_THEME_CHAR:
       if (optarg){
         if (strcmp(optarg, "\0")){
-          strcpy(themeName, optarg);
+          snprintf(themeName, 256, "%s", optarg);
           setenv("DFS_THEME_OVERRIDE", "TRUE", 1);
         }
       } else {
-        printf("%s: The following themes are available:\n", argv[0]);
+        printf(_("%s: The following themes are available:\n"), argv[0]);
         listThemes();
         exit(2);
       }
@@ -576,21 +198,20 @@ int main(int argc, char *argv[])
     }
   }
 
-  generateDefaultMenus();
+  generateDefaultSfMenus();
 
   set_escdelay(10);
   //ESCDELAY = 10;
 
   // Blank out regexinput
 
-  strcpy(regexinput, "");
-
-  setlocale(LC_ALL, "");
+  //strcpy(regexinput, "");
+  regexinput[0]=0;
 
   newterm(NULL, stderr, stdin); 
   // initscr();
 
-  refreshMenuLabels();
+  refreshSfMenuLabels();
 
   memset(&sa, 0, sizeof(struct sigaction));
   sa.sa_handler = sigwinchHandle;
@@ -611,10 +232,10 @@ int main(int argc, char *argv[])
   keypad(stdscr, TRUE);
 
   if (launchSettingsMenu == 1) {
-    settingsMenuView();
+    settingsMenuView(sfSettingsMenuLabel, sfSettingsMenuSize, sfSettingsMenu, &settingIndexSf, &charValuesSf, &binValuesSf, totalCharItemsSf, totalBinItemsSf, generateSfSettingsVars(), "sf");
   } else {
     if (optind < argc){
-      strcpy(fileName, argv[optind]);
+      snprintf(fileName, 4096, "%s", argv[optind]);
       file_view(fileName);
     } else {
       show_file_file_input();

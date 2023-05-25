@@ -26,13 +26,13 @@ po/Makevars.template
 po/POTFILES
 po/Rules-quot
 po/boldquot.sed
-po/dfshow.pot
 po/en@boldquot.header
 po/en@quot.header
 po/insert-header.sin
 po/quot.sed
 po/remove-potcdate.sed
 po/remove-potcdate.sin
+po/*.gmo
 /bin/*
 /docs/build/*
 *.stackdump

@@ -1,7 +1,7 @@
 DF-SHOW
 =======
 
-|Maintenance yes| |GPLv3 license| |Travis Build| |Documentation|
+|Maintenance yes| |GPLv3 license| |Documentation| |Contributor Covenant|
 
 .. |Maintenance yes| image:: https://img.shields.io/badge/Maintained%3F-yes-green.svg
    :target: https://github.com/roberthawdon/dfshow/graphs/commit-activity
@@ -9,11 +9,11 @@ DF-SHOW
 .. |GPLv3 license| image:: https://img.shields.io/badge/License-GPLv3-blue.svg
    :target: https://raw.github.com/roberthawdon/dfshow/master/LICENSE
 
-.. |Travis Build| image:: https://api.travis-ci.org/roberthawdon/dfshow.svg?branch=master
-   :target: https://travis-ci.org/roberthawdon/dfshow
-
 .. |Documentation| image:: https://readthedocs.org/projects/dfshow/badge/?version=latest
    :target: https://dfshow.readthedocs.io/en/latest/?badge=latest
+
+.. |Contributor Covenant| image:: https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg
+   :target: CODE_OF_CONDUCT.md
 
 :Author: Robert Ian Hawdon (git@robertianhawdon.me.uk)
 :Source: https://github.com/roberthawdon/dfshow
@@ -42,7 +42,7 @@ Features
 * **Delete files.** DF-SHOW also removes files at the user's request.
 * **Create directories.** Users' are also able to create new directories from within the DF-SHOW interface.
 * **Touch files.** Timestamps on files can be changed, as well as the creation of new blank files.
-* **Update permissions.** Owners, groups, and permissions can be set within the application.
+* **Update permissions.** Owners, groups, and permissions can be set within the application. SELinux security contexts can also be modified on supported systems.
 * **Hunt within files.** Find files in a directory containing a string.
 * **Execute applications.** Files with execution permissions can be launched from withing DF-SHOW.
 
@@ -144,11 +144,23 @@ On some BSD systems, you may need to pass extra parameters to configure and buil
 
     ./configure LDFLAGS="-L/usr/local/lib" CFLAGS="-I/usr/local/include"
 
+On macOS with Homebrew, the following needs to be passed when configuring:
+
+.. code-block:: bash
+
+   ./configure LDFLAGS="-L$(brew --prefix)/lib" CFLAGS="-I$(brew --prefix)/include" CC=clang
+
 Build DF-SHOW with
 
 .. code-block:: bash
 
     make
+
+Complie translations
+
+.. code-block:: bash
+
+   make update-po
 
 Install DF-SHOW
 
@@ -185,20 +197,132 @@ To support this project, you can make a donation to its current maintainer:
 
 |PayPal|
 
-**Bitcoin**
+Donations are also greatly appreciated via the following crypto currencies:
 
-|Bitcoin|
+.. raw:: html
 
-|Bitcoin QR|
+   <details>
+       <summary>
+           <img src="misc/donate/logos/btc-logo.png" width="16" height="16"> Bitcoin
+       </summary>
+       <br>bc1qxgy074cwdsvekg98fkqzju99kgyxzcyuqgqm6p
+       <br><img src="misc/donate/addresses/bitcoin-qr.png"><br>
+   </details>
+   <details>
+       <summary>
+           <img src="misc/donate/logos/eth-logo.png" width="16" height="16"> Ethereum
+       </summary>
+       <br>0xF282bccB7FEdA4BaCc84F75478dA84D61980DDab
+       <br><img src="misc/donate/addresses/erc20-qr.png"><br>
+   </details>
+   <details>
+       <summary>
+           <img src="misc/donate/logos/lrc-logo.png" width="16" height="16"> Loopring (Layers 1 and 2)
+       </summary>
+       <br>0xF282bccB7FEdA4BaCc84F75478dA84D61980DDab
+       <br><img src="misc/donate/addresses/erc20-qr.png"><br>
+   </details>
+   <details>
+       <summary>
+           <img src="misc/donate/logos/imx-logo.png" width="16" height="16"> Immutable X (Layers 1 and 2)
+       </summary>
+       <br>0xF282bccB7FEdA4BaCc84F75478dA84D61980DDab
+       <br><img src="misc/donate/addresses/erc20-qr.png"><br>
+   </details>
+   <details>
+       <summary>
+           <img src="misc/donate/logos/bch-logo.png" width="16" height="16"> Bitcoin Cash
+       </summary>
+       <br>qpmmdn9xvurp8dt2j4sadnzulun8jvjsjv5ymt2uk4
+       <br><img src="misc/donate/addresses/bitcoin-cash-qr.png"><br>
+   </details>
+   <details>
+       <summary>
+           <img src="misc/donate/logos/doge-logo.png" width="16" height="16"> Dogecoin
+       </summary>
+       <br>D7jSRBKo9vBmwAjKZ6wZvZ8AGPDw4u9yoY
+       <br><img src="misc/donate/addresses/dogecoin-qr.png"><br>
+   </details>
+   <details>
+       <summary>
+           <img src="misc/donate/logos/bat-logo.png" width="16" height="16"> Basic Attention Token
+       </summary>
+       <br>0xF282bccB7FEdA4BaCc84F75478dA84D61980DDab
+       <br><img src="misc/donate/addresses/erc20-qr.png"><br>
+   </details>
+   <details>
+       <summary>
+           <img src="misc/donate/logos/matic-logo.png" width="16" height="16"> Polygon (MATIC)
+       </summary>
+       <br>0xF282bccB7FEdA4BaCc84F75478dA84D61980DDab
+       <br><img src="misc/donate/addresses/erc20-qr.png"><br>
+   </details>
+   <details>
+       <summary>
+           <img src="misc/donate/logos/ada-logo.png" width="16" height="16"> Cardano
+       </summary>
+       <br>addr1q8g9tdafpscdzhpfl7w94d9mlrmjzsx30wu0ag0f7r9u8ekyy2s96z0fymwaymh537zk3geedx89u54ac6em4lsnp8esyfefhg
+       <br><img src="misc/donate/addresses/cardano-qr.png"><br>
+   </details>
+   <details>
+       <summary>
+           <img src="misc/donate/logos/ltc-logo.png" width="16" height="16"> Litecoin
+       </summary>
+       <br>ltc1q00qzqhutjnlgarvpk3x6vq3yguntt2dm57k28q
+       <br><img src="misc/donate/addresses/litecoin-qr.png"><br>
+   </details>
+   <details>
+       <summary>
+           <img src="misc/donate/logos/xrp-logo.png" width="16" height="16"> Ripple (XRP)
+       </summary>
+       <br>raozHiwzd2mEQSWMTMefoBdAAuiw2okzCE
+       <br><img src="misc/donate/addresses/ripple-qr.png"><br>
+   </details>
+   <details>
+       <summary>
+           <img src="misc/donate/logos/xlm-logo.png" width="16" height="16"> Stellar
+       </summary>
+       <br>GCOIIDGU5BFVSPPCYPEPBVBSWZL7NYR2MJWVMJKWELCNFHRHLFFAL3G5
+       <br><img src="misc/donate/addresses/stellar-qr.png"><br>
+   </details>
+   <details>
+       <summary>
+           <img src="misc/donate/logos/vet-logo.png" width="16" height="16"> VeChain
+       </summary>
+       <br>0x45D9C3c345901D445B72eCd70852b6f06D8945D3
+       <br><img src="misc/donate/addresses/vechain-qr.png"><br>
+   </details>
+   <details>
+       <summary>
+           <img src="misc/donate/logos/akt-logo.png" width="16" height="16"> Akash
+       </summary>
+       <br>akash1v3rk372avjksx8v2tvj5g83686k24les67rjnt
+       <br><img src="misc/donate/addresses/akash-qr.png"><br>
+   </details>
+   <details>
+       <summary>
+           <img src="misc/donate/logos/akn-logo.png" width="16" height="16"> Akoin
+       </summary>
+       <br>GCOIIDGU5BFVSPPCYPEPBVBSWZL7NYR2MJWVMJKWELCNFHRHLFFAL3G5
+       <br><img src="misc/donate/addresses/stellar-qr.png"><br>
+   </details>
+   <details>
+       <summary>
+           <img src="misc/donate/logos/usdc-logo.png" width="16" height="16"> USD Coin
+       </summary>
+       <br>0xF282bccB7FEdA4BaCc84F75478dA84D61980DDab
+       <br><img src="misc/donate/addresses/erc20-qr.png"><br>
+   </details>
+   <details>
+       <summary>
+           <img src="misc/donate/logos/usdt-logo.png" width="16" height="16"> Tether
+       </summary>
+       <br>0xF282bccB7FEdA4BaCc84F75478dA84D61980DDab
+       <br><img src="misc/donate/addresses/erc20-qr.png"><br>
+   </details>
 
 .. |PayPal| image:: https://user-images.githubusercontent.com/4301139/91666536-6fb15080-eaf5-11ea-974b-f0eb997615b4.gif
    :target: https://paypal.me/RIHawdon
-
-.. |Bitcoin| image:: https://user-images.githubusercontent.com/4301139/91666685-a50a6e00-eaf6-11ea-91b6-e80012344dd1.png
-   :target: https://raw.githubusercontent.com/roberthawdon/dfshow/master/misc/donate/bitcoin-address.txt
-
-.. |Bitcoin QR| image:: https://user-images.githubusercontent.com/4301139/91666694-b784a780-eaf6-11ea-8bb1-67b101325424.png
-   :target: https://raw.githubusercontent.com/roberthawdon/dfshow/master/misc/donate/bitcoin-address.txt
 
 Screenshots
 -----------

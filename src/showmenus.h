@@ -1,6 +1,6 @@
-void generateDefaultMenus();
-void refreshMenuLabels();
-void unloadMenuLabels();
+void generateDefaultShowMenus();
+void refreshShowMenuLabels();
+void unloadShowMenuLabels();
 int touchType();
 time_t touchTimeInput(int type);
 int symLinkLocation();
@@ -10,6 +10,8 @@ void modify_key_menu_inputs();
 void modify_owner_input();
 void modify_group_input();
 void modify_permissions_input();
+void modify_context_menu_inputs();
+void modify_context_input(int mode);
 void show_directory_input();
 void directory_view_menu_inputs();
 void global_menu_inputs();

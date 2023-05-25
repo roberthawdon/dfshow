@@ -1,7 +1,7 @@
 /*
   DF-SHOW: An interactive directory/file browser written for Unix-like systems.
   Based on the applications from the PC-DOS DF-EDIT suite by Larry Kroeker.
-  Copyright (C) 2018-2022  Robert Ian Hawdon
+  Copyright (C) 2018-2023  Robert Ian Hawdon
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -26,6 +26,8 @@
 #include <libconfig.h>
 #include <dirent.h>
 #include <errno.h>
+#include <libintl.h>
+#include <locale.h>
 #include "menu.h"
 #include "display.h"
 #include "settings.h"
@@ -33,6 +35,7 @@
 #include "colors.h"
 #include "input.h"
 #include "banned.h"
+#include "i18n.h"
 
 int lightColorPair[256];
 
@@ -49,7 +52,7 @@ colorPairs colors[256];
 
 char fgbgLabel[11];
 
-extern char errmessage[256];
+extern char *errmessage;
 
 extern int colormode;
 extern int c;
@@ -294,12 +297,13 @@ void saveTheme(){
   int e, f, i;
   char filename[1024];
   char * rewrite;
+  int curPos=0;
   move(0,0);
   clrtoeol();
-  printMenu(0,0, "Save Colors - Enter pathname:");
-  move(0,30);
-  rewrite = malloc(sizeof(char) * strlen(dirFromPath(homeConfLocation) +1));
-  snprintf(rewrite, strlen(dirFromPath(homeConfLocation) +1), "%s/", dirFromPath(homeConfLocation));
+  curPos = (printMenu(0,0, _("Save Colors - Enter pathname:")) + 1);
+  move(0,curPos);
+  rewrite = malloc(sizeof(char) * (strlen(dirFromPath(homeConfLocation)) +1));
+  snprintf(rewrite, (strlen(dirFromPath(homeConfLocation)) +1), "%s/", dirFromPath(homeConfLocation));
   e = readline(filename, 1024, rewrite);
   free(rewrite);
   if ( e == 0 ){
@@ -324,7 +328,7 @@ void saveTheme(){
     if (access(dirFromPath(filename), W_OK) == 0){
       if (check_file(filename)){
         curs_set(FALSE);
-        printMenu(0,0, "File exists. Replace? (!Yes/!No)");
+        printMenu(0,0, _("File exists. Replace? (!Yes/!No)"));
         *pc = getch10th();
         if (*pc == 'y'){
           config_write_file(&cfg, filename);
@@ -351,12 +355,14 @@ void saveTheme(){
           createParentDirs(filename);
           goto saveTheme;
         } else {
-          snprintf(errmessage, 256, "Error: %s", strerror(errno));
+          setDynamicChar(&errmessage, _("Error: %s"), strerror(errno));
           topLineMessage(errmessage);
+          free(errmessage);
         }
       } else {
-        snprintf(errmessage, 256, "Error: %s", strerror(errno));
+        setDynamicChar(&errmessage, _("Error: %s"), strerror(errno));
         topLineMessage(errmessage);
+        free(errmessage);
       }
     }
     config_destroy(&cfg);
@@ -389,7 +395,7 @@ int applyTheme(const char *filename){
     refreshColors();
     return(0);
   } else {
-    topLineMessage("Error parsing theme file.");
+    topLineMessage(_("Error parsing theme file."));
     return(1);
   }
   return(1);
@@ -399,12 +405,13 @@ void loadTheme(){
   int e;
   char filename[1024];
   char * rewrite;
+  int curPos = 0;
   move(0,0);
   clrtoeol();
-  printMenu(0,0, "Load Colors - Enter pathname:");
-  move(0,30);
-  rewrite = malloc(sizeof(char) * strlen(dirFromPath(homeConfLocation) +1));
-  snprintf(rewrite, strlen(dirFromPath(homeConfLocation) +1), "%s/", dirFromPath(homeConfLocation));
+  curPos = (printMenu(0,0, _("Load Colors - Enter pathname:")) + 1 );
+  move(0,curPos);
+  rewrite = malloc(sizeof(char) * (strlen(dirFromPath(homeConfLocation)) + 1));
+  snprintf(rewrite, (strlen(dirFromPath(homeConfLocation)) + 1), "%s/", dirFromPath(homeConfLocation));
   e = readline(filename, 1024, rewrite);
   free(rewrite);
   if ( e == 0 ){
@@ -419,7 +426,7 @@ void loadTheme(){
       applyTheme(filename);
     } else {
       curs_set(FALSE);
-      topLineMessage("Error: Unable to read file");
+      topLineMessage(_("Error: Unable to read file"));
       // curs_set(TRUE);
     }
   }
@@ -655,28 +662,28 @@ void theme_menu_inputs()
         //
         if (themeModified == 1){
           curs_set(FALSE);
-          topLineMessage("Save theme before using as default.");
+          topLineMessage(_("Save theme before using as default."));
         } else {
           if (access(dirFromPath(homeConfLocation), W_OK) != 0) {
             createParentDirs(homeConfLocation);
           }
           if (useTheme(homeConfLocation)){
-            snprintf(useThemeMessage, 256, "Default theme has been set to [%s].", getenv("DFS_THEME"));
+            snprintf(useThemeMessage, 256, _("Default theme has been set to [%s]."), getenv("DFS_THEME"));
             topLineMessage(useThemeMessage);
           } else {
-            topLineMessage("An error occurred setting the default theme.");
+            topLineMessage(_("An error occurred setting the default theme."));
           }
         }
         themeBuilder();
       } else if (*pc == 258 || *pc ==10){
         if (colorThemePos < totalItemCount){
           colorThemePos++;
-          themeBuilder();
+          setCursorPos(colorThemePos - 1);
         }
       } else if (*pc == 259){
         if (colorThemePos > 0) {
           colorThemePos--;
-          themeBuilder();
+          setCursorPos(colorThemePos + 1);
         }
       } else if (*pc == 260 || *pc == 261){
         // Do Nothing
@@ -750,94 +757,103 @@ void setColors(int pair)
   }
 }
 
+void setCursorPos(int prev)
+{
+  setColors(DISPLAY_PAIR);
+  if (prev >= 0){
+    // attroff(A_REVERSE);
+    mvprintw(prev + 2, 1, " ");
+  }
+  attron(A_REVERSE);
+  mvprintw(colorThemePos + 2, 1, " ");
+  attroff(A_REVERSE);
+}
+
 void themeBuilder()
 {
   clear();
   if (bgToggle){
-    snprintf(fgbgLabel, 11, "background");
+    snprintf(fgbgLabel, 11, _("background"));
   } else {
-    snprintf(fgbgLabel, 11, "foreground");
+    snprintf(fgbgLabel, 11, _("foreground"));
   }
   wPrintMenu(0,0,colorMenuLabel);
 
   setColors(COMMAND_PAIR);
-  mvprintw(2, 4, "Command lines");
+  mvprintw(2, 4, _("Command lines"));
   setColors(DISPLAY_PAIR);
-  mvprintw(3, 4, "Display lines");
+  mvprintw(3, 4, _("Display lines"));
   setColors(ERROR_PAIR);
-  mvprintw(4, 4, "Error messages");
+  mvprintw(4, 4, _("Error messages"));
   setColors(INFO_PAIR);
-  mvprintw(5, 4, "Information lines");
+  mvprintw(5, 4, _("Information lines"));
   setColors(HEADING_PAIR);
-  mvprintw(6, 4, "Heading lines");
+  mvprintw(6, 4, _("Heading lines"));
   setColors(DANGER_PAIR);
-  mvprintw(7, 4, "Danger lines");
+  mvprintw(7, 4, _("Danger lines"));
   setColors(SELECT_PAIR);
-  mvprintw(8, 4, "Selected block lines");
+  mvprintw(8, 4, _("Selected block lines"));
   setColors(HILITE_PAIR);
-  mvprintw(9, 4, "Highlight");
+  mvprintw(9, 4, _("Highlight"));
   setColors(INPUT_PAIR);
-  mvprintw(10, 4, "Text input");
+  mvprintw(10, 4, _("Text input"));
   setColors(DIR_PAIR);
-  mvprintw(11, 4, "Directories");
+  mvprintw(11, 4, _("Directories"));
   setColors(SLINK_PAIR);
-  mvprintw(12, 4, "Symbolic links");
+  mvprintw(12, 4, _("Symbolic links"));
   setColors(DEADLINK_PAIR);
-  mvprintw(13, 4, "Orphened symbolic links");
+  mvprintw(13, 4, _("Orphened symbolic links"));
   setColors(EXE_PAIR);
-  mvprintw(14, 4, "Executable files");
+  mvprintw(14, 4, _("Executable files"));
   setColors(SUID_PAIR);
-  mvprintw(15, 4, "Set user identification");
+  mvprintw(15, 4, _("Set user identification"));
   setColors(SGID_PAIR);
-  mvprintw(16, 4, "Set group identification");
+  mvprintw(16, 4, _("Set group identification"));
   setColors(STICKY_PAIR);
-  mvprintw(17, 4, "Sticky bit directory");
+  mvprintw(17, 4, _("Sticky bit directory"));
   setColors(STICKY_OW_PAIR);
-  mvprintw(18, 4, "Sticky bit directory - other writable");
+  mvprintw(18, 4, _("Sticky bit directory - other writable"));
 
   setColors(DEFAULT_COLOR_PAIR);
-  mvprintw(2, 45, "!-Default      ");
+  mvprintw(2, 45, _("!-Default      "));
   setColors(DEFAULT_BOLD_PAIR);
-  mvprintw(3, 45, "?-Default Bold ");
+  mvprintw(3, 45, _("?-Default Bold "));
   setColors(COLORMENU_PAIR_0);
-  mvprintw(4, 45, "0-Black        ");
+  mvprintw(4, 45, _("0-Black        "));
   setColors(COLORMENU_PAIR_1);
-  mvprintw(5, 45, "1-Red          ");
+  mvprintw(5, 45, _("1-Red          "));
   setColors(COLORMENU_PAIR_2);
-  mvprintw(6, 45, "2-Green        ");
+  mvprintw(6, 45, _("2-Green        "));
   setColors(COLORMENU_PAIR_3);
-  mvprintw(7, 45, "3-Brown        ");
+  mvprintw(7, 45, _("3-Brown        "));
   setColors(COLORMENU_PAIR_4);
-  mvprintw(8, 45, "4-Blue         ");
+  mvprintw(8, 45, _("4-Blue         "));
   setColors(COLORMENU_PAIR_5);
-  mvprintw(9, 45, "5-Magenta      ");
+  mvprintw(9, 45, _("5-Magenta      "));
   setColors(COLORMENU_PAIR_6);
-  mvprintw(10, 45, "6-Cyan         ");
+  mvprintw(10, 45, _("6-Cyan         "));
   setColors(COLORMENU_PAIR_7);
-  mvprintw(11, 45, "7-Light Gray   ");
+  mvprintw(11, 45, _("7-Light Gray   "));
   setColors(COLORMENU_PAIR_8);
-  mvprintw(12, 45, "8-Dark Gray    ");
+  mvprintw(12, 45, _("8-Dark Gray    "));
   setColors(COLORMENU_PAIR_9);
-  mvprintw(13, 45, "9-Light Red    ");
+  mvprintw(13, 45, _("9-Light Red    "));
   setColors(COLORMENU_PAIR_A);
-  mvprintw(14, 45, "A-Light Green  ");
+  mvprintw(14, 45, _("A-Light Green  "));
   setColors(COLORMENU_PAIR_B);
-  mvprintw(15, 45, "B-Yellow       ");
+  mvprintw(15, 45, _("B-Yellow       "));
   setColors(COLORMENU_PAIR_C);
-  mvprintw(16, 45, "C-Light Blue   ");
+  mvprintw(16, 45, _("C-Light Blue   "));
   setColors(COLORMENU_PAIR_D);
-  mvprintw(17, 45, "D-Light Magenta");
+  mvprintw(17, 45, _("D-Light Magenta"));
   setColors(COLORMENU_PAIR_E);
-  mvprintw(18, 45, "E-Light Cyan   ");
+  mvprintw(18, 45, _("E-Light Cyan   "));
   setColors(COLORMENU_PAIR_F);
-  mvprintw(19, 45, "F-White        ");
+  mvprintw(19, 45, _("F-White        "));
 
   setColors(DEFAULT_BOLD_PAIR);
-  mvprintw(22, 22, "Select 0 to F for desired %s color", fgbgLabel);
+  mvprintw(22, 22, _("Select 0 to F for desired %s color"), fgbgLabel);
 
-  attron(A_REVERSE);
-  mvprintw(colorThemePos + 2, 1, " ");
-  attroff(A_REVERSE);
-
+  setCursorPos(-1);
 
 }
