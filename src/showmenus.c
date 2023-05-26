@@ -319,40 +319,6 @@ void unloadShowMenuLabels(){
   free(showSettingsMenuLabel);
 }
 
-int sanitizeTopFileRef(int topfileref)
-{
-  if (((topfileref + displaysize) < totalfilecount + 1 ) && ((selected) > topfileref + 1) && (selected < (topfileref + displaysize))) {
-    // If we're already good, we don't need to adjust the topfileref
-  } else if ( (topfileref > totalfilecount) ){
-    // If the top file ref exceeds the number of files, we'll want to do something about that
-    topfileref = totalfilecount - (displaysize);
-  } else if ( (selected - topfileref) < 0 ) {
-    // We certainly don't want the top file ref in the negatives
-    topfileref = 0;
-  } else if ((topfileref + displaysize) > totalfilecount){
-    // If we end up with the top file ref in a position where the list of files ends before the end of the screen, we need to sort that too.
-    topfileref = totalfilecount - (displaysize);
-  }
-  if ( (selected - topfileref ) > displaysize ){
-    // We don't want the selected item off the bottom of the screen
-    topfileref = selected - displaysize + 1;
-  }
-  if ( selected == 0 ) {
-    // Just in case we're thrust to the top of the list - like when in a hidden directory and hidden files are switched off
-    topfileref = 0;
-  }
-  if (topfileref < 0){
-    // Likewise, we don't want the topfileref < 0 here either
-    topfileref = 0;
-  }
-  if ( totalfilecount < displaysize ){
-    // Finally, to override all of the above, if we have less files than display, reset top file ref to 0.
-    topfileref = 0;
-  }
-
-  return topfileref;
-}
-
 void refreshDirectory(char *sortmode, int origlineStart, int origselected, int destructive)
 {
   char currentselectname[512];
