@@ -266,8 +266,8 @@ the command has any additional propts, they are also described here.
 
   ``Link Location - Absolute, Relative (enter = R)`` 
 
-  Selecting "A" will link to the file directly relevent to the root directory
-  (/).
+  Selecting "A" will link to the absoloute file location directly relative to the
+  root directory (/).
 
   Selecting "R" will instruct ``show`` to link to the target file relative to the
   destination.
@@ -786,12 +786,19 @@ The following color settings are used when ``--color`` arguement is used.
 They are used to differentiate object status:
 
 ``Directories``
+
 ``Symbolic links``
+
 ``Orphened symbolic links``
+
 ``Executable files``
+
 ``Set user identification``
+
 ``Set group identification``
+
 ``Sticky bit directory``
+
 ``Sticky bit directory - other writable``
 
 After each of the colors have been changed to the desired color, the
