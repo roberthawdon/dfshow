@@ -156,12 +156,6 @@ Build DF-SHOW with
 
     make
 
-Complie translations
-
-.. code-block:: bash
-
-   make update-po
-
 Install DF-SHOW
 
 .. code-block:: bash

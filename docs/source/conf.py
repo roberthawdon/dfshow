@@ -26,7 +26,7 @@ author = 'Robert Ian Hawdon'
 # The short X.Y version
 version = '0.10'
 # The full version, including alpha/beta/rc tags
-release = '0.10.1-beta'
+release = '0.10.2-beta'
 
 
 # -- General configuration ---------------------------------------------------
