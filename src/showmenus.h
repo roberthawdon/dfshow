@@ -31,4 +31,3 @@ void rename_multi_file_input(results* ob, char *input);
 int huntCaseSelectInput();
 void huntInput(int selected, int charcase);
 void refreshDirectory(char *sortmode, int origlineStart, int origselected, int destructive);
-int sanitizeTopFileRef(int topfileref);

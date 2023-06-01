@@ -27,7 +27,7 @@ level margin: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .\" new: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .in \\n[rst2man-indent\\n[rst2man-indent-level]]u
 ..
-.TH "SHOW" "1" "May 23, 2023" "0.10" "Directory File Show (DF-SHOW)"
+.TH "SHOW" "1" "Jun 01, 2023" "0.10" "Directory File Show (DF-SHOW)"
 .SH NAME
 show \- An interactive directory/file browser written for Unix-like systems.
 .SH OVERVIEW
@@ -297,8 +297,8 @@ link to the target file.
 .sp
 \fBLink Location \- Absolute, Relative (enter = R)\fP
 .sp
-Selecting \(dqA\(dq will link to the file directly relevent to the root directory
-(/).
+Selecting \(dqA\(dq will link to the absoloute file location directly relative to the
+root directory (/).
 .sp
 Selecting \(dqR\(dq will instruct \fBshow\fP to link to the target file relative to the
 destination.
@@ -829,12 +829,19 @@ The following color settings are used when \fB\-\-color\fP arguement is used.
 They are used to differentiate object status:
 .sp
 \fBDirectories\fP
+.sp
 \fBSymbolic links\fP
+.sp
 \fBOrphened symbolic links\fP
+.sp
 \fBExecutable files\fP
+.sp
 \fBSet user identification\fP
+.sp
 \fBSet group identification\fP
+.sp
 \fBSticky bit directory\fP
+.sp
 \fBSticky bit directory \- other writable\fP
 .sp
 After each of the colors have been changed to the desired color, the
