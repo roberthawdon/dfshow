@@ -101,7 +101,7 @@ Ensure you have the following dependencies installed:
 * ``ncurses`` development packages
 * ``libconfig`` development packages
 * ``libacl`` development packages
-* ``selinux`` development packages (optional, for use with ``--with-selinux``
+* ``selinux`` development packages (optional, for use with ``--with-selinux``)
 * ``gettext`` for internationalization
 
 Download the project and prepare sources.
