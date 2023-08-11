@@ -218,9 +218,6 @@ void generateDefaultShowMenus(){
   addMenuItem(&showFileMenu, &showFileMenuSize, "f_hidden", _("!Hidden"), 'h', 1);
   addMenuItem(&showFileMenu, &showFileMenuSize, "f_link", _("!Link"), 'l', 1);
   addMenuItem(&showFileMenu, &showFileMenuSize, "f_modify", _("!Modify"), 'm', 1);
-  if (plugins){
-    addMenuItem(&showFileMenu, &showFileMenuSize, "f_plugin", _("!Plugin"), 'p', 1);
-  }
   addMenuItem(&showFileMenu, &showFileMenuSize, "f_quit", _("!Quit"), 'q', 1);
   addMenuItem(&showFileMenu, &showFileMenuSize, "f_rename", _("!Rename"), 'r', 1);
   addMenuItem(&showFileMenu, &showFileMenuSize, "f_show", _("!Show"), 's', 1);
@@ -278,6 +275,9 @@ void generateDefaultShowMenus(){
   addMenuItem(&colorMenu, &colorMenuSize, "c_use", _("!Use"), 'u', 1);
 
   // Setings Menu
+  if (plugins){
+    addMenuItem(&showSettingsMenu, &showSettingsMenuSize, "s_plugins", _("!Plugins"), 'p', 1);
+  }
   addMenuItem(&showSettingsMenu, &showSettingsMenuSize, "s_quit", _("!Quit"), 'q', 1);
   addMenuItem(&showSettingsMenu, &showSettingsMenuSize, "s_revert", _("!Revert"), 'r', 1);
   addMenuItem(&showSettingsMenu, &showSettingsMenuSize, "s_save", _("!Save"), 's', 1);
