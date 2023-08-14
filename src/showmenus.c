@@ -116,7 +116,7 @@ extern int skipToFirstFile;
 
 extern int skippable;
 
-extern int plugins;
+extern bool plugins;
 
 extern int enterAsShow;
 

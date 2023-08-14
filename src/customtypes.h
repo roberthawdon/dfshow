@@ -1,4 +1,5 @@
-#pragma once
+#ifndef CUSTOMTYPES_H
+#define CUSTOMTYPES_H
 
 /* TYPE DEFINITIONS */
 typedef unsigned int uint_t;
@@ -52,3 +53,10 @@ typedef struct {
   char settingLabel[16];
 } t3TextValues;
 
+typedef struct {
+  char *pluginName;
+  char pluginVersion[16];
+  wchar_t *pluginAuthor;
+} pluginList;
+
+#endif

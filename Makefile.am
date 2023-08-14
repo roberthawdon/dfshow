@@ -8,7 +8,7 @@ dfshowdatadir = $(datadir)/dfshow
 AM_CPPFLAGS = -DLOCALEDIR=\"$(localedir)\"
 AM_CFLAGS = -DSYSCONFIG=\"$(dfshowconfdir)\" -DDATADIR=\"$(dfshowdatadir)\" -D_XOPEN_SOURCE_EXTENDED -fno-common
 
-LDADD = -lm -lconfig $(LIBINTL)
+LDADD = -ldl -lm -lconfig $(LIBINTL)
 
 if DARWIN
 LDADD += -lncurses
@@ -39,7 +39,7 @@ dfshowconf_DATA = conf/dfshow.conf
 dfshowdata_DATA = themes/*
 
 man_MANS = man/show.1 man/sf.1
-noinst_HEADERS = src/show.h src/sf.h src/showfunctions.h src/showmenus.h src/sfmenus.h src/colors.h src/common.h src/banned.h src/display.h src/input.h src/menu.h src/settings.h src/i18n.h src/gettext.h
+noinst_HEADERS = src/show.h src/sf.h src/showfunctions.h src/showmenus.h src/sfmenus.h src/colors.h src/common.h src/banned.h src/display.h src/input.h src/menu.h src/settings.h src/i18n.h src/gettext.h src/plugin_interface.h
 
 EXTRA_DIST = doc
 

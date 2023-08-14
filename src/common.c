@@ -33,6 +33,8 @@
 #include <math.h>
 #include <sys/wait.h>
 #include <libintl.h>
+#include "plugin_interface.h"
+#include "plugin.h"
 #include "menu.h"
 #include "colors.h"
 #include "config.h"
@@ -80,6 +82,8 @@ extern bool topMenu;
 extern bool bottomMenu;
 extern wchar_t *topMenuBuffer;
 extern wchar_t *bottomMenuBuffer;
+
+bool plugins = false; // Not yet implemented
 
 void refreshScreenShow();
 void refreshScreenSf();

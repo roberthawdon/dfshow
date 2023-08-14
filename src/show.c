@@ -78,7 +78,6 @@ bool useDefinedPager = 0;
 bool dirOnly = 0;
 bool scaleSize = 0;
 
-int plugins = 0; // Not yet implemented
 
 int enterAsShow = 0;
 
@@ -122,6 +121,8 @@ int totalBinItemsShow;
 extern char *programName;
 
 extern int viewMode;
+
+extern bool plugins;
 
 extern int skippable;
 
