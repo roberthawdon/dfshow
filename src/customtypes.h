@@ -58,5 +58,4 @@ typedef struct {
   char pluginVersion[16];
   wchar_t *pluginAuthor;
 } pluginList;
-
 #endif

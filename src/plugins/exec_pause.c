@@ -1,5 +1,5 @@
-#define PLUGIN_NAME "Test Plugin"
-#define PLUGIN_VERSION "0.0.0"
+#define PLUGIN_NAME "Pause on Exec exit"
+#define PLUGIN_VERSION "0.0.3"
 #define PLUGIN_AUTHOR L"Robert Ian Hawdon"
 
 #include <wchar.h>
@@ -17,11 +17,13 @@ const wchar_t* get_author() {
     return PLUGIN_AUTHOR;
 }
 
-void* execute_plugin() {
+void* post_execution_prompt() {
+    printf("\r\nPress any key to return to 'show'...\n");
+    getchar();
     return 0;
 }
 
-PluginResult* get_plugin() {
-    static PluginResult plugin = {PLUGIN_INTEGER, execute_plugin};
+Plugin* get_plugin() {
+    static Plugin plugin = {PLUGIN_TYPE_POST_EXECUTION, post_execution_prompt};
     return &plugin;
 }

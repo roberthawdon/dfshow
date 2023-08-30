@@ -2,23 +2,20 @@
 #define PLUGIN_INTERFACE_H
 
 typedef enum {
-    PLUGIN_STRING,
-    PLUGIN_WIDE_STRING,
-    PLUGIN_INTEGER
+    PLUGIN_TYPE_NULL,
+    PLUGIN_TYPE_POST_EXECUTION,
 } PluginDataType;
 
-typedef union {
-    const char* string_value;
-    const wchar_t* wide_value;
-    int int_value;
-} PluginDataValue;
+// typedef union {
+//     const void;
+//     const void* return_value;
+// } PluginDataValue;
 
 typedef struct {
     PluginDataType type;
-    PluginDataValue value;
-} PluginResult;
-
-typedef PluginResult (*plugin_func)();
+//    PluginDataValue value;
+    void* (*execute)();
+} Plugin;
 
 #endif
 

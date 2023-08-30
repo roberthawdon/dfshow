@@ -45,6 +45,8 @@
 #include "input.h"
 #include "banned.h"
 #include "i18n.h"
+#include "plugin_interface.h"
+#include "plugin.h"
 
 char * visualPath;
 char * pagerPath;
@@ -152,6 +154,8 @@ struct sigaction sa;
 
 extern int exitCode;
 extern int enableCtrlC;
+
+extern int pluginCount;
 
 extern wchar_t *globalMenuLabel;
 extern wchar_t *showFileMenuLabel;
@@ -945,6 +949,11 @@ int main(int argc, char *argv[])
 
   setDynamicChar(&programName, "%s", PROGRAM_NAME);
 
+  // Initalise plugins
+  // PluginResult plugin = load_plugin("/Users/robert/.dfshow/plugins/dummy.so");
+  const char* pluginDirectory = "/Users/robert/.dfshow/plugins";
+  loadPluginsFromDirectory(pluginDirectory);
+
 #ifdef HAVE_ACL_TYPE_EXTENDED
   snprintf(options, 22, "%s", "@aABdfgGhilnrsStUZ1");
 #else
@@ -1223,7 +1232,6 @@ Valid arguments are:\n\
       exit(2);
     }
   }
-
 
   // If all author is also requested, the padding needs adjusting.
   if ( ogavis == 7 ){

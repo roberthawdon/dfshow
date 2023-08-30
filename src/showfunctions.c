@@ -52,6 +52,8 @@
 #include "show.h"
 #include "banned.h"
 #include "i18n.h"
+#include "plugin_interface.h"
+#include "plugin.h"
 
 #if HAVE_ACL_LIBACL_H
 # include <acl/libacl.h>
@@ -1539,8 +1541,16 @@ void LaunchExecutable(const char* object, const char* args)
 {
   char *command = malloc(sizeof(char) * (strlen(object) + strlen(args) + 4));
   snprintf(command, (strlen(object) + strlen(args) + 4), "'%s' %s", object, args);
+  endwin();
   system("clear"); // Just to be sure
   system(command);
+ 
+  // Check for post execution plugin and run it
+  Plugin* postExecPlugin = findPluginByType(PLUGIN_TYPE_POST_EXECUTION);
+  if (postExecPlugin) {
+      postExecPlugin->execute();
+  }
+
   free(command);
   refreshScreenShow();
 }

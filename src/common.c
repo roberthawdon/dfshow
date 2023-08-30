@@ -83,6 +83,10 @@ extern bool bottomMenu;
 extern wchar_t *topMenuBuffer;
 extern wchar_t *bottomMenuBuffer;
 
+extern int pluginCount;
+
+extern pluginList *loadedPlugins;
+
 bool plugins = false; // Not yet implemented
 
 void refreshScreenShow();
@@ -292,6 +296,7 @@ int exittoshell()
   clear();
   // unloadMenuLabels();
   // freeSettingVars();
+  cleanupPluginRegistry();
   endwin();
   exit(exitCode);
   return exitCode;
@@ -349,12 +354,19 @@ char * objectFromPath(const char *myStr){
 }
 
 void printVersion(char* programName){
+  int i = 0;
   printf (("Directory File Show (DF-SHOW) - %s %s\n"), programName, VERSION);
   fputs (("\
 Copyright (C) 2024 Robert Ian Hawdon\n\
 License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.\n\
 This program comes with ABSOLUTELY NO WARRANTY. This is free software, and you\n\
 are welcome to redistribute it under certain conditions.\n"), stdout);
+  if (plugins) {
+      printf ("\nPlugins Loaded:\n");
+      for (i = 0 ; i < (pluginCount + 1); i++){
+         printf("%s - %s (%ls)\n", loadedPlugins[i].pluginName, loadedPlugins[i].pluginVersion, loadedPlugins[i].pluginAuthor);
+      }
+  }
 }
 
 int check_dir(char *pwd)

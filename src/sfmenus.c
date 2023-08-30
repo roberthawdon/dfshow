@@ -47,6 +47,8 @@ wchar_t *caseMenuLabel;
 
 extern bool parentShow;
 
+extern bool plugins;
+
 extern int c;
 extern int * pc;
 
@@ -103,6 +105,9 @@ void generateDefaultSfMenus(){
   addMenuItem(&caseMenu, &caseMenuSize, "c2_sensitive", _("!Case-sensitive"), 'c', 1);
 
   // Setings Menu
+  if (plugins){
+    addMenuItem(&sfSettingsMenu, &sfSettingsMenuSize, "s_plugins", _("!Plugins"), 'p', 1);
+  }
   addMenuItem(&sfSettingsMenu, &sfSettingsMenuSize, "s_quit", _("!Quit"), 'q', 1);
   addMenuItem(&sfSettingsMenu, &sfSettingsMenuSize, "s_revert", _("!Revert"), 'r', 1);
   addMenuItem(&sfSettingsMenu, &sfSettingsMenuSize, "s_save", _("!Save"), 's', 1);

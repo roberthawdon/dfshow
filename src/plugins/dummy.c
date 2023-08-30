@@ -1,5 +1,5 @@
-#define PLUGIN_NAME "Test Plugin"
-#define PLUGIN_VERSION "0.0.0"
+#define PLUGIN_NAME "Dummy Plugin"
+#define PLUGIN_VERSION "1.0.0"
 #define PLUGIN_AUTHOR L"Robert Ian Hawdon"
 
 #include <wchar.h>
