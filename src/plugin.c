@@ -23,6 +23,7 @@
 #include <dlfcn.h>
 #include <dirent.h>
 #include <string.h>
+#include <stdbool.h>
 #include "banned.h"
 #include "plugin.h"
 #include "plugin_interface.h"

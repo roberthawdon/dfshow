@@ -1,7 +1,8 @@
 #define PLUGIN_NAME "Pause on Exec exit"
-#define PLUGIN_VERSION "0.0.3"
+#define PLUGIN_VERSION "0.0.4"
 #define PLUGIN_AUTHOR L"Robert Ian Hawdon"
 
+#include <stdio.h>
 #include <wchar.h>
 #include "../plugin_interface.h"
 

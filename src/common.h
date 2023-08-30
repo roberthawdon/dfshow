@@ -5,6 +5,7 @@
 #define M_NONE 0x00
 #define M_NORMAL 0x01
 
+#include <stdbool.h>
 #include "customtypes.h"
 
 void refreshScreen(char *application);
