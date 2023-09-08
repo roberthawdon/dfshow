@@ -1545,11 +1545,14 @@ void LaunchExecutable(const char* object, const char* args)
   system("clear"); // Just to be sure
   system(command);
  
-  // Check for post execution plugin and run it
-  Plugin* postExecPlugin = findPluginByType(PLUGIN_TYPE_POST_EXECUTION);
-  if (postExecPlugin) {
-      postExecPlugin->execute();
+  // Check for the post execution plugins and run all of them
+  PluginEntry* postExecPlugins = findPluginsByType(PLUGIN_TYPE_POST_EXECUTION);
+  PluginEntry* current = postExecPlugins;
+  while (current) {
+      current->plugin->execute();
+      current = current->next;
   }
+  freePluginEntry(postExecPlugins);
 
   free(command);
   refreshScreenShow();

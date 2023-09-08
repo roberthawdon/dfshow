@@ -157,15 +157,36 @@ void registerPlugin(Plugin* plugin) {
     pluginRegistry = newNode;  // Add to the front for simplicity.
 }
 
-Plugin* findPluginByType(PluginDataType type) {
+PluginEntry* findPluginsByType(PluginDataType type) {
+    PluginEntry* result = NULL;
+    PluginEntry* currentResult = NULL;
+
     PluginNode* current = pluginRegistry;
     while (current) {
         if (current->plugin->type == type) {
-            return current->plugin;
+            PluginEntry* newEntry = malloc(sizeof(PluginEntry));
+            newEntry->plugin = current->plugin;
+            newEntry->next = NULL;
+
+            if (!result) {
+                result = newEntry;
+                currentResult = result;
+            } else {
+                currentResult->next = newEntry;
+                currentResult = newEntry;
+            }
         }
         current = current->next;
     }
-    return NULL;
+    return result;
+}
+
+void freePluginEntry(PluginEntry* entry){
+    while (entry) {
+        PluginEntry* next = entry->next;
+        free(entry);
+        entry = next;
+    }
 }
 
 void cleanupPluginRegistry() {

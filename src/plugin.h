@@ -6,9 +6,15 @@ typedef struct PluginNode {
   struct PluginNode* next;
 } PluginNode;
 
+typedef struct PluginEntry {
+  Plugin* plugin;
+  struct PluginEntry* next;
+} PluginEntry;
+
 Plugin* load_plugin(const char* path);
 void freePluginList(pluginList *loadedPlugins, int count);
 void loadPluginsFromDirectory(const char* directory_path);
 void registerPlugin(Plugin* plugin);
-Plugin* findPluginByType(PluginDataType type);
+PluginEntry* findPluginsByType(PluginDataType type);
 void cleanupPluginRegistry();
+void freePluginEntry(PluginEntry* entry);

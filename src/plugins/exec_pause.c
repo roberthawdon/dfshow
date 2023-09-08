@@ -1,5 +1,5 @@
 #define PLUGIN_NAME "Pause on Exec exit"
-#define PLUGIN_VERSION "0.0.4"
+#define PLUGIN_VERSION "0.0.12"
 #define PLUGIN_AUTHOR L"Robert Ian Hawdon"
 
 #include <stdio.h>
@@ -18,9 +18,14 @@ const wchar_t* get_author() {
     return PLUGIN_AUTHOR;
 }
 
+void consume_line() {
+    char buffer[1024];  // Temporary buffer
+    fgets(buffer, sizeof(buffer), stdin);
+}
+
 void* post_execution_prompt() {
-    printf("\r\nPress any key to return to 'show'...\n");
-    getchar();
+    printf("\r\nPress enter to return to Show...\n");
+    consume_line();
     return 0;
 }
 
