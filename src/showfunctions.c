@@ -1554,6 +1554,8 @@ void LaunchExecutable(const char* object, const char* args)
   }
   freePluginEntry(postExecPlugins);
 
+  emitEvent(EVENT_POST_EXECUTION, NULL);
+
   free(command);
   refreshScreenShow();
 }

@@ -1,5 +1,5 @@
 #define PLUGIN_NAME "Pause on Exec exit"
-#define PLUGIN_VERSION "0.0.12"
+#define PLUGIN_VERSION "0.0.13"
 #define PLUGIN_AUTHOR L"Robert Ian Hawdon"
 
 #include <stdio.h>
@@ -23,13 +23,22 @@ void consume_line() {
     fgets(buffer, sizeof(buffer), stdin);
 }
 
-void* post_execution_prompt() {
+void handlePostExecution(void* data) {
     printf("\r\nPress enter to return to Show...\n");
     consume_line();
-    return 0;
 }
 
-Plugin* get_plugin() {
-    static Plugin plugin = {PLUGIN_TYPE_POST_EXECUTION, post_execution_prompt};
-    return &plugin;
+void initPlugin() {
+    registerEventListener(EVENT_POST_EXECUTION, handlePostExecution);
 }
+
+// void* post_execution_prompt() {
+//     printf("\r\nPress enter to return to Show...\n");
+//     consume_line();
+//     return 0;
+// }
+// 
+// Plugin* get_plugin() {
+//     static Plugin plugin = {PLUGIN_TYPE_POST_EXECUTION, post_execution_prompt};
+//     return &plugin;
+// }

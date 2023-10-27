@@ -38,6 +38,18 @@ extern bool plugins;
 
 pluginList *loadedPlugins;
 
+EventEntry eventRegistry[100]; //TO-DO, make dynamic
+
+int registryCount = 0;
+
+void emitEvent(AppEvent event, void* data) {
+    for (int i = 0; i < registryCount; i++) {
+        if (eventRegistry[i].event == event) {
+            eventRegistry[i].listener(data);
+        }
+    }
+}
+
 Plugin* load_plugin(const char* path) {
     // Check if the loadedPlugins list has been allocated and act accordingly
     if (pluginCount == -1){

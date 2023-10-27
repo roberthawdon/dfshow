@@ -11,6 +11,7 @@ typedef struct PluginEntry {
   struct PluginEntry* next;
 } PluginEntry;
 
+void emitEvent(AppEvent event, void* data);
 Plugin* load_plugin(const char* path);
 void freePluginList(pluginList *loadedPlugins, int count);
 void loadPluginsFromDirectory(const char* directory_path);
