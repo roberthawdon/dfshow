@@ -657,15 +657,18 @@ void edit_file_input()
 {
   char filepath[4096];
   int curPos = 0;
+  int status;
   move(0,0);
   clrtoeol();
   curPos = (printMenu(0, 0, _("Edit File - Enter pathname:")) + 1);
   curs_set(TRUE);
   move(0,curPos);
-  readline(filepath, 4096, "");
+  status = readline(filepath, 4096, "");
   curs_set(FALSE);
-  SendToEditor(filepath);
-  refreshDirectory(sortmode, lineStart, selected, 1);
+  if (status != -1){
+    SendToEditor(filepath);
+    refreshDirectory(sortmode, lineStart, selected, 1);
+  }
 }
 
 void rename_file_input(char *file)
