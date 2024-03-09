@@ -1608,6 +1608,7 @@ int SendToPager(char* object)
       snprintf(fileName, 4096, "%s", object);
       parentShow = true;
       file_view(fileName);
+      viewMode = 0;
       return(0);
     }
   
