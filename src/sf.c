@@ -47,6 +47,9 @@ extern char regexinput[1024];
 
 int colormode = 0;
 int messageBreak = 0;
+
+extern char *programName;
+
 extern int displaysize;
 extern int topline;
 extern int leftcol;
@@ -131,7 +134,9 @@ int main(int argc, char *argv[])
   int c;
 
   initI18n();
-  
+
+  setDynamicChar(&programName, "%s", PROGRAM_NAME);
+
   setConfLocations();
 
   // Read the config
@@ -245,3 +250,6 @@ int main(int argc, char *argv[])
   exittoshell();
   return 0;
 }
+
+
+extern char *programName;

@@ -99,6 +99,11 @@ extern menuDef *settingsMenu;
 extern int settingsMenuSize;
 extern wchar_t *settingsMenuLabel;
 
+extern bool topMenu;
+extern bool bottomMenu;
+extern wchar_t *topMenuBuffer;
+extern wchar_t *bottomMenuBuffer;
+
 extern int viewMode;
 
 void readSfConfig(const char * confFile)
@@ -196,18 +201,33 @@ int generateSfSettingsVars()
 
 void refreshScreenSf()
 {
-  endwin();
-  clear();
-  refresh();
-  displaysize = LINES - 2;
+  // endwin();
+  // clear();
+  // refresh();
+  // displaysize = LINES - 2;
   unloadSfMenuLabels();
   refreshSfMenuLabels();
-  if (viewMode == 0){
-    mvprintw(0,0,_("Show File - Enter pathname:"));
-  } else if (viewMode > 0){
-    wPrintMenu(0, 0, sfFileMenuLabel);
-    loadFile(fileName);
-  }
+  // if (viewMode == 0){
+  //   mvprintw(0,0,_("Show File - Enter pathname:"));
+  // } else if (viewMode > 0){
+  //   wPrintMenu(0, 0, sfFileMenuLabel);
+  //   loadFile(fileName);
+  // }
+  switch(viewMode)
+    {
+    case 3: // Settings View
+      wPrintMenu(0, 0, topMenuBuffer);
+      break;
+    case 4: // SF View
+      updateView();
+      wPrintMenu(0, 0, topMenuBuffer);
+      wPrintMenu(LINES-1, 0, bottomMenuBuffer);
+      break;
+    default: // Fallback
+      wPrintMenu(0, 0, topMenuBuffer);
+      wPrintMenu(LINES-1, 0, bottomMenuBuffer);
+      break;
+    }
 }
 
 int calculateTab(int pos)

@@ -70,6 +70,8 @@ char fileName[4096];
 
 int viewMode = 0;
 
+char *programName;
+
 extern int * pc;
 
 extern int resized;
@@ -84,15 +86,15 @@ void refreshScreenSf();
 
 void refreshScreen(char *application)
 {
+  endwin();
+  clear();
+  cbreak();
+  noecho();
+  curs_set(FALSE);
+  keypad(stdscr, TRUE);
+  refresh();
   #ifdef APPLICATION_SHOW
     if (!strcmp(application, "show")) {
-      endwin();
-      clear();
-      cbreak();
-      noecho();
-      curs_set(FALSE);
-      keypad(stdscr, TRUE);
-      refresh();
       refreshScreenShow();
     }
   #endif
@@ -112,7 +114,13 @@ int getch10th (void) {
   do {
     if (resized) {
       resized = 0;
-      refreshScreen("show");
+      refreshScreen(programName);
+      // #ifdef APPLICATION_SHOW
+      //   refreshScreen("show");
+      // #endif
+      // #ifdef APPLICATION_SF
+      //   refreshScreen("sf");
+      // #endif
       ch = -1;
       break;
     }

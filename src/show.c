@@ -119,6 +119,8 @@ t2BinValues *binValuesShow;
 int totalCharItemsShow;
 int totalBinItemsShow;
 
+extern char *programName;
+
 extern int viewMode;
 
 extern int skippable;
@@ -835,7 +837,7 @@ void refreshScreenShow()
     case 2: // Colors View
       themeBuilder();
       break;
-    case 3: // Settings View (currently broken)
+    case 3: // Settings View
       wPrintMenu(0, 0, topMenuBuffer);
       break;
     case 4: // SF View
@@ -939,6 +941,8 @@ int main(int argc, char *argv[])
   char options[22];
 
   initI18n();
+
+  setDynamicChar(&programName, "%s", PROGRAM_NAME);
 
 #ifdef HAVE_ACL_TYPE_EXTENDED
   snprintf(options, 22, "%s", "@aABdfgGhilnrsStUZ1");
