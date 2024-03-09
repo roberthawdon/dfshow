@@ -70,7 +70,7 @@ extern char fileName[4096];
 extern int displaysize;
 extern int totallines;
 extern int longestlongline;
-extern int viewmode;
+extern int viewMode;
 
 extern int wrap;
 extern int wrapmode;
@@ -193,7 +193,7 @@ void show_file_position_input(int currentpos)
   int curPos = 0;
   // Fun fact, in DF-EDIT 2.3d, the following text input typoed "absolute" as "absolue", this typo also exists in the Windows version from 1997 (2.3d-76), however, the 1986 documentation correctly writes it as "absolute".
   setDynamicChar(&filePosText, _("Position relative (<+num> || <-num>) or absolute (<num>):"));
-  viewmode = 2;
+  viewMode = -1;
   move(0,0);
   clrtoeol();
   curPos = (printMenu(0,0,filePosText) + 1);

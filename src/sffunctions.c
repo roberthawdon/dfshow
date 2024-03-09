@@ -47,7 +47,6 @@ int leftcol = 1;
 int totallines = 0;
 int longestline = 0;
 int longestlongline = 0;
-int viewmode = 0;
 
 int tabsize = 8;
 
@@ -99,6 +98,8 @@ extern int settingsBinPos;
 extern menuDef *settingsMenu;
 extern int settingsMenuSize;
 extern wchar_t *settingsMenuLabel;
+
+extern int viewMode;
 
 void readSfConfig(const char * confFile)
 {
@@ -201,9 +202,9 @@ void refreshScreenSf()
   displaysize = LINES - 2;
   unloadSfMenuLabels();
   refreshSfMenuLabels();
-  if (viewmode == 0){
+  if (viewMode == 0){
     mvprintw(0,0,_("Show File - Enter pathname:"));
-  } else if (viewmode > 0){
+  } else if (viewMode > 0){
     wPrintMenu(0, 0, sfFileMenuLabel);
     loadFile(fileName);
   }
@@ -334,7 +335,7 @@ void loadFile(const char * currentfile)
   len = 0;
   longestline = 0;
   longestlongline = 0;
-  viewmode = 1;
+  viewMode = 4;
   totallines = 0;
 
   filePos = malloc(sizeof(long int) + 1); // Initial size of lookup
