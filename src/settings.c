@@ -45,6 +45,9 @@ extern int * pc;
 extern char globalConfLocation[4096];
 extern char homeConfLocation[4096];
 
+extern int viewMode;
+
+
 void updateSetting(settingIndex **settings, int index, int type, int intSetting)
 {
   // To-Do, do a verification on the type
@@ -392,6 +395,7 @@ int textValueLookup(t1CharValues **values, int *items, char *refLabel, char *val
 
 void settingsMenuView(wchar_t *settingsMenuLabel, int settingsMenuSize, menuDef *settingsMenu, settingIndex **settings, t1CharValues **charValues, t2BinValues **binValues, int totalCharItems, int totalBinItems, int totalItems, char *application)
 {
+  viewMode = 3;
   int count = 0;
   int x = 2;
   int y = 3;

@@ -68,9 +68,16 @@ int displaysize;
 
 char fileName[4096];
 
+int viewMode = 0;
+
 extern int * pc;
 
 extern int resized;
+
+extern bool topMenu;
+extern bool bottomMenu;
+extern wchar_t *topMenuBuffer;
+extern wchar_t *bottomMenuBuffer;
 
 void refreshScreenShow();
 void refreshScreenSf();
@@ -79,6 +86,13 @@ void refreshScreen(char *application)
 {
   #ifdef APPLICATION_SHOW
     if (!strcmp(application, "show")) {
+      endwin();
+      clear();
+      cbreak();
+      noecho();
+      curs_set(FALSE);
+      keypad(stdscr, TRUE);
+      refresh();
       refreshScreenShow();
     }
   #endif

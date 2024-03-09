@@ -49,7 +49,6 @@ char * pagerPath;
 
 char currentpwd[4096];
 
-int viewMode = 0;
 int resized = 0;
 
 char sortmode[9] = "name";
@@ -118,6 +117,8 @@ t2BinValues *binValuesShow;
 int totalCharItemsShow;
 int totalBinItemsShow;
 
+extern int viewMode;
+
 extern int skippable;
 
 extern int settingsPos;
@@ -156,6 +157,11 @@ extern wchar_t *linkMenuLabel;
 
 extern xattrList *xa;
 extern int xattrPos;
+
+extern bool topMenu;
+extern bool bottomMenu;
+extern wchar_t *topMenuBuffer;
+extern wchar_t *bottomMenuBuffer;
 
 int setMarked(char* markedinput);
 int checkStyle(char* styleinput);
@@ -810,44 +816,32 @@ int setBlockSize(const char * arg){
 
 void refreshScreenShow()
 {
-  endwin();
-  clear();
-  cbreak();
-  noecho();
-  curs_set(FALSE);
-  keypad(stdscr, TRUE);
-  refresh();
-  unloadShowMenuLabels();
-  refreshShowMenuLabels();
+  // unloadShowMenuLabels();
+  // refreshShowMenuLabels();
   switch(viewMode)
     {
-    case 0:
+    case 0: // Directory View
       resizeDisplayDir(ob);
-      wPrintMenu(0, 0, showFileMenuLabel);
-      wPrintMenu(LINES-1, 0, functionMenuLabel);
+      wPrintMenu(0, 0, topMenuBuffer);
+      wPrintMenu(LINES-1, 0, bottomMenuBuffer);
       break;
-    case 1:
+    case 1: // Global Menu View
+      wPrintMenu(0, 0, topMenuBuffer);
+      break;
+    case 2: // Colors View
+      themeBuilder();
+      break;
+    case 3: // Settings View (currently broken)
+      wPrintMenu(0, 0, topMenuBuffer);
+      break;
+    case 4: // SF View
+      wPrintMenu(0, 0, topMenuBuffer);
+      wPrintMenu(LINES-1, 0, bottomMenuBuffer);
+      break;
+    default: // Fallback
       resizeDisplayDir(ob);
-      wPrintMenu(0,0,globalMenuLabel);
-      wPrintMenu(LINES-1, 0, functionMenuLabel);
-      break;
-    case 2:
-      resizeDisplayDir(ob);
-      wPrintMenu(0, 0, modifyMenuLabel);
-      wPrintMenu(LINES-1, 0, functionMenuLabel);
-      break;
-    case 3:
-      resizeDisplayDir(ob);
-      wPrintMenu(0, 0, sortMenuLabel);
-      wPrintMenu(LINES-1, 0, functionMenuLabel);
-      break;
-    case 4:
-      wPrintMenu(0,0,globalMenuLabel);
-      break;
-    case 5:
-      resizeDisplayDir(ob);
-      wPrintMenu(0, 0, linkMenuLabel);
-      wPrintMenu(LINES-1, 0, functionMenuLabel);
+      wPrintMenu(0, 0, topMenuBuffer);
+      wPrintMenu(LINES-1, 0, bottomMenuBuffer);
       break;
     }
 }

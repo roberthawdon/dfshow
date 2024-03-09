@@ -29,6 +29,11 @@
 #include "menu.h"
 #include "banned.h"
 
+bool topMenu = true;
+bool bottomMenu = true;
+wchar_t *topMenuBuffer;
+wchar_t *bottomMenuBuffer;
+
 int dynamicMenuLabel(wchar_t **label, const char *str)
 {
   int length = 0;
@@ -220,6 +225,13 @@ int wPrintMenu(int line, int col, wchar_t *menustring)
   move(line, col);
   clrtoeol();
   len = wcslen(menustring);
+  if ( line == 0 ){
+    setDynamicWChar(&topMenuBuffer, L"%ls", menustring);
+    topMenu = true;
+  } else {
+    setDynamicWChar(&bottomMenuBuffer, L"%ls", menustring);
+    bottomMenu = true;
+  }
   setColors(COMMAND_PAIR);
   for (i = 0; i < len; i++)
     {

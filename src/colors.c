@@ -61,6 +61,8 @@ extern int * pc;
 extern char globalConfLocation[128];
 extern char homeConfLocation[128];
 
+extern int viewMode;
+
 menuDef *colorMenu;
 int colorMenuSize = 0;
 wchar_t *colorMenuLabel;
@@ -771,6 +773,7 @@ void setCursorPos(int prev)
 
 void themeBuilder()
 {
+  viewMode = 2;
   clear();
   if (bgToggle){
     snprintf(fgbgLabel, 11, _("background"));
