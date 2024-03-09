@@ -113,6 +113,8 @@ int getch10th (void) {
     if (resized) {
       resized = 0;
       refreshScreen("show");
+      ch = -1;
+      break;
     }
     halfdelay (1);
     ch = getch();

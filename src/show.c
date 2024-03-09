@@ -844,7 +844,6 @@ void refreshScreenShow()
       wPrintMenu(LINES-1, 0, bottomMenuBuffer);
       break;
     default: // Fallback
-      resizeDisplayDir(ob);
       wPrintMenu(0, 0, topMenuBuffer);
       wPrintMenu(LINES-1, 0, bottomMenuBuffer);
       break;
