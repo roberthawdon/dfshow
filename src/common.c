@@ -115,12 +115,6 @@ int getch10th (void) {
     if (resized) {
       resized = 0;
       refreshScreen(programName);
-      // #ifdef APPLICATION_SHOW
-      //   refreshScreen("show");
-      // #endif
-      // #ifdef APPLICATION_SF
-      //   refreshScreen("sf");
-      // #endif
       ch = -1;
       break;
     }
