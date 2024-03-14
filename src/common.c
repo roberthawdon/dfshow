@@ -72,6 +72,8 @@ int viewMode = 0;
 
 char *programName;
 
+int returnCode;
+
 extern int * pc;
 
 extern int resized;
@@ -567,7 +569,7 @@ char * commandFromPath(const char *cmd) {
     }
     if(p==outStr) *p++='.';
     if(p[-1]!='/') *p++='/';
-    snprintf(p, (strlen(path)+strlen(cmd)+3), "%s", cmd);
+    snprintf(p, (strlen(path)+strlen(cmd)+3) - strlen(path), "%s", cmd);
     if(access(outStr, X_OK)==0) {
         return outStr;
     }

@@ -76,6 +76,8 @@ int blockend = -1;
 struct utimbuf touchDate;
 time_t touchTime;
 
+extern int returnCode;
+
 extern int c;
 extern int * pc;
 
@@ -371,7 +373,7 @@ void refreshDirectory(char *sortmode, int origlineStart, int origselected, int d
       memcpy(currentpwd, hs[historyref - 2].path, strlen(hs[historyref - 2].path));
       objectWild = hs[historyref - 2].objectWild;
       historyref--;
-      chdir(currentpwd);
+      returnCode = chdir(currentpwd);
       goto handleMissingDir;
     } else {
       global_menu();
@@ -435,7 +437,7 @@ void show_directory_input()
       }
       lineStart = 0;
       selected = 0;
-      chdir(currentpwd);
+      returnCode = chdir(currentpwd);
       refreshDirectory(sortmode, 0, selected, -2);
     } else {
       setDynamicChar(&direrror, _("The location %s cannot be opened or is not a directory\n"), currentpwd);
@@ -557,14 +559,14 @@ void copy_multi_file_input(results* ob, char *input)
             {
               memcpy(selfile, currentpwd, 4096);
               if (!check_last_char(selfile, "/")){
-                snprintf(selfile + strlen(selfile), 4096, "%s", "/");
+                snprintf(selfile + strlen(selfile), 4096 - strlen(selfile), "%s", "/");
               }
-              snprintf(selfile + strlen(selfile), 4096, "%s", ob[i].name);
+              snprintf(selfile + strlen(selfile), 4096 - strlen(selfile), "%s", ob[i].name);
               memcpy(destfile, dest, 4096);
               if (!check_last_char(destfile, "/")){
-                snprintf(destfile + strlen(destfile), 4096, "%s", "/");
+                snprintf(destfile + strlen(destfile), 4096 - strlen(destfile), "%s", "/");
               }
-              snprintf(destfile + strlen(destfile), 4096, "%s", ob[i].name);
+              snprintf(destfile + strlen(destfile), 4096 - strlen(destfile), "%s", ob[i].name);
               if ( check_file(destfile) )
                 {
                   if ( replace_file_confirm_input(destfile) )
@@ -618,14 +620,14 @@ void rename_multi_file_input(results* ob, char *input)
             {
               memcpy(selfile, currentpwd, 4096);
               if (!check_last_char(selfile, "/")){
-                snprintf(selfile + strlen(selfile), 4096, "%s", "/");
+                snprintf(selfile + strlen(selfile), 4096 - strlen(selfile), "%s", "/");
               }
-              snprintf(selfile + strlen(selfile), 4096, "%s", ob[i].name);
+              snprintf(selfile + strlen(selfile), 4096 - strlen(selfile), "%s", ob[i].name);
               memcpy(destfile, dest, 4096);
               if (!check_last_char(destfile, "/")){
-                snprintf(destfile + strlen(destfile), 4096, "%s", "/");
+                snprintf(destfile + strlen(destfile), 4096 - strlen(destfile), "%s", "/");
               }
-              snprintf(destfile + strlen(destfile), 4096, "%s", ob[i].name);
+              snprintf(destfile + strlen(destfile), 4096 - strlen(destfile), "%s", ob[i].name);
               if ( check_file(destfile) )
                 {
                   if ( replace_file_confirm_input(destfile) )
@@ -993,9 +995,9 @@ void huntInput(int selected, int charcase)
     if (CheckMarked(ob) < 1){
       memcpy(chpwd, currentpwd, 4096);
       if (!check_last_char(chpwd, "/")){
-        snprintf(chpwd + strlen(chpwd), 4096, "%s", "/");
+        snprintf(chpwd + strlen(chpwd), 4096 - strlen(chpwd), "%s", "/");
       }
-      snprintf(chpwd + strlen(chpwd), 4096, "%s", ob[selected].name);
+      snprintf(chpwd + strlen(chpwd), 4096 - strlen(chpwd), "%s", ob[selected].name);
       if (huntFile(chpwd, regexinput, regexcase)){
         *ob[selected].marked = 1;
       }
@@ -1004,9 +1006,9 @@ void huntInput(int selected, int charcase)
         if ( *ob[i].marked ){
           memcpy(chpwd, currentpwd, 4096);
           if (!check_last_char(chpwd, "/")){
-            snprintf(chpwd + strlen(chpwd), 4096, "%s", "/");
+            snprintf(chpwd + strlen(chpwd), 4096 - strlen(chpwd), "%s", "/");
           }
-          snprintf(chpwd + strlen(chpwd), 4096, "%s", ob[i].name);
+          snprintf(chpwd + strlen(chpwd), 4096 - strlen(chpwd), "%s", ob[i].name);
           if (huntFile(chpwd, regexinput, regexcase)){
             *ob[i].marked = 1;
           } else {
@@ -1076,9 +1078,9 @@ void delete_multi_file_confirm_input(results* ob)
         {
           memcpy(selfile, currentpwd, 4096);
           if (!check_last_char(selfile, "/")){
-            snprintf(selfile + strlen(selfile), 4096, "%s", "/");
+            snprintf(selfile + strlen(selfile), 4096 - strlen(selfile), "%s", "/");
           }
-          snprintf(selfile + strlen(selfile), 4096, "%s", ob[i].name);
+          snprintf(selfile + strlen(selfile), 4096 - strlen(selfile), "%s", ob[i].name);
           if ( allflag )
             {
               delete_file(selfile);
@@ -1209,9 +1211,9 @@ void modify_group_input()
                 ofile = malloc(sizeof(char) * (strlen(currentpwd) + strlen(ob[i].name) + 2));
                 snprintf(ofile, (strlen(currentpwd) + strlen(ob[i].name) + 2), "%s", currentpwd);
                 if (!check_last_char(ofile, "/")){
-                  snprintf(ofile + strlen(ofile), (strlen(currentpwd) + strlen(ob[i].name) + 2), "%s", "/");
+                  snprintf(ofile + strlen(ofile), (strlen(currentpwd) + strlen(ob[i].name) + 2) - strlen(ofile), "%s", "/");
                 }
-                snprintf(ofile + strlen(ofile), (strlen(currentpwd) + strlen(ob[i].name) + 2), "%s", ob[i].name);
+                snprintf(ofile + strlen(ofile), (strlen(currentpwd) + strlen(ob[i].name) + 2) - strlen(ofile), "%s", ob[i].name);
                 UpdateOwnerGroup(ofile, uids, gids);
                 free(ofile);
               }
@@ -1220,9 +1222,9 @@ void modify_group_input()
         ofile = malloc(sizeof(char) * (strlen(currentpwd) + strlen(ob[selected].name) + 2));
         snprintf(ofile, (strlen(currentpwd) + strlen(ob[selected].name) + 2), "%s", currentpwd);
         if (!check_last_char(ofile, "/")){
-          snprintf(ofile + strlen(ofile), (strlen(currentpwd) + strlen(ob[selected].name) + 2), "%s", "/");
+          snprintf(ofile + strlen(ofile), (strlen(currentpwd) + strlen(ob[selected].name) + 2) - strlen(ofile), "%s", "/");
         }
-        snprintf(ofile + strlen(ofile), (strlen(currentpwd) + strlen(ob[selected].name) + 2), "%s", ob[selected].name);
+        snprintf(ofile + strlen(ofile), (strlen(currentpwd) + strlen(ob[selected].name) + 2) - strlen(ofile), "%s", ob[selected].name);
 
         if (UpdateOwnerGroup(ofile, uids, gids) == -1) {
           setDynamicChar(&errmessage, _("Error: %s"), strerror(errno));
@@ -1314,9 +1316,9 @@ void modify_permissions_input()
               pfile = malloc(sizeof(char) * (strlen(currentpwd) + strlen(ob[i].name) + 2));
               snprintf(pfile, (strlen(currentpwd) + strlen(ob[i].name) + 2), "%s", currentpwd);
               if (!check_last_char(pfile, "/")){
-                snprintf(pfile + strlen(pfile), (strlen(currentpwd) + strlen(ob[i].name) + 2), "%s", "/");
+                snprintf(pfile + strlen(pfile), (strlen(currentpwd) + strlen(ob[i].name) + 2) - strlen(pfile), "%s", "/");
               }
-              snprintf(pfile + strlen(pfile), (strlen(currentpwd) + strlen(ob[i].name) + 2), "%s", ob[i].name);
+              snprintf(pfile + strlen(pfile), (strlen(currentpwd) + strlen(ob[i].name) + 2) - strlen(pfile), "%s", ob[i].name);
               chmod(pfile, newperm);
               free(pfile);
             }
@@ -1325,9 +1327,9 @@ void modify_permissions_input()
       pfile = malloc(sizeof(char) * (strlen(currentpwd) + strlen(ob[selected].name) + 2));
       snprintf(pfile, (strlen(currentpwd) + strlen(ob[selected].name) + 2), "%s", currentpwd);
       if (!check_last_char(pfile, "/")){
-        snprintf(pfile + strlen(pfile), (strlen(currentpwd) + strlen(ob[selected].name) + 2), "%s", "/");
+        snprintf(pfile + strlen(pfile), (strlen(currentpwd) + strlen(ob[selected].name) + 2) - strlen(pfile), "%s", "/");
       }
-      snprintf(pfile + strlen(pfile), (strlen(currentpwd) + strlen(ob[selected].name) + 2), "%s", ob[selected].name);
+      snprintf(pfile + strlen(pfile), (strlen(currentpwd) + strlen(ob[selected].name) + 2) - strlen(pfile), "%s", ob[selected].name);
       chmod(pfile, newperm);
       free(pfile);
     }
@@ -1368,7 +1370,7 @@ void linktext_input(char *file, int symbolic)
   int curPos = 0;
   memcpy(target, currentpwd, 4096);
   if (!check_last_char(target, "/")){
-    snprintf(target + strlen(target), 4096, "/");
+    snprintf(target + strlen(target), 4096 - strlen(target), "/");
   }
   if (symbolic){
     setDynamicChar(&inputmessage, _("Symbolic link to:"));
@@ -1405,13 +1407,13 @@ void linktext_input(char *file, int symbolic)
           if (relative){
             // Do a thing
             relativeFile = getRelativePath(file, target);
-            symlink(relativeFile, target);
+            returnCode = symlink(relativeFile, target);
             free(relativeFile);
           } else {
-            symlink(file, target);
+            returnCode = symlink(file, target);
           }
         } else {
-          link(file, target);
+          returnCode = link(file, target);
         }
         refreshDirectory(sortmode, 0, selected, 0);
       }
@@ -1442,9 +1444,9 @@ void link_key_menu_inputs()
   wPrintMenu(0,0,linkMenuLabel);
   memcpy(selfile, currentpwd, 4096);
   if (!check_last_char(selfile, "/")){
-    snprintf(selfile + strlen(selfile), 4096, "%s", "/");
+    snprintf(selfile + strlen(selfile), 4096 - strlen(selfile), "%s", "/");
   }
-  snprintf(selfile + strlen(selfile), 4096, "%s", ob[selected].name);
+  snprintf(selfile + strlen(selfile), 4096 - strlen(selfile), "%s", ob[selected].name);
   while(1)
     {
       *pc = getch10th();
@@ -1605,9 +1607,9 @@ void directory_view_menu_inputs()
         } else {
           memcpy(selfile, currentpwd, 4096);
           if (!check_last_char(selfile, "/")){
-            snprintf(selfile + strlen(selfile), 4096, "%s", "/");
+            snprintf(selfile + strlen(selfile), 4096 - strlen(selfile), "%s", "/");
           }
-          snprintf(selfile + strlen(selfile), 4096, "%s", ob[selected].name);
+          snprintf(selfile + strlen(selfile), 4096 - strlen(selfile), "%s", ob[selected].name);
           if (!check_dir(selfile)){
             copy_file_input(selfile, ob[selected].mode);
           }
@@ -1620,9 +1622,9 @@ void directory_view_menu_inputs()
         } else {
           memcpy(selfile, currentpwd, 4096);
           if (!check_last_char(selfile, "/")){
-            snprintf(selfile + strlen(selfile), 4096, "%s", "/");
+            snprintf(selfile + strlen(selfile), 4096 - strlen(selfile), "%s", "/");
           }
-          snprintf(selfile + strlen(selfile), 4096, "%s", ob[selected].name);
+          snprintf(selfile + strlen(selfile), 4096 - strlen(selfile), "%s", ob[selected].name);
           if (!check_dir(selfile) || (strcmp(ob[selected].slink, ""))){
             delete_file_confirm_input(selfile);
           } else if (check_dir(selfile)){
@@ -1632,9 +1634,9 @@ void directory_view_menu_inputs()
       } else if (*pc == menuHotkeyLookup(showFileMenu, "f_edit", showFileMenuSize)){
         memcpy(chpwd, currentpwd, 4096);
         if (!check_last_char(chpwd, "/")){
-          snprintf(chpwd + strlen(chpwd), 4096, "%s", "/");
+          snprintf(chpwd + strlen(chpwd), 4096 - strlen(chpwd), "%s", "/");
         }
-        snprintf(chpwd + strlen(chpwd), 4096, "%s", ob[selected].name);
+        snprintf(chpwd + strlen(chpwd), 4096 - strlen(chpwd), "%s", ob[selected].name);
         if (!check_dir(chpwd)){
           SendToEditor(chpwd);
           refreshDirectory(sortmode, lineStart, selected, 1);
@@ -1678,7 +1680,7 @@ void directory_view_menu_inputs()
             historyref--;
             if (check_dir(chpwd)){
               memcpy(currentpwd, chpwd, 4096);
-              chdir(currentpwd);
+              returnCode = chdir(currentpwd);
               freeResults(ob, totalfilecount);
               freeXAttrs(xa, xattrPos);
               ob = get_dir(currentpwd);
@@ -1710,18 +1712,18 @@ void directory_view_menu_inputs()
         } else {
           memcpy(selfile, currentpwd, 4096);
           if (!check_last_char(chpwd, "/")){
-            snprintf(selfile + strlen(selfile), 4096, "%s", "/");
+            snprintf(selfile + strlen(selfile), 4096 - strlen(selfile), "%s", "/");
           }
-          snprintf(selfile + strlen(selfile), 4096, "%s", ob[selected].name);
+          snprintf(selfile + strlen(selfile), 4096 - strlen(selfile), "%s", ob[selected].name);
           rename_file_input(selfile);
         }
       } else if (*pc == menuHotkeyLookup(showFileMenu, "f_show", showFileMenuSize)){
         showCommand:
           memcpy(chpwd, currentpwd, 4096);
           if (!check_last_char(chpwd, "/")){
-            snprintf(chpwd + strlen(chpwd), 4096, "%s", "/");
+            snprintf(chpwd + strlen(chpwd), 4096 - strlen(chpwd), "%s", "/");
           }
-          snprintf(chpwd + strlen(chpwd), 4096, "%s", ob[selected].name);
+          snprintf(chpwd + strlen(chpwd), 4096 - strlen(chpwd), "%s", ob[selected].name);
           if (!strcmp(ob[selected].name, "..")) {
             if (strcmp(currentpwd, "/")){
               updir = dirFromPath(currentpwd);
@@ -1737,7 +1739,7 @@ void directory_view_menu_inputs()
               lineStart = 0;
               selected = 0;
               memcpy(currentpwd, chpwd, 4096);
-              chdir(currentpwd);
+              returnCode = chdir(currentpwd);
               refreshDirectory(sortmode, lineStart, selected, -2);
             }
           } else if (!strcmp(ob[selected].name, ".")) {
@@ -1749,7 +1751,7 @@ void directory_view_menu_inputs()
               lineStart = 0;
               selected = 0;
               memcpy(currentpwd, chpwd, 4096);
-              chdir(currentpwd);
+              returnCode = chdir(currentpwd);
               refreshDirectory(sortmode, lineStart, selected, -2);
             } else {
               e = SendToPager(chpwd);
@@ -1796,9 +1798,9 @@ void directory_view_menu_inputs()
       } else if (*pc == menuHotkeyLookup(showFileMenu, "f_xexec", showFileMenuSize)){
         memcpy(chpwd, currentpwd, 4096);
         if (!check_last_char(chpwd, "/")){
-          snprintf(chpwd + strlen(chpwd), 4096, "%s", "/");
+          snprintf(chpwd + strlen(chpwd), 4096 - strlen(chpwd), "%s", "/");
         }
-        snprintf(chpwd + strlen(chpwd), 4096, "%s", ob[selected].name);
+        snprintf(chpwd + strlen(chpwd), 4096 - strlen(chpwd), "%s", ob[selected].name);
         if (check_exec(chpwd)){
           execArgs = execute_argument_input(ob[selected].name);
           if (!abortinput){
@@ -1873,9 +1875,9 @@ void directory_view_menu_inputs()
       } else if (*pc == menuHotkeyLookup(functionMenu, "f_06", functionMenuSize)){
         memcpy(selfile, currentpwd, 4096);
         if (!check_last_char(chpwd, "/")){
-          snprintf(selfile + strlen(selfile), 4096, "%s", "/");
+          snprintf(selfile + strlen(selfile), 4096 - strlen(selfile), "%s", "/");
         }
-        snprintf(selfile + strlen(selfile), 4096, "%s", ob[selected].name);
+        snprintf(selfile + strlen(selfile), 4096 - strlen(selfile), "%s", ob[selected].name);
         if (!check_dir(selfile)){
           if ( *ob[selected].marked ){
             *ob[selected].marked = 0;
@@ -1923,9 +1925,9 @@ void directory_view_menu_inputs()
       } else if (*pc == menuHotkeyLookup(functionMenu, "f_10", functionMenuSize)){
           memcpy(selfile, currentpwd, 4096);
           if (!check_last_char(chpwd, "/")){
-            snprintf(selfile + strlen(selfile), 4096, "%s", "/");
+            snprintf(selfile + strlen(selfile), 4096 - strlen(selfile), "%s", "/");
           }
-          snprintf(selfile + strlen(selfile), 4096, "%s", ob[selected].name);
+          snprintf(selfile + strlen(selfile), 4096 - strlen(selfile), "%s", ob[selected].name);
           if ( *ob[selected].marked == 0 ){
             if ( blockstart == -1 ){
               blockstart = selected;
@@ -1957,9 +1959,9 @@ void directory_view_menu_inputs()
               for(; blockstart < blockend + 1; blockstart++){
                 memcpy(selfile, currentpwd, 4096);
                 if (!check_last_char(selfile, "/")){
-                  snprintf(selfile + strlen(selfile), 4096, "%s", "/");
+                  snprintf(selfile + strlen(selfile), 4096 - strlen(selfile), "%s", "/");
                 }
-                snprintf(selfile + strlen(selfile), 4096, "%s", ob[blockstart].name);
+                snprintf(selfile + strlen(selfile), 4096 - strlen(selfile), "%s", ob[blockstart].name);
                 if (!check_dir(selfile)){
                   *ob[blockstart].marked = 1;
                 }

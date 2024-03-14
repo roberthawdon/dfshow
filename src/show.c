@@ -119,6 +119,8 @@ t2BinValues *binValuesShow;
 int totalCharItemsShow;
 int totalBinItemsShow;
 
+extern int returnCode;
+
 extern char *programName;
 
 extern int viewMode;
@@ -1272,15 +1274,15 @@ Valid arguments are:\n\
       if (!check_first_char(argv[optind], "/")){
         // If the path given doesn't start with a / then assume we're dealing with a relative path.
         tmpPwd = malloc(sizeof(currentpwd));
-        getcwd(tmpPwd, sizeof(currentpwd));
+        tmpPwd = getcwd(tmpPwd, sizeof(currentpwd));
         snprintf(currentpwd, 4096, "%s/%s", tmpPwd, argv[optind]);
         free(tmpPwd);
       } else {
         snprintf(currentpwd, 4096, "%s", argv[optind]);
       }
-      chdir(currentpwd);
+      returnCode = chdir(currentpwd);
     } else {
-      getcwd(currentpwd, sizeof(currentpwd));
+      tmpPwd = getcwd(currentpwd, sizeof(currentpwd));
     }
 
     if (!check_dir(currentpwd)){
