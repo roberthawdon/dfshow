@@ -1643,10 +1643,10 @@ int SendToPager(char* object)
       setDynamicChar(&fullObject, "'%s'", escObject);
       for (i = 1; i < noOfArgs; i++){
         fullCommand = realloc(fullCommand, (strlen(fullCommand) + strlen(launchCommand[i]) + 2));
-        snprintf(fullCommand + strlen(fullCommand), (strlen(fullCommand) + strlen(launchCommand[i]) + 2), " %s", launchCommand[i]);
+        snprintf(fullCommand + strlen(fullCommand), (strlen(fullCommand) + strlen(launchCommand[i]) + 2) - strlen(fullCommand), " %s", launchCommand[i]);
       }
       fullCommand = realloc(fullCommand, (strlen(fullCommand) + strlen(fullObject) + 2));
-      snprintf(fullCommand + strlen(fullCommand), (strlen(fullCommand) + strlen(fullObject) + 2), " %s", fullObject);
+      snprintf(fullCommand + strlen(fullCommand), (strlen(fullCommand) + strlen(fullObject) + 2) - strlen(fullCommand), " %s", fullObject);
       free(fullObject);
       char *args[countArguments(fullCommand)];
       buildCommandArguments(fullCommand, args, countArguments(fullCommand));
@@ -1705,10 +1705,10 @@ int SendToEditor(char* object)
         setDynamicChar(&fullObject, "'%s'", escObject);
         for (i = 1; i < noOfArgs; i++){
           fullCommand = realloc(fullCommand, (strlen(fullCommand) + strlen(launchCommand[i]) + 2));
-          snprintf(fullCommand + strlen(fullCommand), (strlen(fullCommand) + strlen(launchCommand[i]) + 2),  " %s", launchCommand[i]);
+          snprintf(fullCommand + strlen(fullCommand), (strlen(fullCommand) + strlen(launchCommand[i]) + 2) - strlen(fullCommand),  " %s", launchCommand[i]);
         }
         fullCommand = realloc(fullCommand, (strlen(fullCommand) + strlen(fullObject) + 2));
-        snprintf(fullCommand + strlen(fullCommand), (strlen(fullCommand) + strlen(fullObject) + 2), " %s", fullObject);
+        snprintf(fullCommand + strlen(fullCommand), (strlen(fullCommand) + strlen(fullObject) + 2) - strlen(fullCommand), " %s", fullObject);
         free(fullObject);
         char *args[countArguments(fullCommand)];
         buildCommandArguments(fullCommand, args, countArguments(fullCommand));
