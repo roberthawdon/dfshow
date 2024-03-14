@@ -1544,7 +1544,7 @@ void LaunchExecutable(const char* object, const char* args)
   returnCode = system("clear"); // Just to be sure
   returnCode = system(command);
   free(command);
-  refreshScreenShow();
+  refreshScreen("show");
 }
 
 void copy_file(char *source_input, char *target_input, mode_t mode)

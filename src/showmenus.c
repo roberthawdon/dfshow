@@ -559,14 +559,14 @@ void copy_multi_file_input(results* ob, char *input)
             {
               memcpy(selfile, currentpwd, 4096);
               if (!check_last_char(selfile, "/")){
-                snprintf(selfile + strlen(selfile), 4096, "%s", "/");
+                snprintf(selfile + strlen(selfile), 4096 - strlen(selfile), "%s", "/");
               }
-              snprintf(selfile + strlen(selfile), 4096, "%s", ob[i].name);
+              snprintf(selfile + strlen(selfile), 4096 - strlen(selfile), "%s", ob[i].name);
               memcpy(destfile, dest, 4096);
               if (!check_last_char(destfile, "/")){
-                snprintf(destfile + strlen(destfile), 4096, "%s", "/");
+                snprintf(destfile + strlen(destfile), 4096 - strlen(destfile), "%s", "/");
               }
-              snprintf(destfile + strlen(destfile), 4096, "%s", ob[i].name);
+              snprintf(destfile + strlen(destfile), 4096 - strlen(destfile), "%s", ob[i].name);
               if ( check_file(destfile) )
                 {
                   if ( replace_file_confirm_input(destfile) )
@@ -620,14 +620,14 @@ void rename_multi_file_input(results* ob, char *input)
             {
               memcpy(selfile, currentpwd, 4096);
               if (!check_last_char(selfile, "/")){
-                snprintf(selfile + strlen(selfile), 4096, "%s", "/");
+                snprintf(selfile + strlen(selfile), 4096 - strlen(selfile), "%s", "/");
               }
-              snprintf(selfile + strlen(selfile), 4096, "%s", ob[i].name);
+              snprintf(selfile + strlen(selfile), 4096 - strlen(selfile), "%s", ob[i].name);
               memcpy(destfile, dest, 4096);
               if (!check_last_char(destfile, "/")){
-                snprintf(destfile + strlen(destfile), 4096, "%s", "/");
+                snprintf(destfile + strlen(destfile), 4096 - strlen(destfile), "%s", "/");
               }
-              snprintf(destfile + strlen(destfile), 4096, "%s", ob[i].name);
+              snprintf(destfile + strlen(destfile), 4096 - strlen(destfile), "%s", ob[i].name);
               if ( check_file(destfile) )
                 {
                   if ( replace_file_confirm_input(destfile) )
@@ -1078,9 +1078,9 @@ void delete_multi_file_confirm_input(results* ob)
         {
           memcpy(selfile, currentpwd, 4096);
           if (!check_last_char(selfile, "/")){
-            snprintf(selfile + strlen(selfile), 4096, "%s", "/");
+            snprintf(selfile + strlen(selfile), 4096 - strlen(selfile), "%s", "/");
           }
-          snprintf(selfile + strlen(selfile), 4096, "%s", ob[i].name);
+          snprintf(selfile + strlen(selfile), 4096 - strlen(selfile), "%s", ob[i].name);
           if ( allflag )
             {
               delete_file(selfile);
@@ -1211,9 +1211,9 @@ void modify_group_input()
                 ofile = malloc(sizeof(char) * (strlen(currentpwd) + strlen(ob[i].name) + 2));
                 snprintf(ofile, (strlen(currentpwd) + strlen(ob[i].name) + 2), "%s", currentpwd);
                 if (!check_last_char(ofile, "/")){
-                  snprintf(ofile + strlen(ofile), (strlen(currentpwd) + strlen(ob[i].name) + 2), "%s", "/");
+                  snprintf(ofile + strlen(ofile), (strlen(currentpwd) + strlen(ob[i].name) + 2) - strlen(ofile), "%s", "/");
                 }
-                snprintf(ofile + strlen(ofile), (strlen(currentpwd) + strlen(ob[i].name) + 2), "%s", ob[i].name);
+                snprintf(ofile + strlen(ofile), (strlen(currentpwd) + strlen(ob[i].name) + 2) - strlen(ofile), "%s", ob[i].name);
                 UpdateOwnerGroup(ofile, uids, gids);
                 free(ofile);
               }
@@ -1222,9 +1222,9 @@ void modify_group_input()
         ofile = malloc(sizeof(char) * (strlen(currentpwd) + strlen(ob[selected].name) + 2));
         snprintf(ofile, (strlen(currentpwd) + strlen(ob[selected].name) + 2), "%s", currentpwd);
         if (!check_last_char(ofile, "/")){
-          snprintf(ofile + strlen(ofile), (strlen(currentpwd) + strlen(ob[selected].name) + 2), "%s", "/");
+          snprintf(ofile + strlen(ofile), (strlen(currentpwd) + strlen(ob[selected].name) + 2) - strlen(ofile), "%s", "/");
         }
-        snprintf(ofile + strlen(ofile), (strlen(currentpwd) + strlen(ob[selected].name) + 2), "%s", ob[selected].name);
+        snprintf(ofile + strlen(ofile), (strlen(currentpwd) + strlen(ob[selected].name) + 2) - strlen(ofile), "%s", ob[selected].name);
 
         if (UpdateOwnerGroup(ofile, uids, gids) == -1) {
           setDynamicChar(&errmessage, _("Error: %s"), strerror(errno));
@@ -1316,9 +1316,9 @@ void modify_permissions_input()
               pfile = malloc(sizeof(char) * (strlen(currentpwd) + strlen(ob[i].name) + 2));
               snprintf(pfile, (strlen(currentpwd) + strlen(ob[i].name) + 2), "%s", currentpwd);
               if (!check_last_char(pfile, "/")){
-                snprintf(pfile + strlen(pfile), (strlen(currentpwd) + strlen(ob[i].name) + 2), "%s", "/");
+                snprintf(pfile + strlen(pfile), (strlen(currentpwd) + strlen(ob[i].name) + 2) - strlen(pfile), "%s", "/");
               }
-              snprintf(pfile + strlen(pfile), (strlen(currentpwd) + strlen(ob[i].name) + 2), "%s", ob[i].name);
+              snprintf(pfile + strlen(pfile), (strlen(currentpwd) + strlen(ob[i].name) + 2) - strlen(pfile), "%s", ob[i].name);
               chmod(pfile, newperm);
               free(pfile);
             }
@@ -1327,9 +1327,9 @@ void modify_permissions_input()
       pfile = malloc(sizeof(char) * (strlen(currentpwd) + strlen(ob[selected].name) + 2));
       snprintf(pfile, (strlen(currentpwd) + strlen(ob[selected].name) + 2), "%s", currentpwd);
       if (!check_last_char(pfile, "/")){
-        snprintf(pfile + strlen(pfile), (strlen(currentpwd) + strlen(ob[selected].name) + 2), "%s", "/");
+        snprintf(pfile + strlen(pfile), (strlen(currentpwd) + strlen(ob[selected].name) + 2) - strlen(pfile), "%s", "/");
       }
-      snprintf(pfile + strlen(pfile), (strlen(currentpwd) + strlen(ob[selected].name) + 2), "%s", ob[selected].name);
+      snprintf(pfile + strlen(pfile), (strlen(currentpwd) + strlen(ob[selected].name) + 2) - strlen(pfile), "%s", ob[selected].name);
       chmod(pfile, newperm);
       free(pfile);
     }
@@ -1875,9 +1875,9 @@ void directory_view_menu_inputs()
       } else if (*pc == menuHotkeyLookup(functionMenu, "f_06", functionMenuSize)){
         memcpy(selfile, currentpwd, 4096);
         if (!check_last_char(chpwd, "/")){
-          snprintf(selfile + strlen(selfile), 4096, "%s", "/");
+          snprintf(selfile + strlen(selfile), 4096 - strlen(selfile), "%s", "/");
         }
-        snprintf(selfile + strlen(selfile), 4096, "%s", ob[selected].name);
+        snprintf(selfile + strlen(selfile), 4096 - strlen(selfile), "%s", ob[selected].name);
         if (!check_dir(selfile)){
           if ( *ob[selected].marked ){
             *ob[selected].marked = 0;
@@ -1925,9 +1925,9 @@ void directory_view_menu_inputs()
       } else if (*pc == menuHotkeyLookup(functionMenu, "f_10", functionMenuSize)){
           memcpy(selfile, currentpwd, 4096);
           if (!check_last_char(chpwd, "/")){
-            snprintf(selfile + strlen(selfile), 4096, "%s", "/");
+            snprintf(selfile + strlen(selfile), 4096 - strlen(selfile), "%s", "/");
           }
-          snprintf(selfile + strlen(selfile), 4096, "%s", ob[selected].name);
+          snprintf(selfile + strlen(selfile), 4096 - strlen(selfile), "%s", ob[selected].name);
           if ( *ob[selected].marked == 0 ){
             if ( blockstart == -1 ){
               blockstart = selected;
@@ -1959,9 +1959,9 @@ void directory_view_menu_inputs()
               for(; blockstart < blockend + 1; blockstart++){
                 memcpy(selfile, currentpwd, 4096);
                 if (!check_last_char(selfile, "/")){
-                  snprintf(selfile + strlen(selfile), 4096, "%s", "/");
+                  snprintf(selfile + strlen(selfile), 4096 - strlen(selfile), "%s", "/");
                 }
-                snprintf(selfile + strlen(selfile), 4096, "%s", ob[blockstart].name);
+                snprintf(selfile + strlen(selfile), 4096 - strlen(selfile), "%s", ob[blockstart].name);
                 if (!check_dir(selfile)){
                   *ob[blockstart].marked = 1;
                 }
