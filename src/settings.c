@@ -407,11 +407,6 @@ void settingsMenuView(wchar_t *settingsMenuLabel, int settingsMenuSize, menuDef 
   clear();
   wPrintMenu(0,0,settingsMenuLabel);
 
-  // TODO call the settings loader
-  // settingsAction("read", application, NULL, NULL, NULL, NULL, 0, 0, 0, globalConfLocation);
-  // settingsAction("read", application, NULL, NULL, NULL, NULL, 0, 0, 0, homeConfLocation);
-  // settingsAction("generate", application, NULL, NULL, NULL, NULL, 0, 0, 0, NULL);
-
   while(1)
     {
       for (count = 0; count < totalItems; count++){
