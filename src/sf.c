@@ -1,7 +1,7 @@
 /*
   DF-SHOW: An interactive directory/file browser written for Unix-like systems.
   Based on the applications from the PC-DOS DF-EDIT suite by Larry Kroeker.
-  Copyright (C) 2018-2023  Robert Ian Hawdon
+  Copyright (C) 2018-2024  Robert Ian Hawdon
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -47,6 +47,9 @@ extern char regexinput[1024];
 
 int colormode = 0;
 int messageBreak = 0;
+
+extern char *programName;
+
 extern int displaysize;
 extern int topline;
 extern int leftcol;
@@ -131,7 +134,9 @@ int main(int argc, char *argv[])
   int c;
 
   initI18n();
-  
+
+  setDynamicChar(&programName, "%s", PROGRAM_NAME);
+
   setConfLocations();
 
   // Read the config
@@ -245,3 +250,4 @@ int main(int argc, char *argv[])
   exittoshell();
   return 0;
 }
+

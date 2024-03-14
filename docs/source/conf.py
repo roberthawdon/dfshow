@@ -20,13 +20,13 @@
 # -- Project information -----------------------------------------------------
 
 project = 'Directory File Show (DF-SHOW)'
-copyright = '2023, Robert Ian Hawdon'
+copyright = '2024, Robert Ian Hawdon'
 author = 'Robert Ian Hawdon'
 
 # The short X.Y version
 version = '0.10'
 # The full version, including alpha/beta/rc tags
-release = '0.10.1-beta'
+release = '0.10.2-beta'
 
 
 # -- General configuration ---------------------------------------------------

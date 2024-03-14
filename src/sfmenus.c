@@ -1,7 +1,7 @@
 /*
   DF-SHOW: An interactive directory/file browser written for Unix-like systems.
   Based on the applications from the PC-DOS DF-EDIT suite by Larry Kroeker.
-  Copyright (C) 2018-2023  Robert Ian Hawdon
+  Copyright (C) 2018-2024  Robert Ian Hawdon
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -70,7 +70,7 @@ extern char fileName[4096];
 extern int displaysize;
 extern int totallines;
 extern int longestlongline;
-extern int viewmode;
+extern int viewMode;
 
 extern int wrap;
 extern int wrapmode;
@@ -193,7 +193,7 @@ void show_file_position_input(int currentpos)
   int curPos = 0;
   // Fun fact, in DF-EDIT 2.3d, the following text input typoed "absolute" as "absolue", this typo also exists in the Windows version from 1997 (2.3d-76), however, the 1986 documentation correctly writes it as "absolute".
   setDynamicChar(&filePosText, _("Position relative (<+num> || <-num>) or absolute (<num>):"));
-  viewmode = 2;
+  viewMode = 4;
   move(0,0);
   clrtoeol();
   curPos = (printMenu(0,0,filePosText) + 1);
@@ -225,6 +225,7 @@ void show_file_position_input(int currentpos)
 void show_file_inputs()
 {
   int e = 0;
+  viewMode = 4;
   wPrintMenu(0, 0, sfFileMenuLabel);
   while(1)
     {
@@ -258,8 +259,9 @@ void show_file_inputs()
         settingsMenuView(sfSettingsMenuLabel, sfSettingsMenuSize, sfSettingsMenu, &settingIndexSf, &charValuesSf, &binValuesSf, totalCharItemsSf, totalBinItemsSf, generateSfSettingsVars(), "sf");
         wPrintMenu(0, 0, sfFileMenuLabel);
         if(wrap){
-          leftcol = 1;
         }
+          leftcol = 1;
+        viewMode = 4;
         refreshScreenSf();
         // updateView();
       } else if (*pc == menuHotkeyLookup(sfFileMenu, "f_quit", sfFileMenuSize)){

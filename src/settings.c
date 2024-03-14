@@ -1,7 +1,7 @@
 /*
   DF-SHOW: An interactive directory/file browser written for Unix-like systems.
   Based on the applications from the PC-DOS DF-EDIT suite by Larry Kroeker.
-  Copyright (C) 2018-2023  Robert Ian Hawdon
+  Copyright (C) 2018-2024  Robert Ian Hawdon
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -44,6 +44,9 @@ extern int * pc;
 
 extern char globalConfLocation[4096];
 extern char homeConfLocation[4096];
+
+extern int viewMode;
+
 
 void updateSetting(settingIndex **settings, int index, int type, int intSetting)
 {
@@ -392,6 +395,7 @@ int textValueLookup(t1CharValues **values, int *items, char *refLabel, char *val
 
 void settingsMenuView(wchar_t *settingsMenuLabel, int settingsMenuSize, menuDef *settingsMenu, settingIndex **settings, t1CharValues **charValues, t2BinValues **binValues, int totalCharItems, int totalBinItems, int totalItems, char *application)
 {
+  viewMode = 3;
   int count = 0;
   int x = 2;
   int y = 3;
@@ -402,11 +406,6 @@ void settingsMenuView(wchar_t *settingsMenuLabel, int settingsMenuSize, menuDef 
 
   clear();
   wPrintMenu(0,0,settingsMenuLabel);
-
-  // TODO call the settings loader
-  settingsAction("read", application, NULL, NULL, NULL, NULL, 0, 0, 0, globalConfLocation);
-  settingsAction("read", application, NULL, NULL, NULL, NULL, 0, 0, 0, homeConfLocation);
-  settingsAction("generate", application, NULL, NULL, NULL, NULL, 0, 0, 0, NULL);
 
   while(1)
     {

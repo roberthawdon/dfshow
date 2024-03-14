@@ -1,7 +1,7 @@
 /*
   DF-SHOW: An interactive directory/file browser written for Unix-like systems.
   Based on the applications from the PC-DOS DF-EDIT suite by Larry Kroeker.
-  Copyright (C) 2018-2023  Robert Ian Hawdon
+  Copyright (C) 2018-2024  Robert Ian Hawdon
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -68,15 +68,31 @@ int displaysize;
 
 char fileName[4096];
 
+int viewMode = 0;
+
+char *programName;
+
 extern int * pc;
 
 extern int resized;
+
+extern bool topMenu;
+extern bool bottomMenu;
+extern wchar_t *topMenuBuffer;
+extern wchar_t *bottomMenuBuffer;
 
 void refreshScreenShow();
 void refreshScreenSf();
 
 void refreshScreen(char *application)
 {
+  endwin();
+  clear();
+  cbreak();
+  noecho();
+  curs_set(FALSE);
+  keypad(stdscr, TRUE);
+  refresh();
   #ifdef APPLICATION_SHOW
     if (!strcmp(application, "show")) {
       refreshScreenShow();
@@ -98,7 +114,9 @@ int getch10th (void) {
   do {
     if (resized) {
       resized = 0;
-      refreshScreen("show");
+      refreshScreen(programName);
+      ch = -1;
+      break;
     }
     halfdelay (1);
     ch = getch();
@@ -329,7 +347,7 @@ char * objectFromPath(const char *myStr){
 void printVersion(char* programName){
   printf (("Directory File Show (DF-SHOW) - %s %s\n"), programName, VERSION);
   fputs (("\
-Copyright (C) 2023 Robert Ian Hawdon\n\
+Copyright (C) 2024 Robert Ian Hawdon\n\
 License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.\n\
 This program comes with ABSOLUTELY NO WARRANTY. This is free software, and you\n\
 are welcome to redistribute it under certain conditions.\n"), stdout);

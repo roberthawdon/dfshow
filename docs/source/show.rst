@@ -60,11 +60,11 @@ The following options are shared with ``ls``:
   Displays the file sizes in a human readable format. For example,
   1024 Bytes will be represented as 1M.
 
-``-i``, ``--inode``
-  Prints the index number of each file
-
 ``--si``
   As above, but uses powers of 1000. (1000 = 1m)
+
+``-i``, ``--inode``
+  Prints the index number of each file
 
 ``-n``, ``-numeric-uid-gid``
   Show numeric values for user and group IDs.

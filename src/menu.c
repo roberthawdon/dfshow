@@ -1,7 +1,7 @@
 /*
   DF-SHOW: An interactive directory/file browser written for Unix-like systems.
   Based on the applications from the PC-DOS DF-EDIT suite by Larry Kroeker.
-  Copyright (C) 2018-2023  Robert Ian Hawdon
+  Copyright (C) 2018-2024  Robert Ian Hawdon
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -28,6 +28,11 @@
 #include "common.h"
 #include "menu.h"
 #include "banned.h"
+
+bool topMenu = true;
+bool bottomMenu = true;
+wchar_t *topMenuBuffer;
+wchar_t *bottomMenuBuffer;
 
 int dynamicMenuLabel(wchar_t **label, const char *str)
 {
@@ -220,6 +225,13 @@ int wPrintMenu(int line, int col, wchar_t *menustring)
   move(line, col);
   clrtoeol();
   len = wcslen(menustring);
+  if ( line == 0 ){
+    setDynamicWChar(&topMenuBuffer, L"%ls", menustring);
+    topMenu = true;
+  } else {
+    setDynamicWChar(&bottomMenuBuffer, L"%ls", menustring);
+    bottomMenu = true;
+  }
   setColors(COMMAND_PAIR);
   for (i = 0; i < len; i++)
     {

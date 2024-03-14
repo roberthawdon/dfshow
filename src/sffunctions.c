@@ -1,7 +1,7 @@
 /*
   DF-SHOW: An interactive directory/file browser written for Unix-like systems.
   Based on the applications from the PC-DOS DF-EDIT suite by Larry Kroeker.
-  Copyright (C) 2018-2023  Robert Ian Hawdon
+  Copyright (C) 2018-2024  Robert Ian Hawdon
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -47,7 +47,6 @@ int leftcol = 1;
 int totallines = 0;
 int longestline = 0;
 int longestlongline = 0;
-int viewmode = 0;
 
 int tabsize = 8;
 
@@ -99,6 +98,13 @@ extern int settingsBinPos;
 extern menuDef *settingsMenu;
 extern int settingsMenuSize;
 extern wchar_t *settingsMenuLabel;
+
+extern bool topMenu;
+extern bool bottomMenu;
+extern wchar_t *topMenuBuffer;
+extern wchar_t *bottomMenuBuffer;
+
+extern int viewMode;
 
 void readSfConfig(const char * confFile)
 {
@@ -195,18 +201,33 @@ int generateSfSettingsVars()
 
 void refreshScreenSf()
 {
-  endwin();
-  clear();
-  refresh();
-  displaysize = LINES - 2;
+  // endwin();
+  // clear();
+  // refresh();
+  // displaysize = LINES - 2;
   unloadSfMenuLabels();
   refreshSfMenuLabels();
-  if (viewmode == 0){
-    mvprintw(0,0,_("Show File - Enter pathname:"));
-  } else if (viewmode > 0){
-    wPrintMenu(0, 0, sfFileMenuLabel);
-    loadFile(fileName);
-  }
+  // if (viewMode == 0){
+  //   mvprintw(0,0,_("Show File - Enter pathname:"));
+  // } else if (viewMode > 0){
+  //   wPrintMenu(0, 0, sfFileMenuLabel);
+  //   loadFile(fileName);
+  // }
+  switch(viewMode)
+    {
+    case 3: // Settings View
+      wPrintMenu(0, 0, topMenuBuffer);
+      break;
+    case 4: // SF View
+      updateView();
+      wPrintMenu(0, 0, topMenuBuffer);
+      wPrintMenu(LINES-1, 0, bottomMenuBuffer);
+      break;
+    default: // Fallback
+      wPrintMenu(0, 0, topMenuBuffer);
+      wPrintMenu(LINES-1, 0, bottomMenuBuffer);
+      break;
+    }
 }
 
 int calculateTab(int pos)
@@ -334,7 +355,7 @@ void loadFile(const char * currentfile)
   len = 0;
   longestline = 0;
   longestlongline = 0;
-  viewmode = 1;
+  viewMode = 4;
   totallines = 0;
 
   filePos = malloc(sizeof(long int) + 1); // Initial size of lookup

@@ -1,7 +1,7 @@
 /*
   DF-SHOW: An interactive directory/file browser written for Unix-like systems.
   Based on the applications from the PC-DOS DF-EDIT suite by Larry Kroeker.
-  Copyright (C) 2018-2023  Robert Ian Hawdon
+  Copyright (C) 2018-2024  Robert Ian Hawdon
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -1117,7 +1117,7 @@ void delete_multi_file_confirm_input(results* ob)
 
 void sort_view_inputs()
 {
-  viewMode = 3;
+  viewMode = 0;
   while(1)
     {
       wPrintMenu(0,0,sortMenuLabel);
@@ -1438,7 +1438,7 @@ void linktext_input(char *file, int symbolic)
 
 void link_key_menu_inputs()
 {
-  viewMode = 5;
+  viewMode = 0;
   wPrintMenu(0,0,linkMenuLabel);
   memcpy(selfile, currentpwd, 4096);
   if (!check_last_char(selfile, "/")){
@@ -1570,7 +1570,7 @@ void modify_context_menu_inputs()
 
 void modify_key_menu_inputs()
 {
-  viewMode = 2;
+  viewMode = 0;
   wPrintMenu(0,0,modifyMenuLabel);
   while(1)
     {
@@ -2044,9 +2044,9 @@ void global_menu_inputs()
 {
   wPrintMenu(0,0,globalMenuLabel);
   if (historyref == 0){
-    viewMode = 4;
-  } else {
     viewMode = 1;
+  } else {
+    viewMode = 0;
   }
   while(1)
     {

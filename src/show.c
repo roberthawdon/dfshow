@@ -1,7 +1,7 @@
 /*
   DF-SHOW: An interactive directory/file browser written for Unix-like systems.
   Based on the applications from the PC-DOS DF-EDIT suite by Larry Kroeker.
-  Copyright (C) 2018-2023  Robert Ian Hawdon
+  Copyright (C) 2018-2024  Robert Ian Hawdon
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -30,8 +30,10 @@
 #include <ctype.h>
 #include <math.h>
 #include <libintl.h>
+#include "customtypes.h"
 #include "config.h"
 #include "showfunctions.h"
+#include "sffunctions.h"
 #include "showmenus.h"
 #include "sfmenus.h"
 #include "colors.h"
@@ -49,7 +51,6 @@ char * pagerPath;
 
 char currentpwd[4096];
 
-int viewMode = 0;
 int resized = 0;
 
 char sortmode[9] = "name";
@@ -118,6 +119,10 @@ t2BinValues *binValuesShow;
 int totalCharItemsShow;
 int totalBinItemsShow;
 
+extern char *programName;
+
+extern int viewMode;
+
 extern int skippable;
 
 extern int settingsPos;
@@ -156,6 +161,13 @@ extern wchar_t *linkMenuLabel;
 
 extern xattrList *xa;
 extern int xattrPos;
+
+extern bool topMenu;
+extern bool bottomMenu;
+extern wchar_t *topMenuBuffer;
+extern wchar_t *bottomMenuBuffer;
+
+extern char fileName[4096];
 
 int setMarked(char* markedinput);
 int checkStyle(char* styleinput);
@@ -810,44 +822,32 @@ int setBlockSize(const char * arg){
 
 void refreshScreenShow()
 {
-  endwin();
-  clear();
-  cbreak();
-  noecho();
-  curs_set(FALSE);
-  keypad(stdscr, TRUE);
-  refresh();
   unloadShowMenuLabels();
   refreshShowMenuLabels();
   switch(viewMode)
     {
-    case 0:
+    case 0: // Directory View
       resizeDisplayDir(ob);
-      wPrintMenu(0, 0, showFileMenuLabel);
-      wPrintMenu(LINES-1, 0, functionMenuLabel);
+      wPrintMenu(0, 0, topMenuBuffer);
+      wPrintMenu(LINES-1, 0, bottomMenuBuffer);
       break;
-    case 1:
-      resizeDisplayDir(ob);
-      wPrintMenu(0,0,globalMenuLabel);
-      wPrintMenu(LINES-1, 0, functionMenuLabel);
+    case 1: // Global Menu View
+      wPrintMenu(0, 0, topMenuBuffer);
       break;
-    case 2:
-      resizeDisplayDir(ob);
-      wPrintMenu(0, 0, modifyMenuLabel);
-      wPrintMenu(LINES-1, 0, functionMenuLabel);
+    case 2: // Colors View
+      themeBuilder();
       break;
-    case 3:
-      resizeDisplayDir(ob);
-      wPrintMenu(0, 0, sortMenuLabel);
-      wPrintMenu(LINES-1, 0, functionMenuLabel);
+    case 3: // Settings View
+      wPrintMenu(0, 0, topMenuBuffer);
       break;
-    case 4:
-      wPrintMenu(0,0,globalMenuLabel);
+    case 4: // SF View
+      updateView();
+      wPrintMenu(0, 0, topMenuBuffer);
+      wPrintMenu(LINES-1, 0, bottomMenuBuffer);
       break;
-    case 5:
-      resizeDisplayDir(ob);
-      wPrintMenu(0, 0, linkMenuLabel);
-      wPrintMenu(LINES-1, 0, functionMenuLabel);
+    default: // Fallback
+      wPrintMenu(0, 0, topMenuBuffer);
+      wPrintMenu(LINES-1, 0, bottomMenuBuffer);
       break;
     }
 }
@@ -941,6 +941,8 @@ int main(int argc, char *argv[])
   char options[22];
 
   initI18n();
+
+  setDynamicChar(&programName, "%s", PROGRAM_NAME);
 
 #ifdef HAVE_ACL_TYPE_EXTENDED
   snprintf(options, 22, "%s", "@aABdfgGhilnrsStUZ1");
