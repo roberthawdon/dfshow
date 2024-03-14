@@ -165,6 +165,8 @@ int visibleOffset;
 int listLen;
 entryLines *el;
 
+extern int returnCode;
+
 extern char fileName[4096];
 
 extern bool parentShow;
@@ -746,7 +748,7 @@ void writeResultStruct(results* ob, const char * filename, struct stat buffer, i
     // Now we know the size, lets clear the memory and read again.
     free(ob[count].slink);
     ob[count].slink = malloc(sizeof(char) * (cslinklen + 1));
-    readlink(filename, ob[count].slink, cslinklen);
+    cslinklen = readlink(filename, ob[count].slink, cslinklen + 1);
     ob[count].slink[cslinklen] = '\0';
   } else {
     ob[count].slink = malloc(sizeof(char) + 1);
@@ -1531,7 +1533,7 @@ void LaunchShell()
   endwin();
   // write(STDOUT_FILENO, "\nUse 'exit' to return to Show.\n\n", 32);
   printf(_("\nUse 'exit' to return to Show.\n\n"));
-  system(getenv("SHELL"));
+  returnCode = system(getenv("SHELL"));
   refreshScreenShow();
 }
 
@@ -1539,8 +1541,8 @@ void LaunchExecutable(const char* object, const char* args)
 {
   char *command = malloc(sizeof(char) * (strlen(object) + strlen(args) + 4));
   snprintf(command, (strlen(object) + strlen(args) + 4), "'%s' %s", object, args);
-  system("clear"); // Just to be sure
-  system(command);
+  returnCode = system("clear"); // Just to be sure
+  returnCode = system(command);
   free(command);
   refreshScreenShow();
 }
@@ -2333,7 +2335,7 @@ results* get_dir(char *pwd)
           historyref--;
           if (historyref > 0){
             memcpy(path, hs[historyref - 1].path, strlen(hs[historyref - 1].path));
-            chdir(path);
+            returnCode = chdir(path);
             dirAbort = 1;
             goto reload;
           } else {
@@ -2372,7 +2374,7 @@ results* get_dir(char *pwd)
     historyref--;
     if (historyref > 0){
       memcpy(path, hs[historyref - 1].path, strlen(hs[historyref - 1].path));
-      chdir(path);
+      returnCode = chdir(path);
       dirAbort = 1;
       goto reload;
     } else {
@@ -2788,61 +2790,61 @@ void display_dir(char *pwd, results* ob){
     t = segOrder[n];
     switch(t){
     case COL_MARK:
-      headerCombinedLen = (headerCombinedLen + strlen(markedHeadSeg));
-      headerCombined = realloc(headerCombined, sizeof(char) * headerCombinedLen);
+      headerCombinedLen = (headerCombinedLen + strlen(markedHeadSeg) + 1);
+      headerCombined = realloc(headerCombined, sizeof(char) * headerCombinedLen * 2);
       snprintf(headerCombined + strlen(headerCombined), headerCombinedLen, "%s", markedHeadSeg);
       break;
     case COL_INODE:
       if (showInodes){
-        headerCombinedLen = (headerCombinedLen + strlen(inodeHeadSeg));
-        headerCombined = realloc(headerCombined, sizeof(char) * headerCombinedLen);
+        headerCombinedLen = (headerCombinedLen + strlen(inodeHeadSeg) + 1);
+        headerCombined = realloc(headerCombined, sizeof(char) * headerCombinedLen * 2);
         snprintf(headerCombined + strlen(headerCombined), headerCombinedLen, "%s", inodeHeadSeg);
       }
       break;
     case COL_SIZEBLOCKS:
       if (showSizeBlocks){
-        headerCombinedLen = (headerCombinedLen + strlen(sizeBlocksHeadSeg));
-        headerCombined = realloc(headerCombined, sizeof(char) * headerCombinedLen);
+        headerCombinedLen = (headerCombinedLen + strlen(sizeBlocksHeadSeg) + 1);
+        headerCombined = realloc(headerCombined, sizeof(char) * headerCombinedLen * 2);
         snprintf(headerCombined + strlen(headerCombined), headerCombinedLen, "%s", sizeBlocksHeadSeg);
       }
       break;
     case COL_ATTR:
-      headerCombinedLen = (headerCombinedLen + strlen(attrHeadSeg));
-      headerCombined = realloc(headerCombined, sizeof(char) * headerCombinedLen);
+      headerCombinedLen = (headerCombinedLen + strlen(attrHeadSeg) + 1);
+      headerCombined = realloc(headerCombined, sizeof(char) * headerCombinedLen * 2);
       snprintf(headerCombined + strlen(headerCombined), headerCombinedLen, "%s", attrHeadSeg);
       break;
     case COL_HLINK:
-      headerCombinedLen = (headerCombinedLen + strlen(hlinkHeadSeg));
-      headerCombined = realloc(headerCombined, sizeof(char) * headerCombinedLen);
+      headerCombinedLen = (headerCombinedLen + strlen(hlinkHeadSeg) + 1);
+      headerCombined = realloc(headerCombined, sizeof(char) * headerCombinedLen * 2);
       snprintf(headerCombined + strlen(headerCombined), headerCombinedLen, "%s", hlinkHeadSeg);
       break;
     case COL_OWNER:
       if (ogavis){
-        headerCombinedLen = (headerCombinedLen + strlen(ownerHeadSeg));
-        headerCombined = realloc(headerCombined, sizeof(char) * headerCombinedLen);
+        headerCombinedLen = (headerCombinedLen + strlen(ownerHeadSeg) + 1);
+        headerCombined = realloc(headerCombined, sizeof(char) * headerCombinedLen * 2);
         snprintf(headerCombined + strlen(headerCombined), headerCombinedLen, "%s", ownerHeadSeg);
       }
       break;
     case COL_CONTEXT:
       if (showContext){
-        headerCombinedLen = (headerCombinedLen + strlen(contextHeadSeg));
-        headerCombined = realloc(headerCombined, sizeof(char) * headerCombinedLen);
+        headerCombinedLen = (headerCombinedLen + strlen(contextHeadSeg) + 1);
+        headerCombined = realloc(headerCombined, sizeof(char) * headerCombinedLen * 2);
         snprintf(headerCombined + strlen(headerCombined), headerCombinedLen, "%s", contextHeadSeg);
       }
       break;
     case COL_SIZE:
-      headerCombinedLen = (headerCombinedLen + strlen(sizeHeadSeg));
-      headerCombined = realloc(headerCombined, sizeof(char) * headerCombinedLen);
+      headerCombinedLen = (headerCombinedLen + strlen(sizeHeadSeg) + 1);
+      headerCombined = realloc(headerCombined, sizeof(char) * headerCombinedLen * 2);
       snprintf(headerCombined + strlen(headerCombined), headerCombinedLen, "%s", sizeHeadSeg);
       break;
     case COL_DATE:
-      headerCombinedLen = (headerCombinedLen + strlen(dateHeadSeg));
-      headerCombined = realloc(headerCombined, sizeof(char) * headerCombinedLen);
+      headerCombinedLen = (headerCombinedLen + strlen(dateHeadSeg) + 1);
+      headerCombined = realloc(headerCombined, sizeof(char) * headerCombinedLen * 2);
       snprintf(headerCombined + strlen(headerCombined), headerCombinedLen, "%s", dateHeadSeg);
       break;
     case COL_NAME:
-      headerCombinedLen = (headerCombinedLen + strlen(nameHeadSeg));
-      headerCombined = realloc(headerCombined, sizeof(char) * headerCombinedLen);
+      headerCombinedLen = (headerCombinedLen + strlen(nameHeadSeg) + 1);
+      headerCombined = realloc(headerCombined, sizeof(char) * headerCombinedLen * 2);
       snprintf(headerCombined + strlen(headerCombined), headerCombinedLen, "%s", nameHeadSeg);
       break;
     default:

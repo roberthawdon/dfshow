@@ -72,6 +72,8 @@ int viewMode = 0;
 
 char *programName;
 
+int returnCode;
+
 extern int * pc;
 
 extern int resized;
