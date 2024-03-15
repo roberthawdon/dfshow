@@ -201,18 +201,8 @@ int generateSfSettingsVars()
 
 void refreshScreenSf()
 {
-  // endwin();
-  // clear();
-  // refresh();
-  // displaysize = LINES - 2;
   unloadSfMenuLabels();
   refreshSfMenuLabels();
-  // if (viewMode == 0){
-  //   mvprintw(0,0,_("Show File - Enter pathname:"));
-  // } else if (viewMode > 0){
-  //   wPrintMenu(0, 0, sfFileMenuLabel);
-  //   loadFile(fileName);
-  // }
   switch(viewMode)
     {
     case 3: // Settings View
@@ -322,6 +312,8 @@ void updateView()
         // This doesn't increase the max line.
         if (line[i] == '\t'){
           s = s + calculateTab(s);
+        } else if (line[i] == '\r') {
+          continue;
         } else {
           s = s + wcwidth(longline[i]);
         }
@@ -410,7 +402,6 @@ void file_view(char * currentfile)
     free(notFoundMessage);
     exitCode = 1;
   }
-  // sleep(10); // No function, so we'll pause for 10 seconds to display our menu
 
   return;
 }
