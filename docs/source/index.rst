@@ -10,9 +10,3 @@ Directory File Show (DF-SHOW)
    sf
    license
 
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
