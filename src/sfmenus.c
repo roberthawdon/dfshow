@@ -45,6 +45,8 @@ menuDef *caseMenu;
 int caseMenuSize = 0;
 wchar_t *caseMenuLabel;
 
+extern MEVENT event;
+
 extern bool parentShow;
 
 extern int c;
@@ -339,6 +341,20 @@ void show_file_inputs()
         if (wrap != 1){
           leftcol = longestlongline;
           updateView();
+        }
+      } else if (*pc == KEY_MOUSE){
+        if(getmouse(&event) == OK) {
+          if(event.bstate & BUTTON5_PRESSED) {
+            if (topline < totallines + 1){
+              topline++;
+              updateView();
+            }
+          } else if (event.bstate & BUTTON4_PRESSED){
+           if (topline > 1){
+             topline--;
+             updateView();
+           }
+          }
         }
       }
    }
