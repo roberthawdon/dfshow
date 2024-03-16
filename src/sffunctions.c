@@ -294,6 +294,8 @@ void updateView()
   left--;
   displaycount = 0;
 
+  displaysize = LINES - 2;
+
   clear_workspace();
   setColors(DISPLAY_PAIR);
 
@@ -388,8 +390,6 @@ void file_view(char * currentfile)
   clear();
   wPrintMenu(0, 0, sfFileMenuLabel);
   setColors(COMMAND_PAIR);
-
-  displaysize = LINES - 2;
 
   refresh();
 
