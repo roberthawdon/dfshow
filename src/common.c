@@ -43,6 +43,8 @@
 DIR *folder;
 FILE *file;
 
+MEVENT event;
+
 int c;
 int * pc = &c;
 

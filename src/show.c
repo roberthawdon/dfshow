@@ -119,6 +119,8 @@ t2BinValues *binValuesShow;
 int totalCharItemsShow;
 int totalBinItemsShow;
 
+extern MEVENT event;
+
 extern int returnCode;
 
 extern char *programName;
@@ -1258,6 +1260,9 @@ Valid arguments are:\n\
   noecho();
   curs_set(FALSE); // Hide Curser (Will want to bring it back later)
   keypad(stdscr, TRUE);
+
+  // Enable mouse events
+  mousemask(ALL_MOUSE_EVENTS | REPORT_MOUSE_POSITION, NULL);
 
   generateShowSettingsVars();
 

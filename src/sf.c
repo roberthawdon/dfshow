@@ -48,6 +48,8 @@ extern char regexinput[1024];
 int colormode = 0;
 int messageBreak = 0;
 
+extern MEVENT event;
+
 extern char *programName;
 
 extern int displaysize;
@@ -235,6 +237,9 @@ int main(int argc, char *argv[])
   noecho();
   curs_set(FALSE);
   keypad(stdscr, TRUE);
+
+  // Enable mouse events
+  mousemask(ALL_MOUSE_EVENTS | REPORT_MOUSE_POSITION, NULL);
 
   if (launchSettingsMenu == 1) {
     settingsMenuView(sfSettingsMenuLabel, sfSettingsMenuSize, sfSettingsMenu, &settingIndexSf, &charValuesSf, &binValuesSf, totalCharItemsSf, totalBinItemsSf, generateSfSettingsVars(), "sf");
