@@ -74,6 +74,8 @@ extern int totallines;
 extern int longestlongline;
 extern int viewMode;
 
+extern int sfScrollStep;
+
 extern int wrap;
 extern int wrapmode;
 
@@ -224,6 +226,50 @@ void show_file_position_input(int currentpos)
   wPrintMenu(0, 0, sfFileMenuLabel);
 }
 
+void sfNavigate(int direction, int step){
+
+  int testStep = 0;
+  int i = 0;
+
+  switch(direction){
+    case D_DOWN:
+      testStep = (totallines +1) - topline;
+      if ((testStep > 0) && (testStep >= step)){
+        i = step;
+      } else if ((testStep > 0) && (testStep < step)){
+        i = testStep;
+      } else {
+        break;
+      }
+      topline = topline + i;
+      updateView();
+      break;
+    case D_UP:
+      if (topline > step){
+        topline = topline - step;
+      } else if (topline <= step) {
+        topline = 1;
+      }
+      updateView();
+      break;
+    case D_LEFT:
+      if ((leftcol > 1) && (wrap != 1)){
+        leftcol = leftcol - step;
+        updateView();
+      }
+      break;
+    case D_RIGHT:
+      if ((leftcol < longestlongline) && (wrap != 1)){
+        leftcol = leftcol + step;
+        updateView();
+      }
+      break;
+    default:
+      break;
+  }
+
+}
+
 void show_file_inputs()
 {
   int e = 0;
@@ -308,29 +354,16 @@ void show_file_inputs()
         updateView();
       } else if (*pc == 258){
         // Down Arrow
-        if (topline < totallines + 1){
-          topline++;
-          //loadFile(fileName);
-          updateView();
-        }
+        sfNavigate(D_DOWN, 1);
       } else if (*pc == 259){
         // Up Arrow
-        if (topline > 1){
-          topline--;
-          updateView();
-        }
+        sfNavigate(D_UP, 1);
       } else if (*pc == 260){
         // Left Arrow
-        if ((leftcol > 1) && (wrap != 1)){
-          leftcol--;
-          updateView();
-        }
+        sfNavigate(D_LEFT, 1);
       } else if (*pc == 261){
         // Right Arrow
-        if ((leftcol < longestlongline) && (wrap != 1)){
-          leftcol++;
-          updateView();
-        }
+        sfNavigate(D_RIGHT, 1);
       } else if (*pc == 262){
         // Home
         // Let's not disable this key when Wrapping is on, just in case.
@@ -345,15 +378,9 @@ void show_file_inputs()
       } else if (*pc == KEY_MOUSE){
         if(getmouse(&event) == OK) {
           if(event.bstate & BUTTON5_PRESSED) {
-            if (topline < totallines + 1){
-              topline++;
-              updateView();
-            }
+            sfNavigate(D_DOWN, sfScrollStep);
           } else if (event.bstate & BUTTON4_PRESSED){
-           if (topline > 1){
-             topline--;
-             updateView();
-           }
+            sfNavigate(D_UP, sfScrollStep);
           }
         }
       }

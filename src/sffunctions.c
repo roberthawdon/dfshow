@@ -50,6 +50,8 @@ int longestlongline = 0;
 
 int tabsize = 8;
 
+int sfScrollStep = 4;
+
 int wrap = 0;
 int wrapmode = LINE_WRAP;
 
