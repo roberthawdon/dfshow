@@ -5,6 +5,11 @@
 #define M_NONE 0x00
 #define M_NORMAL 0x01
 
+#define D_DOWN  0
+#define D_UP    1
+#define D_LEFT  2
+#define D_RIGHT 3
+
 #include "customtypes.h"
 
 void refreshScreen(char *application);
