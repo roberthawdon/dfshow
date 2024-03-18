@@ -108,6 +108,8 @@ char *objectWild;
 
 char block_unit[4] = "\0\0\0\0";
 
+int showScrollStep = 4;
+
 results *ob;
 
 int segOrder[10] = {COL_MARK, COL_INODE, COL_SIZEBLOCKS, COL_ATTR, COL_HLINK, COL_OWNER, COL_CONTEXT, COL_SIZE, COL_DATE, COL_NAME};

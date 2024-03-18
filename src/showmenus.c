@@ -76,6 +76,8 @@ int blockend = -1;
 struct utimbuf touchDate;
 time_t touchTime;
 
+extern MEVENT event;
+
 extern int returnCode;
 
 extern int c;
@@ -96,6 +98,8 @@ extern char *errmessage;
 extern results* ob;
 extern history* hs;
 extern char currentpwd[4096];
+
+extern int showScrollStep;
 
 extern int historyref;
 extern int sessionhistory;
@@ -1590,6 +1594,79 @@ void modify_key_menu_inputs()
     }
 }
 
+void showNavigate(int direction, int step){
+
+  int testStep = 0;
+  int i = 0;
+
+  switch(direction){
+    case D_DOWN:
+      testStep = totalfilecount - selected - 1;
+      if (testStep < step){
+        i = testStep;
+      } else {
+        i = step;
+      }
+      if (selected < (totalfilecount - 1)) {
+        if (selected != bottomFileRef){
+          selected = selected + i;
+        } else {
+          if (el[lineStart + displaysize].fileRef == el[lineStart + displaysize - 1].fileRef){
+            lineStart++;
+          } else {
+            selected = selected + i;
+            if (selected > (topfileref + displaysize - 1)){
+              lineStart = lineStart + i;
+            } else {
+              lineStart++;
+            }
+          }
+        }
+        clear_workspace();
+        display_dir(currentpwd, ob);
+      }
+      break;
+    case D_UP:
+      if (selected < step){
+        i = selected;
+      } else {
+        i = step;
+      }
+      if (selected > 0){
+        //topfileref is correct here.
+        if (selected == topfileref){
+          if (el[lineStart - 1].entryLineType != ET_OBJECT){
+            lineStart--;
+          } else {
+            selected = selected - i;
+            lineStart--;
+          }
+        } else {
+          selected = selected - i;
+        }
+        clear_workspace();
+        display_dir(currentpwd, ob);
+      }
+      break;
+    case D_LEFT:
+      if (hpos > 0){
+        hpos--;
+        clear_workspace();
+        display_dir(currentpwd, ob);
+      }
+      break;
+    case D_RIGHT:
+      if (hpos < (maxdisplaywidth - COLS)){
+        hpos++;
+        clear_workspace();
+        display_dir(currentpwd, ob);
+      }
+      break;
+    default:
+      break;
+  }
+}
+
 void directory_view_menu_inputs()
 {
   int e, i = 0;
@@ -1983,51 +2060,16 @@ void directory_view_menu_inputs()
       } else if (*pc == 258){
         // Down Arrow
       moveDown:
-        if (selected < (totalfilecount - 1)) {
-          if (selected != bottomFileRef){
-            selected++;
-          } else {
-            if (el[lineStart + displaysize].fileRef == el[lineStart + displaysize - 1].fileRef){
-              lineStart++;
-            } else {
-              selected++;
-              lineStart++;
-            }
-          }
-          clear_workspace();
-          display_dir(currentpwd, ob);
-        }
+        showNavigate(D_DOWN, 1);
       } else if (*pc == 259){
         // Up Arrow
-        if (selected > 0){
-          //topfileref is correct here.
-          if (selected == topfileref){
-            if (el[lineStart - 1].entryLineType != ET_OBJECT){
-              lineStart--;
-            } else {
-              selected--;
-              lineStart--;
-            }
-          } else {
-            selected--;
-          }
-          clear_workspace();
-          display_dir(currentpwd, ob);
-        }
+        showNavigate(D_UP, 1);
       } else if (*pc == 260){
         // Left Arrow
-        if (hpos > 0){
-          hpos--;
-          clear_workspace();
-          display_dir(currentpwd, ob);
-        }
+        showNavigate(D_LEFT, 1);
       } else if (*pc == 261){
         // Right Arrow
-        if (hpos < (maxdisplaywidth - COLS)){
-          hpos++;
-          clear_workspace();
-          display_dir(currentpwd, ob);
-        }
+        showNavigate(D_RIGHT, 1);
       } else if (*pc == 262){
         // Home Key
         selected = el[lineStart].fileRef;
@@ -2039,9 +2081,18 @@ void directory_view_menu_inputs()
         display_dir(currentpwd, ob);
       // } else if (*pc == 276){
       //   // F12 Key
+      } else if (*pc == KEY_MOUSE){
+        if(getmouse(&event) == OK) {
+          if(event.bstate & BUTTON5_PRESSED) {
+            showNavigate(D_DOWN, showScrollStep);
+          } else if (event.bstate & BUTTON4_PRESSED){
+            showNavigate(D_UP, showScrollStep);
+          }
+        }
       }
     }
 }
+
 void global_menu_inputs()
 {
   wPrintMenu(0,0,globalMenuLabel);
