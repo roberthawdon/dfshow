@@ -31,6 +31,19 @@ AC_CHECK_TYPES([aclent_t], [], [], [[#include <sys/acl.h>]])
 AC_CHECK_TYPES([ace_t], [], [], [[#include <sys/acl.h>]])
 AC_CHECK_FUNCS(acl_get facl_get acl_set facl_set)
 
+AC_CHECK_TOOL([UNAME], [uname], [false])
+case `$UNAME -s` in
+    Darwin*)
+        # macOS to use Homebrew version of ncurses which is v6
+        NCURSES_PREFIX=`brew --prefix ncurses`
+
+        CPPFLAGS="-I$NCURSES_PREFIX/include $CPPFLAGS"
+        LDFLAGS="-L$NCURSES_PREFIX/lib $LDFLAGS"
+        ;;
+
+    *)
+        ;;
+esac
 
 AC_CHECK_MEMBERS([struct stat.st_author])
 AC_CHECK_HEADERS([stdio.h limits.h signal.h ctype.h wctype.h getopt.h sys/types.h sys/stat.h dirent.h fcntl.h pwd.h string.h stdlib.h unistd.h time.h sys/statvfs.h libgen.h errno.h wchar.h hurd.h math.h sys/sysmacros.h regex.h utime.h sys/xattr.h acl/libacl.h stdint.h])
