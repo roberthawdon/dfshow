@@ -47,6 +47,9 @@ wchar_t *caseMenuLabel;
 
 extern MEVENT event;
 
+extern int topMenuStart;
+extern int bottomMenuStart;
+
 extern bool parentShow;
 
 extern int c;
@@ -270,6 +273,22 @@ void sfNavigate(int direction, int step){
 
 }
 
+int toggleWrap(){
+  if (wrap){
+    updateMenuItem(&sfFileMenu, &sfFileMenuSize, "f_wrap", _("!Wrap-on"));
+    wrap = 0;
+  } else {
+    updateMenuItem(&sfFileMenu, &sfFileMenuSize, "f_wrap", _("!Wrap-off"));
+    leftcol = 1;
+    wrap = 1;
+  }
+  unloadSfMenuLabels();
+  refreshSfMenuLabels();
+  wPrintMenu(0,0,sfFileMenuLabel);
+  updateView();
+  return(wrap);
+}
+
 void show_file_inputs()
 {
   int e = 0;
@@ -316,24 +335,13 @@ void show_file_inputs()
         free(longline);
         free(filePos);
         fclose(stream);
-	if (!parentShow){
+        if (!parentShow){
           exittoshell();
-	} else {
-          return;
-	}
-      } else if (*pc == menuHotkeyLookup(sfFileMenu, "f_wrap", sfFileMenuSize)){
-        if (wrap){
-          updateMenuItem(&sfFileMenu, &sfFileMenuSize, "f_wrap", _("!Wrap-on"));
-          wrap = 0;
         } else {
-          updateMenuItem(&sfFileMenu, &sfFileMenuSize, "f_wrap", _("!Wrap-off"));
-          leftcol = 1;
-          wrap = 1;
+          return;
         }
-        unloadSfMenuLabels();
-        refreshSfMenuLabels();
-        wPrintMenu(0,0,sfFileMenuLabel);
-        updateView();
+      } else if (*pc == menuHotkeyLookup(sfFileMenu, "f_wrap", sfFileMenuSize)){
+        toggleWrap();
       } else if (*pc == menuHotkeyLookup(sfFileMenu, "f_01", sfFileMenuSize) || *pc == 338){
         topline = topline + displaysize;
         if (topline > totallines + 1){
@@ -381,6 +389,8 @@ void show_file_inputs()
             sfNavigate(D_DOWN, sfScrollStep);
           } else if (event.bstate & BUTTON4_PRESSED){
             sfNavigate(D_UP, sfScrollStep);
+          } else if (event.bstate & BUTTON1_CLICKED){
+
           }
         }
       }
