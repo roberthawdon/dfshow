@@ -20,7 +20,16 @@ typedef struct {
   wchar_t displayLabel[32];
   int hotKey;
   int displayLabelSize;
+  int startPos;
 } menuDef;
+
+typedef struct {
+  char refLabel[16];
+  int topLeft;
+  int topRight;
+  int bottomLeft;
+  int bottomRight;
+} menuButton;
 
 typedef struct {
   int type;
