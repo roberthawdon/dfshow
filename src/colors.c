@@ -58,8 +58,8 @@ extern int colormode;
 extern int c;
 extern int * pc;
 
-extern char globalConfLocation[128];
-extern char homeConfLocation[128];
+extern char globalConfLocation[4096];
+extern char homeConfLocation[4096];
 
 extern int viewMode;
 

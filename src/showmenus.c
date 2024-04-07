@@ -132,7 +132,7 @@ extern int invalidstart;
 
 extern struct sigaction sa;
 
-extern char sortmode[5];
+extern char sortmode[9];
 
 extern int commandL, infoL, inputL, selectL, displayL, dangerL, dirL, slinkL, exeL, suidL, sgidL, hiliteL;
 
