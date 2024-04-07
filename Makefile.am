@@ -8,7 +8,7 @@ dfshowdatadir = $(datadir)/dfshow
 AM_CPPFLAGS = -DLOCALEDIR=\"$(localedir)\"
 AM_CFLAGS = -DSYSCONFIG=\"$(dfshowconfdir)\" -DDATADIR=\"$(dfshowdatadir)\" -D_XOPEN_SOURCE_EXTENDED -fno-common
 
-EXTRA_CFLAGS = -Werror=implicit-function-declaration -Werror=implicit-int -Werror=int-conversion -Werror=incompatible-pointer-types -flto=4 -Werror=odr -Werror=lto-type-mismatch -Werror=strict-aliasing
+EXTRA_CFLAGS = -Werror=implicit-function-declaration -Werror=implicit-int -Werror=int-conversion -Werror=incompatible-pointer-types -Werror=odr -Werror=strict-aliasing
 
 LDADD = -lm -lconfig $(LIBINTL)
 

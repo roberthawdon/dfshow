@@ -4,6 +4,19 @@ AC_PROG_CC
 AC_CONFIG_HEADERS([config.h:config.hin])
 AC_SUBST([AM_LDFLAGS])
 
+# Adjust CFLAGS depending on the compiler
+case "$CC" in
+  *gcc*)
+    CFLAGS="$CFLAGS -flto=4 -Werror=lto-type-mismatch"
+    ;;
+  *clang*)
+    CFLAGS="$CFLAGS"
+    ;;
+  *)
+    AC_MSG_WARN([Unknown compiler, using default CFLAGS])
+    ;;
+esac
+
 AM_GNU_GETTEXT([external])
 AM_GNU_GETTEXT_VERSION(0.17.18)
 AM_GNU_GETTEXT_REQUIRE_VERSION(0.17.18)
@@ -27,6 +40,9 @@ AC_CHECK_DECL([ACL_TYPE_EXTENDED],
     #include <sys/acl.h>])
 # Solaris and derivates ACLs
 AC_CHECK_LIB([sec], [acl_get])
+# Check for ncurses with wide character support
+AC_CHECK_LIB([ncursesw], [initscr], [],
+            [AC_MSG_ERROR([ncurses with wide character support not found.])])
 AC_CHECK_TYPES([aclent_t], [], [], [[#include <sys/acl.h>]])
 AC_CHECK_TYPES([ace_t], [], [], [[#include <sys/acl.h>]])
 AC_CHECK_FUNCS(acl_get facl_get acl_set facl_set)
