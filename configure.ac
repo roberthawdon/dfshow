@@ -7,7 +7,8 @@ AC_SUBST([AM_LDFLAGS])
 # Adjust CFLAGS depending on the compiler
 case "$CC" in
   *gcc*)
-    CFLAGS="$CFLAGS -flto=4 -Werror=lto-type-mismatch"
+    CFLAGS="$CFLAGS -flto=auto -Werror=lto-type-mismatch"
+    LDFLAGS="$LDFLAGS -flto=auto"
     ;;
   *clang*)
     CFLAGS="$CFLAGS"
