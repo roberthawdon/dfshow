@@ -8,6 +8,8 @@ dfshowdatadir = $(datadir)/dfshow
 AM_CPPFLAGS = -DLOCALEDIR=\"$(localedir)\"
 AM_CFLAGS = -DSYSCONFIG=\"$(dfshowconfdir)\" -DDATADIR=\"$(dfshowdatadir)\" -D_XOPEN_SOURCE_EXTENDED -fno-common
 
+EXTRA_CFLAGS = -Werror=implicit-function-declaration -Werror=implicit-int -Werror=int-conversion -Werror=incompatible-pointer-types -flto=4 -Werror=odr -Werror=lto-type-mismatch -Werror=strict-aliasing
+
 LDADD = -lm -lconfig $(LIBINTL)
 
 ACLOCAL_AMFLAGS = -I m4
@@ -33,10 +35,10 @@ endif
 bin_PROGRAMS = bin/show bin/sf
 bin_show_SOURCES = src/show.c src/showfunctions.c src/sffunctions.c src/showmenus.c src/sfmenus.c src/colors.c src/common.c src/menu.c src/input.c src/display.c src/settings.c src/i18n.c
 bin_show_LDADD = $(LDADD)
-bin_show_CFLAGS = $(AM_CFLAGS) -DAPPLICATION_SHOW -DAPPLICATION_SF
+bin_show_CFLAGS = $(EXTRA_CFLAGS) $(AM_CFLAGS) -DAPPLICATION_SHOW -DAPPLICATION_SF
 bin_sf_SOURCES = src/sf.c src/sffunctions.c src/sfmenus.c src/colors.c src/common.c src/menu.c src/input.c src/display.c src/settings.c src/i18n.c
 bin_sf_LDADD = $(LDADD)
-bin_sf_CFLAGS = $(AM_CFLAGS) -DAPPLICATION_SF
+bin_sf_CFLAGS = $(EXTRA_CFLAGS) $(AM_CFLAGS) -DAPPLICATION_SF
 dfshowconf_DATA = conf/dfshow.conf
 dfshowdata_DATA = themes/*
 

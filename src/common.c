@@ -53,10 +53,10 @@ bool parentShow = false;
 int exitCode = 0;
 int enableCtrlC = 0;
 
-char globalConfLocation[128];
-char homeConfLocation[128];
+char globalConfLocation[4096];
+char homeConfLocation[4096];
 
-char themeName[128] = "default";
+char themeName[256] = "default";
 
 char *errmessage;
 
