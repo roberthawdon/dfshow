@@ -41,30 +41,14 @@ AC_CHECK_DECL([ACL_TYPE_EXTENDED],
     #include <sys/acl.h>])
 # Solaris and derivates ACLs
 AC_CHECK_LIB([sec], [acl_get])
-# Check for ncurses with wide character support
-AC_CHECK_LIB([ncursesw], [initscr], [],
-            [AC_MSG_ERROR([ncurses with wide character support not found.])])
 AC_CHECK_TYPES([aclent_t], [], [], [[#include <sys/acl.h>]])
 AC_CHECK_TYPES([ace_t], [], [], [[#include <sys/acl.h>]])
 AC_CHECK_FUNCS(acl_get facl_get acl_set facl_set)
 
-AC_CHECK_TOOL([UNAME], [uname], [false])
-case `$UNAME -s` in
-    Darwin*)
-        # macOS to use Homebrew version of ncurses which is v6
-        NCURSES_PREFIX=`brew --prefix ncurses`
-
-        CPPFLAGS="-I$NCURSES_PREFIX/include $CPPFLAGS"
-        LDFLAGS="-L$NCURSES_PREFIX/lib $LDFLAGS"
-        ;;
-
-    *)
-        ;;
-esac
+PKG_CHECK_MODULES([NCURSES], [ncursesw])
 
 AC_CHECK_MEMBERS([struct stat.st_author])
 AC_CHECK_HEADERS([stdio.h limits.h signal.h ctype.h wctype.h getopt.h sys/types.h sys/stat.h dirent.h fcntl.h pwd.h string.h stdlib.h unistd.h time.h sys/statvfs.h libgen.h errno.h wchar.h hurd.h math.h sys/sysmacros.h regex.h utime.h sys/xattr.h acl/libacl.h stdint.h])
-AC_CHECK_HEADERS(ncurses.h, , AC_MSG_ERROR(ncurses header (ncurses.h) not found. You may need to install an ncurses development package.))
 AC_CHECK_HEADERS(libconfig.h, , AC_MSG_ERROR(libconfig header (libconfig.h) not found. You may need to install a libconfig development package.))
 AC_CHECK_HEADERS(sys/acl.h, , AC_MSG_ERROR(libacl header (sys/acl.h) not found. You may need to install a libacl development package.))
 
