@@ -40,3 +40,4 @@ po/*.gmo
 valgrind*
 *.#*
 ABOUT-NLS
+*.tar.gz
