@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: dfshow 0.10.4-dev\n"
 "Report-Msgid-Bugs-To: https://github.com/roberthawdon/dfshow/issues\n"
-"POT-Creation-Date: 2024-04-08 17:55+0100\n"
+"POT-Creation-Date: 2024-04-08 22:39+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -555,7 +555,7 @@ msgstr ""
 msgid "Please set a valid pager utility program command in settings."
 msgstr ""
 
-#: src//showfunctions.c:1659 src//showfunctions.c:1721 src//showmenus.c:1890
+#: src//showfunctions.c:1659 src//showfunctions.c:1721 src//showmenus.c:1936
 msgid "Error: Permission denied"
 msgstr ""
 
@@ -1052,6 +1052,6 @@ msgstr ""
 msgid "Set Context:"
 msgstr ""
 
-#: src//showmenus.c:1747
+#: src//showmenus.c:1793
 msgid "Error: Links can only be made against single files."
 msgstr ""
