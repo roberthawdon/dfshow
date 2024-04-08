@@ -35,10 +35,12 @@ endif
 bin_PROGRAMS = bin/show bin/sf
 bin_show_SOURCES = src/show.c src/showfunctions.c src/sffunctions.c src/showmenus.c src/sfmenus.c src/colors.c src/common.c src/menu.c src/input.c src/display.c src/settings.c src/i18n.c
 bin_show_LDADD = $(LDADD)
-bin_show_CFLAGS = $(EXTRA_CFLAGS) $(AM_CFLAGS) -DAPPLICATION_SHOW -DAPPLICATION_SF
+bin_show_CFLAGS = $(NCURSES_CFLAGS) $(EXTRA_CFLAGS) $(AM_CFLAGS) -DAPPLICATION_SHOW -DAPPLICATION_SF
+bin_show_LDFLAGS = $(NCURSES_LIBS) $(AM_LDFLAGS)
 bin_sf_SOURCES = src/sf.c src/sffunctions.c src/sfmenus.c src/colors.c src/common.c src/menu.c src/input.c src/display.c src/settings.c src/i18n.c
+bin_sf_LDFLAGS = $(NCURSES_LIBS) $(AM_LDFLAGS)
 bin_sf_LDADD = $(LDADD)
-bin_sf_CFLAGS = $(EXTRA_CFLAGS) $(AM_CFLAGS) -DAPPLICATION_SF
+bin_sf_CFLAGS = $(NCURSES_CFLAGS) $(EXTRA_CFLAGS) $(AM_CFLAGS) -DAPPLICATION_SF
 dfshowconf_DATA = conf/dfshow.conf
 dfshowdata_DATA = themes/*
 
