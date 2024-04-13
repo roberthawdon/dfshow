@@ -2101,9 +2101,9 @@ void directory_view_menu_inputs()
       } else if (*pc == KEY_MOUSE){
         if(getmouse(&event) == OK) {
           if(event.bstate & BUTTON5_PRESSED) {
-            showNavigate(D_PG_DOWN, 4);
+            showNavigate(D_PG_DOWN, showScrollStep);
           } else if (event.bstate & BUTTON4_PRESSED){
-            showNavigate(D_PG_UP, 4);
+            showNavigate(D_PG_UP, showScrollStep);
           }
         }
       }
