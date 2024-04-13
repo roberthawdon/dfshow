@@ -123,7 +123,7 @@ int wReadLine(wchar_t *buffer, int buflen, wchar_t *oldbuf)
       wcscpy(buffer, L""); //abort by blanking
       setColors(COMMAND_PAIR);
       break;
-    } else if ((c == KEY_UP) || (c == KEY_DOWN) || (c == KEY_IC) || (c == 265) || (c == 266) || (c == 267) || (c == 268) || (c == 269) || (c == 270) || (c == 271) || (c == 272) || (c == 273) || (c == 274) || (c == 275) || (c == 276) || (c == 338) || (c == 339)) {
+    } else if ((c == KEY_UP) || (c == KEY_DOWN) || (c == KEY_IC) || (c == 265) || (c == 266) || (c == 267) || (c == 268) || (c == 269) || (c == 270) || (c == 271) || (c == 272) || (c == 273) || (c == 274) || (c == 275) || (c == 276) || (c == 338) || (c == 339) || (c == KEY_MOUSE)) {
       // Ignore navigation and function keys.
       continue;
     } else if (iswprint(c)) {
