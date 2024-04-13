@@ -1598,6 +1598,7 @@ void showNavigate(int direction, int step){
 
   int testStep = 0;
   int i = 0;
+  int pageStep = 0;
 
   switch(direction){
     case D_DOWN:
@@ -1663,12 +1664,17 @@ void showNavigate(int direction, int step){
       }
       break;
     case D_PG_DOWN:
+      if (step != -1){
+        pageStep = step;
+      } else {
+        pageStep = displaysize;
+      }
       if (selected < (totalfilecount - 1) ) {
         clear_workspace();
         for (i = lineStart; i < listLen; i++){
           if (el[i].fileRef == selected) {
-            if ((i + displaysize) < listLen){
-              selected = el[i + displaysize].fileRef;
+            if ((i + pageStep) < listLen){
+              selected = el[i + pageStep].fileRef;
             } else {
               selected = totalfilecount - 1;
             }
@@ -1687,19 +1693,24 @@ void showNavigate(int direction, int step){
       display_dir(currentpwd, ob);
       break;
     case D_PG_UP:
+      if (step != -1){
+        pageStep = step;
+      } else {
+        pageStep = displaysize;
+      }
       if (selected > 0){
         clear_workspace();
-        lineStart = lineStart - displaysize;
+        lineStart = lineStart - pageStep;
         if (lineStart < 0){
           lineStart = 0;
         }
         for (i = 0; i < listLen; i++){
           if ((el[i].fileRef == selected) && (el[i].entryLineType == ET_OBJECT)){
-            if ((i - displaysize) < 0) {
+            if ((i - pageStep) < 0) {
               selected = 0;
             } else {
-              selected = el[i - displaysize].fileRef;
-              if (el[i - displaysize].entryLineType != ET_OBJECT){
+              selected = el[i - pageStep].fileRef;
+              if (el[i - pageStep].entryLineType != ET_OBJECT){
                 selected++;
               }
             }
@@ -1936,9 +1947,9 @@ void directory_view_menu_inputs()
           topLineMessage(_("Error: Permission denied"));
         }
       } else if (*pc == menuHotkeyLookup(functionMenu, "f_01", functionMenuSize) || *pc == 338){
-        showNavigate(D_PG_DOWN, 1);
+        showNavigate(D_PG_DOWN, -1);
       } else if (*pc == menuHotkeyLookup(functionMenu, "f_02", functionMenuSize) || *pc == 339){
-        showNavigate(D_PG_UP, 1);
+        showNavigate(D_PG_UP, -1);
       } else if (*pc == menuHotkeyLookup(functionMenu, "f_03", functionMenuSize)){
         clear_workspace();
         selected = 0;
@@ -2090,9 +2101,9 @@ void directory_view_menu_inputs()
       } else if (*pc == KEY_MOUSE){
         if(getmouse(&event) == OK) {
           if(event.bstate & BUTTON5_PRESSED) {
-            showNavigate(D_PG_DOWN, 1);
+            showNavigate(D_PG_DOWN, 4);
           } else if (event.bstate & BUTTON4_PRESSED){
-            showNavigate(D_PG_UP, 1);
+            showNavigate(D_PG_UP, 4);
           }
         }
       }
