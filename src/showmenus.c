@@ -126,6 +126,8 @@ extern int plugins;
 
 extern int enterAsShow;
 
+extern int displaystart;
+
 extern int reverse;
 
 extern int invalidstart;
@@ -2104,6 +2106,14 @@ void directory_view_menu_inputs()
             showNavigate(D_PG_DOWN, showScrollStep);
           } else if (event.bstate & BUTTON4_PRESSED){
             showNavigate(D_PG_UP, showScrollStep);
+          } else if (event.bstate & BUTTON1_PRESSED) {
+            // I'd imagine this won't work with extended attributes on macOS, but it's a start
+            if ((event.y >= displaystart) && (event.y < LINES - 1)){
+              if (topfileref + (event.y - displaystart) <= bottomFileRef) {
+                selected = topfileref + (event.y - displaystart);
+                display_dir(currentpwd, ob);
+              }
+            }
           }
         }
       }
