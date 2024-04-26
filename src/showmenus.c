@@ -72,7 +72,6 @@ char *rewrite;
 int blockstart = -1;
 int blockend = -1;
 
-
 struct utimbuf touchDate;
 time_t touchTime;
 
@@ -2109,7 +2108,10 @@ void directory_view_menu_inputs()
           } else if (event.bstate & BUTTON1_PRESSED) {
             // I'd imagine this won't work with extended attributes on macOS, but it's a start
             if ((event.y >= displaystart) && (event.y < LINES - 1)){
-              if (topfileref + (event.y - displaystart) <= bottomFileRef) {
+              if (event.y == selected - topfileref + displaystart){
+                // yuck, we'll eventually rework this, honest guv!
+                goto showCommand;
+              } else if (topfileref + (event.y - displaystart) <= bottomFileRef) {
                 selected = topfileref + (event.y - displaystart);
                 display_dir(currentpwd, ob);
               }
