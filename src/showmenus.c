@@ -159,42 +159,52 @@ extern int listLen;
 menuDef *globalMenu;
 int globalMenuSize = 0;
 wchar_t *globalMenuLabel;
+menuButton *globalMenuButtons;
 
 menuDef *showFileMenu;
 int showFileMenuSize = 0;
 wchar_t *showFileMenuLabel;
+menuButton *showFileMenuButtons;
 
 menuDef *functionMenu;
 int functionMenuSize = 0;
 wchar_t *functionMenuLabel;
+menuButton *functionMenuButtons;
 
 menuDef *modifyMenu;
 int modifyMenuSize = 0;
 wchar_t *modifyMenuLabel;
+menuButton *modifyMenuButtons;
 
 menuDef *sortMenu;
 int sortMenuSize = 0;
 wchar_t *sortMenuLabel;
+menuButton *sortMenuButtons;
 
 menuDef *linkMenu;
 int linkMenuSize = 0;
 wchar_t *linkMenuLabel;
+menuButton *linkMenuButtons;
 
 menuDef *linkLocationMenu;
 int linkLocationMenuSize = 0;
 wchar_t *linkLocationMenuLabel;
+menuButton *linkLocationMenuButtons;
 
 menuDef *touchMenu;
 int touchMenuSize = 0;
 wchar_t *touchMenuLabel;
+menuButton *touchMenuButtons;
 
 menuDef *touchDateConfirmMenu;
 int touchDateConfirmMenuSize = 0;
 wchar_t *touchDateConfirmMenuLabel;
+menuButton *touchDateConfirmMenuButtons;
 
 menuDef *contextMenu;
 int contextMenuSize = 0;
 wchar_t *contextMenuLabel;
+menuButton *contextMenuButtons;
 
 wchar_t *tmpMenuLabel;
 
