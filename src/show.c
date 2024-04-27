@@ -121,6 +121,8 @@ t2BinValues *binValuesShow;
 int totalCharItemsShow;
 int totalBinItemsShow;
 
+int clickMode = CLICK_SHOW;
+
 extern MEVENT event;
 
 extern int returnCode;
