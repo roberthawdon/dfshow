@@ -29,8 +29,11 @@
 #define ET_ACL    1
 #define ET_XATTR  2
 
-#define V_TOP    0;
-#define V_BOTTOM 1;
+#define V_TOP    0
+#define V_BOTTOM 1
+
+#define CLICK_SHOW 0
+#define CLICK_EDIT 1
 
 typedef struct {
   int marked[1];

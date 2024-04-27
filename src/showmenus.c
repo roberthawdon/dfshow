@@ -75,6 +75,8 @@ int blockend = -1;
 struct utimbuf touchDate;
 time_t touchTime;
 
+extern int clickMode;
+
 extern MEVENT event;
 
 extern int returnCode;
@@ -1767,6 +1769,7 @@ void directory_view_menu_inputs()
           }
         }
       } else if (*pc == menuHotkeyLookup(showFileMenu, "f_edit", showFileMenuSize)){
+      editCommand:
         memcpy(chpwd, currentpwd, 4096);
         if (!check_last_char(chpwd, "/")){
           snprintf(chpwd + strlen(chpwd), 4096 - strlen(chpwd), "%s", "/");
@@ -2109,8 +2112,16 @@ void directory_view_menu_inputs()
             // I'd imagine this won't work with extended attributes on macOS, but it's a start
             if ((event.y >= displaystart) && (event.y < LINES - 1)){
               if (event.y == selected - topfileref + displaystart){
+                if (!check_dir(ob[selected].name)) {
+                  if (clickMode == CLICK_SHOW){
+                    goto showCommand;
+                  } else if (clickMode == CLICK_EDIT){
+                    goto editCommand;
+                  }
+                } else {
+                  goto showCommand;
+                }
                 // yuck, we'll eventually rework this, honest guv!
-                goto showCommand;
               } else if (topfileref + (event.y - displaystart) <= bottomFileRef) {
                 selected = topfileref + (event.y - displaystart);
                 display_dir(currentpwd, ob);
