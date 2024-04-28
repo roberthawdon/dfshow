@@ -66,6 +66,7 @@ extern int viewMode;
 menuDef *colorMenu;
 int colorMenuSize = 0;
 wchar_t *colorMenuLabel;
+menuButton *colorMenuButtons;
 
 void processListThemes(const char * pathName)
 {

@@ -126,7 +126,7 @@ void addMenuItem(menuDef **dfMenu, int *pos, char* refLabel, char* displayLabel,
 
 }
 
-wchar_t * genMenuDisplayLabel(char* preMenu, menuDef* dfMenu, int size, char* postMenu, int comma){
+wchar_t * genMenuDisplayLabel(char* preMenu, menuDef* dfMenu, int size, char* postMenu, int comma, menuButton* dfButtons){
   wchar_t * output;
   int gapSize;
   int currentLen = 0;
@@ -134,6 +134,8 @@ wchar_t * genMenuDisplayLabel(char* preMenu, menuDef* dfMenu, int size, char* po
   int startPos = 0;
   wchar_t *widePreMenu;
   wchar_t *widePostMenu;
+
+  dfButtons = malloc(sizeof(menuButton) * size);
 
   widePreMenu = malloc(sizeof(wchar_t) * (strlen(preMenu) + 1));
   mbstowcs(widePreMenu, preMenu, (strlen(preMenu) + 1));
@@ -148,17 +150,20 @@ wchar_t * genMenuDisplayLabel(char* preMenu, menuDef* dfMenu, int size, char* po
     startPos = startPos + setDynamicWChar(&output, L"%ls ", widePreMenu);
   } else {
     // wcscpy(output, L"\0");
-    startPos = startPos + setDynamicWChar(&output, L"\0");
+    // startPos = startPos + setDynamicWChar(&output, L"\0");
   }
   free(widePreMenu);
   for (i = 0; i < size ; i++){
     // output = realloc(output, ((i + 1) * sizeof(dfMenu[i].displayLabel) + wcslen(output) + 1) * sizeof(wchar_t) );
+   dfMenu[i].startPos = startPos;
+   snprintf(dfButtons[i].refLabel, 16, "%s", dfMenu[i].refLabel);
+   dfButtons[i].topLeft = dfButtons[i].bottomLeft = startPos;
+   dfButtons[i].topRight = dfButtons[i].bottomRight = startPos + dfMenu[i].displayLabelSize;
+   startPos = startPos + setDynamicWChar(&output, L"%ls%ls", output, dfMenu[i].displayLabel);
    if ( i == 0 ){
      currentLen = currentLen + dfMenu[i].displayLabelSize;
      if ( currentLen - 1 < COLS){
        // wcscat(output, dfMenu[i].displayLabel);
-       dfMenu[i].startPos = startPos;
-       startPos = startPos + setDynamicWChar(&output, L"%ls%ls", output, dfMenu[i].displayLabel);
      } else if ( currentLen +1 > COLS && i == 0){
        // wcscat(output, L"");
      }
@@ -193,6 +198,13 @@ wchar_t * genMenuDisplayLabel(char* preMenu, menuDef* dfMenu, int size, char* po
     // wcscat(output, L"\0");
     setDynamicWChar(&output, L"%ls\0", output);
   }
+
+  endwin();
+  for (i = 0; i < size; i++){
+    printf("%s:\nTL: %i, TR: %i\nBL: %i, BR: %i\n\n", dfButtons[i].refLabel, dfButtons[i].topLeft, dfButtons[i].topRight, dfButtons[i].bottomLeft, dfButtons[i].bottomRight);
+  }
+  exit(123);
+
   free(widePostMenu);
   return output;
 }
