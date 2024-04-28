@@ -1267,6 +1267,7 @@ Valid arguments are:\n\
 
   // Enable mouse events
   mousemask(ALL_MOUSE_EVENTS | REPORT_MOUSE_POSITION, NULL);
+  mouseinterval(0);
 
   generateShowSettingsVars();
 
