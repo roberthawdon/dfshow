@@ -40,10 +40,17 @@ bool findSet = false;
 menuDef *sfFileMenu;
 int sfFileMenuSize = 0;
 wchar_t *sfFileMenuLabel;
+menuButton *sfFileMenuButtons;
 
 menuDef *caseMenu;
 int caseMenuSize = 0;
 wchar_t *caseMenuLabel;
+menuButton *caseMenuButtons;
+
+menuDef *sfSettingsMenu;
+int sfSettingsMenuSize;
+wchar_t *sfSettingsMenuLabel;
+menuButton *sfSettingsMenuButtons;
 
 extern MEVENT event;
 
@@ -62,10 +69,6 @@ extern t1CharValues *charValuesSf;
 extern t2BinValues *binValuesSf;
 extern int totalCharItemsSf;
 extern int totalBinItemsSf;
-
-menuDef *sfSettingsMenu;
-int sfSettingsMenuSize;
-wchar_t *sfSettingsMenuLabel;
 
 extern char regexinput[1024];
 extern FILE *file;
@@ -116,9 +119,9 @@ void generateDefaultSfMenus(){
 }
 
 void refreshSfMenuLabels(){
-  sfFileMenuLabel     = genMenuDisplayLabel("", sfFileMenu, sfFileMenuSize, "", 1);
-  caseMenuLabel     = genMenuDisplayLabel("", caseMenu, caseMenuSize, _("(enter = I)"), 0);
-  sfSettingsMenuLabel = genMenuDisplayLabel(_("SF Settings Menu -"), sfSettingsMenu, sfSettingsMenuSize, "", 1);
+  sfFileMenuLabel     = genMenuDisplayLabel("", sfFileMenu, sfFileMenuSize, "", 1, sfFileMenuButtons);
+  caseMenuLabel     = genMenuDisplayLabel("", caseMenu, caseMenuSize, _("(enter = I)"), 0, caseMenuButtons);
+  sfSettingsMenuLabel = genMenuDisplayLabel(_("SF Settings Menu -"), sfSettingsMenu, sfSettingsMenuSize, "", 1, sfSettingsMenuButtons);
 }
 
 void unloadSfMenuLabels(){
