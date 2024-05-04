@@ -220,6 +220,8 @@ menuButton *showSettingsMenuButtons;
 
 void modify_owner_input();
 
+void functionAction(const char *refLabel);
+
 void generateDefaultShowMenus(){
   // Global Menu
   addMenuItem(&globalMenu, &globalMenuSize, "g_colors", _("c!Olors"), 'o', 1);
@@ -2152,7 +2154,11 @@ void directory_view_menu_inputs()
               }
             } else if (event.y == 0){
               endwin();
-              menuButtonLookup(showFileMenuButtons, showFileMenuSize, event.x, event.y);
+              printf("%s\n", menuButtonLookup(showFileMenuButtons, showFileMenuSize, event.x, event.y, 0, 0));
+              exit(123);
+            } else if (event.y == LINES - 1){
+              endwin();
+              printf("%s\n", menuButtonLookup(functionMenuButtons, functionMenuSize, event.x, event.y, 0, LINES - 1));
               exit(123);
             }
           }
@@ -2173,69 +2179,99 @@ void global_menu_inputs()
     {
       *pc = getch10th();
       if (*pc == menuHotkeyLookup(globalMenu, "g_colors", globalMenuSize)){
-        themeBuilder();
-        theme_menu_inputs();
-        if (historyref == 0){
-          clear();
-          global_menu_inputs();
-        } else {
-          refreshDirectory(sortmode, lineStart, selected, 0);
-          wPrintMenu(LINES-1, 0, functionMenuLabel);
-          global_menu_inputs();
-        }
+        functionAction("g_colors");
       } else if (*pc == menuHotkeyLookup(globalMenu, "g_config", globalMenuSize)) {
-          settingsMenuView(showSettingsMenuLabel, showSettingsMenuSize, showSettingsMenu, &settingIndexShow, &charValuesShow, &binValuesShow, totalCharItemsShow, totalBinItemsShow, generateShowSettingsVars(), "show");
-        if (historyref == 0){
-          clear();
-          global_menu_inputs();
-        } else {
-          refreshDirectory(sortmode, lineStart, selected, 0);
-          wPrintMenu(LINES-1, 0, functionMenuLabel);
-          global_menu_inputs();
-        }
+        functionAction("g_config");
       } else if (*pc == menuHotkeyLookup(globalMenu, "g_run", globalMenuSize)) {
-        LaunchShell();
-        if (historyref == 0){
-          wPrintMenu(0,0,globalMenuLabel);
-        } else {
-          refreshDirectory(sortmode, lineStart, selected, 1);
-          directory_view_menu_inputs();
-        }
+        functionAction("g_run");
       } else if (*pc == menuHotkeyLookup(globalMenu, "g_edit", globalMenuSize)) {
-        edit_file_input();
-        if (historyref == 0){
-          wPrintMenu(0,0,globalMenuLabel);
-        } else {
-          refreshDirectory(sortmode, lineStart, selected, 1);
-          directory_view_menu_inputs();
-        }
+        functionAction("g_edit");
       } else if (*pc == menuHotkeyLookup(globalMenu, "g_help", globalMenuSize)) {
-        showManPage("show");
-        refreshScreenShow();
-        if (historyref == 0){
-          wPrintMenu(0,0,globalMenuLabel);
-        } else {
-          directory_view_menu_inputs();
-        }
+        functionAction("g_help");
       } else if (*pc == menuHotkeyLookup(globalMenu, "g_mkdir", globalMenuSize)) {
-        make_directory_input();
+        functionAction("g_mkdir");
       } else if (*pc == menuHotkeyLookup(globalMenu, "g_quit", globalMenuSize)) {
-        if (historyref == 0){
-          freeHistory(hs, sessionhistory);
-          exittoshell();
-          refresh();
-        } else {
-          historyref = 0;
-          global_menu();
-        }
+        functionAction("g_quit");
       } else if (*pc == menuHotkeyLookup(globalMenu, "g_show", globalMenuSize)) {
-        show_directory_input();
+        functionAction("g_show");
       } else if (*pc == menuHotkeyLookup(globalMenu, "g_touch", globalMenuSize)) {
-        touch_file_input();
+        functionAction("g_touch");
       } else if (*pc == 27) {
         if (historyref != 0){
           directory_view_menu_inputs();
         }
+      } else if (*pc == KEY_MOUSE){
+        if(getmouse(&event) == OK) {
+          if(event.bstate & BUTTON1_PRESSED) {
+            if (event.y == 0){
+              functionAction(menuButtonLookup(globalMenuButtons, globalMenuSize, event.x, event.y, 0, 0));
+            }
+          }
+        }
       }
     }
+}
+
+void functionAction(const char *refLabel){
+  if (!strcmp(refLabel, "g_colors")){
+    themeBuilder();
+    theme_menu_inputs();
+    if (historyref == 0){
+      clear();
+      global_menu_inputs();
+    } else {
+      refreshDirectory(sortmode, lineStart, selected, 0);
+      wPrintMenu(LINES-1, 0, functionMenuLabel);
+      global_menu_inputs();
+    }
+  } else if (!strcmp(refLabel, "g_config")){
+    settingsMenuView(showSettingsMenuLabel, showSettingsMenuSize, showSettingsMenu, &settingIndexShow, &charValuesShow, &binValuesShow, totalCharItemsShow, totalBinItemsShow, generateShowSettingsVars(), "show");
+    if (historyref == 0){
+      clear();
+      global_menu_inputs();
+    } else {
+      refreshDirectory(sortmode, lineStart, selected, 0);
+      wPrintMenu(LINES-1, 0, functionMenuLabel);
+      global_menu_inputs();
+    }
+  } else if (!strcmp(refLabel, "g_run")){
+    LaunchShell();
+    if (historyref == 0){
+      wPrintMenu(0,0,globalMenuLabel);
+    } else {
+      refreshDirectory(sortmode, lineStart, selected, 1);
+      directory_view_menu_inputs();
+    }
+  } else if (!strcmp(refLabel, "g_edit")){
+    edit_file_input();
+    if (historyref == 0){
+      wPrintMenu(0,0,globalMenuLabel);
+    } else {
+      refreshDirectory(sortmode, lineStart, selected, 1);
+      directory_view_menu_inputs();
+    }
+  } else if (!strcmp(refLabel, "g_help")){
+    showManPage("show");
+    refreshScreenShow();
+    if (historyref == 0){
+      wPrintMenu(0,0,globalMenuLabel);
+    } else {
+      directory_view_menu_inputs();
+    }
+  } else if (!strcmp(refLabel, "g_mkdir")){
+    make_directory_input();
+  } else if (!strcmp(refLabel, "g_quit")){
+    if (historyref == 0){
+      freeHistory(hs, sessionhistory);
+      exittoshell();
+      refresh();
+    } else {
+      historyref = 0;
+      global_menu();
+    }
+  } else if (!strcmp(refLabel, "g_show")){
+    show_directory_input();
+  } else if (!strcmp(refLabel, "g_touch")){
+    touch_file_input();
+  }
 }

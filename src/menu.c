@@ -126,25 +126,30 @@ void addMenuItem(menuDef **dfMenu, int *pos, char* refLabel, char* displayLabel,
 
 }
 
-void menuButtonLookup(menuButton *dfButtons, int size, int xpos, int ypos){
-  char output[16] = "\0";
-  char *s_ptr = output;
+char * menuButtonLookup(menuButton *dfButtons, int size, int xpos, int ypos, int xdelta, int ydelta){
+  static char output[16] = "\0";
   int i;
+  int topX = -1;
+  int bottomX = -1;
+  int topY = -1;
+  int bottomY = -1;
 
   for (i = 0; i < size; i++){
-    printf("%i\n", i);
-    // if ((xpos >= dfButtons[i].topX && xpos <= dfButtons[i].bottomX) && (ypos >= dfButtons[i].topY && ypos <= dfButtons[i].bottomY)){
-    //     snprintf(output, 16, "%s", dfButtons[i].refLabel);
-    //     // return s_ptr;
-    // }
+    topX = dfButtons[i].topX + xdelta;
+    bottomX = dfButtons[i].bottomX + xdelta;
+    topY = dfButtons[i].topY + ydelta;
+    bottomY = dfButtons[i].bottomY + ydelta;
+    if ((xpos >= topX && xpos <= bottomX) && (ypos >= topY && ypos <= bottomY)){
+        snprintf(output, 16, "%s", dfButtons[i].refLabel);
+        return output;
+    }
   }
-
-  // return s_ptr;
+  return output;
 }
 
 wchar_t * genMenuDisplayLabel(char* preMenu, menuDef* dfMenu, int size, char* postMenu, int comma, menuButton **dfButtons){
   wchar_t * output;
-  int gapSize;
+  int gapSize = 0;
   int currentLen = 0;
   int i;
   int c;
@@ -178,14 +183,22 @@ wchar_t * genMenuDisplayLabel(char* preMenu, menuDef* dfMenu, int size, char* po
     // startPos = startPos + setDynamicWChar(&output, L"\0");
   }
   free(widePreMenu);
+  startPos++;
   for (i = 0; i < size ; i++){
-    // output = realloc(output, ((i + 1) * sizeof(dfMenu[i].displayLabel) + wcslen(output) + 1) * sizeof(wchar_t) );
-   startPos++;
+   startPos = startPos + gapSize;
+   // output = realloc(output, ((i + 1) * sizeof(dfMenu[i].displayLabel) + wcslen(output) + 1) * sizeof(wchar_t) );
    dfMenu[i].startPos = startPos;
    snprintf((*dfButtons)[i].refLabel, 16, "%s", dfMenu[i].refLabel);
-   (*dfButtons)[i].topX = (*dfButtons)[i].bottomX = startPos;
-   currentPosLen = 0;
+   (*dfButtons)[i].topX = startPos;
+   currentPosLen = gapSize = 0;
    // startPos = startPos + setDynamicWChar(&output, L"%ls%ls", output, dfMenu[i].displayLabel);
+   if (comma == 1){
+     gapSize = 2;
+   } else if (comma == -1) {
+     gapSize = 0;
+   } else {
+     gapSize = 1;
+   }
    if ( i == 0 ){
      currentLen = currentLen + dfMenu[i].displayLabelSize;
      if ( currentLen - 1 < COLS){
@@ -195,30 +208,24 @@ wchar_t * genMenuDisplayLabel(char* preMenu, menuDef* dfMenu, int size, char* po
        // wcscat(output, L"");
      }
    } else {
-     if (comma == 1){
-       gapSize = 2;
-     } else if (comma == -1) {
-       gapSize = 0;
-     } else {
-       gapSize = 1;
-     }
      currentLen = currentLen + dfMenu[i].displayLabelSize + gapSize;
      if (currentLen - 1 < COLS){
        if (comma == 1){
          // wcscat(output, L", ");
          c = setDynamicWChar(&output, L"%ls%ls", output, L", ");
-         currentPosLen = currentPosLen + 2;
        } else if (comma == 0) {
          // wcscat(output, L" ");
          c = setDynamicWChar(&output, L"%ls%ls", output, L" ");
-         currentPosLen = currentPosLen + 1;
        }
        // wcscat(output, dfMenu[i].displayLabel);
          c = setDynamicWChar(&output, L"%ls%ls", output, dfMenu[i].displayLabel);
      }
    }
-   currentPosLen = currentPosLen + dfMenu[i].displayLabelSize;
-   (*dfButtons)[i].topY = (*dfButtons)[i].bottomY = startPos = startPos + currentPosLen;
+   // currentPosLen = currentPosLen + dfMenu[i].displayLabelSize;
+   currentPosLen = currentPosLen + wPrintMenu(-1, -1, dfMenu[i].displayLabel);
+   startPos = startPos + currentPosLen;
+   (*dfButtons)[i].bottomX = startPos - 1;
+   (*dfButtons)[i].topY = (*dfButtons)[i].bottomY = 0;
   }
   // output = realloc(output, (sizeof(wchar_t) * (wcslen(output) + wcslen(widePostMenu) + 2) ));
   if (wcscmp(widePostMenu, L"")){
@@ -267,11 +274,15 @@ int altHotkey(int key)
 int wPrintMenu(int line, int col, wchar_t *menustring)
 {
   int i, len, charcount, pad, returnChars;
+  bool writeOut = true;
   returnChars = 0;
   charcount = 0;
   move(line, col);
   clrtoeol();
   len = wcslen(menustring);
+  if ( line < 0 || col < 0 ){
+    writeOut = false;
+  }
   if ( line == 0 ){
     setDynamicWChar(&topMenuBuffer, L"%ls", menustring);
     topMenu = true;
@@ -287,27 +298,37 @@ int wPrintMenu(int line, int col, wchar_t *menustring)
       if ( menustring[i] == '!' ) {
         setColors(HILITE_PAIR);
         i++;
-        mvprintw(line, col + charcount, "%lc", menustring[i]);
+        if (writeOut) {
+          mvprintw(line, col + charcount, "%lc", menustring[i]);
+        }
         setColors(COMMAND_PAIR);
         charcount = charcount + wcwidth(menustring[i]);
       } else if ( menustring[i] == '<' ) {
         setColors(HILITE_PAIR);
         i++;
-        mvprintw(line, col + charcount, "%lc", menustring[i]);
+        if (writeOut) {
+          mvprintw(line, col + charcount, "%lc", menustring[i]);
+        }
         charcount = charcount + wcwidth(menustring[i]);
       } else if ( menustring[i] == '>' ) {
         setColors(COMMAND_PAIR);
         if (i < (len - 1)){
           i++;
-          mvprintw(line, col + charcount, "%lc", menustring[i]);
+          if (writeOut) {
+            mvprintw(line, col + charcount, "%lc", menustring[i]);
+          }
           charcount = charcount + wcwidth(menustring[i]);
         }
       } else if ( menustring[i] == '\\' ) {
         i++;
-        mvprintw(line, col + charcount, "%lc", menustring[i]);
+        if (writeOut) {
+          mvprintw(line, col + charcount, "%lc", menustring[i]);
+        }
         charcount = charcount + wcwidth(menustring[i]);
       } else {
-        mvprintw(line, col + charcount, "%lc", menustring[i]);
+        if (writeOut) {
+          mvprintw(line, col + charcount, "%lc", menustring[i]);
+        }
         charcount = charcount + wcwidth(menustring[i]);
       }
     }
@@ -315,9 +336,13 @@ int wPrintMenu(int line, int col, wchar_t *menustring)
   pad = COLS - charcount;
   for (i = 0; i < pad; i++)
     {
-      mvprintw(line, col + charcount, " ");
+      if (writeOut) {
+        mvprintw(line, col + charcount, " ");
+      }
       charcount++;
     }
+  // endwin();
+  // printf("Rawlen: %li, Printlen: %i\n", wcslen(menustring), returnChars);
   return(returnChars);
 }
 

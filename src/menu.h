@@ -8,7 +8,7 @@ int cmp_menu_ref(const void *lhs, const void *rhs);
 void addMenuItem(menuDef **dfMenu, int *pos, char* refLabel, char* displayLabel, int defaultHotKey, bool sort);
 void updateMenuItem(menuDef **dfMenu, int *menuSize, char* refLabel, char* displayLabel);
 wchar_t * genMenuDisplayLabel(char* preMenu, menuDef* dfMenu, int size, char* postMenu, int comma, menuButton **dfButtons);
-void menuButtonLookup(menuButton *dfButtons, int size, int xpos, int ypos);
+char * menuButtonLookup(menuButton *dfButtons, int size, int xpos, int ypos, int xdelta, int ydelta);
 int menuHotkeyLookup(menuDef* dfMenu, char* refLabel, int size);
 int altHotkey(int key);
 int wPrintMenu(int line, int col, wchar_t *menustring);
