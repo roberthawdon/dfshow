@@ -25,10 +25,10 @@ typedef struct {
 
 typedef struct {
   char refLabel[16];
-  int topLeft;
-  int topRight;
-  int bottomLeft;
-  int bottomRight;
+  int topX;
+  int topY;
+  int bottomX;
+  int bottomY;
 } menuButton;
 
 typedef struct {

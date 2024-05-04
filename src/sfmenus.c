@@ -119,9 +119,9 @@ void generateDefaultSfMenus(){
 }
 
 void refreshSfMenuLabels(){
-  sfFileMenuLabel     = genMenuDisplayLabel("", sfFileMenu, sfFileMenuSize, "", 1, sfFileMenuButtons);
-  caseMenuLabel     = genMenuDisplayLabel("", caseMenu, caseMenuSize, _("(enter = I)"), 0, caseMenuButtons);
-  sfSettingsMenuLabel = genMenuDisplayLabel(_("SF Settings Menu -"), sfSettingsMenu, sfSettingsMenuSize, "", 1, sfSettingsMenuButtons);
+  sfFileMenuLabel     = genMenuDisplayLabel("", sfFileMenu, sfFileMenuSize, "", 1, &sfFileMenuButtons);
+  caseMenuLabel     = genMenuDisplayLabel("", caseMenu, caseMenuSize, _("(enter = I)"), 0, &caseMenuButtons);
+  sfSettingsMenuLabel = genMenuDisplayLabel(_("SF Settings Menu -"), sfSettingsMenu, sfSettingsMenuSize, "", 1, &sfSettingsMenuButtons);
 }
 
 void unloadSfMenuLabels(){
