@@ -131,6 +131,7 @@ wchar_t * genMenuDisplayLabel(char* preMenu, menuDef* dfMenu, int size, char* po
   int gapSize;
   int currentLen = 0;
   int i;
+  int c;
   int startPos = -1;
   int currentPosLen = 0;
   menuButton* tmpButtons;
@@ -149,9 +150,11 @@ wchar_t * genMenuDisplayLabel(char* preMenu, menuDef* dfMenu, int size, char* po
   if (wcscmp(widePreMenu, L"")){
     // wcscpy(output, widePreMenu);
     // wcscat(output, L" ");
-    startPos = startPos + setDynamicWChar(&output, L"%ls ", widePreMenu);
+    // startPos = startPos + setDynamicWChar(&output, L"%ls ", widePreMenu);
+    c = setDynamicWChar(&output, L"%ls ", widePreMenu);
   } else {
     // wcscpy(output, L"\0");
+    c = setDynamicWChar(&output, L"\0");
     // startPos = startPos + setDynamicWChar(&output, L"\0");
   }
   free(widePreMenu);
@@ -167,6 +170,7 @@ wchar_t * genMenuDisplayLabel(char* preMenu, menuDef* dfMenu, int size, char* po
      currentLen = currentLen + dfMenu[i].displayLabelSize;
      if ( currentLen - 1 < COLS){
        // wcscat(output, dfMenu[i].displayLabel);
+       c = setDynamicWChar(&output, L"%ls%ls", output, dfMenu[i].displayLabel);
      } else if ( currentLen +1 > COLS && i == 0){
        // wcscat(output, L"");
      }
@@ -182,15 +186,15 @@ wchar_t * genMenuDisplayLabel(char* preMenu, menuDef* dfMenu, int size, char* po
      if (currentLen - 1 < COLS){
        if (comma == 1){
          // wcscat(output, L", ");
-         setDynamicWChar(&output, L"%ls%ls", output, L", ");
+         c = setDynamicWChar(&output, L"%ls%ls", output, L", ");
          currentPosLen = currentPosLen + 2;
        } else if (comma == 0) {
          // wcscat(output, L" ");
-         setDynamicWChar(&output, L"%ls%ls", output, L" ");
+         c = setDynamicWChar(&output, L"%ls%ls", output, L" ");
          currentPosLen = currentPosLen + 1;
        }
        // wcscat(output, dfMenu[i].displayLabel);
-         setDynamicWChar(&output, L"%ls%ls", output, dfMenu[i].displayLabel);
+         c = setDynamicWChar(&output, L"%ls%ls", output, dfMenu[i].displayLabel);
      }
    }
    currentPosLen = currentPosLen + dfMenu[i].displayLabelSize;
@@ -200,10 +204,10 @@ wchar_t * genMenuDisplayLabel(char* preMenu, menuDef* dfMenu, int size, char* po
   if (wcscmp(widePostMenu, L"")){
     // wcscat(output, L" ");
     // wcscat(output, widePostMenu);
-    setDynamicWChar(&output, L"%ls %ls", output, widePostMenu);
+    c = setDynamicWChar(&output, L"%ls %ls", output, widePostMenu);
   } else {
     // wcscat(output, L"\0");
-    setDynamicWChar(&output, L"%ls\0", output);
+    c = setDynamicWChar(&output, L"%ls\0", output);
   }
 
   // endwin();
