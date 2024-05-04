@@ -312,18 +312,18 @@ void generateDefaultShowMenus(){
 }
 
 void refreshShowMenuLabels(){
-  globalMenuLabel = genMenuDisplayLabel("", globalMenu, globalMenuSize, "", 1, globalMenuButtons);
-  showFileMenuLabel = genMenuDisplayLabel("", showFileMenu, showFileMenuSize, "", 1, showFileMenuButtons);
-  functionMenuLabel = genMenuDisplayLabel("", functionMenu, functionMenuSize, "", 0, functionMenuButtons);
-  modifyMenuLabel = genMenuDisplayLabel(_("Modify -"), modifyMenu, modifyMenuSize, "", 1, modifyMenuButtons);
-  sortMenuLabel = genMenuDisplayLabel(_("Sort list by -"), sortMenu, sortMenuSize, _("(<shift> = reverse)"), 1, sortMenuButtons);
-  linkMenuLabel = genMenuDisplayLabel(_("Link Type -"), linkMenu, linkMenuSize, _("(enter = S)"), 1, linkMenuButtons);
-  linkLocationMenuLabel = genMenuDisplayLabel(_("Link Location -"), linkLocationMenu, linkLocationMenuSize, _("(enter = R)"), 1, linkLocationMenuButtons);
-  touchMenuLabel = genMenuDisplayLabel(_("Set Time -"), touchMenu, touchMenuSize, _("(enter = B)"), 1, touchMenuButtons);
-  touchDateConfirmMenuLabel = genMenuDisplayLabel(_("Set Time?"), touchDateConfirmMenu, touchDateConfirmMenuSize, _("(enter = N)"), -1, touchDateConfirmMenuButtons);
-  contextMenuLabel = genMenuDisplayLabel(_("Set Context -"), contextMenu, contextMenuSize, "", 1, contextMenuButtons);
-  colorMenuLabel = genMenuDisplayLabel("", colorMenu, colorMenuSize, "", 1, colorMenuButtons);
-  showSettingsMenuLabel = genMenuDisplayLabel(_("SHOW Settings Menu -"), showSettingsMenu, showSettingsMenuSize, "", 1, showSettingsMenuButtons);
+  globalMenuLabel = genMenuDisplayLabel("", globalMenu, globalMenuSize, "", 1, &globalMenuButtons);
+  showFileMenuLabel = genMenuDisplayLabel("", showFileMenu, showFileMenuSize, "", 1, &showFileMenuButtons);
+  functionMenuLabel = genMenuDisplayLabel("", functionMenu, functionMenuSize, "", 0, &functionMenuButtons);
+  modifyMenuLabel = genMenuDisplayLabel(_("Modify -"), modifyMenu, modifyMenuSize, "", 1, &modifyMenuButtons);
+  sortMenuLabel = genMenuDisplayLabel(_("Sort list by -"), sortMenu, sortMenuSize, _("(<shift> = reverse)"), 1, &sortMenuButtons);
+  linkMenuLabel = genMenuDisplayLabel(_("Link Type -"), linkMenu, linkMenuSize, _("(enter = S)"), 1, &linkMenuButtons);
+  linkLocationMenuLabel = genMenuDisplayLabel(_("Link Location -"), linkLocationMenu, linkLocationMenuSize, _("(enter = R)"), 1, &linkLocationMenuButtons);
+  touchMenuLabel = genMenuDisplayLabel(_("Set Time -"), touchMenu, touchMenuSize, _("(enter = B)"), 1, &touchMenuButtons);
+  touchDateConfirmMenuLabel = genMenuDisplayLabel(_("Set Time?"), touchDateConfirmMenu, touchDateConfirmMenuSize, _("(enter = N)"), -1, &touchDateConfirmMenuButtons);
+  contextMenuLabel = genMenuDisplayLabel(_("Set Context -"), contextMenu, contextMenuSize, "", 1, &contextMenuButtons);
+  colorMenuLabel = genMenuDisplayLabel("", colorMenu, colorMenuSize, "", 1, &colorMenuButtons);
+  showSettingsMenuLabel = genMenuDisplayLabel(_("SHOW Settings Menu -"), showSettingsMenu, showSettingsMenuSize, "", 1, &showSettingsMenuButtons);
 }
 
 void unloadShowMenuLabels(){
@@ -2150,6 +2150,10 @@ void directory_view_menu_inputs()
                 selected = topfileref + (event.y - displaystart);
                 display_dir(currentpwd, ob);
               }
+            } else if (event.y == 0){
+              endwin();
+              menuButtonLookup(showFileMenuButtons, showFileMenuSize, event.x, event.y);
+              exit(123);
             }
           }
         }

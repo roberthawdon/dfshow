@@ -126,7 +126,23 @@ void addMenuItem(menuDef **dfMenu, int *pos, char* refLabel, char* displayLabel,
 
 }
 
-wchar_t * genMenuDisplayLabel(char* preMenu, menuDef* dfMenu, int size, char* postMenu, int comma, menuButton* dfButtons){
+void menuButtonLookup(menuButton *dfButtons, int size, int xpos, int ypos){
+  char output[16] = "\0";
+  char *s_ptr = output;
+  int i;
+
+  for (i = 0; i < size; i++){
+    printf("%i\n", i);
+    // if ((xpos >= dfButtons[i].topX && xpos <= dfButtons[i].bottomX) && (ypos >= dfButtons[i].topY && ypos <= dfButtons[i].bottomY)){
+    //     snprintf(output, 16, "%s", dfButtons[i].refLabel);
+    //     // return s_ptr;
+    // }
+  }
+
+  // return s_ptr;
+}
+
+wchar_t * genMenuDisplayLabel(char* preMenu, menuDef* dfMenu, int size, char* postMenu, int comma, menuButton **dfButtons){
   wchar_t * output;
   int gapSize;
   int currentLen = 0;
@@ -134,11 +150,15 @@ wchar_t * genMenuDisplayLabel(char* preMenu, menuDef* dfMenu, int size, char* po
   int c;
   int startPos = -1;
   int currentPosLen = 0;
-  menuButton* tmpButtons;
   wchar_t *widePreMenu;
   wchar_t *widePostMenu;
+  menuButton *tmp;
 
-  tmpButtons = malloc(sizeof(menuButton) * size + 1);
+  tmp = malloc(sizeof(menuButton) * size + 1);
+
+  if (tmp){
+    *dfButtons = tmp;
+  }
 
   widePreMenu = malloc(sizeof(wchar_t) * (strlen(preMenu) + 1));
   mbstowcs(widePreMenu, preMenu, (strlen(preMenu) + 1));
@@ -162,8 +182,8 @@ wchar_t * genMenuDisplayLabel(char* preMenu, menuDef* dfMenu, int size, char* po
     // output = realloc(output, ((i + 1) * sizeof(dfMenu[i].displayLabel) + wcslen(output) + 1) * sizeof(wchar_t) );
    startPos++;
    dfMenu[i].startPos = startPos;
-   snprintf(tmpButtons[i].refLabel, 16, "%s", dfMenu[i].refLabel);
-   tmpButtons[i].topLeft = tmpButtons[i].bottomLeft = startPos;
+   snprintf((*dfButtons)[i].refLabel, 16, "%s", dfMenu[i].refLabel);
+   (*dfButtons)[i].topX = (*dfButtons)[i].bottomX = startPos;
    currentPosLen = 0;
    // startPos = startPos + setDynamicWChar(&output, L"%ls%ls", output, dfMenu[i].displayLabel);
    if ( i == 0 ){
@@ -198,7 +218,7 @@ wchar_t * genMenuDisplayLabel(char* preMenu, menuDef* dfMenu, int size, char* po
      }
    }
    currentPosLen = currentPosLen + dfMenu[i].displayLabelSize;
-   tmpButtons[i].topRight = tmpButtons[i].bottomRight = startPos = startPos + currentPosLen;
+   (*dfButtons)[i].topY = (*dfButtons)[i].bottomY = startPos = startPos + currentPosLen;
   }
   // output = realloc(output, (sizeof(wchar_t) * (wcslen(output) + wcslen(widePostMenu) + 2) ));
   if (wcscmp(widePostMenu, L"")){
@@ -212,13 +232,10 @@ wchar_t * genMenuDisplayLabel(char* preMenu, menuDef* dfMenu, int size, char* po
 
   // endwin();
   // for (i = 0; i < size; i++){
-  //   printf("%s:\nTL: %i, TR: %i\nBL: %i, BR: %i\n\n", tmpButtons[i].refLabel, tmpButtons[i].topLeft, tmpButtons[i].topRight, tmpButtons[i].bottomLeft, tmpButtons[i].bottomRight);
+  //   printf("%s:\nTX: %i, TY: %i\nBX: %i, BY: %i\n\n", (*dfButtons)[i].refLabel, (*dfButtons)[i].topX, (*dfButtons)[i].topY, (*dfButtons)[i].bottomX, (*dfButtons)[i].bottomY);
   // }
   // exit(123);
 
-  memcpy(tmpButtons, dfButtons, size);
-
-  free(tmpButtons);
   free(widePostMenu);
   return output;
 }
