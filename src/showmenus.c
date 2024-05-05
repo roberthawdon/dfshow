@@ -222,6 +222,8 @@ void modify_owner_input();
 
 void functionAction(const char *refLabel);
 
+void setSort(const char *refLabel, bool reverseMode);
+
 void generateDefaultShowMenus(){
   // Global Menu
   addMenuItem(&globalMenu, &globalMenuSize, "g_colors", _("c!Olors"), 'o', 1);
@@ -1162,29 +1164,38 @@ void sort_view_inputs()
         directory_view_menu_inputs();
         break;
       } else if (*pc == menuHotkeyLookup(sortMenu, "s_name", sortMenuSize)){
-        snprintf(sortmode, 5, "name");
-        reverse = 0;
+        setSort("s_name", false);
         break;
       } else if (*pc == menuHotkeyLookup(sortMenu, "s_date", sortMenuSize)){
-        snprintf(sortmode, 5, "date");
-        reverse = 0;
+        setSort("s_date", false);
         break;
       } else if (*pc == menuHotkeyLookup(sortMenu, "s_size", sortMenuSize)){
-        snprintf(sortmode, 5, "size");
-        reverse = 0;
+        setSort("s_size", false);
         break;
       } else if (*pc == altHotkey(menuHotkeyLookup(sortMenu, "s_name", sortMenuSize))){
-        snprintf(sortmode, 5, "name");
-        reverse = 1;
+        setSort("s_name", true);
         break;
       } else if (*pc == altHotkey(menuHotkeyLookup(sortMenu, "s_date", sortMenuSize))){
-        snprintf(sortmode, 5, "date");
-        reverse = 1;
+        setSort("s_date", true);
         break;
       } else if (*pc == altHotkey(menuHotkeyLookup(sortMenu, "s_size", sortMenuSize))){
-        snprintf(sortmode, 5, "size");
-        reverse = 1;
+        setSort("s_size", true);
         break;
+      } else if (*pc == KEY_MOUSE){
+        if(getmouse(&event) == OK) {
+          if(event.bstate & BUTTON1_PRESSED) {
+            if (event.y == 0){
+              if ((event.bstate & BUTTON_SHIFT) | (event.bstate & BUTTON_CTRL)){
+                setSort(menuButtonLookup(sortMenuButtons, sortMenuSize, event.x, event.y, 0, 0), true);
+              } else {
+                setSort(menuButtonLookup(sortMenuButtons, sortMenuSize, event.x, event.y, 0, 0), false);
+              }
+              break;
+            } else {
+              break;
+            }
+          }
+        }
       }
     }
   refreshDirectory(sortmode, lineStart, selected, 0);
@@ -2322,4 +2333,18 @@ void functionAction(const char *refLabel){
         }
       }
   }
+}
+
+void setSort(const char *refLabel, bool reverseMode){
+
+  reverse = reverseMode;
+
+  if (!strcmp(refLabel, "s_name")){
+    snprintf(sortmode, 5, "name");
+  } else if (!strcmp(refLabel, "s_date")) {
+    snprintf(sortmode, 5, "date");
+  } else if (!strcmp(refLabel, "s_size")) {
+    snprintf(sortmode, 5, "size");
+  }
+
 }

@@ -16,6 +16,7 @@ void show_directory_input();
 void directory_view_menu_inputs();
 void global_menu_inputs();
 void functionAction(const char *refLabel);
+void setSort(const char *refLabel, bool reverseMode);
 char * execute_argument_input(const char *exec);
 void copy_file_input(char *file, mode_t mode);
 int replace_file_confirm_input(char *filename);
