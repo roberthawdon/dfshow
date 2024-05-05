@@ -28,6 +28,7 @@
 #include "banned.h"
 
 extern int * pc;
+extern MEVENT event;
 
 void wPrintLine(int line, int col, wchar_t *textString){
   int i;
@@ -52,6 +53,7 @@ void printLine(int line, int col, char *textString){
 
 
 void topLineMessage(const char *message){
+  bool secondClick = false; // Hacky Hack McHacknessness!
   move(0,0);
   clrtoeol();
   setColors(ERROR_PAIR);
@@ -64,6 +66,15 @@ void topLineMessage(const char *message){
         {
         case -1:
           break;
+        case KEY_MOUSE:
+          // And here comes the second part of the hack!
+          if (secondClick){
+            return;
+            break;
+          } else {
+            secondClick = true;
+            break;
+          }
         default: // Where's the "any" key?
           return;
           break;
