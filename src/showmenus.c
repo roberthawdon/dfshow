@@ -2332,6 +2332,9 @@ void functionAction(const char *refLabel){
         display_dir(currentpwd, ob);
         }
       }
+  } else {
+    // Do nothing
+    return;
   }
 }
 

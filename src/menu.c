@@ -127,12 +127,14 @@ void addMenuItem(menuDef **dfMenu, int *pos, char* refLabel, char* displayLabel,
 }
 
 char * menuButtonLookup(menuButton *dfButtons, int size, int xpos, int ypos, int xdelta, int ydelta){
-  static char output[16] = "\0";
+  static char outputRef[16];
   int i;
   int topX = -1;
   int bottomX = -1;
   int topY = -1;
   int bottomY = -1;
+
+  snprintf(outputRef, 16, "%s", "\0");
 
   for (i = 0; i < size; i++){
     topX = dfButtons[i].topX + xdelta;
@@ -140,11 +142,11 @@ char * menuButtonLookup(menuButton *dfButtons, int size, int xpos, int ypos, int
     topY = dfButtons[i].topY + ydelta;
     bottomY = dfButtons[i].bottomY + ydelta;
     if ((xpos >= topX && xpos <= bottomX) && (ypos >= topY && ypos <= bottomY)){
-        snprintf(output, 16, "%s", dfButtons[i].refLabel);
-        return output;
+        snprintf(outputRef, 16, "%s", dfButtons[i].refLabel);
+        return outputRef;
     }
   }
-  return output;
+  return outputRef;
 }
 
 wchar_t * genMenuDisplayLabel(char* preMenu, menuDef* dfMenu, int size, char* postMenu, int comma, menuButton **dfButtons){
