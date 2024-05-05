@@ -183,7 +183,7 @@ wchar_t * genMenuDisplayLabel(char* preMenu, menuDef* dfMenu, int size, char* po
     // startPos = startPos + setDynamicWChar(&output, L"\0");
   }
   free(widePreMenu);
-  startPos++;
+  startPos = startPos + c;
   for (i = 0; i < size ; i++){
    startPos = startPos + gapSize;
    // output = realloc(output, ((i + 1) * sizeof(dfMenu[i].displayLabel) + wcslen(output) + 1) * sizeof(wchar_t) );
