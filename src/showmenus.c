@@ -863,7 +863,16 @@ int touchType()
   while(1)
     {
       *pc = getch10th();
-      if (*pc == menuHotkeyLookup(touchMenu, "t_accessed", touchMenuSize)){
+      loop:
+      if (getmouse(&event) == OK) {
+        if (event.bstate & BUTTON1_PRESSED){
+          if (event.y == 0){
+            // Setting key based on click
+            *pc = menuHotkeyLookup(touchMenu, (menuButtonLookup(touchMenuButtons, touchMenuSize, event.x, event.y, 0, 0)), touchMenuSize);
+            goto loop;
+          }
+        }
+      } else if (*pc == menuHotkeyLookup(touchMenu, "t_accessed", touchMenuSize)){
         result = 1;
         break;
       } else if (*pc == menuHotkeyLookup(touchMenu, "t_both", touchMenuSize) || *pc == 10){
@@ -1398,7 +1407,16 @@ int symLinkLocation()
   while(1)
     {
       *pc = getch10th();
-      if (*pc == menuHotkeyLookup(linkLocationMenu, "l_absolute", linkLocationMenuSize)){
+      loop:
+      if (getmouse(&event) == OK) {
+        if (event.bstate & BUTTON1_PRESSED){
+          if (event.y == 0){
+            // Setting key based on click
+            *pc = menuHotkeyLookup(linkLocationMenu, (menuButtonLookup(linkLocationMenuButtons, linkLocationMenuSize, event.x, event.y, 0, 0)), linkLocationMenuSize);
+            goto loop;
+          }
+        }
+      } else if (*pc == menuHotkeyLookup(linkLocationMenu, "l_absolute", linkLocationMenuSize)){
         result = 0;
         break;
       } else if (*pc == menuHotkeyLookup(linkLocationMenu, "l_relative", linkLocationMenuSize) || *pc == 10){
@@ -1501,7 +1519,16 @@ void link_key_menu_inputs()
   while(1)
     {
       *pc = getch10th();
-      if (*pc == menuHotkeyLookup(linkMenu, "l_hard", linkMenuSize)){
+      loop:
+      if (getmouse(&event) == OK) {
+        if (event.bstate & BUTTON1_PRESSED){
+          if (event.y == 0){
+            // Setting key based on click
+            *pc = menuHotkeyLookup(linkMenu, (menuButtonLookup(linkMenuButtons, linkMenuSize, event.x, event.y, 0, 0)), linkMenuSize);
+            goto loop;
+          }
+        }
+      } else if (*pc == menuHotkeyLookup(linkMenu, "l_hard", linkMenuSize)){
         if (!check_dir(selfile)){
           linktext_input(selfile, 0);
         } else {
@@ -1604,7 +1631,16 @@ void modify_context_menu_inputs()
     while(1)
       {
         *pc = getch10th();
-        if (*pc == 27){
+        loop:
+        if (getmouse(&event) == OK) {
+          if (event.bstate & BUTTON1_PRESSED){
+            if (event.y == 0){
+              // Setting key based on click
+              *pc = menuHotkeyLookup(contextMenu, (menuButtonLookup(contextMenuButtons, contextMenuSize, event.x, event.y, 0, 0)), contextMenuSize);
+              goto loop;
+            }
+          }
+        } else if (*pc == 27){
         // ESC Key
             directory_view_menu_inputs();
         } else if (*pc == menuHotkeyLookup(contextMenu, "c_user", contextMenuSize)){
@@ -1628,12 +1664,23 @@ void modify_key_menu_inputs()
   while(1)
     {
       *pc = getch10th();
-      if (*pc == menuHotkeyLookup(modifyMenu, "m_owner", modifyMenuSize)){
+      loop:
+      if (getmouse(&event) == OK) {
+        if (event.bstate & BUTTON1_PRESSED){
+          if (event.y == 0){
+            // Setting key based on click
+            *pc = menuHotkeyLookup(modifyMenu, (menuButtonLookup(modifyMenuButtons, modifyMenuSize, event.x, event.y, 0, 0)), modifyMenuSize);
+            goto loop;
+          }
+        }
+      } else if (*pc == menuHotkeyLookup(modifyMenu, "m_owner", modifyMenuSize)){
         modify_owner_input();
       } else if (*pc == menuHotkeyLookup(modifyMenu, "m_perms", modifyMenuSize)){
         modify_permissions_input();
+      #ifdef HAVE_SELINUX_SELINUX_H
       } else if (*pc == menuHotkeyLookup(modifyMenu, "m_context", modifyMenuSize)){
         modify_context_menu_inputs();
+      #endif
       } else if (*pc == 27){
         // ESC Key
         directory_view_menu_inputs();
