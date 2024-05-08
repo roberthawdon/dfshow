@@ -180,7 +180,16 @@ int show_file_find_case_input()
   while(1)
     {
       *pc = getch10th();
-      if (*pc == menuHotkeyLookup(caseMenu, "c1_ignore", caseMenuSize) || *pc == 10){
+      loop:
+      if (getmouse(&event) == OK) {
+        if (event.bstate & BUTTON1_PRESSED){
+          if (event.y == 0){
+            // Setting key based on click
+            *pc = menuHotkeyLookup(caseMenu, (menuButtonLookup(caseMenuButtons, caseMenuSize, event.x, event.y, 0, 0)), caseMenuSize);
+            goto loop;
+          }
+        }
+      } else if (*pc == menuHotkeyLookup(caseMenu, "c1_ignore", caseMenuSize) || *pc == 10){
         result = 0;
         break;
       } else if (*pc == menuHotkeyLookup(caseMenu, "c2_sensitive", caseMenuSize)){
@@ -300,7 +309,20 @@ void show_file_inputs()
   while(1)
     {
       *pc = getch10th();
-      if (*pc == menuHotkeyLookup(sfFileMenu,"f_find", sfFileMenuSize)){
+      loop:
+      if (getmouse(&event) == OK) {
+        if (event.bstate & BUTTON1_PRESSED){
+          if (event.y == 0){
+            // Setting key based on click
+            *pc = menuHotkeyLookup(sfFileMenu, (menuButtonLookup(sfFileMenuButtons, sfFileMenuSize, event.x, event.y, 0, 0)), sfFileMenuSize);
+            goto loop;
+          }
+        } else if(event.bstate & BUTTON5_PRESSED) {
+          sfNavigate(D_DOWN, sfScrollStep);
+        } else if (event.bstate & BUTTON4_PRESSED){
+          sfNavigate(D_UP, sfScrollStep);
+        }
+      } else if (*pc == menuHotkeyLookup(sfFileMenu,"f_find", sfFileMenuSize)){
         e = show_file_find_case_input();
         if (e != -1){
           show_file_find(e, false);
@@ -385,16 +407,6 @@ void show_file_inputs()
         if (wrap != 1){
           leftcol = longestlongline;
           updateView();
-        }
-      } else if (*pc == KEY_MOUSE){
-        if(getmouse(&event) == OK) {
-          if(event.bstate & BUTTON5_PRESSED) {
-            sfNavigate(D_DOWN, sfScrollStep);
-          } else if (event.bstate & BUTTON4_PRESSED){
-            sfNavigate(D_UP, sfScrollStep);
-          } else if (event.bstate & BUTTON1_CLICKED){
-
-          }
         }
       }
    }
