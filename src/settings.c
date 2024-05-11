@@ -47,6 +47,7 @@ extern char homeConfLocation[4096];
 
 extern int viewMode;
 
+extern MEVENT event;
 
 void updateSetting(settingIndex **settings, int index, int type, int intSetting)
 {
@@ -393,7 +394,7 @@ int textValueLookup(t1CharValues **values, int *items, char *refLabel, char *val
   return -1;
 }
 
-void settingsMenuView(wchar_t *settingsMenuLabel, int settingsMenuSize, menuDef *settingsMenu, settingIndex **settings, t1CharValues **charValues, t2BinValues **binValues, int totalCharItems, int totalBinItems, int totalItems, char *application)
+void settingsMenuView(wchar_t *settingsMenuLabel, int settingsMenuSize, menuDef *settingsMenu, menuButton *settingsMenuButtons, settingIndex **settings, t1CharValues **charValues, t2BinValues **binValues, int totalCharItems, int totalBinItems, int totalItems, char *application)
 {
   viewMode = 3;
   int count = 0;
@@ -416,7 +417,16 @@ void settingsMenuView(wchar_t *settingsMenuLabel, int settingsMenuSize, menuDef 
 
       move(x + settingsPos, y + 1);
       *pc = getch10th();
-      if (*pc == menuHotkeyLookup(settingsMenu, "s_quit", settingsMenuSize)){
+      loop:
+      if (getmouse(&event) == OK) {
+        if (event.bstate & BUTTON1_PRESSED){
+          if (event.y == 0){
+            // Setting key based on click
+            *pc = menuHotkeyLookup(settingsMenu, (menuButtonLookup(settingsMenuButtons, settingsMenuSize, event.x, event.y, 0, 0)), settingsMenuSize);
+            goto loop;
+          }
+        }
+      } else if (*pc == menuHotkeyLookup(settingsMenu, "s_quit", settingsMenuSize)){
         curs_set(FALSE);
         settingsAction("apply", application, NULL, settings, charValues, NULL, totalCharItems, 0, totalItems, NULL);
         // free(settings);

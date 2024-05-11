@@ -140,6 +140,7 @@ extern int settingsFreePos;
 extern menuDef *showSettingsMenu;
 extern int showSettingsMenuSize;
 extern wchar_t *showSettingsMenuLabel;
+extern menuButton *showSettingsMenuButtons;
 
 extern int * pc;
 
@@ -1276,7 +1277,7 @@ Valid arguments are:\n\
     theme_menu_inputs();
     exittoshell();
   } else if (launchSettingsMenu == 1) {
-    settingsMenuView(showSettingsMenuLabel, showSettingsMenuSize, showSettingsMenu, &settingIndexShow, &charValuesShow, &binValuesShow, totalCharItemsShow, totalBinItemsShow, generateShowSettingsVars(), "show");
+    settingsMenuView(showSettingsMenuLabel, showSettingsMenuSize, showSettingsMenu, showSettingsMenuButtons, &settingIndexShow, &charValuesShow, &binValuesShow, totalCharItemsShow, totalBinItemsShow, generateShowSettingsVars(), "show");
     exittoshell();
   } else {
     // Remaining arguments passed as working directory
