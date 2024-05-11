@@ -105,6 +105,7 @@ extern char themeName[256];
 extern menuDef *sfSettingsMenu;
 extern int sfSettingsMenuSize;
 extern wchar_t *sfSettingsMenuLabel;
+extern menuButton *sfSettingsMenuButtons;
 
 void sigwinchHandle(int sig)
 {
@@ -243,7 +244,7 @@ int main(int argc, char *argv[])
   mouseinterval(0);
 
   if (launchSettingsMenu == 1) {
-    settingsMenuView(sfSettingsMenuLabel, sfSettingsMenuSize, sfSettingsMenu, &settingIndexSf, &charValuesSf, &binValuesSf, totalCharItemsSf, totalBinItemsSf, generateSfSettingsVars(), "sf");
+    settingsMenuView(sfSettingsMenuLabel, sfSettingsMenuSize, sfSettingsMenu, sfSettingsMenuButtons, &settingIndexSf, &charValuesSf, &binValuesSf, totalCharItemsSf, totalBinItemsSf, generateSfSettingsVars(), "sf");
   } else {
     if (optind < argc){
       snprintf(fileName, 4096, "%s", argv[optind]);

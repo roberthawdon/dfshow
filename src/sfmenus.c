@@ -348,7 +348,7 @@ void show_file_inputs()
         }
         updateView();
       } else if (*pc == menuHotkeyLookup(sfFileMenu, "f_config", sfFileMenuSize)){
-        settingsMenuView(sfSettingsMenuLabel, sfSettingsMenuSize, sfSettingsMenu, &settingIndexSf, &charValuesSf, &binValuesSf, totalCharItemsSf, totalBinItemsSf, generateSfSettingsVars(), "sf");
+        settingsMenuView(sfSettingsMenuLabel, sfSettingsMenuSize, sfSettingsMenu, sfSettingsMenuButtons, &settingIndexSf, &charValuesSf, &binValuesSf, totalCharItemsSf, totalBinItemsSf, generateSfSettingsVars(), "sf");
         wPrintMenu(0, 0, sfFileMenuLabel);
         if(wrap){
         }
