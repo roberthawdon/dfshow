@@ -422,7 +422,7 @@ void settingsMenuView(wchar_t *settingsMenuLabel, int settingsMenuSize, menuDef 
         if (event.bstate & BUTTON1_PRESSED){
           if (event.y == 0){
             // Setting key based on click
-            *pc = menuHotkeyLookup(settingsMenu, (menuButtonLookup(settingsMenuButtons, settingsMenuSize, event.x, event.y, 0, 0)), settingsMenuSize);
+            *pc = menuHotkeyLookup(settingsMenu, (menuButtonLookup(settingsMenuButtons, settingsMenuSize, event.x, event.y, 0, 0, true)), settingsMenuSize);
             goto loop;
           }
         }

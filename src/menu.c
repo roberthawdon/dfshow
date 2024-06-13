@@ -126,7 +126,7 @@ void addMenuItem(menuDef **dfMenu, int *pos, char* refLabel, char* displayLabel,
 
 }
 
-char * menuButtonLookup(menuButton *dfButtons, int size, int xpos, int ypos, int xdelta, int ydelta){
+char * menuButtonLookup(menuButton *dfButtons, int size, int xpos, int ypos, int xdelta, int ydelta, bool allowEsc){
   static char outputRef[16];
   int i;
   int topX = -1;
@@ -145,6 +145,10 @@ char * menuButtonLookup(menuButton *dfButtons, int size, int xpos, int ypos, int
         snprintf(outputRef, 16, "%s", dfButtons[i].refLabel);
         return outputRef;
     }
+  }
+  if (allowEsc) {
+    snprintf(outputRef, 16, "escChar");
+    return outputRef;
   }
   return outputRef;
 }
@@ -252,6 +256,10 @@ wchar_t * genMenuDisplayLabel(char* preMenu, menuDef* dfMenu, int size, char* po
 int menuHotkeyLookup(menuDef* dfMenu, char* refLabel, int size){
   int i;
   int r = -1;
+  if (!strcmp(refLabel, "escChar")){
+    // Instantly return escape
+    return 27;
+  }
   for (i = 0; i < size; i++){
     if (!strcmp(dfMenu[i].refLabel, refLabel)){
       r = dfMenu[i].hotKey;
