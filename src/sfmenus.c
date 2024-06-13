@@ -185,7 +185,7 @@ int show_file_find_case_input()
         if (event.bstate & BUTTON1_PRESSED){
           if (event.y == 0){
             // Setting key based on click
-            *pc = menuHotkeyLookup(caseMenu, (menuButtonLookup(caseMenuButtons, caseMenuSize, event.x, event.y, 0, 0)), caseMenuSize);
+            *pc = menuHotkeyLookup(caseMenu, (menuButtonLookup(caseMenuButtons, caseMenuSize, event.x, event.y, 0, 0, true)), caseMenuSize);
             goto loop;
           }
         }
@@ -314,7 +314,7 @@ void show_file_inputs()
         if (event.bstate & BUTTON1_PRESSED){
           if (event.y == 0){
             // Setting key based on click
-            *pc = menuHotkeyLookup(sfFileMenu, (menuButtonLookup(sfFileMenuButtons, sfFileMenuSize, event.x, event.y, 0, 0)), sfFileMenuSize);
+            *pc = menuHotkeyLookup(sfFileMenu, (menuButtonLookup(sfFileMenuButtons, sfFileMenuSize, event.x, event.y, 0, 0, true)), sfFileMenuSize);
             goto loop;
           }
         } else if(event.bstate & BUTTON5_PRESSED) {
