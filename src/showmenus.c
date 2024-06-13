@@ -1936,7 +1936,7 @@ void directory_view_menu_inputs()
               *pc = menuHotkeyLookup(showFileMenu, (menuButtonLookup(showFileMenuButtons, showFileMenuSize, event.x, event.y, 0, 0, true)), showFileMenuSize);
               goto loop;
             } else if (event.y == LINES - 1){
-              *pc = menuHotkeyLookup(functionMenu, (menuButtonLookup(functionMenuButtons, functionMenuSize, event.x, event.y, 0, 0, false)), functionMenuSize);
+              *pc = menuHotkeyLookup(functionMenu, (menuButtonLookup(functionMenuButtons, functionMenuSize, event.x, event.y, 0, LINES - 1, false)), functionMenuSize);
               goto loop;
             }
           }
