@@ -52,6 +52,8 @@ colorPairs colors[256];
 
 char fgbgLabel[11];
 
+extern MEVENT event;
+
 extern char *errmessage;
 
 extern int colormode;
@@ -575,7 +577,16 @@ void theme_menu_inputs()
   while(1)
     {
       *pc = getch10th();
-      if (*pc == '!'){
+      loop:
+      if (getmouse(&event) == OK) {
+        if (event.bstate & BUTTON1_PRESSED){
+          if (event.y == 0){
+            // Setting key based on click
+            *pc = menuHotkeyLookup(colorMenu, (menuButtonLookup(colorMenuButtons, colorMenuSize, event.x, event.y, 0, 0, true)), colorMenuSize);
+            goto loop;
+          }
+        }
+      } else if (*pc == '!'){
         updateColorPair(-1, bgToggle);
         refreshColors();
         themeBuilder();
