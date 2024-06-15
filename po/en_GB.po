@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: dfshow 0.10.0\n"
 "Report-Msgid-Bugs-To: https://github.com/roberthawdon/dfshow/issues\n"
-"POT-Creation-Date: 2024-04-08 22:39+0100\n"
+"POT-Creation-Date: 2024-06-15 13:33+0100\n"
 "PO-Revision-Date: 2023-05-24 05:19+0100\n"
 "Last-Translator: Robert Hawdon <git@robertianhawdon.me.uk>\n"
 "Language-Team: English (British) <(nothing)>\n"
@@ -18,199 +18,199 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Poedit 3.3.1\n"
 
-#: src//colors.c:305
+#: src//colors.c:306
 msgid "Save Colors - Enter pathname:"
 msgstr "Save Colours - Enter pathname:"
 
-#: src//colors.c:333
+#: src//colors.c:334
 msgid "File exists. Replace? (!Yes/!No)"
 msgstr "File exists. Replace? (!Yes/!No)"
 
-#: src//colors.c:360 src//colors.c:365 src//showmenus.c:525
-#: src//showmenus.c:530 src//showmenus.c:718 src//showmenus.c:723
-#: src//showmenus.c:762 src//showmenus.c:767 src//showmenus.c:904
-#: src//showmenus.c:909 src//showmenus.c:1059 src//showmenus.c:1234
-#: src//showmenus.c:1431 src//showmenus.c:1436 src//showmenus.c:1542
+#: src//colors.c:361 src//colors.c:366 src//showmenus.c:556
+#: src//showmenus.c:561 src//showmenus.c:749 src//showmenus.c:754
+#: src//showmenus.c:793 src//showmenus.c:798 src//showmenus.c:944
+#: src//showmenus.c:949 src//showmenus.c:1099 src//showmenus.c:1290
+#: src//showmenus.c:1496 src//showmenus.c:1501 src//showmenus.c:1616
 #, c-format
 msgid "Error: %s"
 msgstr "Error: %s"
 
-#: src//colors.c:400
+#: src//colors.c:401
 msgid "Error parsing theme file."
 msgstr "Error parsing theme file."
 
-#: src//colors.c:413
+#: src//colors.c:414
 msgid "Load Colors - Enter pathname:"
 msgstr "Load Colours - Enter pathname:"
 
-#: src//colors.c:431
+#: src//colors.c:432
 msgid "Error: Unable to read file"
 msgstr "Error: Unable to read file"
 
-#: src//colors.c:667
+#: src//colors.c:668
 msgid "Save theme before using as default."
 msgstr "Save theme before using as default."
 
-#: src//colors.c:673
+#: src//colors.c:674
 #, c-format
 msgid "Default theme has been set to [%s]."
 msgstr "Default theme has been set to [%s]."
 
-#: src//colors.c:676
+#: src//colors.c:677
 msgid "An error occurred setting the default theme."
 msgstr "An error occurred setting the default theme."
 
-#: src//colors.c:779
+#: src//colors.c:780
 #, c-format
 msgid "background"
 msgstr "background"
 
-#: src//colors.c:781
+#: src//colors.c:782
 #, c-format
 msgid "foreground"
 msgstr "foreground"
 
-#: src//colors.c:786
+#: src//colors.c:787
 msgid "Command lines"
 msgstr "Command lines"
 
-#: src//colors.c:788
+#: src//colors.c:789
 msgid "Display lines"
 msgstr "Display lines"
 
-#: src//colors.c:790
+#: src//colors.c:791
 msgid "Error messages"
 msgstr "Error messages"
 
-#: src//colors.c:792
+#: src//colors.c:793
 msgid "Information lines"
 msgstr "Information lines"
 
-#: src//colors.c:794
+#: src//colors.c:795
 msgid "Heading lines"
 msgstr "Heading lines"
 
-#: src//colors.c:796
+#: src//colors.c:797
 msgid "Danger lines"
 msgstr "Danger lines"
 
-#: src//colors.c:798
+#: src//colors.c:799
 msgid "Selected block lines"
 msgstr "Selected block lines"
 
-#: src//colors.c:800
+#: src//colors.c:801
 msgid "Highlight"
 msgstr "Highlight"
 
-#: src//colors.c:802
+#: src//colors.c:803
 msgid "Text input"
 msgstr "Text input"
 
-#: src//colors.c:804
+#: src//colors.c:805
 msgid "Directories"
 msgstr "Directories"
 
-#: src//colors.c:806
+#: src//colors.c:807
 msgid "Symbolic links"
 msgstr "Symbolic links"
 
-#: src//colors.c:808
+#: src//colors.c:809
 msgid "Orphened symbolic links"
 msgstr "Orphened symbolic links"
 
-#: src//colors.c:810
+#: src//colors.c:811
 msgid "Executable files"
 msgstr "Executable files"
 
-#: src//colors.c:812
+#: src//colors.c:813
 msgid "Set user identification"
 msgstr "Set user identification"
 
-#: src//colors.c:814
+#: src//colors.c:815
 msgid "Set group identification"
 msgstr "Set group identification"
 
-#: src//colors.c:816
+#: src//colors.c:817
 msgid "Sticky bit directory"
 msgstr "Sticky bit directory"
 
-#: src//colors.c:818
+#: src//colors.c:819
 msgid "Sticky bit directory - other writable"
 msgstr "Sticky bit directory - other writable"
 
-#: src//colors.c:821
+#: src//colors.c:822
 msgid "!-Default      "
 msgstr "!-Default      "
 
-#: src//colors.c:823
+#: src//colors.c:824
 msgid "?-Default Bold "
 msgstr "?-Default Bold "
 
-#: src//colors.c:825
+#: src//colors.c:826
 msgid "0-Black        "
 msgstr "0-Black        "
 
-#: src//colors.c:827
+#: src//colors.c:828
 msgid "1-Red          "
 msgstr "1-Red          "
 
-#: src//colors.c:829
+#: src//colors.c:830
 msgid "2-Green        "
 msgstr "2-Green        "
 
-#: src//colors.c:831
+#: src//colors.c:832
 msgid "3-Brown        "
 msgstr "3-Brown        "
 
-#: src//colors.c:833
+#: src//colors.c:834
 msgid "4-Blue         "
 msgstr "4-Blue         "
 
-#: src//colors.c:835
+#: src//colors.c:836
 msgid "5-Magenta      "
 msgstr "5-Magenta      "
 
-#: src//colors.c:837
+#: src//colors.c:838
 msgid "6-Cyan         "
 msgstr "6-Cyan         "
 
-#: src//colors.c:839
+#: src//colors.c:840
 msgid "7-Light Gray   "
 msgstr "7-Light Grey   "
 
-#: src//colors.c:841
+#: src//colors.c:842
 msgid "8-Dark Gray    "
 msgstr "8-Dark Grey    "
 
-#: src//colors.c:843
+#: src//colors.c:844
 msgid "9-Light Red    "
 msgstr "9-Light Red    "
 
-#: src//colors.c:845
+#: src//colors.c:846
 msgid "A-Light Green  "
 msgstr "A-Light Green  "
 
-#: src//colors.c:847
+#: src//colors.c:848
 msgid "B-Yellow       "
 msgstr "B-Yellow       "
 
-#: src//colors.c:849
+#: src//colors.c:850
 msgid "C-Light Blue   "
 msgstr "C-Light Blue   "
 
-#: src//colors.c:851
+#: src//colors.c:852
 msgid "D-Light Magenta"
 msgstr "D-Light Magenta"
 
-#: src//colors.c:853
+#: src//colors.c:854
 msgid "E-Light Cyan   "
 msgstr "E-Light Cyan   "
 
-#: src//colors.c:855
+#: src//colors.c:856
 msgid "F-White        "
 msgstr "F-White        "
 
-#: src//colors.c:858
+#: src//colors.c:859
 #, c-format
 msgid "Select 0 to F for desired %s color"
 msgstr "Select 0 to F for desired %s colour"
@@ -220,11 +220,11 @@ msgstr "Select 0 to F for desired %s colour"
 msgid "Directory [<%s>] does not exist. Create it? !Yes/!No (enter = no)"
 msgstr "Directory [<%s>] does not exist. Create it? !Yes/!No (enter = no)"
 
-#: src//settings.c:437
+#: src//settings.c:447
 msgid "Settings saved."
 msgstr "Settings saved."
 
-#: src//sf.c:194 src//show.c:1100
+#: src//sf.c:195 src//show.c:1103
 #, c-format
 msgid "%s: The following themes are available:\n"
 msgstr "%s: The following themes are available:\n"
@@ -248,251 +248,251 @@ msgstr ""
 msgid "File [%s] does not exist"
 msgstr ""
 
-#: src//sfmenus.c:93 src//showmenus.c:238
+#: src//sfmenus.c:96 src//showmenus.c:257
 msgid "<F1>-Down"
 msgstr "<F1>-Down"
 
-#: src//sfmenus.c:94 src//showmenus.c:239
+#: src//sfmenus.c:97 src//showmenus.c:258
 msgid "<F2>-Up"
 msgstr "<F2>-Up"
 
-#: src//sfmenus.c:95 src//showmenus.c:240
+#: src//sfmenus.c:98 src//showmenus.c:259
 msgid "<F3>-Top"
 msgstr "<F3>-Top"
 
-#: src//sfmenus.c:96 src//showmenus.c:241
+#: src//sfmenus.c:99 src//showmenus.c:260
 msgid "<F4>-Bottom"
 msgstr "<F4>-Bottom"
 
-#: src//sfmenus.c:97 src//showmenus.c:211
+#: src//sfmenus.c:100 src//showmenus.c:230
 msgid "!Config"
 msgstr "!Config"
 
-#: src//sfmenus.c:98
+#: src//sfmenus.c:101
 msgid "!Find"
 msgstr "!Find"
 
-#: src//sfmenus.c:99 src//showmenus.c:214
+#: src//sfmenus.c:102 src//showmenus.c:233
 msgid "!Help"
 msgstr "!Help"
 
-#: src//sfmenus.c:100
+#: src//sfmenus.c:103
 msgid "!Position"
 msgstr "!Position"
 
-#: src//sfmenus.c:101 src//sfmenus.c:113 src//showmenus.c:216
-#: src//showmenus.c:230 src//showmenus.c:281 src//showmenus.c:287
+#: src//sfmenus.c:104 src//sfmenus.c:116 src//showmenus.c:235
+#: src//showmenus.c:249 src//showmenus.c:300 src//showmenus.c:306
 msgid "!Quit"
 msgstr "!Quit"
 
-#: src//sfmenus.c:103 src//sfmenus.c:281
+#: src//sfmenus.c:106 src//sfmenus.c:293
 msgid "!Wrap-off"
 msgstr "!Wrap-off"
 
-#: src//sfmenus.c:105 src//sfmenus.c:278
+#: src//sfmenus.c:108 src//sfmenus.c:290
 msgid "!Wrap-on"
 msgstr "!Wrap-on"
 
-#: src//sfmenus.c:109
+#: src//sfmenus.c:112
 msgid "!Ignore-case"
 msgstr "!Ignore-case"
 
-#: src//sfmenus.c:110
+#: src//sfmenus.c:113
 msgid "!Case-sensitive"
 msgstr "!Case-sensitive"
 
-#: src//sfmenus.c:114 src//showmenus.c:288
+#: src//sfmenus.c:117 src//showmenus.c:307
 msgid "!Revert"
 msgstr "!Revert"
 
-#: src//sfmenus.c:115 src//showmenus.c:282 src//showmenus.c:289
+#: src//sfmenus.c:118 src//showmenus.c:301 src//showmenus.c:308
 msgid "!Save"
 msgstr "!Save"
 
-#: src//sfmenus.c:120
+#: src//sfmenus.c:123
 msgid "(enter = I)"
 msgstr "(enter = I)"
 
-#: src//sfmenus.c:121
+#: src//sfmenus.c:124
 msgid "SF Settings Menu -"
 msgstr "SF Settings Menu -"
 
-#: src//sfmenus.c:140 src//showmenus.c:986
+#: src//sfmenus.c:143 src//showmenus.c:1026
 msgid "Match Case - Enter string:"
 msgstr "Match Case - Enter string:"
 
-#: src//sfmenus.c:143 src//showmenus.c:989
+#: src//sfmenus.c:146 src//showmenus.c:1029
 msgid "Ignore Case - Enter string:"
 msgstr "Ignore Case - Enter string:"
 
-#: src//sfmenus.c:164
+#: src//sfmenus.c:167
 #, c-format
 msgid "No further references to '%s' found."
 msgstr "No further references to '%s' found."
 
-#: src//sfmenus.c:202
+#: src//sfmenus.c:214
 msgid "Position relative (<+num> || <-num>) or absolute (<num>):"
 msgstr "Position relative (<+num> || <-num>) or absolute (<num>):"
 
-#: src//sfmenus.c:406
+#: src//sfmenus.c:421
 msgid "Show File - Enter pathname:"
 msgstr "Show File - Enter pathname:"
 
-#: src//show.c:595
+#: src//show.c:598
 msgid "never"
 msgstr "never"
 
-#: src//show.c:596
+#: src//show.c:599
 msgid "always"
 msgstr "always"
 
-#: src//show.c:597
+#: src//show.c:600
 msgid "auto"
 msgstr "auto"
 
-#: src//show.c:599
+#: src//show.c:602
 msgid "name"
 msgstr "name"
 
-#: src//show.c:600
+#: src//show.c:603
 msgid "date"
 msgstr "date"
 
-#: src//show.c:601
+#: src//show.c:604
 msgid "size"
 msgstr "size"
 
-#: src//show.c:602
+#: src//show.c:605
 msgid "unsorted"
 msgstr "unsorted"
 
-#: src//show.c:604
+#: src//show.c:607
 msgid "locale"
 msgstr "locale"
 
-#: src//show.c:605
+#: src//show.c:608
 msgid "iso"
 msgstr "iso"
 
-#: src//show.c:606
+#: src//show.c:609
 msgid "long-iso"
 msgstr "long-iso"
 
-#: src//show.c:607
+#: src//show.c:610
 msgid "full-iso"
 msgstr "full-iso"
 
-#: src//show.c:616
+#: src//show.c:619
 msgid "Display file colors"
 msgstr "Display file colours"
 
-#: src//show.c:617
+#: src//show.c:620
 msgid "Show marked file info"
 msgstr "Show marked file info"
 
-#: src//show.c:618
+#: src//show.c:621
 msgid "Sorting mode"
 msgstr "Sorting mode"
 
-#: src//show.c:619
+#: src//show.c:622
 msgid "Reverse sorting order"
 msgstr "Reverse sorting order"
 
-#: src//show.c:620
+#: src//show.c:623
 msgid "Time style"
 msgstr "Time style"
 
-#: src//show.c:621
+#: src//show.c:624
 msgid "Show hidden files"
 msgstr "Show hidden files"
 
-#: src//show.c:622
+#: src//show.c:625
 msgid "Hide backup files"
 msgstr "Hide backup files"
 
-#: src//show.c:623
+#: src//show.c:626
 msgid "Use 3rd party pager over SF"
 msgstr "Use 3rd party pager over SF"
 
-#: src//show.c:625
+#: src//show.c:628
 msgid "Hide danger lines as root"
 msgstr "Hide danger lines as root"
 
-#: src//show.c:627
+#: src//show.c:630
 msgid "Use SI units"
 msgstr "Use SI units"
 
-#: src//show.c:628
+#: src//show.c:631
 msgid "Human readable sizes"
 msgstr "Human readable sizes"
 
-#: src//show.c:629
+#: src//show.c:632
 msgid "Show Inode"
 msgstr "Show Inode"
 
-#: src//show.c:630
+#: src//show.c:633
 msgid "Use numeric UID and GIDs"
 msgstr "Use numeric UID and GIDs"
 
-#: src//show.c:631
+#: src//show.c:634
 msgid "Enter key acts like Show"
 msgstr "Enter key acts like Show"
 
-#: src//show.c:632
+#: src//show.c:635
 msgid "Owner Column"
 msgstr "Owner Column"
 
-#: src//show.c:633
+#: src//show.c:636
 msgid "Show security context of files"
 msgstr "Show security context of files"
 
-#: src//show.c:634
+#: src//show.c:637
 msgid "Skip to the first object"
 msgstr "Skip to the first object"
 
-#: src//show.c:636
+#: src//show.c:639
 msgid "Display extended attribute keys and sizes"
 msgstr "Display extended attribute keys and sizes"
 
-#: src//show.c:638
+#: src//show.c:641
 msgid "Display only current directory"
 msgstr "Display only current directory"
 
-#: src//show.c:639
+#: src//show.c:642
 msgid "Display only directories"
 msgstr "Display only directories"
 
-#: src//show.c:640
+#: src//show.c:643
 msgid "Show allocated size in blocks"
 msgstr "Show allocated size in blocks"
 
-#: src//show.c:641
+#: src//show.c:644
 msgid "Override default editor"
 msgstr "Override default editor"
 
-#: src//show.c:642
+#: src//show.c:645
 msgid "Editor utility program command"
 msgstr "Editor utility program command"
 
-#: src//show.c:643
+#: src//show.c:646
 msgid "Override default pager"
 msgstr "Override default pager"
 
-#: src//show.c:644
+#: src//show.c:647
 msgid "Pager utility program command"
 msgstr "Pager utility program command"
 
-#: src//show.c:1070
+#: src//show.c:1073
 #, c-format
 msgid "%s: invalid argument '%s' for 'block-size'\n"
 msgstr "%s: invalid argument '%s' for 'block-size'\n"
 
-#: src//show.c:1081
+#: src//show.c:1084
 #, c-format
 msgid "%s: invalid argument '%s' for 'color'\n"
 msgstr "%s: invalid argument '%s' for 'colour'\n"
 
-#: src//show.c:1082
+#: src//show.c:1085
 msgid ""
 "Valid arguments are:\n"
 "  - always\n"
@@ -502,17 +502,17 @@ msgstr ""
 "  - always\n"
 "  - never\n"
 
-#: src//show.c:1086 src//show.c:1133 src//show.c:1180
+#: src//show.c:1089 src//show.c:1136 src//show.c:1183
 #, c-format
 msgid "Try '%s --help' for more information.\n"
 msgstr "Try '%s --help' for more information.\n"
 
-#: src//show.c:1126
+#: src//show.c:1129
 #, c-format
 msgid "%s: invalid argument '%s' for 'time style'\n"
 msgstr "%s: invalid argument '%s' for 'time style'\n"
 
-#: src//show.c:1127
+#: src//show.c:1130
 msgid ""
 "Valid arguments are:\n"
 "  - full-iso\n"
@@ -526,12 +526,12 @@ msgstr ""
 "  - iso\n"
 "  - locale\n"
 
-#: src//show.c:1174
+#: src//show.c:1177
 #, c-format
 msgid "%s: invalid argument '%s' for 'marked'\n"
 msgstr "%s: invalid argument '%s' for 'marked'\n"
 
-#: src//show.c:1175
+#: src//show.c:1178
 msgid ""
 "Valid arguments are:\n"
 "  - always\n"
@@ -543,7 +543,7 @@ msgstr ""
 "  - never\n"
 "  - auto\n"
 
-#: src//show.c:1201
+#: src//show.c:1204
 #, c-format
 msgid ""
 "There are currently %i running parent show application(s).\n"
@@ -554,7 +554,7 @@ msgstr ""
 "\n"
 "Use 'exit' to return to Show.\n"
 
-#: src//show.c:1204
+#: src//show.c:1207
 #, c-format
 msgid "There are no parent show applications currently running.\n"
 msgstr "There are no parent show applications currently running.\n"
@@ -574,7 +574,7 @@ msgstr ""
 msgid "Please set a valid pager utility program command in settings."
 msgstr "Please set a valid pager utility program command in settings."
 
-#: src//showfunctions.c:1659 src//showfunctions.c:1721 src//showmenus.c:1936
+#: src//showfunctions.c:1659 src//showfunctions.c:1721 src//showmenus.c:2266
 msgid "Error: Permission denied"
 msgstr "Error: Permission denied"
 
@@ -681,396 +681,396 @@ msgstr "-Owner, Group, & Author-"
 msgid "%i Objects   %s Used %s Available"
 msgstr "%i Objects   %s Used %s Available"
 
-#: src//showmenus.c:210
+#: src//showmenus.c:229
 msgid "c!Olors"
 msgstr "c!Olours"
 
-#: src//showmenus.c:212
+#: src//showmenus.c:231
 msgid "!Run"
 msgstr "!Run"
 
-#: src//showmenus.c:213
+#: src//showmenus.c:232
 msgid "!Edit file"
 msgstr "!Edit file"
 
-#: src//showmenus.c:215
+#: src//showmenus.c:234
 msgid "!Make dir"
 msgstr "!Make dir"
 
-#: src//showmenus.c:217
+#: src//showmenus.c:236
 msgid "!Show dir"
 msgstr "!Show dir"
 
-#: src//showmenus.c:218
+#: src//showmenus.c:237
 msgid "!Touch file"
 msgstr "!Touch file"
 
-#: src//showmenus.c:221
+#: src//showmenus.c:240
 msgid "!Copy"
 msgstr "!Copy"
 
-#: src//showmenus.c:222
+#: src//showmenus.c:241
 msgid "!Delete"
 msgstr "!Delete"
 
-#: src//showmenus.c:223
+#: src//showmenus.c:242
 msgid "!Edit"
 msgstr "!Edit"
 
-#: src//showmenus.c:224
+#: src//showmenus.c:243
 msgid "!Hidden"
 msgstr "!Hidden"
 
-#: src//showmenus.c:225
+#: src//showmenus.c:244
 msgid "!Link"
 msgstr "!Link"
 
-#: src//showmenus.c:226
+#: src//showmenus.c:245
 msgid "!Modify"
 msgstr "!Modify"
 
-#: src//showmenus.c:228
+#: src//showmenus.c:247
 msgid "!Plugin"
 msgstr "!Plugin"
 
-#: src//showmenus.c:231
+#: src//showmenus.c:250
 msgid "!Rename"
 msgstr "!Rename"
 
-#: src//showmenus.c:232
+#: src//showmenus.c:251
 msgid "!Show"
 msgstr "!Show"
 
-#: src//showmenus.c:233
+#: src//showmenus.c:252
 msgid "!Touch"
 msgstr "!Touch"
 
-#: src//showmenus.c:234
+#: src//showmenus.c:253
 msgid "h!Unt"
 msgstr "h!Unt"
 
-#: src//showmenus.c:235
+#: src//showmenus.c:254
 msgid "e!Xec"
 msgstr "e!Xec"
 
-#: src//showmenus.c:242
+#: src//showmenus.c:261
 msgid "<F5>-Refresh"
 msgstr "<F5>-Refresh"
 
-#: src//showmenus.c:243
+#: src//showmenus.c:262
 msgid "<F6>-Mark/Unmark"
 msgstr "<F6>-Mark/Unmark"
 
-#: src//showmenus.c:244
+#: src//showmenus.c:263
 msgid "<F7>-All"
 msgstr "<F7>-All"
 
-#: src//showmenus.c:245
+#: src//showmenus.c:264
 msgid "<F8>-None"
 msgstr "<F8>-None"
 
-#: src//showmenus.c:246
+#: src//showmenus.c:265
 msgid "<F9>-Sort"
 msgstr "<F9>-Sort"
 
-#: src//showmenus.c:247
+#: src//showmenus.c:266
 msgid "<F10>-Block"
 msgstr "<F10>-Block"
 
-#: src//showmenus.c:251
+#: src//showmenus.c:270
 msgid "!Context"
 msgstr "!Context"
 
-#: src//showmenus.c:253
+#: src//showmenus.c:272
 msgid "!Owner/Group"
 msgstr "!Owner/Group"
 
-#: src//showmenus.c:254
+#: src//showmenus.c:273
 msgid "!Permissions"
 msgstr "!Permissions"
 
-#: src//showmenus.c:257
+#: src//showmenus.c:276
 msgid "!Date & time"
 msgstr "!Date & time"
 
-#: src//showmenus.c:258
+#: src//showmenus.c:277
 msgid "!Name"
 msgstr "!Name"
 
-#: src//showmenus.c:259
+#: src//showmenus.c:278
 msgid "!Size"
 msgstr "!Size"
 
-#: src//showmenus.c:262
+#: src//showmenus.c:281
 msgid "!Hard"
 msgstr "!Hard"
 
-#: src//showmenus.c:263
+#: src//showmenus.c:282
 msgid "!Symbolic"
 msgstr "!Symbolic"
 
-#: src//showmenus.c:266
+#: src//showmenus.c:285
 msgid "!Absolute"
 msgstr "!Absolute"
 
-#: src//showmenus.c:267
+#: src//showmenus.c:286
 msgid "!Relative"
 msgstr "!Relative"
 
-#: src//showmenus.c:270
+#: src//showmenus.c:289
 msgid "!Accessed"
 msgstr "!Accessed"
 
-#: src//showmenus.c:271
+#: src//showmenus.c:290
 msgid "!Both"
 msgstr "!Both"
 
-#: src//showmenus.c:272
+#: src//showmenus.c:291
 msgid "!Modified"
 msgstr "!Modified"
 
-#: src//showmenus.c:275
+#: src//showmenus.c:294
 msgid "!Yes/"
 msgstr "!Yes/"
 
-#: src//showmenus.c:276
+#: src//showmenus.c:295
 msgid "!No"
 msgstr "!No"
 
-#: src//showmenus.c:279
+#: src//showmenus.c:298
 msgid "Color number"
 msgstr "Colour number"
 
-#: src//showmenus.c:280
+#: src//showmenus.c:299
 msgid "!Load"
 msgstr "!Load"
 
-#: src//showmenus.c:283
+#: src//showmenus.c:302
 msgid "!Toggle"
 msgstr "!Toggle"
 
-#: src//showmenus.c:284
+#: src//showmenus.c:303
 msgid "!Use"
 msgstr "!Use"
 
-#: src//showmenus.c:292
+#: src//showmenus.c:311
 msgid "!User"
 msgstr "!User"
 
-#: src//showmenus.c:293
+#: src//showmenus.c:312
 msgid "!Role"
 msgstr "!Role"
 
-#: src//showmenus.c:294
+#: src//showmenus.c:313
 msgid "!Type"
 msgstr "!Type"
 
-#: src//showmenus.c:295
+#: src//showmenus.c:314
 msgid "!Level"
 msgstr "!Level"
 
-#: src//showmenus.c:296
+#: src//showmenus.c:315
 msgid "Raw !String"
 msgstr "Raw !String"
 
-#: src//showmenus.c:303
+#: src//showmenus.c:322
 msgid "Modify -"
 msgstr "Modify -"
 
-#: src//showmenus.c:304
+#: src//showmenus.c:323
 msgid "Sort list by -"
 msgstr "Sort list by -"
 
-#: src//showmenus.c:304
+#: src//showmenus.c:323
 msgid "(<shift> = reverse)"
 msgstr "(<shift> = reverse)"
 
-#: src//showmenus.c:305
+#: src//showmenus.c:324
 msgid "Link Type -"
 msgstr "Link Type -"
 
-#: src//showmenus.c:305
+#: src//showmenus.c:324
 msgid "(enter = S)"
 msgstr "(enter = S)"
 
-#: src//showmenus.c:306
+#: src//showmenus.c:325
 msgid "Link Location -"
 msgstr "Link Location -"
 
-#: src//showmenus.c:306
+#: src//showmenus.c:325
 msgid "(enter = R)"
 msgstr "(enter = R)"
 
-#: src//showmenus.c:307
+#: src//showmenus.c:326
 msgid "Set Time -"
 msgstr "Set Time -"
 
-#: src//showmenus.c:307
+#: src//showmenus.c:326
 msgid "(enter = B)"
 msgstr "(enter = B)"
 
-#: src//showmenus.c:308
+#: src//showmenus.c:327
 msgid "Set Time?"
 msgstr "Set Time?"
 
-#: src//showmenus.c:308
+#: src//showmenus.c:327
 msgid "(enter = N)"
 msgstr "(enter = N)"
 
-#: src//showmenus.c:309
+#: src//showmenus.c:328
 msgid "Set Context -"
 msgstr "Set Context -"
 
-#: src//showmenus.c:311
+#: src//showmenus.c:330
 msgid "SHOW Settings Menu -"
 msgstr "SHOW Settings Menu -"
 
-#: src//showmenus.c:413
+#: src//showmenus.c:444
 msgid "Show Directory - Enter pathname:"
 msgstr "Show Directory - Enter pathname:"
 
-#: src//showmenus.c:447
+#: src//showmenus.c:478
 #, c-format
 msgid "The location %s cannot be opened or is not a directory\n"
 msgstr "The location %s cannot be opened or is not a directory\n"
 
-#: src//showmenus.c:467
+#: src//showmenus.c:498
 #, c-format
 msgid "Replace file [<%s>]? (!Yes/!No)"
 msgstr "Replace file [<%s>]? (!Yes/!No)"
 
-#: src//showmenus.c:493
+#: src//showmenus.c:524
 msgid "Copy file to:"
 msgstr "Copy file to:"
 
-#: src//showmenus.c:547
+#: src//showmenus.c:578
 msgid "Copy multiple files to:"
 msgstr "Copy multiple files to:"
 
-#: src//showmenus.c:593 src//showmenus.c:653
+#: src//showmenus.c:624 src//showmenus.c:684
 msgid "Error: Directory Not Found."
 msgstr "Error: Directory Not Found."
 
-#: src//showmenus.c:608
+#: src//showmenus.c:639
 msgid "Rename multiple files to:"
 msgstr "Rename multiple files to:"
 
-#: src//showmenus.c:668
+#: src//showmenus.c:699
 msgid "Edit File - Enter pathname:"
 msgstr "Edit File - Enter pathname:"
 
-#: src//showmenus.c:685
+#: src//showmenus.c:716
 msgid "Rename file to:"
 msgstr "Rename file to:"
 
-#: src//showmenus.c:741
+#: src//showmenus.c:772
 msgid "Make Directory - Enter pathname:"
 msgstr "Make Directory - Enter pathname:"
 
-#: src//showmenus.c:790
+#: src//showmenus.c:821
 #, c-format
 msgid "Set Access Time:"
 msgstr "Set Access Time:"
 
-#: src//showmenus.c:792
+#: src//showmenus.c:823
 #, c-format
 msgid "Set Modified Time:"
 msgstr "Set Modified Time:"
 
-#: src//showmenus.c:794
+#: src//showmenus.c:825
 #, c-format
 msgid "Set Time:"
 msgstr "Set Time:"
 
-#: src//showmenus.c:818
+#: src//showmenus.c:849
 msgid "Error parsing time"
 msgstr "Error parsing time"
 
-#: src//showmenus.c:862
+#: src//showmenus.c:902
 msgid "Touch File - Enter pathname:"
 msgstr "Touch File - Enter pathname:"
 
-#: src//showmenus.c:932
+#: src//showmenus.c:972
 #, c-format
 msgid "Args to pass to %s:"
 msgstr "Args to pass to %s:"
 
-#: src//showmenus.c:950
+#: src//showmenus.c:990
 msgid "Case Sensitive, !Yes/!No/<ESC> (enter = no)"
 msgstr "Case Sensitive, !Yes/!No/<ESC> (enter = no)"
 
-#: src//showmenus.c:1030
+#: src//showmenus.c:1070
 msgid "Delete file? (!Yes/!No)"
 msgstr "Delete file? (!Yes/!No)"
 
-#: src//showmenus.c:1050
+#: src//showmenus.c:1090
 msgid "Delete directory? (!Yes/!No)"
 msgstr "Delete directory? (!Yes/!No)"
 
-#: src//showmenus.c:1092
+#: src//showmenus.c:1132
 #, c-format
 msgid "Delete file [<%s>]? (!Yes/!No/!All/!Stop)"
 msgstr "Delete file [<%s>]? (!Yes/!No/!All/!Stop)"
 
-#: src//showmenus.c:1174
+#: src//showmenus.c:1230
 #, c-format
 msgid "Set Group (%s):"
 msgstr "Set Group (%s):"
 
-#: src//showmenus.c:1202
+#: src//showmenus.c:1258
 #, c-format
 msgid "Invalid group: %s"
 msgstr "Invalid group: %s"
 
-#: src//showmenus.c:1260
+#: src//showmenus.c:1316
 msgid "Set Owner:"
 msgstr "Set Owner:"
 
-#: src//showmenus.c:1283
+#: src//showmenus.c:1339
 #, c-format
 msgid "Invalid user: %s"
 msgstr "Invalid user: %s"
 
-#: src//showmenus.c:1306
+#: src//showmenus.c:1362
 msgid "Modify Permissions:"
 msgstr "Modify Permissions:"
 
-#: src//showmenus.c:1380
+#: src//showmenus.c:1445
 msgid "Symbolic link to:"
 msgstr "Symbolic link to:"
 
-#: src//showmenus.c:1382
+#: src//showmenus.c:1447
 msgid "Hard link to:"
 msgstr "Hard link to:"
 
-#: src//showmenus.c:1407
+#: src//showmenus.c:1472
 msgid "Error: File exists."
 msgstr "Error: File exists."
 
-#: src//showmenus.c:1461
+#: src//showmenus.c:1535
 msgid "Error: Selected object is a directory."
 msgstr "Error: Selected object is a directory."
 
-#: src//showmenus.c:1486
+#: src//showmenus.c:1560
 msgid "Set User Context:"
 msgstr "Set User Context:"
 
-#: src//showmenus.c:1488
+#: src//showmenus.c:1562
 msgid "Set Role Context:"
 msgstr "Set Role Context:"
 
-#: src//showmenus.c:1490
+#: src//showmenus.c:1564
 msgid "Set Type Context:"
 msgstr "Set Type Context:"
 
-#: src//showmenus.c:1492
+#: src//showmenus.c:1566
 msgid "Set Level Context:"
 msgstr "Set Level Context:"
 
-#: src//showmenus.c:1494
+#: src//showmenus.c:1568
 msgid "Set Context:"
 msgstr "Set Context:"
 
-#: src//showmenus.c:1793
+#: src//showmenus.c:2159
 msgid "Error: Links can only be made against single files."
 msgstr "Error: Links can only be made against single files."
