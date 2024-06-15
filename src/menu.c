@@ -147,8 +147,10 @@ char * menuButtonLookup(menuButton *dfButtons, int size, int xpos, int ypos, int
     }
   }
   if (allowEsc) {
-    snprintf(outputRef, 16, "escChar");
-    return outputRef;
+    if (xpos > topX && xpos > bottomX) {
+      snprintf(outputRef, 16, "escChar");
+      return outputRef;
+    }
   }
   return outputRef;
 }
