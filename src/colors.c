@@ -785,6 +785,9 @@ void setCursorPos(int prev)
 
 void themeBuilder()
 {
+  int x, y, tipMessageWidth;
+  char *tipMessage;
+
   viewMode = 2;
   clear();
   if (bgToggle){
@@ -866,8 +869,24 @@ void themeBuilder()
   setColors(COLORMENU_PAIR_F);
   mvprintw(19, 45, _("F-White        "));
 
+  y = LINES - 4;
+
+  if (y <= 22){
+    y = 22;
+  }
+
+  tipMessageWidth = setDynamicChar(&tipMessage, _("Select 0 to F for desired %s color"), fgbgLabel);
+
+  if (COLS < tipMessageWidth){
+    x = 0;
+  } else {
+    x = ((COLS / 2) - (tipMessageWidth / 2));
+  }
+
+
   setColors(DEFAULT_BOLD_PAIR);
-  mvprintw(22, 22, _("Select 0 to F for desired %s color"), fgbgLabel);
+  mvprintw(y, x, "%s", tipMessage);
+
 
   setCursorPos(-1);
 
