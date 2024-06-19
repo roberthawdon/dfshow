@@ -52,6 +52,8 @@ colorPairs colors[256];
 
 char fgbgLabel[11];
 
+char *colorNames[17];
+
 extern MEVENT event;
 
 extern char *errmessage;
@@ -172,55 +174,55 @@ int itemLookup(int menuPos){
 
 void setColorPairs(int pair, int foreground, int background, int bold){
   switch(pair){
-  case 1:
+  case COMMAND_PAIR:
     snprintf(colors[pair].name, 24, "command");
     break;
-  case 2:
+  case INFO_PAIR:
     snprintf(colors[pair].name, 24, "info");
     break;
-  case 3:
+  case INPUT_PAIR:
     snprintf(colors[pair].name, 24, "input");
     break;
-  case 4:
+  case SELECT_PAIR:
     snprintf(colors[pair].name, 24, "select");
     break;
-  case 5:
+  case DISPLAY_PAIR:
     snprintf(colors[pair].name, 24, "display");
     break;
-  case 6:
+  case DANGER_PAIR:
     snprintf(colors[pair].name, 24, "danger");
     break;
-  case 7:
+  case DIR_PAIR:
     snprintf(colors[pair].name, 24, "dir");
     break;
-  case 8:
+  case SLINK_PAIR:
     snprintf(colors[pair].name, 24, "symlink");
     break;
-  case 9:
+  case EXE_PAIR:
     snprintf(colors[pair].name, 24, "exec");
     break;
-  case 10:
+  case SUID_PAIR:
     snprintf(colors[pair].name, 24, "suid");
     break;
-  case 11:
+  case SGID_PAIR:
     snprintf(colors[pair].name, 24, "sgid");
     break;
-  case 12:
+  case HILITE_PAIR:
     snprintf(colors[pair].name, 24, "hilite");
     break;
-  case 13:
+  case ERROR_PAIR:
     snprintf(colors[pair].name, 24, "error");
     break;
-  case 14:
+  case HEADING_PAIR:
     snprintf(colors[pair].name, 24, "heading");
     break;
-  case 15:
+  case DEADLINK_PAIR:
     snprintf(colors[pair].name, 24, "deadlink");
     break;
-  case 16:
+  case STICKY_PAIR:
     snprintf(colors[pair].name, 24, "sticky");
     break;
-  case 17:
+  case STICKY_OW_PAIR:
     snprintf(colors[pair].name, 24, "sticky-ow");
     break;
   default:
@@ -785,8 +787,27 @@ void setCursorPos(int prev)
 
 void themeBuilder()
 {
-  int x, y, tipMessageWidth;
+  int i, x, y, tipMessageWidth, colorNameWidth;
+  size_t colorNameWidthSize;
   char *tipMessage;
+
+  colorNames[0]  = _("Command lines");
+  colorNames[1]  = _("Display lines");
+  colorNames[2]  = _("Error messages");
+  colorNames[3]  = _("Information lines");
+  colorNames[4]  = _("Heading lines");
+  colorNames[5]  = _("Danger lines");
+  colorNames[6]  = _("Selected block lines");
+  colorNames[7]  = _("Highlight");
+  colorNames[8]  = _("Text input");
+  colorNames[9]  = _("Directories");
+  colorNames[10] = _("Symbolic links");
+  colorNames[11] = _("Orphened symbolic links");
+  colorNames[12] = _("Executable files");
+  colorNames[13] = _("Set user identification");
+  colorNames[14] = _("Set group identification");
+  colorNames[15] = _("Sticky bit directory");
+  colorNames[16] = _("Sticky bit directory - other writable");
 
   viewMode = 2;
   clear();
@@ -797,43 +818,17 @@ void themeBuilder()
   }
   wPrintMenu(0,0,colorMenuLabel);
 
-  setColors(COMMAND_PAIR);
-  mvprintw(2, 4, _("Command lines"));
-  setColors(DISPLAY_PAIR);
-  mvprintw(3, 4, _("Display lines"));
-  setColors(ERROR_PAIR);
-  mvprintw(4, 4, _("Error messages"));
-  setColors(INFO_PAIR);
-  mvprintw(5, 4, _("Information lines"));
-  setColors(HEADING_PAIR);
-  mvprintw(6, 4, _("Heading lines"));
-  setColors(DANGER_PAIR);
-  mvprintw(7, 4, _("Danger lines"));
-  setColors(SELECT_PAIR);
-  mvprintw(8, 4, _("Selected block lines"));
-  setColors(HILITE_PAIR);
-  mvprintw(9, 4, _("Highlight"));
-  setColors(INPUT_PAIR);
-  mvprintw(10, 4, _("Text input"));
-  setColors(DIR_PAIR);
-  mvprintw(11, 4, _("Directories"));
-  setColors(SLINK_PAIR);
-  mvprintw(12, 4, _("Symbolic links"));
-  setColors(DEADLINK_PAIR);
-  mvprintw(13, 4, _("Orphened symbolic links"));
-  setColors(EXE_PAIR);
-  mvprintw(14, 4, _("Executable files"));
-  setColors(SUID_PAIR);
-  mvprintw(15, 4, _("Set user identification"));
-  setColors(SGID_PAIR);
-  mvprintw(16, 4, _("Set group identification"));
-  setColors(STICKY_PAIR);
-  mvprintw(17, 4, _("Sticky bit directory"));
-  setColors(STICKY_OW_PAIR);
-  mvprintw(18, 4, _("Sticky bit directory - other writable"));
+  colorNameWidthSize = 0;
+  for (i = 0; i < 17; i++){
+    setColors(i + 1);
+    mvprintw(i + 2, 4, "%s", colorNames[i]);
+    if (strlen(colorNames[i]) > colorNameWidthSize){
+      colorNameWidth = colorNameWidthSize = strlen(colorNames[i]);
+    }
+  }
 
-  if ((COLS / 2) < 45){
-    x = 45;
+  if ((COLS / 2) < (colorNameWidth + 12)){
+    x = colorNameWidth + 12;
   } else {
     x = COLS / 2;
   }
