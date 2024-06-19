@@ -832,42 +832,48 @@ void themeBuilder()
   setColors(STICKY_OW_PAIR);
   mvprintw(18, 4, _("Sticky bit directory - other writable"));
 
+  if ((COLS / 2) < 45){
+    x = 45;
+  } else {
+    x = COLS / 2;
+  }
+
   setColors(DEFAULT_COLOR_PAIR);
-  mvprintw(2, 45, _("!-Default      "));
+  mvprintw(2, x, _("!-Default      "));
   setColors(DEFAULT_BOLD_PAIR);
-  mvprintw(3, 45, _("?-Default Bold "));
+  mvprintw(3, x, _("?-Default Bold "));
   setColors(COLORMENU_PAIR_0);
-  mvprintw(4, 45, _("0-Black        "));
+  mvprintw(4, x, _("0-Black        "));
   setColors(COLORMENU_PAIR_1);
-  mvprintw(5, 45, _("1-Red          "));
+  mvprintw(5, x, _("1-Red          "));
   setColors(COLORMENU_PAIR_2);
-  mvprintw(6, 45, _("2-Green        "));
+  mvprintw(6, x, _("2-Green        "));
   setColors(COLORMENU_PAIR_3);
-  mvprintw(7, 45, _("3-Brown        "));
+  mvprintw(7, x, _("3-Brown        "));
   setColors(COLORMENU_PAIR_4);
-  mvprintw(8, 45, _("4-Blue         "));
+  mvprintw(8, x, _("4-Blue         "));
   setColors(COLORMENU_PAIR_5);
-  mvprintw(9, 45, _("5-Magenta      "));
+  mvprintw(9, x, _("5-Magenta      "));
   setColors(COLORMENU_PAIR_6);
-  mvprintw(10, 45, _("6-Cyan         "));
+  mvprintw(10, x, _("6-Cyan         "));
   setColors(COLORMENU_PAIR_7);
-  mvprintw(11, 45, _("7-Light Gray   "));
+  mvprintw(11, x, _("7-Light Gray   "));
   setColors(COLORMENU_PAIR_8);
-  mvprintw(12, 45, _("8-Dark Gray    "));
+  mvprintw(12, x, _("8-Dark Gray    "));
   setColors(COLORMENU_PAIR_9);
-  mvprintw(13, 45, _("9-Light Red    "));
+  mvprintw(13, x, _("9-Light Red    "));
   setColors(COLORMENU_PAIR_A);
-  mvprintw(14, 45, _("A-Light Green  "));
+  mvprintw(14, x, _("A-Light Green  "));
   setColors(COLORMENU_PAIR_B);
-  mvprintw(15, 45, _("B-Yellow       "));
+  mvprintw(15, x, _("B-Yellow       "));
   setColors(COLORMENU_PAIR_C);
-  mvprintw(16, 45, _("C-Light Blue   "));
+  mvprintw(16, x, _("C-Light Blue   "));
   setColors(COLORMENU_PAIR_D);
-  mvprintw(17, 45, _("D-Light Magenta"));
+  mvprintw(17, x, _("D-Light Magenta"));
   setColors(COLORMENU_PAIR_E);
-  mvprintw(18, 45, _("E-Light Cyan   "));
+  mvprintw(18, x, _("E-Light Cyan   "));
   setColors(COLORMENU_PAIR_F);
-  mvprintw(19, 45, _("F-White        "));
+  mvprintw(19, x, _("F-White        "));
 
   y = LINES - 4;
 
