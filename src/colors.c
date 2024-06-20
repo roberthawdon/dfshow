@@ -589,7 +589,7 @@ void theme_menu_inputs()
             *pc = menuHotkeyLookup(colorMenu, (menuButtonLookup(colorMenuButtons, colorMenuSize, event.x, event.y, 0, 0, true)), colorMenuSize);
             goto loop;
           } else {
-            themeButtonAction(menuButtonLookup(themeBuilderButtons, 17, event.x, event.y, 0, 0, false));
+            *pc = themeButtonAction(menuButtonLookup(themeBuilderButtons, 35, event.x, event.y, 0, 0, false));
             goto loop;
           }
         }
@@ -712,17 +712,30 @@ void theme_menu_inputs()
     }
 }
 
-void themeButtonAction(const char * refLabel){
+int themeButtonAction(const char * refLabel){
   int prevColorPos = 0;
   int newPos = -1;
+  int output = -1;
 
   if (!strncmp(refLabel, "colorThemePos", 13)){
     sscanf(refLabel + 13, "%i", &newPos);
     prevColorPos = colorThemePos;
     colorThemePos = newPos;
     setCursorPos(prevColorPos);
+    return output;
+  } else {
+    output = refLabel[0];
   }
 
+  return output;
+}
+
+void addColorButton(int index, const char * refLabel, const char * label, int topX, int topY){
+  snprintf(themeBuilderButtons[index].refLabel, 16, "%s", refLabel);
+  themeBuilderButtons[index].topX = topX;
+  themeBuilderButtons[index].bottomX = topX + strlen(label) - 1;
+  themeBuilderButtons[index].topY = themeBuilderButtons[index].bottomY = topY;
+  mvprintw(topY, topX, "%s", label);
 }
 
 void setDefaultTheme(){
@@ -805,11 +818,11 @@ void setCursorPos(int prev)
 
 void themeBuilder()
 {
-  int i, x, y, b, tipMessageWidth, colorNameWidth;
+  int i, x, y, b, tipMessageWidth, colorNameWidth, colorNameItems;
   // size_t colorNameWidthSize;
   char *tipMessage;
 
-  themeBuilderButtons = malloc(sizeof(menuButton) * 17);
+  colorNameItems = 0;
 
   colorNames[0]  = _("Command lines");
   colorNames[1]  = _("Display lines");
@@ -829,6 +842,14 @@ void themeBuilder()
   colorNames[15] = _("Sticky bit directory");
   colorNames[16] = _("Sticky bit directory - other writable");
 
+  colorNameItems = sizeof(colorNames)/sizeof(colorNames[0]);
+
+  if (themeBuilderButtons){
+    free(themeBuilderButtons);
+  }
+
+  themeBuilderButtons = malloc(sizeof(menuButton) * (colorNameItems + 18));
+
   viewMode = 2;
   clear();
   if (bgToggle){
@@ -839,7 +860,7 @@ void themeBuilder()
   wPrintMenu(0,0,colorMenuLabel);
 
   colorNameWidth = 0;
-  for (i = 0; i < 17; i++){
+  for (i = 0; i < colorNameItems; i++){
     setColors(i + 1);
     mvprintw(i + 2, 4, "%s", colorNames[i]);
     b = strlen(colorNames[i]) - 1;
@@ -858,42 +879,44 @@ void themeBuilder()
     x = COLS / 2;
   }
 
+  i = colorNameItems;
+  b = 2;
   setColors(DEFAULT_COLOR_PAIR);
-  mvprintw(2, x, _("!-Default      "));
+  addColorButton(i, "!", _("!-Default      "), x, b); i++; b++;
   setColors(DEFAULT_BOLD_PAIR);
-  mvprintw(3, x, _("?-Default Bold "));
+  addColorButton(i, "?", _("?-Default Bold "), x, b); i++; b++;
   setColors(COLORMENU_PAIR_0);
-  mvprintw(4, x, _("0-Black        "));
+  addColorButton(i, "0", _("0-Black        "), x, b); i++; b++;
   setColors(COLORMENU_PAIR_1);
-  mvprintw(5, x, _("1-Red          "));
+  addColorButton(i, "1", _("1-Red          "), x, b); i++; b++;
   setColors(COLORMENU_PAIR_2);
-  mvprintw(6, x, _("2-Green        "));
+  addColorButton(i, "2", _("2-Green        "), x, b); i++; b++;
   setColors(COLORMENU_PAIR_3);
-  mvprintw(7, x, _("3-Brown        "));
+  addColorButton(i, "3", _("3-Brown        "), x, b); i++; b++;
   setColors(COLORMENU_PAIR_4);
-  mvprintw(8, x, _("4-Blue         "));
+  addColorButton(i, "4", _("4-Blue         "), x, b); i++; b++;
   setColors(COLORMENU_PAIR_5);
-  mvprintw(9, x, _("5-Magenta      "));
+  addColorButton(i, "5", _("5-Magenta      "), x, b); i++; b++;
   setColors(COLORMENU_PAIR_6);
-  mvprintw(10, x, _("6-Cyan         "));
+  addColorButton(i, "6", _("6-Cyan         "), x, b); i++; b++;
   setColors(COLORMENU_PAIR_7);
-  mvprintw(11, x, _("7-Light Gray   "));
+  addColorButton(i, "7", _("7-Light Gray   "), x, b); i++; b++;
   setColors(COLORMENU_PAIR_8);
-  mvprintw(12, x, _("8-Dark Gray    "));
+  addColorButton(i, "8", _("8-Dark Gray    "), x, b); i++; b++;
   setColors(COLORMENU_PAIR_9);
-  mvprintw(13, x, _("9-Light Red    "));
+  addColorButton(i, "9", _("9-Light Gray   "), x, b); i++; b++;
   setColors(COLORMENU_PAIR_A);
-  mvprintw(14, x, _("A-Light Green  "));
+  addColorButton(i, "a", _("A-Light Green  "), x, b); i++; b++;
   setColors(COLORMENU_PAIR_B);
-  mvprintw(15, x, _("B-Yellow       "));
+  addColorButton(i, "b", _("B-Yellow       "), x, b); i++; b++;
   setColors(COLORMENU_PAIR_C);
-  mvprintw(16, x, _("C-Light Blue   "));
+  addColorButton(i, "c", _("C-Light Blue   "), x, b); i++; b++;
   setColors(COLORMENU_PAIR_D);
-  mvprintw(17, x, _("D-Light Magenta"));
+  addColorButton(i, "d", _("D-Light Magenta"), x, b); i++; b++;
   setColors(COLORMENU_PAIR_E);
-  mvprintw(18, x, _("E-Light Cyan   "));
+  addColorButton(i, "e", _("E-Light Cyan   "), x, b); i++; b++;
   setColors(COLORMENU_PAIR_F);
-  mvprintw(19, x, _("F-White        "));
+  addColorButton(i, "f", _("F-White        "), x, b); i++; b++;
 
   y = LINES - 4;
 
