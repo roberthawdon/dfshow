@@ -72,6 +72,8 @@ int colorMenuSize = 0;
 wchar_t *colorMenuLabel;
 menuButton *colorMenuButtons;
 
+menuButton *themeBuilderButtons;
+
 void processListThemes(const char * pathName)
 {
   DIR *dfDir;
@@ -586,6 +588,9 @@ void theme_menu_inputs()
             // Setting key based on click
             *pc = menuHotkeyLookup(colorMenu, (menuButtonLookup(colorMenuButtons, colorMenuSize, event.x, event.y, 0, 0, true)), colorMenuSize);
             goto loop;
+          } else {
+            themeButtonAction(menuButtonLookup(themeBuilderButtons, 17, event.x, event.y, 0, 0, false));
+            goto loop;
           }
         }
       } else if (*pc == '!'){
@@ -707,6 +712,19 @@ void theme_menu_inputs()
     }
 }
 
+void themeButtonAction(const char * refLabel){
+  int prevColorPos = 0;
+  int newPos = -1;
+
+  if (!strncmp(refLabel, "colorThemePos", 13)){
+    sscanf(refLabel + 13, "%i", &newPos);
+    prevColorPos = colorThemePos;
+    colorThemePos = newPos;
+    setCursorPos(prevColorPos);
+  }
+
+}
+
 void setDefaultTheme(){
   use_default_colors();
   lightColorPair[0] = 0; // Unused array value
@@ -787,9 +805,11 @@ void setCursorPos(int prev)
 
 void themeBuilder()
 {
-  int i, x, y, tipMessageWidth, colorNameWidth;
-  size_t colorNameWidthSize;
+  int i, x, y, b, tipMessageWidth, colorNameWidth;
+  // size_t colorNameWidthSize;
   char *tipMessage;
+
+  themeBuilderButtons = malloc(sizeof(menuButton) * 17);
 
   colorNames[0]  = _("Command lines");
   colorNames[1]  = _("Display lines");
@@ -818,12 +838,17 @@ void themeBuilder()
   }
   wPrintMenu(0,0,colorMenuLabel);
 
-  colorNameWidthSize = 0;
+  colorNameWidth = 0;
   for (i = 0; i < 17; i++){
     setColors(i + 1);
     mvprintw(i + 2, 4, "%s", colorNames[i]);
-    if (strlen(colorNames[i]) > colorNameWidthSize){
-      colorNameWidth = colorNameWidthSize = strlen(colorNames[i]);
+    b = strlen(colorNames[i]) - 1;
+    snprintf(themeBuilderButtons[i].refLabel, 16, "colorThemePos%i", i);
+    themeBuilderButtons[i].topX = 4;
+    themeBuilderButtons[i].bottomX = 4 + b;
+    themeBuilderButtons[i].topY = themeBuilderButtons[i].bottomY = i + 2;
+    if (b > colorNameWidth){
+      colorNameWidth = strlen(colorNames[i]);
     }
   }
 
