@@ -904,7 +904,7 @@ void themeBuilder()
   setColors(COLORMENU_PAIR_8);
   addColorButton(i, "8", _("8-Dark Gray    "), x, b); i++; b++;
   setColors(COLORMENU_PAIR_9);
-  addColorButton(i, "9", _("9-Light Gray   "), x, b); i++; b++;
+  addColorButton(i, "9", _("9-Light Red    "), x, b); i++; b++;
   setColors(COLORMENU_PAIR_A);
   addColorButton(i, "a", _("A-Light Green  "), x, b); i++; b++;
   setColors(COLORMENU_PAIR_B);
