@@ -27,6 +27,8 @@
 #include "colors.h"
 #include "banned.h"
 
+extern MEVENT event;
+
 int wReadLine(wchar_t *buffer, int buflen, wchar_t *oldbuf)
 /* Read up to buflen-1 characters into `buffer`.
  * A terminating '\0' character is added after the input.  */
@@ -71,6 +73,14 @@ int wReadLine(wchar_t *buffer, int buflen, wchar_t *oldbuf)
       over = (x+pos) - COLS;
     }
     get_wch(&c);
+
+    loop:
+    if (getmouse(&event) == OK) {
+      if(event.bstate & BUTTON1_PRESSED){
+        c = 27;
+        goto loop;
+      }
+    }
 
     if (c == KEY_ENTER || c == '\n' || c == '\r') {
       // Enter Key
