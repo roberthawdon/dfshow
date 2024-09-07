@@ -1768,7 +1768,11 @@ void showNavigate(int direction, int step){
         for (i = lineStart; i < listLen; i++){
           if (el[i].fileRef == selected) {
             if ((i + pageStep) < listLen){
-              selected = el[i + pageStep].fileRef;
+              if (el[i + pageStep].entryLineType != ET_OBJECT) {
+                selected++;
+              } else {
+                selected = el[i + pageStep].fileRef;
+              }
             } else {
               selected = totalfilecount - 1;
             }
@@ -1805,7 +1809,7 @@ void showNavigate(int direction, int step){
             } else {
               selected = el[i - pageStep].fileRef;
               if (el[i - pageStep].entryLineType != ET_OBJECT){
-                selected++;
+                selected--;
               }
             }
           }
@@ -1821,6 +1825,7 @@ void showNavigate(int direction, int step){
 void directory_view_menu_inputs()
 {
   int e, i = 0;
+  int index;
   char *updir;
   char *execArgs;
   viewMode = 0;
@@ -1915,9 +1920,9 @@ void directory_view_menu_inputs()
           } else if (event.bstate & BUTTON4_PRESSED){
             showNavigate(D_PG_UP, showScrollStep);
           } else if (event.bstate & BUTTON1_PRESSED) {
-            // I'd imagine this won't work with extended attributes on macOS, but it's a start
             if ((event.y >= displaystart) && (event.y < LINES - 1)){
-              if (event.y == selected - topfileref + displaystart){
+              index = lineStart + event.y - displaystart;
+              if (el[index].fileRef == selected){
                 if (!check_dir(ob[selected].name)) {
                   if (clickMode == CLICK_SHOW){
                     functionAction("f_show");
@@ -1927,10 +1932,11 @@ void directory_view_menu_inputs()
                 } else {
                   functionAction("f_show");
                 }
-                // yuck, we'll eventually rework this, honest guv!
-              } else if (topfileref + (event.y - displaystart) <= bottomFileRef) {
-                selected = topfileref + (event.y - displaystart);
-                display_dir(currentpwd, ob);
+              } else if (el[index].fileRef <= bottomFileRef) {
+                if ( index < listLen ) {
+                  selected = el[index].fileRef;
+                  display_dir(currentpwd, ob);
+                }
               }
             } else if (event.y == 0){
               *pc = menuHotkeyLookup(showFileMenu, (menuButtonLookup(showFileMenuButtons, showFileMenuSize, event.x, event.y, 0, 0, true)), showFileMenuSize);
