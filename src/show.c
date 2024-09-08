@@ -125,6 +125,8 @@ int clickMode = CLICK_SHOW;
 
 extern MEVENT event;
 
+extern bool enableMouse;
+
 extern int returnCode;
 
 extern char *programName;
@@ -199,6 +201,7 @@ void readShowConfig(const char * confFile)
           setenv("DFS_THEME", themeName, 1);
         }
       }
+      // Is sigint enabled? This allows for using CTRL-C to kill the DF-SHOW applications. It is a hidden, config only, option and defaults to false.
       setting = config_setting_get_member(group, "sigint");
       if (setting){
         if (config_setting_get_int(setting)){
@@ -378,6 +381,13 @@ void readShowConfig(const char * confFile)
         }
         pagerPath = calloc(strlen(config_setting_get_string(setting)) + 1, sizeof(char));
         snprintf(pagerPath, (strlen(config_setting_get_string(setting)) + 1), "%s", config_setting_get_string(setting));
+      }
+      // Check scrollStep
+      setting = config_setting_get_member(group, "scrollStep");
+      if (setting){
+        if (config_setting_get_int(setting)){
+          showScrollStep = config_setting_get_int(setting);
+        }
       }
       // Check Layout
       array = config_setting_get_member(group, "layout");
@@ -924,10 +934,14 @@ Options specific to show:\n\
       --running                display number of parent show processes\n\
       --settings-menu          launch settings menu\n\
       --edit-themes            launchs directly into the theme editor\n\
-      --skip-to-first          skips navigation items if at the top of list\n"), stdout);
+      --skip-to-first          skips navigation items if at the top of list\n\
+      --enable-mouse=[BOOLEAN] enables/disables mouse support. Can be either\n\
+                                 'true' or 'false'\n"), stdout);
   fputs (("\n\
 The THEME argument can be:\n"), stdout);
   listThemes();
+  fputs (("\n\
+The MARKED argument can be: always; never; auto.\n"), stdout);
   fputs (("\n\
 Exit status:\n\
  0  if OK,\n\
@@ -1049,6 +1063,7 @@ int main(int argc, char *argv[])
          {"settings-menu",    no_argument,       0, GETOPT_OPTIONSMENU_CHAR},
          {"contect",          no_argument,       0, 'Z'},
          {"skip-to-first",    no_argument,       0, GETOPT_SKIPTOFIRST_CHAR},
+         {"enable-mouse",     required_argument, 0, GETOPT_ENABLE_MOUSE},
          {0, 0, 0, 0}
         };
       int option_index = 0;
@@ -1223,6 +1238,21 @@ Valid arguments are:\n\
     case GETOPT_SKIPTOFIRST_CHAR:
       skipToFirstFile = 1;
       break;
+    case GETOPT_ENABLE_MOUSE:
+      if (!strcmp(optarg, "true")) {
+        enableMouse = true;
+      } else if (!strcmp(optarg, "false")) {
+        enableMouse = false;
+      } else {
+        printf(_("%s: invalid argument '%s' for 'enable-mouse'\n"), argv[0], optarg);
+        fputs ((_("\
+Valid arguments are:\n\
+- true\n\
+- false\n")), stdout);
+        printf(_("Try '%s --help' for more information.\n"), argv[0]);
+        exit(2);
+      }
+      break;
     case '@':
       showXAttrs = 1;
       break;
@@ -1267,8 +1297,10 @@ Valid arguments are:\n\
   keypad(stdscr, TRUE);
 
   // Enable mouse events
-  mousemask(ALL_MOUSE_EVENTS | REPORT_MOUSE_POSITION, NULL);
-  mouseinterval(0);
+  if (enableMouse) {
+    mousemask(ALL_MOUSE_EVENTS | REPORT_MOUSE_POSITION, NULL);
+    mouseinterval(0);
+  }
 
   generateShowSettingsVars();
 
