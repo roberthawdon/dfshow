@@ -60,6 +60,8 @@ char themeName[256] = "default";
 
 char *errmessage;
 
+bool enableMouse = true;
+
 int displaycount;
 
 int i, s;

@@ -141,6 +141,13 @@ void readSfConfig(const char * confFile)
           wrap = 1;
         }
       }
+      // Check scrollStep
+      setting = config_setting_get_member(group, "scrollStep");
+      if (setting){
+        if (config_setting_get_int(setting)){
+          sfScrollStep = config_setting_get_int(setting);
+        }
+      }
     }
   }
 }
