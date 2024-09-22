@@ -110,6 +110,8 @@ char block_unit[4] = "\0\0\0\0";
 
 int showScrollStep = 4;
 
+int showMenuItems = 0;
+
 results *ob;
 
 int segOrder[10] = {COL_MARK, COL_INODE, COL_SIZEBLOCKS, COL_ATTR, COL_HLINK, COL_OWNER, COL_CONTEXT, COL_SIZE, COL_DATE, COL_NAME};
@@ -1302,14 +1304,14 @@ Valid arguments are:\n\
     mouseinterval(0);
   }
 
-  generateShowSettingsVars();
+  showMenuItems = generateShowSettingsVars();
 
   if (launchThemeEditor == 1){
     themeBuilder();
     theme_menu_inputs();
     exittoshell();
   } else if (launchSettingsMenu == 1) {
-    settingsMenuView(showSettingsMenuLabel, showSettingsMenuSize, showSettingsMenu, showSettingsMenuButtons, &settingIndexShow, &charValuesShow, &binValuesShow, totalCharItemsShow, totalBinItemsShow, generateShowSettingsVars(), "show");
+    settingsMenuView(showSettingsMenuLabel, showSettingsMenuSize, showSettingsMenu, showSettingsMenuButtons, &settingIndexShow, &charValuesShow, &binValuesShow, totalCharItemsShow, totalBinItemsShow, showMenuItems, "show");
     exittoshell();
   } else {
     // Remaining arguments passed as working directory

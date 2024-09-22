@@ -91,6 +91,8 @@ extern char *line;
 extern long int *filePos;
 extern wchar_t *longline;
 
+extern int sfMenuItems;
+
 void generateDefaultSfMenus(){
   // File Menu
   addMenuItem(&sfFileMenu, &sfFileMenuSize, "f_01", _("<F1>-Down"), 265, 1);
@@ -348,7 +350,8 @@ void show_file_inputs()
         }
         updateView();
       } else if (*pc == menuHotkeyLookup(sfFileMenu, "f_config", sfFileMenuSize)){
-        settingsMenuView(sfSettingsMenuLabel, sfSettingsMenuSize, sfSettingsMenu, sfSettingsMenuButtons, &settingIndexSf, &charValuesSf, &binValuesSf, totalCharItemsSf, totalBinItemsSf, generateSfSettingsVars(), "sf");
+        sfMenuItems = generateSfSettingsVars(); // This might need moving
+        settingsMenuView(sfSettingsMenuLabel, sfSettingsMenuSize, sfSettingsMenu, sfSettingsMenuButtons, &settingIndexSf, &charValuesSf, &binValuesSf, totalCharItemsSf, totalBinItemsSf, sfMenuItems, "sf");
         wPrintMenu(0, 0, sfFileMenuLabel);
         if(wrap){
         }
