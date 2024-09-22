@@ -75,6 +75,8 @@ t2BinValues *binValuesSf;
 int totalCharItemsSf;
 int totalBinItemsSf;
 
+int sfMenuItems = 0;
+
 extern char fileName[4096];
 
 extern int displaysize;
