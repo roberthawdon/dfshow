@@ -399,15 +399,30 @@ int textValueLookup(t1CharValues **values, int *items, char *refLabel, char *val
 int settingButtonAction(const char * refLabel, settingIndex **settings, int menuItems){
   int output = -1;
   int newPos = -1;
+  int oldPos = -1;
   int i;
 
   // endwin();
+  oldPos = settingsPos;
 
   for (i = 0; i < menuItems; i++){
     // printf("%i of %i: %s (target: %s)\n", i, menuItems, (*settings)[i].refLabel, refLabel);
     if (!strcmp((*settings)[i].refLabel, refLabel)){
         newPos = i;
-        settingsPos = newPos;
+        if (newPos == oldPos){
+          switch((*settings)[i].type){
+            case SETTING_BOOL:
+              output = 32;
+              break;
+            case SETTING_FREE:
+              output = 32;
+              break;
+            default:
+              break;
+          }
+        } else {
+          settingsPos = newPos;
+        }
         return output;
       }
   }
