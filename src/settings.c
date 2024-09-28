@@ -414,6 +414,9 @@ int settingButtonAction(const char * refLabel, settingIndex **settings, int menu
             case SETTING_BOOL:
               output = 32;
               break;
+            case SETTING_SELECT:
+              output = 261;
+              break;
             case SETTING_FREE:
               output = 32;
               break;
