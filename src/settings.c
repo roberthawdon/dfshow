@@ -480,6 +480,10 @@ void settingsMenuView(wchar_t *settingsMenuLabel, int settingsMenuSize, menuDef 
             *pc = settingButtonAction(menuButtonLookup(settingButtons, totalItems, event.x, event.y, 0, 0, false), settings, totalItems);
             goto loop;
           }
+        } else if (event.bstate & BUTTON5_PRESSED){
+          goto down;
+        } else if (event.bstate & BUTTON4_PRESSED){
+          goto up;
         }
       } else if (*pc == menuHotkeyLookup(settingsMenu, "s_quit", settingsMenuSize)){
         curs_set(FALSE);
@@ -502,6 +506,7 @@ void settingsMenuView(wchar_t *settingsMenuLabel, int settingsMenuSize, menuDef 
         curs_set(TRUE);
         wPrintMenu(0,0,settingsMenuLabel);
       } else if (*pc == 258 || *pc == 10){
+        down:
         if (settingsPos < (totalItems -1 )){
           settingsBinPos = -1;
           settingsPos++;
@@ -557,6 +562,7 @@ void settingsMenuView(wchar_t *settingsMenuLabel, int settingsMenuSize, menuDef 
           }
         }
       } else if (*pc == 259){
+        up:
         if (settingsPos > 0){
           settingsBinPos = -1;
           settingsPos--;
