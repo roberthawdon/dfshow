@@ -1067,51 +1067,48 @@ void huntInput(int selected, int charcase)
 
 void delete_file_confirm_input(char *file)
 {
-  printMenu(0,0, _("Delete file? (!Yes/!No)"));
-  while(1)
+  int r;
+
+  r = commonConfirmMenu(0,0, _("Delete file?"), false);
+
+  switch(r)
     {
-      *pc = getch10th();
-      switch(*pc)
-        {
-        case 'y':
-          delete_file(file);
-          refreshDirectory(sortmode, lineStart, selected, 1);
-          // Not breaking here, intentionally dropping through to the default
-        default:
-          directory_view_menu_inputs();
-          break;
-        }
+      case YES:
+        delete_file(file);
+        refreshDirectory(sortmode, lineStart, selected, 1);
+        // Not breaking here, intentionally dropping through to the default
+      default:
+        directory_view_menu_inputs();
+        break;
     }
 }
 
 void delete_directory_confirm_input(char *directory)
 {
-  int e;
-  printMenu(0,0, _("Delete directory? (!Yes/!No)"));
-  while(1)
+  int e, r;
+
+  r = commonConfirmMenu(0,0, _("Delete directory?"), false);
+
+  switch(r)
     {
-      *pc = getch10th();
-      switch(*pc)
-        {
-        case 'y':
-          e = rmdir(directory);
-          if (e != 0){
-            setDynamicChar(&errmessage, _("Error: %s"), strerror(errno));
-            topLineMessage(errmessage);
-            free(errmessage);
-          }
-          refreshDirectory(sortmode, lineStart, selected, 1);
-          // Not breaking here, intentionally dropping through to the default
-        default:
-          directory_view_menu_inputs();
-          break;
+      case YES:
+        e = rmdir(directory);
+        if (e != 0){
+          setDynamicChar(&errmessage, _("Error: %s"), strerror(errno));
+          topLineMessage(errmessage);
+          free(errmessage);
         }
+        refreshDirectory(sortmode, lineStart, selected, 1);
+        // Not breaking here, intentionally dropping through to the default
+      default:
+        directory_view_menu_inputs();
+        break;
     }
 }
 
 void delete_multi_file_confirm_input(results* ob)
 {
-  int i, k;
+  int i, k, r;
   int allflag = 0;
   int abortflag = 0;
   char *message;
@@ -1129,29 +1126,28 @@ void delete_multi_file_confirm_input(results* ob)
             {
               delete_file(selfile);
             } else {
-            setDynamicChar(&message, _("Delete file [<%s>]? (!Yes/!No/!All/!Stop)"), selfile);
-            printMenu(0,0, message);
+            setDynamicChar(&message, _("Delete file [<%s>]?"), selfile);
+            r = commonConfirmMenu(0,0, message, true);
             free(message);
             k = 1;
             while(k)
               {
-                *pc = getch10th();
-                switch(*pc)
+                switch(r)
                   {
-                  case 'y':
+                  case YES:
                     delete_file(selfile);
                     k = 0;
                     break;
-                  case 'a':
+                  case ALL:
                     allflag = 1;
                     k = 0;
                     delete_file(selfile);
                     break;
-                  case 's':
-                    abortflag = 1;
+                  case NO:
                     k = 0;
                     break;
-                  case 'n':
+                  default:
+                    abortflag = 1;
                     k = 0;
                     break;
                   }

@@ -24,10 +24,12 @@
 #include <string.h>
 #include <wchar.h>
 #include <ctype.h>
+#include <libintl.h>
 #include "colors.h"
 #include "common.h"
 #include "menu.h"
 #include "banned.h"
+#include "i18n.h"
 
 int topMenuStart = 0;
 int bottomMenuStart = 0;
@@ -35,6 +37,9 @@ bool topMenu = true;
 bool bottomMenu = true;
 wchar_t *topMenuBuffer;
 wchar_t *bottomMenuBuffer;
+
+extern int * pc;
+extern MEVENT event;
 
 int dynamicMenuLabel(wchar_t **label, const char *str)
 {
@@ -368,4 +373,120 @@ int printMenu(int line, int col, const char *menustring)
   returnChars = wPrintMenu(line, col, wMenuString);
   free(wMenuString);
   return(returnChars);
+}
+
+int commonConfirmMenu(int line, int col, const char *label, bool multi){
+  int i, c, b;
+  int output = -1;
+  char *optionLabels;
+  int optionLabelsLen = 2; // Initial bracket and null terminator
+  char *option[4];
+  int hotkey[4];
+  int options = 4;
+  menuButton *optionButton;
+
+  b = 0;
+
+  setDynamicChar(&option[0], _("!Yes"));
+  setDynamicChar(&option[1], _("!No"));
+  setDynamicChar(&option[2], _("!All"));
+  setDynamicChar(&option[3], _("!Stop"));
+
+  for ( i = 0; i < 4; i++ ){
+    for (c = 0; c < strlen(option[i]); c++){
+      if (option[i][c] == '!'){
+        hotkey[i] = tolower(option[i][c + 1]);
+      }
+    }
+  }
+
+  if (!multi){
+    options = 2;
+  }
+
+  optionButton = malloc(sizeof(menuButton) * options);
+
+  optionLabelsLen = strlen(label) + 3;
+
+  b = printMenu(-1, -1, label) + 2;
+
+  for (i = 0; i < options; i++){
+     optionLabelsLen = optionLabelsLen + strlen(option[i]) + 1;
+     snprintf(optionButton[i].refLabel, 16, "button%d", i);
+     optionButton[i].topX = b;
+     b = b + strlen(option[i]) - 1;
+     optionButton[i].bottomX = b - 1;
+     optionButton[i].topY = optionButton[i].bottomY = line;
+     b++;
+  }
+
+  optionLabels = malloc(sizeof(char) * optionLabelsLen);
+
+  snprintf(optionLabels, optionLabelsLen, "%s (", label); // Label and Inital Bracket
+
+  for (i = 0; i < options; i++){
+    snprintf(optionLabels, optionLabelsLen, "%s%s", optionLabels, option[i]);
+    if ( i < (options - 1) ){
+      snprintf(optionLabels, optionLabelsLen, "%s%s", optionLabels, "/");
+    }
+  }
+
+  snprintf(optionLabels, optionLabelsLen, "%s)", optionLabels); // Closing Bracket
+
+  printMenu(line, col, optionLabels);
+
+  free(optionLabels);
+
+  while(1)
+    {
+      *pc = getch10th();
+      loop:
+      if (getmouse(&event) == OK) {
+        if (event.bstate & BUTTON1_PRESSED){
+          if (event.y == line){
+            if (!strcmp(menuButtonLookup(optionButton, options, event.x, event.y, line, col, true), "button0")){
+              *pc = hotkey[0];
+            } else if (!strcmp(menuButtonLookup(optionButton, options, event.x, event.y, line, col, true), "button1")){
+              *pc = hotkey[1];
+            } else if (!strcmp(menuButtonLookup(optionButton, options, event.x, event.y, line, col, true), "button2")){
+              *pc = hotkey[2];
+            } else if (!strcmp(menuButtonLookup(optionButton, options, event.x, event.y, line, col, true), "button3")){
+              *pc = hotkey[3];
+            } else {
+              *pc = 27;
+            }
+            goto loop;
+          }
+        }
+      }
+      if (*pc == KEY_MOUSE) {
+        // Ignore mouse input conflicting with menu functions.
+        continue;
+      } else if (*pc == hotkey[0]){
+        // Yes
+        output = 0;
+      } else if (*pc == hotkey[1]){
+        // No
+        output = 1;
+      } else if (*pc == hotkey[2]){
+        // All
+        if (multi){
+          output = 2;
+        } else {
+          output = -1;
+        }
+      } else if (*pc == hotkey[3]){
+        // Stop
+        if (multi){
+          output = 3;
+        } else {
+          output = -1;
+        }
+      } else {
+        output = -1;
+      }
+      break;
+    }
+
+  return output;
 }
