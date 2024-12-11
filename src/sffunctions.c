@@ -75,6 +75,8 @@ t2BinValues *binValuesSf;
 int totalCharItemsSf;
 int totalBinItemsSf;
 
+int sfMenuItems = 0;
+
 extern char fileName[4096];
 
 extern int displaysize;
@@ -139,6 +141,13 @@ void readSfConfig(const char * confFile)
       if (setting){
         if (config_setting_get_int(setting)){
           wrap = 1;
+        }
+      }
+      // Check scrollStep
+      setting = config_setting_get_member(group, "scrollStep");
+      if (setting){
+        if (config_setting_get_int(setting)){
+          sfScrollStep = config_setting_get_int(setting);
         }
       }
     }

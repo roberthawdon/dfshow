@@ -41,7 +41,7 @@ bin_sf_LDADD = $(LDADD)
 bin_sf_CFLAGS = $(NCURSES_CFLAGS) $(EXTRA_CFLAGS) $(AM_CFLAGS) -DAPPLICATION_SF
 dfshowconf_DATA = conf/dfshow.conf
 dfshowdata_DATA = themes/*
-dist_data_DATA = conf themes
+dist_data_DATA = conf/dfshow.conf themes/*
 
 man_MANS = man/show.1 man/sf.1
 noinst_HEADERS = src/banned.h src/colors.h src/common.h src/customtypes.h src/display.h src/gettext.h src/i18n.h src/input.h src/menu.h src/settings.h src/sffunctions.h src/sf.h src/sfmenus.h src/showfunctions.h src/show.h src/showmenus.h 

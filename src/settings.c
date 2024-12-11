@@ -40,6 +40,8 @@ int settingsPos = 0;
 int settingsBinPos = -1;
 int settingsFreePos = -1;
 
+menuButton *settingButtons;
+
 extern int * pc;
 
 extern char globalConfLocation[4096];
@@ -47,6 +49,7 @@ extern char homeConfLocation[4096];
 
 extern int viewMode;
 
+extern MEVENT event;
 
 void updateSetting(settingIndex **settings, int index, int type, int intSetting)
 {
@@ -393,7 +396,44 @@ int textValueLookup(t1CharValues **values, int *items, char *refLabel, char *val
   return -1;
 }
 
-void settingsMenuView(wchar_t *settingsMenuLabel, int settingsMenuSize, menuDef *settingsMenu, settingIndex **settings, t1CharValues **charValues, t2BinValues **binValues, int totalCharItems, int totalBinItems, int totalItems, char *application)
+int settingButtonAction(const char * refLabel, settingIndex **settings, int menuItems){
+  int output = -1;
+  int newPos = -1;
+  int oldPos = -1;
+  int i;
+
+  // endwin();
+  oldPos = settingsPos;
+
+  for (i = 0; i < menuItems; i++){
+    // printf("%i of %i: %s (target: %s)\n", i, menuItems, (*settings)[i].refLabel, refLabel);
+    if (!strcmp((*settings)[i].refLabel, refLabel)){
+        newPos = i;
+        if (newPos == oldPos){
+          switch((*settings)[i].type){
+            case SETTING_BOOL:
+              output = 32;
+              break;
+            case SETTING_SELECT:
+              output = 261;
+              break;
+            case SETTING_FREE:
+              output = 32;
+              break;
+            default:
+              break;
+          }
+        } else {
+          settingsPos = newPos;
+        }
+        return output;
+      }
+  }
+
+  return output;
+}
+
+void settingsMenuView(wchar_t *settingsMenuLabel, int settingsMenuSize, menuDef *settingsMenu, menuButton *settingsMenuButtons, settingIndex **settings, t1CharValues **charValues, t2BinValues **binValues, int totalCharItems, int totalBinItems, int totalItems, char *application)
 {
   viewMode = 3;
   int count = 0;
@@ -402,28 +442,56 @@ void settingsMenuView(wchar_t *settingsMenuLabel, int settingsMenuSize, menuDef 
   int markedCount, sortmodeCount, timestyleCount, ownerCount;
   int sortmodeInt, timestyleInt;
   int e;
+  int b;
   char charTempValue[1024];
 
   clear();
   wPrintMenu(0,0,settingsMenuLabel);
+
+  if (settingButtons){
+    free(settingButtons);
+  }
+
+  settingButtons = malloc(sizeof(menuButton) * totalItems);
 
   while(1)
     {
       for (count = 0; count < totalItems; count++){
       // printSetting(2 + count, 3, settings, charValues, binValues, count, totalCharItems, totalBinItems, settings[count]->type, settings[count]->invert);
       printSetting(2 + count, 3, settings, charValues, binValues, count, totalCharItems, totalBinItems, (*settings)[count].type, (*settings)[count].invert);
+      b = wcslen((*settings)[count].textLabel);
+      snprintf(settingButtons[count].refLabel, 16, "%s", (*settings)[count].refLabel);
+      settingButtons[count].topX = 3;
+      settingButtons[count].bottomX = 7 + b; // Including check mark
+      settingButtons[count].topY = settingButtons[count].bottomY = count + 2;
       }
 
       move(x + settingsPos, y + 1);
       *pc = getch10th();
-      if (*pc == menuHotkeyLookup(settingsMenu, "s_quit", settingsMenuSize)){
+      loop:
+      if (getmouse(&event) == OK) {
+        if (event.bstate & BUTTON1_PRESSED){
+          if (event.y == 0){
+            // Setting key based on click
+            *pc = menuHotkeyLookup(settingsMenu, (menuButtonLookup(settingsMenuButtons, settingsMenuSize, event.x, event.y, 0, 0, true)), settingsMenuSize);
+            goto loop;
+          } else {
+            // To Do
+            *pc = settingButtonAction(menuButtonLookup(settingButtons, totalItems, event.x, event.y, 0, 0, false), settings, totalItems);
+            goto loop;
+          }
+        } else if (event.bstate & BUTTON5_PRESSED){
+          goto down;
+        } else if (event.bstate & BUTTON4_PRESSED){
+          goto up;
+        }
+      } else if (*pc == menuHotkeyLookup(settingsMenu, "s_quit", settingsMenuSize)){
         curs_set(FALSE);
         settingsAction("apply", application, NULL, settings, charValues, NULL, totalCharItems, 0, totalItems, NULL);
         // free(settings);
         return;
       } else if (*pc == menuHotkeyLookup(settingsMenu, "s_revert", settingsMenuSize)){
         // free(settings);
-        // TODO call the settings loader
         settingsAction("read", application, NULL, NULL, NULL, NULL, 0, 0, 0, globalConfLocation);
         settingsAction("read", application, NULL, NULL, NULL, NULL, 0, 0, 0, homeConfLocation);
         settingsAction("generate", application, NULL, NULL, NULL, NULL, 0, 0, 0, NULL);
@@ -438,9 +506,12 @@ void settingsMenuView(wchar_t *settingsMenuLabel, int settingsMenuSize, menuDef 
         curs_set(TRUE);
         wPrintMenu(0,0,settingsMenuLabel);
       } else if (*pc == 258 || *pc == 10){
+        down:
         if (settingsPos < (totalItems -1 )){
           settingsBinPos = -1;
           settingsPos++;
+        } else {
+          settingsPos = totalItems - 1;
         }
       } else if (*pc == 32 || *pc == 260 || *pc == 261){
         // Adjust
@@ -491,9 +562,12 @@ void settingsMenuView(wchar_t *settingsMenuLabel, int settingsMenuSize, menuDef 
           }
         }
       } else if (*pc == 259){
+        up:
         if (settingsPos > 0){
           settingsBinPos = -1;
           settingsPos--;
+        } else {
+          settingsPos = 0;
         }
       }
     }

@@ -211,12 +211,18 @@ wchar_t *tmpMenuLabel;
 extern menuDef *colorMenu;
 extern int colorMenuSize;
 extern wchar_t *colorMenuLabel;
+extern menuButton *colorMenuButtons;
 
 menuDef *showSettingsMenu;
 int showSettingsMenuSize;
 wchar_t *showSettingsMenuLabel;
+menuButton *showSettingsMenuButtons;
 
 void modify_owner_input();
+
+void functionAction(const char *refLabel);
+
+void setSort(const char *refLabel, bool reverseMode);
 
 void generateDefaultShowMenus(){
   // Global Menu
@@ -310,18 +316,18 @@ void generateDefaultShowMenus(){
 }
 
 void refreshShowMenuLabels(){
-  globalMenuLabel = genMenuDisplayLabel("", globalMenu, globalMenuSize, "", 1);
-  showFileMenuLabel = genMenuDisplayLabel("", showFileMenu, showFileMenuSize, "", 1);
-  functionMenuLabel = genMenuDisplayLabel("", functionMenu, functionMenuSize, "", 0);
-  modifyMenuLabel = genMenuDisplayLabel(_("Modify -"), modifyMenu, modifyMenuSize, "", 1);
-  sortMenuLabel = genMenuDisplayLabel(_("Sort list by -"), sortMenu, sortMenuSize, _("(<shift> = reverse)"), 1);
-  linkMenuLabel = genMenuDisplayLabel(_("Link Type -"), linkMenu, linkMenuSize, _("(enter = S)"), 1);
-  linkLocationMenuLabel = genMenuDisplayLabel(_("Link Location -"), linkLocationMenu, linkLocationMenuSize, _("(enter = R)"), 1);
-  touchMenuLabel = genMenuDisplayLabel(_("Set Time -"), touchMenu, touchMenuSize, _("(enter = B)"), 1);
-  touchDateConfirmMenuLabel = genMenuDisplayLabel(_("Set Time?"), touchDateConfirmMenu, touchDateConfirmMenuSize, _("(enter = N)"), -1);
-  contextMenuLabel = genMenuDisplayLabel(_("Set Context -"), contextMenu, contextMenuSize, "", 1);
-  colorMenuLabel = genMenuDisplayLabel("", colorMenu, colorMenuSize, "", 1);
-  showSettingsMenuLabel = genMenuDisplayLabel(_("SHOW Settings Menu -"), showSettingsMenu, showSettingsMenuSize, "", 1);
+  globalMenuLabel = genMenuDisplayLabel("", globalMenu, globalMenuSize, "", 1, &globalMenuButtons);
+  showFileMenuLabel = genMenuDisplayLabel("", showFileMenu, showFileMenuSize, "", 1, &showFileMenuButtons);
+  functionMenuLabel = genMenuDisplayLabel("", functionMenu, functionMenuSize, "", 0, &functionMenuButtons);
+  modifyMenuLabel = genMenuDisplayLabel(_("Modify -"), modifyMenu, modifyMenuSize, "", 1, &modifyMenuButtons);
+  sortMenuLabel = genMenuDisplayLabel(_("Sort list by -"), sortMenu, sortMenuSize, _("(<shift> = reverse)"), 1, &sortMenuButtons);
+  linkMenuLabel = genMenuDisplayLabel(_("Link Type -"), linkMenu, linkMenuSize, _("(enter = S)"), 1, &linkMenuButtons);
+  linkLocationMenuLabel = genMenuDisplayLabel(_("Link Location -"), linkLocationMenu, linkLocationMenuSize, _("(enter = R)"), 1, &linkLocationMenuButtons);
+  touchMenuLabel = genMenuDisplayLabel(_("Set Time -"), touchMenu, touchMenuSize, _("(enter = B)"), 1, &touchMenuButtons);
+  touchDateConfirmMenuLabel = genMenuDisplayLabel(_("Set Time?"), touchDateConfirmMenu, touchDateConfirmMenuSize, _("(enter = N)"), -1, &touchDateConfirmMenuButtons);
+  contextMenuLabel = genMenuDisplayLabel(_("Set Context -"), contextMenu, contextMenuSize, "", 1, &contextMenuButtons);
+  colorMenuLabel = genMenuDisplayLabel("", colorMenu, colorMenuSize, "", 1, &colorMenuButtons);
+  showSettingsMenuLabel = genMenuDisplayLabel(_("SHOW Settings Menu -"), showSettingsMenu, showSettingsMenuSize, "", 1, &showSettingsMenuButtons);
 }
 
 void unloadShowMenuLabels(){
@@ -336,6 +342,18 @@ void unloadShowMenuLabels(){
   free(contextMenuLabel);
   free(colorMenuLabel);
   free(showSettingsMenuLabel);
+
+  free(globalMenuButtons);
+  free(showFileMenuButtons);
+  free(functionMenuButtons);
+  free(modifyMenuButtons);
+  free(sortMenuButtons);
+  free(linkLocationMenuButtons);
+  free(touchMenuButtons);
+  free(touchDateConfirmMenuButtons);
+  free(contextMenuButtons);
+  free(colorMenuButtons);
+  free(showSettingsMenuButtons);
 }
 
 void refreshDirectory(char *sortmode, int origlineStart, int origselected, int destructive)
@@ -477,15 +495,16 @@ void show_directory_input()
 int replace_file_confirm_input(char *filename)
 {
   char *message = malloc(sizeof(char) * 1);
-  setDynamicChar(&message, _("Replace file [<%s>]? (!Yes/!No)"), filename);
-  printMenu(0,0, message);
+  int r;
+
+  setDynamicChar(&message, _("Replace file [<%s>]?"), filename);
+  r = commonConfirmMenu(0,0, message, false, -1);
   free(message);
   while(1)
     {
-      *pc = getch10th();
-      switch(*pc)
+      switch(r)
         {
-        case 'y':
+        case YES:
           return 1;
           break;
         default:
@@ -845,7 +864,16 @@ int touchType()
   while(1)
     {
       *pc = getch10th();
-      if (*pc == menuHotkeyLookup(touchMenu, "t_accessed", touchMenuSize)){
+      loop:
+      if (getmouse(&event) == OK) {
+        if (event.bstate & BUTTON1_PRESSED){
+          if (event.y == 0){
+            // Setting key based on click
+            *pc = menuHotkeyLookup(touchMenu, (menuButtonLookup(touchMenuButtons, touchMenuSize, event.x, event.y, 0, 0, true)), touchMenuSize);
+            goto loop;
+          }
+        }
+      } else if (*pc == menuHotkeyLookup(touchMenu, "t_accessed", touchMenuSize)){
         result = 1;
         break;
       } else if (*pc == menuHotkeyLookup(touchMenu, "t_both", touchMenuSize) || *pc == 10){
@@ -959,23 +987,22 @@ char * execute_argument_input(const char *exec)
 int huntCaseSelectInput()
 {
   int result = 0;
+  int r;
   char *message;
-  setDynamicChar(&message, _("Case Sensitive, !Yes/!No/<ESC> (enter = no)"));
-  printMenu(0,0, message);
+  setDynamicChar(&message, _("Case Sensitive? (Default = no)"));
+  r = commonConfirmMenu(0,0, message, false, NO);
   while(1)
     {
     huntCaseLoop:
-      *pc = getch10th();
-      switch(*pc)
+      switch(r)
         {
-        case 'y':
+        case YES:
           result = 1;
           break;
-	case 10:
-        case 'n':
+        case NO:
           result = 0;
           break;
-        case 27:
+        case -1:
           result = -1;
           break;
         default:
@@ -1040,51 +1067,48 @@ void huntInput(int selected, int charcase)
 
 void delete_file_confirm_input(char *file)
 {
-  printMenu(0,0, _("Delete file? (!Yes/!No)"));
-  while(1)
+  int r;
+
+  r = commonConfirmMenu(0,0, _("Delete file?"), false, -1);
+
+  switch(r)
     {
-      *pc = getch10th();
-      switch(*pc)
-        {
-        case 'y':
-          delete_file(file);
-          refreshDirectory(sortmode, lineStart, selected, 1);
-          // Not breaking here, intentionally dropping through to the default
-        default:
-          directory_view_menu_inputs();
-          break;
-        }
+      case YES:
+        delete_file(file);
+        refreshDirectory(sortmode, lineStart, selected, 1);
+        // Not breaking here, intentionally dropping through to the default
+      default:
+        directory_view_menu_inputs();
+        break;
     }
 }
 
 void delete_directory_confirm_input(char *directory)
 {
-  int e;
-  printMenu(0,0, _("Delete directory? (!Yes/!No)"));
-  while(1)
+  int e, r;
+
+  r = commonConfirmMenu(0,0, _("Delete directory?"), false, -1);
+
+  switch(r)
     {
-      *pc = getch10th();
-      switch(*pc)
-        {
-        case 'y':
-          e = rmdir(directory);
-          if (e != 0){
-            setDynamicChar(&errmessage, _("Error: %s"), strerror(errno));
-            topLineMessage(errmessage);
-            free(errmessage);
-          }
-          refreshDirectory(sortmode, lineStart, selected, 1);
-          // Not breaking here, intentionally dropping through to the default
-        default:
-          directory_view_menu_inputs();
-          break;
+      case YES:
+        e = rmdir(directory);
+        if (e != 0){
+          setDynamicChar(&errmessage, _("Error: %s"), strerror(errno));
+          topLineMessage(errmessage);
+          free(errmessage);
         }
+        refreshDirectory(sortmode, lineStart, selected, 1);
+        // Not breaking here, intentionally dropping through to the default
+      default:
+        directory_view_menu_inputs();
+        break;
     }
 }
 
 void delete_multi_file_confirm_input(results* ob)
 {
-  int i, k;
+  int i, k, r;
   int allflag = 0;
   int abortflag = 0;
   char *message;
@@ -1102,29 +1126,28 @@ void delete_multi_file_confirm_input(results* ob)
             {
               delete_file(selfile);
             } else {
-            setDynamicChar(&message, _("Delete file [<%s>]? (!Yes/!No/!All/!Stop)"), selfile);
-            printMenu(0,0, message);
+            setDynamicChar(&message, _("Delete file [<%s>]?"), selfile);
+            r = commonConfirmMenu(0,0, message, true, -1);
             free(message);
             k = 1;
             while(k)
               {
-                *pc = getch10th();
-                switch(*pc)
+                switch(r)
                   {
-                  case 'y':
+                  case YES:
                     delete_file(selfile);
                     k = 0;
                     break;
-                  case 'a':
+                  case ALL:
                     allflag = 1;
                     k = 0;
                     delete_file(selfile);
                     break;
-                  case 's':
-                    abortflag = 1;
+                  case NO:
                     k = 0;
                     break;
-                  case 'n':
+                  default:
+                    abortflag = 1;
                     k = 0;
                     break;
                   }
@@ -1144,28 +1167,44 @@ void sort_view_inputs()
       if (*pc == 27){
         // ESC Key
         directory_view_menu_inputs();
+        break;
       } else if (*pc == menuHotkeyLookup(sortMenu, "s_name", sortMenuSize)){
-        snprintf(sortmode, 5, "name");
-        reverse = 0;
+        setSort("s_name", false);
+        break;
       } else if (*pc == menuHotkeyLookup(sortMenu, "s_date", sortMenuSize)){
-        snprintf(sortmode, 5, "date");
-        reverse = 0;
+        setSort("s_date", false);
+        break;
       } else if (*pc == menuHotkeyLookup(sortMenu, "s_size", sortMenuSize)){
-        snprintf(sortmode, 5, "size");
-        reverse = 0;
+        setSort("s_size", false);
+        break;
       } else if (*pc == altHotkey(menuHotkeyLookup(sortMenu, "s_name", sortMenuSize))){
-        snprintf(sortmode, 5, "name");
-        reverse = 1;
+        setSort("s_name", true);
+        break;
       } else if (*pc == altHotkey(menuHotkeyLookup(sortMenu, "s_date", sortMenuSize))){
-        snprintf(sortmode, 5, "date");
-        reverse = 1;
+        setSort("s_date", true);
+        break;
       } else if (*pc == altHotkey(menuHotkeyLookup(sortMenu, "s_size", sortMenuSize))){
-        snprintf(sortmode, 5, "size");
-        reverse = 1;
+        setSort("s_size", true);
+        break;
+      } else if (*pc == KEY_MOUSE){
+        if(getmouse(&event) == OK) {
+          if(event.bstate & BUTTON1_PRESSED) {
+            if (event.y == 0){
+              if ((event.bstate & BUTTON_SHIFT) | (event.bstate & BUTTON_CTRL)){
+                setSort(menuButtonLookup(sortMenuButtons, sortMenuSize, event.x, event.y, 0, 0, true), true);
+              } else {
+                setSort(menuButtonLookup(sortMenuButtons, sortMenuSize, event.x, event.y, 0, 0, true), false);
+              }
+              break;
+            } else {
+              break;
+            }
+          }
+        }
       }
-      refreshDirectory(sortmode, lineStart, selected, 0);
-      directory_view_menu_inputs();
     }
+  refreshDirectory(sortmode, lineStart, selected, 0);
+  directory_view_menu_inputs();
 }
 
 void modify_group_input()
@@ -1364,7 +1403,16 @@ int symLinkLocation()
   while(1)
     {
       *pc = getch10th();
-      if (*pc == menuHotkeyLookup(linkLocationMenu, "l_absolute", linkLocationMenuSize)){
+      loop:
+      if (getmouse(&event) == OK) {
+        if (event.bstate & BUTTON1_PRESSED){
+          if (event.y == 0){
+            // Setting key based on click
+            *pc = menuHotkeyLookup(linkLocationMenu, (menuButtonLookup(linkLocationMenuButtons, linkLocationMenuSize, event.x, event.y, 0, 0, true)), linkLocationMenuSize);
+            goto loop;
+          }
+        }
+      } else if (*pc == menuHotkeyLookup(linkLocationMenu, "l_absolute", linkLocationMenuSize)){
         result = 0;
         break;
       } else if (*pc == menuHotkeyLookup(linkLocationMenu, "l_relative", linkLocationMenuSize) || *pc == 10){
@@ -1467,7 +1515,16 @@ void link_key_menu_inputs()
   while(1)
     {
       *pc = getch10th();
-      if (*pc == menuHotkeyLookup(linkMenu, "l_hard", linkMenuSize)){
+      loop:
+      if (getmouse(&event) == OK) {
+        if (event.bstate & BUTTON1_PRESSED){
+          if (event.y == 0){
+            // Setting key based on click
+            *pc = menuHotkeyLookup(linkMenu, (menuButtonLookup(linkMenuButtons, linkMenuSize, event.x, event.y, 0, 0, true)), linkMenuSize);
+            goto loop;
+          }
+        }
+      } else if (*pc == menuHotkeyLookup(linkMenu, "l_hard", linkMenuSize)){
         if (!check_dir(selfile)){
           linktext_input(selfile, 0);
         } else {
@@ -1570,7 +1627,16 @@ void modify_context_menu_inputs()
     while(1)
       {
         *pc = getch10th();
-        if (*pc == 27){
+        loop:
+        if (getmouse(&event) == OK) {
+          if (event.bstate & BUTTON1_PRESSED){
+            if (event.y == 0){
+              // Setting key based on click
+              *pc = menuHotkeyLookup(contextMenu, (menuButtonLookup(contextMenuButtons, contextMenuSize, event.x, event.y, 0, 0, true)), contextMenuSize);
+              goto loop;
+            }
+          }
+        } else if (*pc == 27){
         // ESC Key
             directory_view_menu_inputs();
         } else if (*pc == menuHotkeyLookup(contextMenu, "c_user", contextMenuSize)){
@@ -1594,12 +1660,23 @@ void modify_key_menu_inputs()
   while(1)
     {
       *pc = getch10th();
-      if (*pc == menuHotkeyLookup(modifyMenu, "m_owner", modifyMenuSize)){
+      loop:
+      if (getmouse(&event) == OK) {
+        if (event.bstate & BUTTON1_PRESSED){
+          if (event.y == 0){
+            // Setting key based on click
+            *pc = menuHotkeyLookup(modifyMenu, (menuButtonLookup(modifyMenuButtons, modifyMenuSize, event.x, event.y, 0, 0, true)), modifyMenuSize);
+            goto loop;
+          }
+        }
+      } else if (*pc == menuHotkeyLookup(modifyMenu, "m_owner", modifyMenuSize)){
         modify_owner_input();
       } else if (*pc == menuHotkeyLookup(modifyMenu, "m_perms", modifyMenuSize)){
         modify_permissions_input();
+      #ifdef HAVE_SELINUX_SELINUX_H
       } else if (*pc == menuHotkeyLookup(modifyMenu, "m_context", modifyMenuSize)){
         modify_context_menu_inputs();
+      #endif
       } else if (*pc == 27){
         // ESC Key
         directory_view_menu_inputs();
@@ -1687,7 +1764,11 @@ void showNavigate(int direction, int step){
         for (i = lineStart; i < listLen; i++){
           if (el[i].fileRef == selected) {
             if ((i + pageStep) < listLen){
-              selected = el[i + pageStep].fileRef;
+              if (el[i + pageStep].entryLineType != ET_OBJECT) {
+                selected++;
+              } else {
+                selected = el[i + pageStep].fileRef;
+              }
             } else {
               selected = totalfilecount - 1;
             }
@@ -1724,7 +1805,7 @@ void showNavigate(int direction, int step){
             } else {
               selected = el[i - pageStep].fileRef;
               if (el[i - pageStep].entryLineType != ET_OBJECT){
-                selected++;
+                selected--;
               }
             }
           }
@@ -1740,6 +1821,7 @@ void showNavigate(int direction, int step){
 void directory_view_menu_inputs()
 {
   int e, i = 0;
+  int index;
   char *updir;
   char *execArgs;
   viewMode = 0;
@@ -1748,340 +1830,55 @@ void directory_view_menu_inputs()
       wPrintMenu(0, 0, showFileMenuLabel);
       wPrintMenu(LINES-1, 0, functionMenuLabel);
       *pc = getch10th();
+      loop:
       if (*pc == menuHotkeyLookup(showFileMenu, "f_copy", showFileMenuSize)){
-        if ( (CheckMarked(ob) > 0) ) {
-          copy_multi_file_input(ob, currentpwd);
-        } else {
-          memcpy(selfile, currentpwd, 4096);
-          if (!check_last_char(selfile, "/")){
-            snprintf(selfile + strlen(selfile), 4096 - strlen(selfile), "%s", "/");
-          }
-          snprintf(selfile + strlen(selfile), 4096 - strlen(selfile), "%s", ob[selected].name);
-          if (!check_dir(selfile)){
-            copy_file_input(selfile, ob[selected].mode);
-          }
-        }
+        functionAction("f_copy");
       } else if (*pc == menuHotkeyLookup(showFileMenu, "f_delete", showFileMenuSize)){
-        if ( (CheckMarked(ob) > 0) ) {
-          delete_multi_file_confirm_input(ob);
-          refreshDirectory(sortmode, lineStart, selected, 1);
-          directory_view_menu_inputs();
-        } else {
-          memcpy(selfile, currentpwd, 4096);
-          if (!check_last_char(selfile, "/")){
-            snprintf(selfile + strlen(selfile), 4096 - strlen(selfile), "%s", "/");
-          }
-          snprintf(selfile + strlen(selfile), 4096 - strlen(selfile), "%s", ob[selected].name);
-          if (!check_dir(selfile) || (strcmp(ob[selected].slink, ""))){
-            delete_file_confirm_input(selfile);
-          } else if (check_dir(selfile)){
-            delete_directory_confirm_input(selfile);
-          }
-        }
+        functionAction("f_delete");
       } else if (*pc == menuHotkeyLookup(showFileMenu, "f_edit", showFileMenuSize)){
-      editCommand:
-        memcpy(chpwd, currentpwd, 4096);
-        if (!check_last_char(chpwd, "/")){
-          snprintf(chpwd + strlen(chpwd), 4096 - strlen(chpwd), "%s", "/");
-        }
-        snprintf(chpwd + strlen(chpwd), 4096 - strlen(chpwd), "%s", ob[selected].name);
-        if (!check_dir(chpwd)){
-          SendToEditor(chpwd);
-          refreshDirectory(sortmode, lineStart, selected, 1);
-        }
+        functionAction("f_edit");
       } else if (*pc == menuHotkeyLookup(showFileMenu, "f_hidden", showFileMenuSize)){
-        snprintf(currentfilename, 512, "%s", ob[selected].name);
-        if (showhidden == 0) {
-          showhidden = 1;
-        } else {
-          showhidden = 0;
-        }
-        freeResults(ob, totalfilecount);
-        freeXAttrs(xa, xattrPos);
-        ob = get_dir(currentpwd);
-        clear_workspace();
-        reorder_ob(ob, sortmode);
-        generateEntryLineIndex(ob);
-        selected = findResultByName(ob, currentfilename);
-        if (selected == -1){
-          if (skipToFirstFile == 1 && skippable == 1){
-            selected = 2;
-          } else {
-            selected = 0;
-          }
-        }
-        refreshDirectory(sortmode, lineStart, selected, 0);
+        functionAction("f_hidden");
       } else if (*pc == menuHotkeyLookup(showFileMenu, "f_link", showFileMenuSize)){
-        if ( !(CheckMarked(ob) > 0) ) {
-          link_key_menu_inputs();
-        } else {
-          topLineMessage(_("Error: Links can only be made against single files."));
-        }
+        functionAction("f_link");
       } else if (*pc == menuHotkeyLookup(showFileMenu, "f_modify", showFileMenuSize)){
-        //printMenu(0, 0, modifyMenuText);
-        modify_key_menu_inputs();
+        functionAction("f_modify");
       } else if (*pc == menuHotkeyLookup(showFileMenu, "f_quit", showFileMenuSize)){
-      handleMissingDir:
-          if (historyref > 1){
-            snprintf(chpwd, 4096, "%s", hs[historyref - 2].path);
-            objectWild = hs[historyref - 2].objectWild;
-            historyref--;
-            if (check_dir(chpwd)){
-              memcpy(currentpwd, chpwd, 4096);
-              returnCode = chdir(currentpwd);
-              freeResults(ob, totalfilecount);
-              freeXAttrs(xa, xattrPos);
-              ob = get_dir(currentpwd);
-              reorder_ob(ob, sortmode);
-              generateEntryLineIndex(ob);
-              selected = findResultByName(ob, hs[historyref].name);
-              if (selected == -1){
-                if (skipToFirstFile == 1 && skippable == 1){
-                  selected = 2;
-                } else {
-                  selected = 0;
-                }
-              }
-              lineStart = hs[historyref].lineStart;
-              clear_workspace();
-              display_dir(currentpwd, ob);
-            } else {
-              // Skip removed directories
-              historyref--;
-              goto handleMissingDir;
-            }
-          } else {
-            historyref = 0; // Reset historyref here. A hacky workaround due to the value occasionally dipping to minus numbers.
-            global_menu();
-          }
+        functionAction("f_quit");
       } else if (*pc == menuHotkeyLookup(showFileMenu, "f_rename", showFileMenuSize)){
-        if ( (CheckMarked(ob) > 0) ) {
-          rename_multi_file_input(ob, currentpwd);
-        } else {
-          memcpy(selfile, currentpwd, 4096);
-          if (!check_last_char(chpwd, "/")){
-            snprintf(selfile + strlen(selfile), 4096 - strlen(selfile), "%s", "/");
-          }
-          snprintf(selfile + strlen(selfile), 4096 - strlen(selfile), "%s", ob[selected].name);
-          rename_file_input(selfile);
-        }
+        functionAction("f_rename");
       } else if (*pc == menuHotkeyLookup(showFileMenu, "f_show", showFileMenuSize)){
-        showCommand:
-          memcpy(chpwd, currentpwd, 4096);
-          if (!check_last_char(chpwd, "/")){
-            snprintf(chpwd + strlen(chpwd), 4096 - strlen(chpwd), "%s", "/");
-          }
-          snprintf(chpwd + strlen(chpwd), 4096 - strlen(chpwd), "%s", ob[selected].name);
-          if (!strcmp(ob[selected].name, "..")) {
-            if (strcmp(currentpwd, "/")){
-              updir = dirFromPath(currentpwd);
-              memcpy(chpwd, updir, (strlen(updir) + 1));
-              free(updir);
-              objectWild = "";
-              testSlash:
-              if (check_last_char(chpwd, "/") && strcmp(chpwd, "/")){
-                chpwd[strlen(chpwd) - 1] = '\0';
-                goto testSlash;
-              }
-              set_history(chpwd, objectWild, ob[selected].name, lineStart, selected);
-              lineStart = 0;
-              selected = 0;
-              memcpy(currentpwd, chpwd, 4096);
-              returnCode = chdir(currentpwd);
-              refreshDirectory(sortmode, lineStart, selected, -2);
-            }
-          } else if (!strcmp(ob[selected].name, ".")) {
-            // Do nothing
-          } else {
-            if (check_dir(chpwd)){
-              objectWild = "";
-              set_history(chpwd, objectWild, ob[selected].name, lineStart, selected);
-              lineStart = 0;
-              selected = 0;
-              memcpy(currentpwd, chpwd, 4096);
-              returnCode = chdir(currentpwd);
-              refreshDirectory(sortmode, lineStart, selected, -2);
-            } else {
-              e = SendToPager(chpwd);
-              refreshDirectory(sortmode, lineStart, selected, 1);
-              // display_dir(currentpwd, ob);
-            }
-          }
+        functionAction("f_show");
       } else if (*pc == menuHotkeyLookup(showFileMenu, "f_touch", showFileMenuSize)){
-        e = touchType();
-        // Add what to do with result.
-        if (e > -1){
-          touchTime = touchTimeInput(e);
-          if (abortinput == 0) {
-            if (e == 0){
-              touchDate.actime = touchDate.modtime = touchTime;
-            } else if ( e == 1 ){
-              touchDate.actime = touchTime;
-              touchDate.modtime = ob[selected].date;
-            } else if ( e == 2 ){
-              touchDate.actime = ob[selected].adate;
-              touchDate.modtime = touchTime;
-            }
-            if ((CheckMarked(ob) > 0)){
-              for (i = 0; i < totalfilecount; i++){
-                if (*ob[i].marked){
-                  utime(ob[i].name, &touchDate);
-                }
-              }
-            } else {
-              utime(ob[selected].name, &touchDate);
-            }
-          } else {
-            abortinput = 0;
-          }
-        }
-        refreshDirectory(sortmode, lineStart, selected, 0);
+        functionAction("f_touch");
       } else if (*pc == menuHotkeyLookup(showFileMenu, "f_uhunt", showFileMenuSize)){
-        e = huntCaseSelectInput();
-        if (e != -1){
-          huntInput(selected, e);
-        }
-        abortinput = 0;
-        display_dir(currentpwd, ob);
+        functionAction("f_uhunt");
       } else if (*pc == menuHotkeyLookup(showFileMenu, "f_xexec", showFileMenuSize)){
-        memcpy(chpwd, currentpwd, 4096);
-        if (!check_last_char(chpwd, "/")){
-          snprintf(chpwd + strlen(chpwd), 4096 - strlen(chpwd), "%s", "/");
-        }
-        snprintf(chpwd + strlen(chpwd), 4096 - strlen(chpwd), "%s", ob[selected].name);
-        if (check_exec(chpwd)){
-          execArgs = execute_argument_input(ob[selected].name);
-          if (!abortinput){
-            LaunchExecutable(chpwd, execArgs);
-            free(execArgs);
-          }
-          abortinput = 0;
-          display_dir(currentpwd, ob);
-        } else {
-          topLineMessage(_("Error: Permission denied"));
-        }
+        functionAction("f_xexec");
       } else if (*pc == menuHotkeyLookup(functionMenu, "f_01", functionMenuSize) || *pc == 338){
-        showNavigate(D_PG_DOWN, -1);
+        functionAction("f_01");
       } else if (*pc == menuHotkeyLookup(functionMenu, "f_02", functionMenuSize) || *pc == 339){
-        showNavigate(D_PG_UP, -1);
+        functionAction("f_02");
       } else if (*pc == menuHotkeyLookup(functionMenu, "f_03", functionMenuSize)){
-        clear_workspace();
-        selected = 0;
-        lineStart = 0;
-        display_dir(currentpwd, ob);
+        functionAction("f_03");
       } else if (*pc == menuHotkeyLookup(functionMenu, "f_04", functionMenuSize)){
-        clear_workspace();
-        selected = totalfilecount - 1;
-        if ((totalfilecount - 1 ) > bottomFileRef){
-          lineStart = listLen - displaysize;
-        } else {
-          lineStart = 0;
-        }
-        display_dir(currentpwd, ob);
+        functionAction("f_04");
       } else if (*pc == menuHotkeyLookup(functionMenu, "f_05", functionMenuSize)){
-        refreshDirectory(sortmode, lineStart, selected, 0);
+        functionAction("f_05");
       } else if (*pc == menuHotkeyLookup(functionMenu, "f_06", functionMenuSize)){
-        memcpy(selfile, currentpwd, 4096);
-        if (!check_last_char(chpwd, "/")){
-          snprintf(selfile + strlen(selfile), 4096 - strlen(selfile), "%s", "/");
-        }
-        snprintf(selfile + strlen(selfile), 4096 - strlen(selfile), "%s", ob[selected].name);
-        if (!check_dir(selfile)){
-          if ( *ob[selected].marked ){
-            *ob[selected].marked = 0;
-            clear_workspace();
-          } else {
-            *ob[selected].marked = 1;
-          }
-          if (selected < (totalfilecount - 1)) {
-            selected++;
-            if (selected > bottomFileRef){
-              lineStart = lineStartFromBottomFileRef(selected, el, listLen, displaysize);
-              if (markedinfo == 2 && automark == 0){
-                lineStart++;
-              }
-            }
-          } else {
-            if (markedinfo == 2 && automark == 0){
-              lineStart++;
-            }
-          }
-          clear_workspace();
-          display_dir(currentpwd, ob);
-        }
+        functionAction("f_06");
       } else if (*pc == menuHotkeyLookup(functionMenu, "f_07", functionMenuSize)){
-        markall = 1;
-        freeResults(ob, totalfilecount);
-        freeXAttrs(xa, xattrPos);
-        ob = get_dir(currentpwd);
-        markall = 0; // Leaving this set as 1 keeps things marked even after refresh. This is bad
-        clear_workspace();
-        reorder_ob(ob, sortmode);
-        generateEntryLineIndex(ob);
-        display_dir(currentpwd, ob);
+        functionAction("f_07");
       } else if (*pc == menuHotkeyLookup(functionMenu, "f_08", functionMenuSize)){
-        markall = 0;
-        freeResults(ob, totalfilecount);
-        freeXAttrs(xa, xattrPos);
-        ob = get_dir(currentpwd);
-        clear_workspace();
-        reorder_ob(ob, sortmode);
-        generateEntryLineIndex(ob);
-        display_dir(currentpwd, ob);
+        functionAction("f_08");
       } else if (*pc == menuHotkeyLookup(functionMenu, "f_09", functionMenuSize)){
-        sort_view_inputs();
+        functionAction("f_09");
       } else if (*pc == menuHotkeyLookup(functionMenu, "f_10", functionMenuSize)){
-          memcpy(selfile, currentpwd, 4096);
-          if (!check_last_char(chpwd, "/")){
-            snprintf(selfile + strlen(selfile), 4096 - strlen(selfile), "%s", "/");
-          }
-          snprintf(selfile + strlen(selfile), 4096 - strlen(selfile), "%s", ob[selected].name);
-          if ( *ob[selected].marked == 0 ){
-            if ( blockstart == -1 ){
-              blockstart = selected;
-              if (!check_dir(selfile)){
-                *ob[selected].marked = 1;
-              }
-              if (selected < (totalfilecount - 1)) {
-                selected++;
-                if (selected > bottomFileRef){
-                  lineStart = lineStartFromBottomFileRef(selected, el, listLen, displaysize);
-                  if (markedinfo == 2 && automark == 0){
-                    lineStart++;
-                  }
-                }
-              } else {
-                if (markedinfo == 2 && automark == 0){
-                  lineStart++;
-                }
-              }
-              clear_workspace();
-              display_dir(currentpwd, ob);
-            } else {
-              blockend = selected;
-              if (blockstart > blockend){
-                // While we're still on the second item, let's flip them around if the second selected file is higher up the list.
-                blockend = blockstart;
-                blockstart = selected;
-              }
-              for(; blockstart < blockend + 1; blockstart++){
-                memcpy(selfile, currentpwd, 4096);
-                if (!check_last_char(selfile, "/")){
-                  snprintf(selfile + strlen(selfile), 4096 - strlen(selfile), "%s", "/");
-                }
-                snprintf(selfile + strlen(selfile), 4096 - strlen(selfile), "%s", ob[blockstart].name);
-                if (!check_dir(selfile)){
-                  *ob[blockstart].marked = 1;
-                }
-              }
-              blockstart = blockend = -1;
-              display_dir(currentpwd, ob);
-              }
-            }
+        functionAction("f_10");
       } else if (*pc == 10){
         // Enter Key
         if (enterAsShow){
-          goto showCommand;
+          functionAction("f_show");
         } else {
           goto moveDown;
         }
@@ -2119,23 +1916,30 @@ void directory_view_menu_inputs()
           } else if (event.bstate & BUTTON4_PRESSED){
             showNavigate(D_PG_UP, showScrollStep);
           } else if (event.bstate & BUTTON1_PRESSED) {
-            // I'd imagine this won't work with extended attributes on macOS, but it's a start
             if ((event.y >= displaystart) && (event.y < LINES - 1)){
-              if (event.y == selected - topfileref + displaystart){
+              index = lineStart + event.y - displaystart;
+              if (el[index].fileRef == selected){
                 if (!check_dir(ob[selected].name)) {
                   if (clickMode == CLICK_SHOW){
-                    goto showCommand;
+                    functionAction("f_show");
                   } else if (clickMode == CLICK_EDIT){
-                    goto editCommand;
+                    functionAction("f_edit");
                   }
                 } else {
-                  goto showCommand;
+                  functionAction("f_show");
                 }
-                // yuck, we'll eventually rework this, honest guv!
-              } else if (topfileref + (event.y - displaystart) <= bottomFileRef) {
-                selected = topfileref + (event.y - displaystart);
-                display_dir(currentpwd, ob);
+              } else if (el[index].fileRef <= bottomFileRef) {
+                if ( index < listLen ) {
+                  selected = el[index].fileRef;
+                  display_dir(currentpwd, ob);
+                }
               }
+            } else if (event.y == 0){
+              *pc = menuHotkeyLookup(showFileMenu, (menuButtonLookup(showFileMenuButtons, showFileMenuSize, event.x, event.y, 0, 0, true)), showFileMenuSize);
+              goto loop;
+            } else if (event.y == LINES - 1){
+              *pc = menuHotkeyLookup(functionMenu, (menuButtonLookup(functionMenuButtons, functionMenuSize, event.x, event.y, 0, LINES - 1, false)), functionMenuSize);
+              goto loop;
             }
           }
         }
@@ -2154,70 +1958,449 @@ void global_menu_inputs()
   while(1)
     {
       *pc = getch10th();
-      if (*pc == menuHotkeyLookup(globalMenu, "g_colors", globalMenuSize)){
-        themeBuilder();
-        theme_menu_inputs();
-        if (historyref == 0){
-          clear();
-          global_menu_inputs();
-        } else {
-          refreshDirectory(sortmode, lineStart, selected, 0);
-          wPrintMenu(LINES-1, 0, functionMenuLabel);
-          global_menu_inputs();
+      loop:
+      if (getmouse(&event) == OK) {
+        if (event.bstate & BUTTON1_PRESSED){
+          if (event.y == 0){
+            // Setting key based on click
+            *pc = menuHotkeyLookup(globalMenu, (menuButtonLookup(globalMenuButtons, globalMenuSize, event.x, event.y, 0, 0, true)), globalMenuSize);
+            goto loop;
+          }
         }
+      } else if (*pc == menuHotkeyLookup(globalMenu, "g_colors", globalMenuSize)){
+        functionAction("g_colors");
       } else if (*pc == menuHotkeyLookup(globalMenu, "g_config", globalMenuSize)) {
-          settingsMenuView(showSettingsMenuLabel, showSettingsMenuSize, showSettingsMenu, &settingIndexShow, &charValuesShow, &binValuesShow, totalCharItemsShow, totalBinItemsShow, generateShowSettingsVars(), "show");
-        if (historyref == 0){
-          clear();
-          global_menu_inputs();
-        } else {
-          refreshDirectory(sortmode, lineStart, selected, 0);
-          wPrintMenu(LINES-1, 0, functionMenuLabel);
-          global_menu_inputs();
-        }
+        functionAction("g_config");
       } else if (*pc == menuHotkeyLookup(globalMenu, "g_run", globalMenuSize)) {
-        LaunchShell();
-        if (historyref == 0){
-          wPrintMenu(0,0,globalMenuLabel);
-        } else {
-          refreshDirectory(sortmode, lineStart, selected, 1);
-          directory_view_menu_inputs();
-        }
+        functionAction("g_run");
       } else if (*pc == menuHotkeyLookup(globalMenu, "g_edit", globalMenuSize)) {
-        edit_file_input();
-        if (historyref == 0){
-          wPrintMenu(0,0,globalMenuLabel);
-        } else {
-          refreshDirectory(sortmode, lineStart, selected, 1);
-          directory_view_menu_inputs();
-        }
+        functionAction("g_edit");
       } else if (*pc == menuHotkeyLookup(globalMenu, "g_help", globalMenuSize)) {
-        showManPage("show");
-        refreshScreenShow();
-        if (historyref == 0){
-          wPrintMenu(0,0,globalMenuLabel);
-        } else {
-          directory_view_menu_inputs();
-        }
+        functionAction("g_help");
       } else if (*pc == menuHotkeyLookup(globalMenu, "g_mkdir", globalMenuSize)) {
-        make_directory_input();
+        functionAction("g_mkdir");
       } else if (*pc == menuHotkeyLookup(globalMenu, "g_quit", globalMenuSize)) {
-        if (historyref == 0){
-          freeHistory(hs, sessionhistory);
-          exittoshell();
-          refresh();
-        } else {
-          historyref = 0;
-          global_menu();
-        }
+        functionAction("g_quit");
       } else if (*pc == menuHotkeyLookup(globalMenu, "g_show", globalMenuSize)) {
-        show_directory_input();
+        functionAction("g_show");
       } else if (*pc == menuHotkeyLookup(globalMenu, "g_touch", globalMenuSize)) {
-        touch_file_input();
+        functionAction("g_touch");
       } else if (*pc == 27) {
         if (historyref != 0){
           directory_view_menu_inputs();
         }
       }
     }
+}
+
+void functionAction(const char *refLabel){
+  int e, i = 0;
+  char *updir;
+  char *execArgs;
+
+  if (!strcmp(refLabel, "g_colors")){
+    themeBuilder();
+    theme_menu_inputs();
+    if (historyref == 0){
+      clear();
+      global_menu_inputs();
+    } else {
+      refreshDirectory(sortmode, lineStart, selected, 0);
+      wPrintMenu(LINES-1, 0, functionMenuLabel);
+      global_menu_inputs();
+    }
+  } else if (!strcmp(refLabel, "g_config")){
+    settingsMenuView(showSettingsMenuLabel, showSettingsMenuSize, showSettingsMenu, showSettingsMenuButtons, &settingIndexShow, &charValuesShow, &binValuesShow, totalCharItemsShow, totalBinItemsShow, generateShowSettingsVars(), "show");
+    if (historyref == 0){
+      clear();
+      global_menu_inputs();
+    } else {
+      refreshDirectory(sortmode, lineStart, selected, 0);
+      wPrintMenu(LINES-1, 0, functionMenuLabel);
+      global_menu_inputs();
+    }
+  } else if (!strcmp(refLabel, "g_run")){
+    LaunchShell();
+    if (historyref == 0){
+      wPrintMenu(0,0,globalMenuLabel);
+    } else {
+      refreshDirectory(sortmode, lineStart, selected, 1);
+      directory_view_menu_inputs();
+    }
+  } else if (!strcmp(refLabel, "g_edit")){
+    edit_file_input();
+    if (historyref == 0){
+      wPrintMenu(0,0,globalMenuLabel);
+    } else {
+      refreshDirectory(sortmode, lineStart, selected, 1);
+      directory_view_menu_inputs();
+    }
+  } else if (!strcmp(refLabel, "g_help")){
+    showManPage("show");
+    refreshScreenShow();
+    if (historyref == 0){
+      wPrintMenu(0,0,globalMenuLabel);
+    } else {
+      directory_view_menu_inputs();
+    }
+  } else if (!strcmp(refLabel, "g_mkdir")){
+    make_directory_input();
+  } else if (!strcmp(refLabel, "g_quit")){
+    if (historyref == 0){
+      freeHistory(hs, sessionhistory);
+      exittoshell();
+      refresh();
+    } else {
+      historyref = 0;
+      global_menu();
+    }
+  } else if (!strcmp(refLabel, "g_show")){
+    show_directory_input();
+  } else if (!strcmp(refLabel, "g_touch")){
+    touch_file_input();
+  } else if (!strcmp(refLabel, "f_quit")){
+    handleMissingDir:
+        if (historyref > 1){
+          snprintf(chpwd, 4096, "%s", hs[historyref - 2].path);
+          objectWild = hs[historyref - 2].objectWild;
+          historyref--;
+          if (check_dir(chpwd)){
+            memcpy(currentpwd, chpwd, 4096);
+            returnCode = chdir(currentpwd);
+            freeResults(ob, totalfilecount);
+            freeXAttrs(xa, xattrPos);
+            ob = get_dir(currentpwd);
+            reorder_ob(ob, sortmode);
+            generateEntryLineIndex(ob);
+            selected = findResultByName(ob, hs[historyref].name);
+            if (selected == -1){
+              if (skipToFirstFile == 1 && skippable == 1){
+                selected = 2;
+              } else {
+                selected = 0;
+              }
+            }
+            lineStart = hs[historyref].lineStart;
+            clear_workspace();
+            display_dir(currentpwd, ob);
+          } else {
+            // Skip removed directories
+            historyref--;
+            goto handleMissingDir;
+          }
+        } else {
+          historyref = 0; // Reset historyref here. A hacky workaround due to the value occasionally dipping to minus numbers.
+          global_menu();
+        }
+  } else if (!strcmp(refLabel, "f_copy")){
+    if ( (CheckMarked(ob) > 0) ) {
+      copy_multi_file_input(ob, currentpwd);
+    } else {
+      memcpy(selfile, currentpwd, 4096);
+      if (!check_last_char(selfile, "/")){
+        snprintf(selfile + strlen(selfile), 4096 - strlen(selfile), "%s", "/");
+      }
+      snprintf(selfile + strlen(selfile), 4096 - strlen(selfile), "%s", ob[selected].name);
+      if (!check_dir(selfile)){
+        copy_file_input(selfile, ob[selected].mode);
+      }
+    }
+  } else if (!strcmp(refLabel, "f_delete")){
+    if ( (CheckMarked(ob) > 0) ) {
+      delete_multi_file_confirm_input(ob);
+      refreshDirectory(sortmode, lineStart, selected, 1);
+      directory_view_menu_inputs();
+    } else {
+      memcpy(selfile, currentpwd, 4096);
+      if (!check_last_char(selfile, "/")){
+        snprintf(selfile + strlen(selfile), 4096 - strlen(selfile), "%s", "/");
+      }
+      snprintf(selfile + strlen(selfile), 4096 - strlen(selfile), "%s", ob[selected].name);
+      if (!check_dir(selfile) || (strcmp(ob[selected].slink, ""))){
+        delete_file_confirm_input(selfile);
+      } else if (check_dir(selfile)){
+        delete_directory_confirm_input(selfile);
+      }
+    }
+  } else if (!strcmp(refLabel, "f_edit")){
+    memcpy(chpwd, currentpwd, 4096);
+    if (!check_last_char(chpwd, "/")){
+      snprintf(chpwd + strlen(chpwd), 4096 - strlen(chpwd), "%s", "/");
+    }
+    snprintf(chpwd + strlen(chpwd), 4096 - strlen(chpwd), "%s", ob[selected].name);
+    if (!check_dir(chpwd)){
+      SendToEditor(chpwd);
+      refreshDirectory(sortmode, lineStart, selected, 1);
+    }
+  } else if (!strcmp(refLabel, "f_hidden")){
+    snprintf(currentfilename, 512, "%s", ob[selected].name);
+    if (showhidden == 0) {
+      showhidden = 1;
+    } else {
+      showhidden = 0;
+    }
+    freeResults(ob, totalfilecount);
+    freeXAttrs(xa, xattrPos);
+    ob = get_dir(currentpwd);
+    clear_workspace();
+    reorder_ob(ob, sortmode);
+    generateEntryLineIndex(ob);
+    selected = findResultByName(ob, currentfilename);
+    if (selected == -1){
+      if (skipToFirstFile == 1 && skippable == 1){
+        selected = 2;
+      } else {
+        selected = 0;
+      }
+    }
+    refreshDirectory(sortmode, lineStart, selected, 0);
+  } else if (!strcmp(refLabel, "f_link")){
+    if ( !(CheckMarked(ob) > 0) ) {
+      link_key_menu_inputs();
+    } else {
+      topLineMessage(_("Error: Links can only be made against single files."));
+    }
+  } else if (!strcmp(refLabel, "f_modify")){
+    modify_key_menu_inputs();
+  } else if (!strcmp(refLabel, "f_rename")){
+    if ( (CheckMarked(ob) > 0) ) {
+      rename_multi_file_input(ob, currentpwd);
+    } else {
+      memcpy(selfile, currentpwd, 4096);
+      if (!check_last_char(chpwd, "/")){
+        snprintf(selfile + strlen(selfile), 4096 - strlen(selfile), "%s", "/");
+      }
+      snprintf(selfile + strlen(selfile), 4096 - strlen(selfile), "%s", ob[selected].name);
+      rename_file_input(selfile);
+    }
+  } else if (!strcmp(refLabel, "f_show")){
+    memcpy(chpwd, currentpwd, 4096);
+    if (!check_last_char(chpwd, "/")){
+      snprintf(chpwd + strlen(chpwd), 4096 - strlen(chpwd), "%s", "/");
+    }
+    snprintf(chpwd + strlen(chpwd), 4096 - strlen(chpwd), "%s", ob[selected].name);
+    if (!strcmp(ob[selected].name, "..")) {
+      if (strcmp(currentpwd, "/")){
+        updir = dirFromPath(currentpwd);
+        memcpy(chpwd, updir, (strlen(updir) + 1));
+        free(updir);
+        objectWild = "";
+        testSlash:
+        if (check_last_char(chpwd, "/") && strcmp(chpwd, "/")){
+          chpwd[strlen(chpwd) - 1] = '\0';
+          goto testSlash;
+        }
+        set_history(chpwd, objectWild, ob[selected].name, lineStart, selected);
+        lineStart = 0;
+        selected = 0;
+        memcpy(currentpwd, chpwd, 4096);
+        returnCode = chdir(currentpwd);
+        refreshDirectory(sortmode, lineStart, selected, -2);
+      }
+    } else if (!strcmp(ob[selected].name, ".")) {
+      // Do nothing
+    } else {
+      if (check_dir(chpwd)){
+        objectWild = "";
+        set_history(chpwd, objectWild, ob[selected].name, lineStart, selected);
+        lineStart = 0;
+        selected = 0;
+        memcpy(currentpwd, chpwd, 4096);
+        returnCode = chdir(currentpwd);
+        refreshDirectory(sortmode, lineStart, selected, -2);
+      } else {
+        e = SendToPager(chpwd);
+        refreshDirectory(sortmode, lineStart, selected, 1);
+        // display_dir(currentpwd, ob);
+      }
+    }
+  } else if (!strcmp(refLabel, "f_touch")){
+    e = touchType();
+    // Add what to do with result.
+    if (e > -1){
+      touchTime = touchTimeInput(e);
+      if (abortinput == 0) {
+        if (e == 0){
+          touchDate.actime = touchDate.modtime = touchTime;
+        } else if ( e == 1 ){
+          touchDate.actime = touchTime;
+          touchDate.modtime = ob[selected].date;
+        } else if ( e == 2 ){
+          touchDate.actime = ob[selected].adate;
+          touchDate.modtime = touchTime;
+        }
+        if ((CheckMarked(ob) > 0)){
+          for (i = 0; i < totalfilecount; i++){
+            if (*ob[i].marked){
+              utime(ob[i].name, &touchDate);
+            }
+          }
+        } else {
+          utime(ob[selected].name, &touchDate);
+        }
+      } else {
+        abortinput = 0;
+      }
+    }
+    refreshDirectory(sortmode, lineStart, selected, 0);
+  } else if (!strcmp(refLabel, "f_uhunt")){
+    e = huntCaseSelectInput();
+    if (e != -1){
+      huntInput(selected, e);
+    }
+    abortinput = 0;
+    display_dir(currentpwd, ob);
+  } else if (!strcmp(refLabel, "f_xexec")){
+    memcpy(chpwd, currentpwd, 4096);
+    if (!check_last_char(chpwd, "/")){
+      snprintf(chpwd + strlen(chpwd), 4096 - strlen(chpwd), "%s", "/");
+    }
+    snprintf(chpwd + strlen(chpwd), 4096 - strlen(chpwd), "%s", ob[selected].name);
+    if (check_exec(chpwd)){
+      execArgs = execute_argument_input(ob[selected].name);
+      if (!abortinput){
+        LaunchExecutable(chpwd, execArgs);
+        free(execArgs);
+      }
+      abortinput = 0;
+      display_dir(currentpwd, ob);
+    } else {
+      topLineMessage(_("Error: Permission denied"));
+    }
+  } else if (!strcmp(refLabel, "f_01")){
+    showNavigate(D_PG_DOWN, -1);
+  } else if (!strcmp(refLabel, "f_02")){
+    showNavigate(D_PG_UP, -1);
+  } else if (!strcmp(refLabel, "f_03")){
+    clear_workspace();
+    selected = 0;
+    lineStart = 0;
+    display_dir(currentpwd, ob);
+  } else if (!strcmp(refLabel, "f_04")){
+    clear_workspace();
+    selected = totalfilecount - 1;
+    if ((totalfilecount - 1 ) > bottomFileRef){
+      lineStart = listLen - displaysize;
+    } else {
+      lineStart = 0;
+    }
+    display_dir(currentpwd, ob);
+  } else if (!strcmp(refLabel, "f_05")){
+    refreshDirectory(sortmode, lineStart, selected, 0);
+  } else if (!strcmp(refLabel, "f_06")){
+    memcpy(selfile, currentpwd, 4096);
+    if (!check_last_char(chpwd, "/")){
+      snprintf(selfile + strlen(selfile), 4096 - strlen(selfile), "%s", "/");
+    }
+    snprintf(selfile + strlen(selfile), 4096 - strlen(selfile), "%s", ob[selected].name);
+    if (!check_dir(selfile)){
+      if ( *ob[selected].marked ){
+        *ob[selected].marked = 0;
+        clear_workspace();
+      } else {
+        *ob[selected].marked = 1;
+      }
+      if (selected < (totalfilecount - 1)) {
+        selected++;
+        if (selected > bottomFileRef){
+          lineStart = lineStartFromBottomFileRef(selected, el, listLen, displaysize);
+          if (markedinfo == 2 && automark == 0){
+            lineStart++;
+          }
+        }
+      } else {
+        if (markedinfo == 2 && automark == 0){
+          lineStart++;
+        }
+      }
+      clear_workspace();
+      display_dir(currentpwd, ob);
+    }
+  } else if (!strcmp(refLabel, "f_07")){
+    markall = 1;
+    freeResults(ob, totalfilecount);
+    freeXAttrs(xa, xattrPos);
+    ob = get_dir(currentpwd);
+    markall = 0; // Leaving this set as 1 keeps things marked even after refresh. This is bad
+    clear_workspace();
+    reorder_ob(ob, sortmode);
+    generateEntryLineIndex(ob);
+    display_dir(currentpwd, ob);
+  } else if (!strcmp(refLabel, "f_08")){
+    markall = 0;
+    freeResults(ob, totalfilecount);
+    freeXAttrs(xa, xattrPos);
+    ob = get_dir(currentpwd);
+    clear_workspace();
+    reorder_ob(ob, sortmode);
+    generateEntryLineIndex(ob);
+    display_dir(currentpwd, ob);
+  } else if (!strcmp(refLabel, "f_09")){
+    sort_view_inputs();
+  } else if (!strcmp(refLabel, "f_10")){
+    memcpy(selfile, currentpwd, 4096);
+    if (!check_last_char(chpwd, "/")){
+      snprintf(selfile + strlen(selfile), 4096 - strlen(selfile), "%s", "/");
+    }
+    snprintf(selfile + strlen(selfile), 4096 - strlen(selfile), "%s", ob[selected].name);
+    if ( *ob[selected].marked == 0 ){
+      if ( blockstart == -1 ){
+        blockstart = selected;
+        if (!check_dir(selfile)){
+          *ob[selected].marked = 1;
+        }
+        if (selected < (totalfilecount - 1)) {
+          selected++;
+          if (selected > bottomFileRef){
+            lineStart = lineStartFromBottomFileRef(selected, el, listLen, displaysize);
+            if (markedinfo == 2 && automark == 0){
+              lineStart++;
+            }
+          }
+        } else {
+          if (markedinfo == 2 && automark == 0){
+            lineStart++;
+          }
+        }
+        clear_workspace();
+        display_dir(currentpwd, ob);
+      } else {
+        blockend = selected;
+        if (blockstart > blockend){
+          // While we're still on the second item, let's flip them around if the second selected file is higher up the list.
+          blockend = blockstart;
+          blockstart = selected;
+        }
+        for(; blockstart < blockend + 1; blockstart++){
+          memcpy(selfile, currentpwd, 4096);
+          if (!check_last_char(selfile, "/")){
+            snprintf(selfile + strlen(selfile), 4096 - strlen(selfile), "%s", "/");
+          }
+          snprintf(selfile + strlen(selfile), 4096 - strlen(selfile), "%s", ob[blockstart].name);
+          if (!check_dir(selfile)){
+            *ob[blockstart].marked = 1;
+          }
+        }
+        blockstart = blockend = -1;
+        display_dir(currentpwd, ob);
+        }
+      }
+  } else {
+    // Do nothing
+    return;
+  }
+}
+
+void setSort(const char *refLabel, bool reverseMode){
+
+  reverse = reverseMode;
+
+  if (!strcmp(refLabel, "s_name")){
+    snprintf(sortmode, 5, "name");
+  } else if (!strcmp(refLabel, "s_date")) {
+    snprintf(sortmode, 5, "date");
+  } else if (!strcmp(refLabel, "s_size")) {
+    snprintf(sortmode, 5, "size");
+  }
+
 }

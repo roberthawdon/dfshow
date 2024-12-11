@@ -2574,7 +2574,7 @@ void display_dir(char *pwd, results* ob){
   }
 
   // Replacement to "sanitizeTopFileRef" - should be simpler with the lookup table.
-  if ((selected > bottomFileRef) || ((selected < topfileref + 1)) || ((bottomFileRef - topfileref - 1) > displaysize) || lineStart > selected){
+  if ((selected > bottomFileRef) || ((selected < topfileref + 1)) || ((bottomFileRef - topfileref - 1) > displaysize)){
     adjustViewForSelected(selected, el, listLen, displaysize);
   }
 

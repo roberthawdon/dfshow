@@ -40,10 +40,17 @@ bool findSet = false;
 menuDef *sfFileMenu;
 int sfFileMenuSize = 0;
 wchar_t *sfFileMenuLabel;
+menuButton *sfFileMenuButtons;
 
 menuDef *caseMenu;
 int caseMenuSize = 0;
 wchar_t *caseMenuLabel;
+menuButton *caseMenuButtons;
+
+menuDef *sfSettingsMenu;
+int sfSettingsMenuSize;
+wchar_t *sfSettingsMenuLabel;
+menuButton *sfSettingsMenuButtons;
 
 extern MEVENT event;
 
@@ -62,10 +69,6 @@ extern t1CharValues *charValuesSf;
 extern t2BinValues *binValuesSf;
 extern int totalCharItemsSf;
 extern int totalBinItemsSf;
-
-menuDef *sfSettingsMenu;
-int sfSettingsMenuSize;
-wchar_t *sfSettingsMenuLabel;
 
 extern char regexinput[1024];
 extern FILE *file;
@@ -87,6 +90,8 @@ extern char *line;
 
 extern long int *filePos;
 extern wchar_t *longline;
+
+extern int sfMenuItems;
 
 void generateDefaultSfMenus(){
   // File Menu
@@ -116,9 +121,9 @@ void generateDefaultSfMenus(){
 }
 
 void refreshSfMenuLabels(){
-  sfFileMenuLabel     = genMenuDisplayLabel("", sfFileMenu, sfFileMenuSize, "", 1);
-  caseMenuLabel     = genMenuDisplayLabel("", caseMenu, caseMenuSize, _("(enter = I)"), 0);
-  sfSettingsMenuLabel = genMenuDisplayLabel(_("SF Settings Menu -"), sfSettingsMenu, sfSettingsMenuSize, "", 1);
+  sfFileMenuLabel     = genMenuDisplayLabel("", sfFileMenu, sfFileMenuSize, "", 1, &sfFileMenuButtons);
+  caseMenuLabel     = genMenuDisplayLabel("", caseMenu, caseMenuSize, _("(enter = I)"), 0, &caseMenuButtons);
+  sfSettingsMenuLabel = genMenuDisplayLabel(_("SF Settings Menu -"), sfSettingsMenu, sfSettingsMenuSize, "", 1, &sfSettingsMenuButtons);
 }
 
 void unloadSfMenuLabels(){
@@ -177,7 +182,16 @@ int show_file_find_case_input()
   while(1)
     {
       *pc = getch10th();
-      if (*pc == menuHotkeyLookup(caseMenu, "c1_ignore", caseMenuSize) || *pc == 10){
+      loop:
+      if (getmouse(&event) == OK) {
+        if (event.bstate & BUTTON1_PRESSED){
+          if (event.y == 0){
+            // Setting key based on click
+            *pc = menuHotkeyLookup(caseMenu, (menuButtonLookup(caseMenuButtons, caseMenuSize, event.x, event.y, 0, 0, true)), caseMenuSize);
+            goto loop;
+          }
+        }
+      } else if (*pc == menuHotkeyLookup(caseMenu, "c1_ignore", caseMenuSize) || *pc == 10){
         result = 0;
         break;
       } else if (*pc == menuHotkeyLookup(caseMenu, "c2_sensitive", caseMenuSize)){
@@ -297,7 +311,20 @@ void show_file_inputs()
   while(1)
     {
       *pc = getch10th();
-      if (*pc == menuHotkeyLookup(sfFileMenu,"f_find", sfFileMenuSize)){
+      loop:
+      if (getmouse(&event) == OK) {
+        if (event.bstate & BUTTON1_PRESSED){
+          if (event.y == 0){
+            // Setting key based on click
+            *pc = menuHotkeyLookup(sfFileMenu, (menuButtonLookup(sfFileMenuButtons, sfFileMenuSize, event.x, event.y, 0, 0, true)), sfFileMenuSize);
+            goto loop;
+          }
+        } else if(event.bstate & BUTTON5_PRESSED) {
+          sfNavigate(D_DOWN, sfScrollStep);
+        } else if (event.bstate & BUTTON4_PRESSED){
+          sfNavigate(D_UP, sfScrollStep);
+        }
+      } else if (*pc == menuHotkeyLookup(sfFileMenu,"f_find", sfFileMenuSize)){
         e = show_file_find_case_input();
         if (e != -1){
           show_file_find(e, false);
@@ -323,7 +350,8 @@ void show_file_inputs()
         }
         updateView();
       } else if (*pc == menuHotkeyLookup(sfFileMenu, "f_config", sfFileMenuSize)){
-        settingsMenuView(sfSettingsMenuLabel, sfSettingsMenuSize, sfSettingsMenu, &settingIndexSf, &charValuesSf, &binValuesSf, totalCharItemsSf, totalBinItemsSf, generateSfSettingsVars(), "sf");
+        sfMenuItems = generateSfSettingsVars(); // This might need moving
+        settingsMenuView(sfSettingsMenuLabel, sfSettingsMenuSize, sfSettingsMenu, sfSettingsMenuButtons, &settingIndexSf, &charValuesSf, &binValuesSf, totalCharItemsSf, totalBinItemsSf, sfMenuItems, "sf");
         wPrintMenu(0, 0, sfFileMenuLabel);
         if(wrap){
         }
@@ -382,16 +410,6 @@ void show_file_inputs()
         if (wrap != 1){
           leftcol = longestlongline;
           updateView();
-        }
-      } else if (*pc == KEY_MOUSE){
-        if(getmouse(&event) == OK) {
-          if(event.bstate & BUTTON5_PRESSED) {
-            sfNavigate(D_DOWN, sfScrollStep);
-          } else if (event.bstate & BUTTON4_PRESSED){
-            sfNavigate(D_UP, sfScrollStep);
-          } else if (event.bstate & BUTTON1_CLICKED){
-
-          }
         }
       }
    }
