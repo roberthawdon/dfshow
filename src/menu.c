@@ -420,18 +420,16 @@ int commonConfirmMenu(int line, int col, const char *label, bool multi){
      b++;
   }
 
-  optionLabels = malloc(sizeof(char) * optionLabelsLen);
-
-  snprintf(optionLabels, optionLabelsLen, "%s (", label); // Label and Inital Bracket
+  setDynamicChar(&optionLabels, "%s (", label); // Label and Initial Bracket
 
   for (i = 0; i < options; i++){
-    snprintf(optionLabels, optionLabelsLen, "%s%s", optionLabels, option[i]);
+    setDynamicChar(&optionLabels, "%s%s", optionLabels, option[i]);
     if ( i < (options - 1) ){
-      snprintf(optionLabels, optionLabelsLen, "%s%s", optionLabels, "/");
+      setDynamicChar(&optionLabels, "%s%s", optionLabels, "/");
     }
   }
 
-  snprintf(optionLabels, optionLabelsLen, "%s)", optionLabels); // Closing Bracket
+  setDynamicChar(&optionLabels, "%s)", optionLabels); // Closing Bracket
 
   printMenu(line, col, optionLabels);
 
