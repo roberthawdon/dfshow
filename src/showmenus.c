@@ -495,15 +495,16 @@ void show_directory_input()
 int replace_file_confirm_input(char *filename)
 {
   char *message = malloc(sizeof(char) * 1);
-  setDynamicChar(&message, _("Replace file [<%s>]? (!Yes/!No)"), filename);
-  printMenu(0,0, message);
+  int r;
+
+  setDynamicChar(&message, _("Replace file [<%s>]?"), filename);
+  r = commonConfirmMenu(0,0, message, false, -1);
   free(message);
   while(1)
     {
-      *pc = getch10th();
-      switch(*pc)
+      switch(r)
         {
-        case 'y':
+        case YES:
           return 1;
           break;
         default:
@@ -986,23 +987,22 @@ char * execute_argument_input(const char *exec)
 int huntCaseSelectInput()
 {
   int result = 0;
+  int r;
   char *message;
-  setDynamicChar(&message, _("Case Sensitive, !Yes/!No/<ESC> (enter = no)"));
-  printMenu(0,0, message);
+  setDynamicChar(&message, _("Case Sensitive? (Default = no)"));
+  r = commonConfirmMenu(0,0, message, false, NO);
   while(1)
     {
     huntCaseLoop:
-      *pc = getch10th();
-      switch(*pc)
+      switch(r)
         {
-        case 'y':
+        case YES:
           result = 1;
           break;
-	case 10:
-        case 'n':
+        case NO:
           result = 0;
           break;
-        case 27:
+        case -1:
           result = -1;
           break;
         default:
@@ -1069,7 +1069,7 @@ void delete_file_confirm_input(char *file)
 {
   int r;
 
-  r = commonConfirmMenu(0,0, _("Delete file?"), false);
+  r = commonConfirmMenu(0,0, _("Delete file?"), false, -1);
 
   switch(r)
     {
@@ -1087,7 +1087,7 @@ void delete_directory_confirm_input(char *directory)
 {
   int e, r;
 
-  r = commonConfirmMenu(0,0, _("Delete directory?"), false);
+  r = commonConfirmMenu(0,0, _("Delete directory?"), false, -1);
 
   switch(r)
     {
@@ -1127,7 +1127,7 @@ void delete_multi_file_confirm_input(results* ob)
               delete_file(selfile);
             } else {
             setDynamicChar(&message, _("Delete file [<%s>]?"), selfile);
-            r = commonConfirmMenu(0,0, message, true);
+            r = commonConfirmMenu(0,0, message, true, -1);
             free(message);
             k = 1;
             while(k)

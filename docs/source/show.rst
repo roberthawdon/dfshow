@@ -366,10 +366,9 @@ the command has any additional propts, they are also described here.
   marked if the string matches. When using multiple files, any files
   not matching the string will be unselected. Case sensitivity is
   requested by the following prompt, afterwards the user is asked to
-  input the string to search. To abort at this prompt, the *ESC* key
-  must be used.
+  input the string to search.
 
-  ``Case Sensitive, Yes/No/ESC (enter = no)``
+  ``Case Sensitive? (Default = no) (Yes/No)``
 
   Following this selection, one of the following prompts will be
   displayed.

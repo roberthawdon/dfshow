@@ -19,4 +19,4 @@ int altHotkey(int key);
 int wPrintMenu(int line, int col, wchar_t *menustring);
 int printMenu(int line, int col, const char *menustring);
 int dynamicMenuLabel(wchar_t **label, const char *str);
-int commonConfirmMenu(int line, int col, const char *label, bool multi);
+int commonConfirmMenu(int line, int col, const char *label, bool multi, int enter);
