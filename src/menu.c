@@ -375,7 +375,7 @@ int printMenu(int line, int col, const char *menustring)
   return(returnChars);
 }
 
-int commonConfirmMenu(int line, int col, const char *label, bool multi){
+int commonConfirmMenu(int line, int col, const char *label, bool multi, int enter){
   int i, c, b;
   int output = -1;
   char *optionLabels;
@@ -460,6 +460,11 @@ int commonConfirmMenu(int line, int col, const char *label, bool multi){
       if (*pc == KEY_MOUSE) {
         // Ignore mouse input conflicting with menu functions.
         continue;
+      } else if (*pc == 10){
+        if (enter > 0) {
+          *pc = hotkey[enter];
+          goto loop;
+        }
       } else if (*pc == hotkey[0]){
         // Yes
         output = 0;
