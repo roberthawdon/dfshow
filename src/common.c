@@ -225,27 +225,28 @@ int splitString(splitStrStruct **result, char *input, int splitChar, bool filePa
 int createParentsInput(char *path)
 {
   int result = 0;
+  int r;
   char *message;
 
-  setDynamicChar(&message, _("Directory [<%s>] does not exist. Create it? !Yes/!No (enter = no)"), path);
-
-  printMenu(0,0, message);
-
+  setDynamicChar(&message, _("Directory [<%s>] does not exist. Create it? (Default = no)"), path);
+  r = commonConfirmMenu(0,0, message, false, NO);
+  free(message);
   while(1)
     {
-      *pc = getch10th();
-      if (*pc == 'y'){
-        result = 1;
-        break;
-      } else if ((*pc == 'n') || (*pc == 10)){
-        result = 0;
-        break;
-      } else if (*pc == 27){
-        result = -1;
-        break;
-      }
+      switch(r)
+        {
+          case YES:
+            result = 1;
+            break;
+          case NO:
+            result = 0;
+            break;
+          default:
+            result = -1;
+            break;
+        }
+      break;
     }
-  free(message);
   return(result);
 }
 

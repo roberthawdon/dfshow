@@ -399,7 +399,7 @@ Creating parent directories
 A number of the commands above will display the following prompt to create
 parent directories if they are not present.
 
-  ``Directory [/path/to/directory] does not exist. Create it? Yes/No (enter = no)``
+  ``Directory [/path/to/directory] does not exist. Create it? (Default = no) (Yes/No)``
 
   Selecting "Y" will instruct ``show`` to create the missing parent directories
   required to complete the command.
