@@ -303,7 +303,7 @@ void refreshColors(){
 void saveTheme(){
   config_t cfg;
   config_setting_t *root, *setting, *group, *array;
-  int e, f, i;
+  int e, f, i, r;
   char filename[1024];
   char * rewrite;
   int curPos=0;
@@ -337,14 +337,20 @@ void saveTheme(){
     if (access(dirFromPath(filename), W_OK) == 0){
       if (check_file(filename)){
         curs_set(FALSE);
-        printMenu(0,0, _("File exists. Replace? (!Yes/!No)"));
-        *pc = getch10th();
-        if (*pc == 'y'){
-          config_write_file(&cfg, filename);
-          setenv("DFS_THEME", objectFromPath(filename), 1);
-        } else {
-          // Skip
-        }
+        r = commonConfirmMenu(0,0, _("File exists. Replace?"), false, -1);
+        while(1)
+          {
+            switch(r)
+              {
+                case YES:
+                  config_write_file(&cfg, filename);
+                  setenv("DFS_THEME", objectFromPath(filename), 1);
+                  break;
+                default:
+                  break;
+              }
+            break;
+          }
         curs_set(TRUE);
         themeBuilder();
       } else {

@@ -294,11 +294,13 @@ int wPrintMenu(int line, int col, wchar_t *menustring)
   bool writeOut = true;
   returnChars = 0;
   charcount = 0;
-  move(line, col);
-  clrtoeol();
   len = wcslen(menustring);
   if ( line < 0 || col < 0 ){
     writeOut = false;
+  }
+  if (writeOut) {
+    move(line, col);
+    clrtoeol();
   }
   if ( line == 0 ){
     setDynamicWChar(&topMenuBuffer, L"%ls", menustring);
