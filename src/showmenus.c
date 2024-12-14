@@ -1778,7 +1778,7 @@ void showNavigate(int direction, int step){
         if (listLen < displaysize){
           lineStart = 0;
         } else {
-          lineStart = lineStart + displaysize;
+          lineStart = lineStart + pageStep;
           if (lineStart > (listLen - displaysize)){
             lineStart = listLen - displaysize;
           }

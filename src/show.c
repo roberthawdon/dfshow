@@ -490,6 +490,8 @@ void saveShowConfig(const char * confFile, settingIndex **settings, t1CharValues
         config_setting_set_int(setting, useDefinedEditor);
       } else if (!strcmp((*settings)[i].refLabel, "defined-pager")){
         config_setting_set_int(setting, useDefinedPager);
+      } else if (!strcmp((*settings)[i].refLabel, "scrollStep")){
+        config_setting_set_int(setting, showScrollStep);
       }
     } else if ((*settings)[i].type == SETTING_SELECT){
       //
@@ -584,6 +586,8 @@ void applyShowSettings(settingIndex **settings, t1CharValues **values, int items
       showSizeBlocks = (*settings)[i].intSetting;
     } else if (!strcmp((*settings)[i].refLabel, "defined-editor")){
       useDefinedEditor = (*settings)[i].intSetting;
+    } else if (!strcmp((*settings)[i].refLabel, "scrollStep")){
+      showScrollStep = (*settings)[i].intSetting;
     } else if (!strcmp((*settings)[i].refLabel, "visualPath")){
       free(visualPath);
       visualPath = calloc((strlen((*settings)[i].charSetting) + 1), sizeof(char));
