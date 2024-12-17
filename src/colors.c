@@ -598,6 +598,10 @@ void theme_menu_inputs()
             *pc = themeButtonAction(menuButtonLookup(themeBuilderButtons, 35, event.x, event.y, 0, 0, false));
             goto loop;
           }
+        } else if (event.bstate & BUTTON5_PRESSED){
+          goto down;
+        } else if (event.bstate & BUTTON4_PRESSED){
+          goto up;
         }
       } else if (*pc == '!'){
         updateColorPair(-1, bgToggle);
@@ -703,11 +707,13 @@ void theme_menu_inputs()
         }
         themeBuilder();
       } else if (*pc == 258 || *pc ==10){
+        down:
         if (colorThemePos < totalItemCount){
           colorThemePos++;
           setCursorPos(colorThemePos - 1);
         }
       } else if (*pc == 259){
+        up:
         if (colorThemePos > 0) {
           colorThemePos--;
           setCursorPos(colorThemePos + 1);
