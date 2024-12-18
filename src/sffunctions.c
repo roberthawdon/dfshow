@@ -90,6 +90,7 @@ extern int exitCode;
 extern wchar_t *sfFileMenuLabel;
 extern char themeName[256];
 extern int enableCtrlC;
+extern bool enableMouse;
 
 extern int * pc;
 
@@ -130,6 +131,13 @@ void readSfConfig(const char * confFile)
       if (setting){
         if (config_setting_get_int(setting)){
           enableCtrlC = 1;
+        }
+      }
+      // Are we enabling mouse support?
+      setting = config_setting_get_member(group, "enable-mouse");
+      if (setting){
+        if (config_setting_get_int(setting)){
+          enableMouse = true;
         }
       }
     }
@@ -217,16 +225,26 @@ void refreshScreenSf()
   switch(viewMode)
     {
     case 3: // Settings View
-      wPrintMenu(0, 0, topMenuBuffer);
+      if (topMenuBuffer){
+        wPrintMenu(0, 0, topMenuBuffer);
+      }
       break;
     case 4: // SF View
       updateView();
-      wPrintMenu(0, 0, topMenuBuffer);
-      wPrintMenu(LINES-1, 0, bottomMenuBuffer);
+      if (topMenuBuffer){
+        wPrintMenu(0, 0, topMenuBuffer);
+      }
+      if (bottomMenuBuffer){
+        wPrintMenu(LINES-1, 0, bottomMenuBuffer);
+      }
       break;
     default: // Fallback
-      wPrintMenu(0, 0, topMenuBuffer);
-      wPrintMenu(LINES-1, 0, bottomMenuBuffer);
+      if (topMenuBuffer){
+        wPrintMenu(0, 0, topMenuBuffer);
+      }
+      if (bottomMenuBuffer){
+        wPrintMenu(LINES-1, 0, bottomMenuBuffer);
+      }
       break;
     }
 }

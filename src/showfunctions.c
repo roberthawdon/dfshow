@@ -1785,11 +1785,11 @@ int seglength(const void *seg, char *segname, int LEN)
       }
       else if (!strcmp(segname, "inode")) {
         snprintf(inodestr, 32, "%ju", (uintmax_t)dfseg[i].inode);
-        len = strlen(inodestr);
+        len = strlen(inodestr) + 1;
       }
       else if (!strcmp(segname, "sizeBlocks")) {
         snprintf(sizeblocksstr, 32, "%ju", (uintmax_t)dfseg[i].sizeBlocks);
-        len = strlen(sizeblocksstr);
+        len = strlen(sizeblocksstr) + 1;
       }
       else if (!strcmp(segname, "size")) {
         if (human){

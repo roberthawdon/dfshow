@@ -306,10 +306,12 @@ int wPrintMenu(int line, int col, wchar_t *menustring)
     setDynamicWChar(&topMenuBuffer, L"%ls", menustring);
     topMenu = true;
     topMenuStart = col;
-  } else {
+  } else if (line > 0) {
     setDynamicWChar(&bottomMenuBuffer, L"%ls", menustring);
     bottomMenu = true;
     bottomMenuStart = col;
+  } else {
+    // Do nothing
   }
   setColors(COMMAND_PAIR);
   for (i = 0; i < len; i++)
