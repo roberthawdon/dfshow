@@ -20,7 +20,7 @@
 # -- Project information -----------------------------------------------------
 
 project = 'Directory File Show (DF-SHOW)'
-copyright = '2024, Robert Ian Hawdon'
+copyright = '2025, Robert Ian Hawdon'
 author = 'Robert Ian Hawdon'
 
 # The short X.Y version
