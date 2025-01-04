@@ -58,6 +58,7 @@ typedef struct {
   time_t adate;
   wchar_t *datedisplay;
   char *name;
+  char *displayName;
   char *slink;
   int color;
   char *xattrs;
@@ -140,4 +141,4 @@ int writePermsEntry(char * perms, mode_t mode, int axFlag, int sLinkCheck);
 void writeResultStruct(results* ob, const char * filename, struct stat buffer, int count, bool xAcl, ssize_t xattr, int seLinuxCon, char * contextText, char * xattrs, const int xattrsNum);
 char *markedDisplay(results* ob);
 int huntFile(const char * file, const char * search, int charcase);
-
+char* sanitizeFilename(const char* filename);
