@@ -51,6 +51,7 @@ int longestlongline = 0;
 int tabsize = 8;
 
 int sfScrollStep = 4;
+char sfScrollStepChar[2];
 
 int wrap = 0;
 int wrapmode = LINE_WRAP;
@@ -154,8 +155,8 @@ void readSfConfig(const char * confFile)
       // Check scrollStep
       setting = config_setting_get_member(group, "scrollStep");
       if (setting){
-        if (config_setting_get_int(setting)){
-          sfScrollStep = config_setting_get_int(setting);
+        if (config_setting_get_string(setting)){
+          sfScrollStep = strToInt(config_setting_get_string(setting));
         }
       }
     }
@@ -188,7 +189,10 @@ void saveSfConfig(const char * confFile, settingIndex **settings, t1CharValues *
         config_setting_set_int(setting, wrap);
       }
     } else if ((*settings)[i].type == SETTING_SELECT){
-      // None of those in SF (yet?)
+      if (!strcmp((*settings)[i].refLabel, "scrollStep")){
+        snprintf(sfScrollStepChar, 2, "%i\0", sfScrollStep);
+        config_setting_set_string(setting, sfScrollStepChar);
+      }
     } else if ((*settings)[i].type == SETTING_MULTI){
       // None of those in SF (yet?)
     }
@@ -203,10 +207,21 @@ void saveSfConfig(const char * confFile, settingIndex **settings, t1CharValues *
 int generateSfSettingsVars()
 {
   int items = 0;
-  int charValuesCount = 0;
+  int charValuesCount = 0, scrollStepCount = 0;
   int binValuesCount = 0;
 
-  importSetting(&settingIndexSf, &items, "wrap", _("Enable text wrapping"), SETTING_BOOL, NULL, wrap, -1, 0);
+  addT1CharValue(&charValuesSf, &charValuesCount, &scrollStepCount, "scrollStep", "1");
+  addT1CharValue(&charValuesSf, &charValuesCount, &scrollStepCount, "scrollStep", "2");
+  addT1CharValue(&charValuesSf, &charValuesCount, &scrollStepCount, "scrollStep", "3");
+  addT1CharValue(&charValuesSf, &charValuesCount, &scrollStepCount, "scrollStep", "4");
+  addT1CharValue(&charValuesSf, &charValuesCount, &scrollStepCount, "scrollStep", "5");
+  addT1CharValue(&charValuesSf, &charValuesCount, &scrollStepCount, "scrollStep", "6");
+  addT1CharValue(&charValuesSf, &charValuesCount, &scrollStepCount, "scrollStep", "7");
+  addT1CharValue(&charValuesSf, &charValuesCount, &scrollStepCount, "scrollStep", "8");
+  addT1CharValue(&charValuesSf, &charValuesCount, &scrollStepCount, "scrollStep", "9");
+
+  importSetting(&settingIndexSf, &items, "wrap",       _("Enable text wrapping"), SETTING_BOOL, NULL, wrap, -1, 0);
+  importSetting(&settingIndexSf, &items, "scrollStep", _("Mouse scroll interval size"), SETTING_SELECT, NULL, sfScrollStep - 1, scrollStepCount, 0);
 
   totalBinItemsSf = binValuesCount;
   totalCharItemsSf = charValuesCount;
@@ -437,10 +452,16 @@ void file_view(char * currentfile)
 
 void applySfSettings(settingIndex **settings, t1CharValues **values, int items, int valuesCount)
 {
-  int i;
+  int i, j;
   for (i = 0; i < items; i++){
     if (!strcmp((*settings)[i].refLabel, "wrap")){
       wrap = (*settings)[i].intSetting;
+    } else if (!strcmp((*settings)[i].refLabel, "scrollStep")){
+      for (j = 0; j < valuesCount; j++){
+        if (!strcmp((*values)[j].refLabel, "scrollStep") && ((*values)[j].index == (*settings)[i].intSetting)){
+          sfScrollStep = strToInt((*values)[j].value);
+        }
+      }
     }
   }
 }
