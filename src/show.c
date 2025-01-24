@@ -109,6 +109,7 @@ char *objectWild;
 char block_unit[4] = "\0\0\0\0";
 
 int showScrollStep = 4;
+char showScrollStepChar[2];
 
 int showMenuItems = 0;
 
@@ -394,8 +395,8 @@ void readShowConfig(const char * confFile)
       // Check scrollStep
       setting = config_setting_get_member(group, "scrollStep");
       if (setting){
-        if (config_setting_get_int(setting)){
-          showScrollStep = config_setting_get_int(setting);
+        if (config_setting_get_string(setting)){
+          showScrollStep = strToInt(config_setting_get_string(setting));
         }
       }
       // Check Layout
@@ -497,8 +498,6 @@ void saveShowConfig(const char * confFile, settingIndex **settings, t1CharValues
         config_setting_set_int(setting, useDefinedEditor);
       } else if (!strcmp((*settings)[i].refLabel, "defined-pager")){
         config_setting_set_int(setting, useDefinedPager);
-      } else if (!strcmp((*settings)[i].refLabel, "scrollStep")){
-        config_setting_set_int(setting, showScrollStep);
       }
     } else if ((*settings)[i].type == SETTING_SELECT){
       //
@@ -513,6 +512,9 @@ void saveShowConfig(const char * confFile, settingIndex **settings, t1CharValues
         config_setting_set_string(setting, sortmode);
       } else if (!strcmp((*settings)[i].refLabel, "timestyle")){
         config_setting_set_string(setting, timestyle);
+      } else if (!strcmp((*settings)[i].refLabel, "scrollStep")){
+        snprintf(showScrollStepChar, 2, "%i\0", showScrollStep);
+        config_setting_set_string(setting, showScrollStepChar);
       }
     } else if ((*settings)[i].type == SETTING_MULTI){
       if (!strcmp((*settings)[i].refLabel, "owner")){
@@ -594,7 +596,11 @@ void applyShowSettings(settingIndex **settings, t1CharValues **values, int items
     } else if (!strcmp((*settings)[i].refLabel, "defined-editor")){
       useDefinedEditor = (*settings)[i].intSetting;
     } else if (!strcmp((*settings)[i].refLabel, "scrollStep")){
-      showScrollStep = (*settings)[i].intSetting;
+      for (j = 0; j < valuesCount; j++){
+        if (!strcmp((*values)[j].refLabel, "scrollStep") && ((*values)[j].index == (*settings)[i].intSetting)){
+          showScrollStep = strToInt((*values)[j].value);
+        }
+      }
     } else if (!strcmp((*settings)[i].refLabel, "visualPath")){
       free(visualPath);
       visualPath = calloc((strlen((*settings)[i].charSetting) + 1), sizeof(char));
@@ -613,7 +619,7 @@ int generateShowSettingsVars()
 {
   uid_t uid=getuid(), euid=geteuid();
   int items = 0;
-  int markedCount = 0, sortmodeCount = 0, timestyleCount = 0, ownerCount = 0;
+  int markedCount = 0, sortmodeCount = 0, timestyleCount = 0, ownerCount = 0, scrollStepCount = 0;
   int sortmodeInt = 0, timestyleInt = 0;
   int charValuesCount = 0;
   int binValuesCount = 0;
@@ -631,6 +637,16 @@ int generateShowSettingsVars()
   addT1CharValue(&charValuesShow, &charValuesCount, &timestyleCount, "timestyle", _("iso"));
   addT1CharValue(&charValuesShow, &charValuesCount, &timestyleCount, "timestyle", _("long-iso"));
   addT1CharValue(&charValuesShow, &charValuesCount, &timestyleCount, "timestyle", _("full-iso"));
+
+  addT1CharValue(&charValuesShow, &charValuesCount, &scrollStepCount, "scrollStep", "1");
+  addT1CharValue(&charValuesShow, &charValuesCount, &scrollStepCount, "scrollStep", "2");
+  addT1CharValue(&charValuesShow, &charValuesCount, &scrollStepCount, "scrollStep", "3");
+  addT1CharValue(&charValuesShow, &charValuesCount, &scrollStepCount, "scrollStep", "4");
+  addT1CharValue(&charValuesShow, &charValuesCount, &scrollStepCount, "scrollStep", "5");
+  addT1CharValue(&charValuesShow, &charValuesCount, &scrollStepCount, "scrollStep", "6");
+  addT1CharValue(&charValuesShow, &charValuesCount, &scrollStepCount, "scrollStep", "7");
+  addT1CharValue(&charValuesShow, &charValuesCount, &scrollStepCount, "scrollStep", "8");
+  addT1CharValue(&charValuesShow, &charValuesCount, &scrollStepCount, "scrollStep", "9");
 
   addT2BinValue(&binValuesShow, &binValuesCount, &ownerCount, "owner", "owner", 1);
   addT2BinValue(&binValuesShow, &binValuesCount, &ownerCount, "owner", "group", 0);
@@ -664,6 +680,7 @@ int generateShowSettingsVars()
   importSetting(&settingIndexShow, &items, "directory",      _("Display only current directory"), SETTING_BOOL, NULL, currentDirOnly, -1, 0);
   importSetting(&settingIndexShow, &items, "only-dirs",      _("Display only directories"), SETTING_BOOL, NULL, dirOnly, -1, 0);
   importSetting(&settingIndexShow, &items, "sizeblocks",     _("Show allocated size in blocks"), SETTING_BOOL, NULL, showSizeBlocks, -1, 0);
+  importSetting(&settingIndexShow, &items, "scrollStep",     _("Mouse scroll interval size"), SETTING_SELECT, NULL, showScrollStep - 1, scrollStepCount, 0);
   importSetting(&settingIndexShow, &items, "defined-editor", _("Override default editor"), SETTING_BOOL, NULL, useDefinedEditor, -1, 0);
   importSetting(&settingIndexShow, &items, "visualPath",     _("Editor utility program command"), SETTING_FREE, visualPath, -1, -1, 0);
   importSetting(&settingIndexShow, &items, "defined-pager",  _("Override default pager"), SETTING_BOOL, NULL, useDefinedPager, -1, 0);

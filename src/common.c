@@ -770,3 +770,16 @@ void sigintHandle(int sig){
   // Does nothing
 }
 
+int strToInt(const char *str){
+  char *endptr;
+  int num = (int)strtol(str, &endptr, 10);
+
+  // Check for conversion errors
+  if (endptr == str) {
+      return -1;
+      // No conversion performed (invalid input)
+  }
+
+  return num;
+
+}

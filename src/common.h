@@ -42,3 +42,4 @@ void buildCommandArguments(const char *cmd, char **args, size_t items);
 int launchExternalCommand(char *cmd, char **args, ushort_t mode);
 void sigintHandle(int sig);
 int exittoshell();
+int strToInt(const char *str);
