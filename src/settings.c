@@ -191,7 +191,7 @@ void addT2BinValue(t2BinValues **values, int *totalItems, int *maxItem, char *re
 
 }
 
-void importSetting(settingIndex **settings, int *items, char *refLabel, char *textLabel, int type, char *charSetting, int intSetting, int maxValue, int invert)
+void importSetting(settingIndex **settings, int *items, char *refLabel, char *textLabel, int type, int storeType, char *charSetting, int intSetting, int maxValue, int invert)
 {
   settingIndex *tmp;
   int currentItem = *items;
@@ -211,6 +211,7 @@ void importSetting(settingIndex **settings, int *items, char *refLabel, char *te
   }
 
   (*settings)[currentItem].type = type;
+  (*settings)[currentItem].storeType = storeType;
   snprintf((*settings)[currentItem].refLabel, 16, "%s", refLabel);
   swprintf((*settings)[currentItem].textLabel, 32, L"%ls", wideTextLabel);
   free(wideTextLabel);

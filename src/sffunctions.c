@@ -51,7 +51,6 @@ int longestlongline = 0;
 int tabsize = 8;
 
 int sfScrollStep = 4;
-char sfScrollStepChar[2];
 
 int wrap = 0;
 int wrapmode = LINE_WRAP;
@@ -168,6 +167,7 @@ void saveSfConfig(const char * confFile, settingIndex **settings, t1CharValues *
   config_t cfg;
   config_setting_t *root, *setting, *group;
   int i;
+  int storeType;
 
   config_init(&cfg);
 
@@ -182,16 +182,21 @@ void saveSfConfig(const char * confFile, settingIndex **settings, t1CharValues *
 
   for (i = 0; i < items; i++){
     config_setting_remove(group, (*settings)[i].refLabel);
-    if ((*settings)[i].type == SETTING_BOOL){
+    storeType = (*settings)[i].storeType;
+    if (storeType == SETTING_STORE_STRING){
+      setting = config_setting_add(group, (*settings)[i].refLabel, CONFIG_TYPE_STRING);
+    } else if (storeType == SETTING_STORE_GROUP){
+      // Groupes are handled by subgroups
+    } else {
       setting = config_setting_add(group, (*settings)[i].refLabel, CONFIG_TYPE_INT);
-
+    }
+    if ((*settings)[i].type == SETTING_BOOL){
       if (!strcmp((*settings)[i].refLabel, "wrap")){
         config_setting_set_int(setting, wrap);
       }
     } else if ((*settings)[i].type == SETTING_SELECT){
       if (!strcmp((*settings)[i].refLabel, "scrollStep")){
-        snprintf(sfScrollStepChar, 2, "%i\0", sfScrollStep);
-        config_setting_set_string(setting, sfScrollStepChar);
+        config_setting_set_int(setting, sfScrollStep);
       }
     } else if ((*settings)[i].type == SETTING_MULTI){
       // None of those in SF (yet?)
@@ -220,8 +225,8 @@ int generateSfSettingsVars()
   addT1CharValue(&charValuesSf, &charValuesCount, &scrollStepCount, "scrollStep", "8");
   addT1CharValue(&charValuesSf, &charValuesCount, &scrollStepCount, "scrollStep", "9");
 
-  importSetting(&settingIndexSf, &items, "wrap",       _("Enable text wrapping"), SETTING_BOOL, NULL, wrap, -1, 0);
-  importSetting(&settingIndexSf, &items, "scrollStep", _("Mouse scroll interval size"), SETTING_SELECT, NULL, sfScrollStep - 1, scrollStepCount, 0);
+  importSetting(&settingIndexSf, &items, "wrap",       _("Enable text wrapping"), SETTING_BOOL, SETTING_STORE_INT, NULL, wrap, -1, 0);
+  importSetting(&settingIndexSf, &items, "scrollStep", _("Mouse scroll interval size"), SETTING_SELECT, SETTING_STORE_INT, NULL, sfScrollStep - 1, scrollStepCount, 0);
 
   totalBinItemsSf = binValuesCount;
   totalCharItemsSf = charValuesCount;

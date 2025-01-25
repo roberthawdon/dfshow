@@ -109,7 +109,6 @@ char *objectWild;
 char block_unit[4] = "\0\0\0\0";
 
 int showScrollStep = 4;
-char showScrollStepChar[2];
 
 int showMenuItems = 0;
 
@@ -395,8 +394,8 @@ void readShowConfig(const char * confFile)
       // Check scrollStep
       setting = config_setting_get_member(group, "scrollStep");
       if (setting){
-        if (config_setting_get_string(setting)){
-          showScrollStep = strToInt(config_setting_get_string(setting));
+        if (config_setting_get_int(setting)){
+          showScrollStep = config_setting_get_int(setting);
         }
       }
       // Check Layout
@@ -443,6 +442,7 @@ void saveShowConfig(const char * confFile, settingIndex **settings, t1CharValues
   config_t cfg;
   config_setting_t *root, *setting, *group, *subgroup;
   int i, v;
+  int storeType;
 
   config_init(&cfg);
 
@@ -457,8 +457,15 @@ void saveShowConfig(const char * confFile, settingIndex **settings, t1CharValues
 
   for (i = 0; i < items; i++){
     config_setting_remove(group, (*settings)[i].refLabel);
-    if ((*settings)[i].type == SETTING_BOOL){
+    storeType = (*settings)[i].storeType;
+    if (storeType == SETTING_STORE_STRING){
+      setting = config_setting_add(group, (*settings)[i].refLabel, CONFIG_TYPE_STRING);
+    } else if (storeType == SETTING_STORE_GROUP){
+      // Groupes are handled by subgroups
+    } else {
       setting = config_setting_add(group, (*settings)[i].refLabel, CONFIG_TYPE_INT);
+    }
+    if ((*settings)[i].type == SETTING_BOOL){
 
       if (!strcmp((*settings)[i].refLabel, "color")){
         config_setting_set_int(setting, filecolors);
@@ -501,7 +508,6 @@ void saveShowConfig(const char * confFile, settingIndex **settings, t1CharValues
       }
     } else if ((*settings)[i].type == SETTING_SELECT){
       //
-      setting = config_setting_add(group, (*settings)[i].refLabel, CONFIG_TYPE_STRING);
       if (!strcmp((*settings)[i].refLabel, "marked")){
         for(v = 0; v < charIndex; v++){
           if (!strcmp((*values)[v].refLabel, "marked") && ((*settings)[i].intSetting == (*values)[v].index)){
@@ -513,8 +519,7 @@ void saveShowConfig(const char * confFile, settingIndex **settings, t1CharValues
       } else if (!strcmp((*settings)[i].refLabel, "timestyle")){
         config_setting_set_string(setting, timestyle);
       } else if (!strcmp((*settings)[i].refLabel, "scrollStep")){
-        snprintf(showScrollStepChar, 2, "%i\0", showScrollStep);
-        config_setting_set_string(setting, showScrollStepChar);
+        config_setting_set_int(setting, showScrollStep);
       }
     } else if ((*settings)[i].type == SETTING_MULTI){
       if (!strcmp((*settings)[i].refLabel, "owner")){
@@ -525,7 +530,6 @@ void saveShowConfig(const char * confFile, settingIndex **settings, t1CharValues
         }
       }
     } else if ((*settings)[i].type == SETTING_FREE){
-      setting = config_setting_add(group, (*settings)[i].refLabel, CONFIG_TYPE_STRING);
       if (!strcmp((*settings)[i].refLabel, "visualPath")){
         config_setting_set_string(setting, (*settings)[i].charSetting);
       } else if (!strcmp((*settings)[i].refLabel, "pagerPath")){
@@ -655,36 +659,36 @@ int generateShowSettingsVars()
   sortmodeInt = textValueLookup(&charValuesShow, &charValuesCount, "sortmode", sortmode);
   timestyleInt = textValueLookup(&charValuesShow, &charValuesCount, "timestyle", timestyle);
 
-  importSetting(&settingIndexShow, &items, "color",          _("Display file colors"), SETTING_BOOL, NULL, filecolors, -1, 0);
-  importSetting(&settingIndexShow, &items, "marked",         _("Show marked file info"), SETTING_SELECT, NULL, markedinfo, markedCount, 0);
-  importSetting(&settingIndexShow, &items, "sortmode",       _("Sorting mode"), SETTING_SELECT, NULL, sortmodeInt, sortmodeCount, 0);
-  importSetting(&settingIndexShow, &items, "reverse",        _("Reverse sorting order"), SETTING_BOOL, NULL, reverse, -1, 0);
-  importSetting(&settingIndexShow, &items, "timestyle",      _("Time style"), SETTING_SELECT, NULL, timestyleInt, timestyleCount, 0);
-  importSetting(&settingIndexShow, &items, "hidden",         _("Show hidden files"), SETTING_BOOL, NULL, showhidden, -1, 0);
-  importSetting(&settingIndexShow, &items, "ignore-backups", _("Hide backup files"), SETTING_BOOL, NULL, showbackup, -1, 1);
-  importSetting(&settingIndexShow, &items, "no-sf",          _("Use 3rd party pager over SF"), SETTING_BOOL, NULL, useEnvPager, -1, 0);
+  importSetting(&settingIndexShow, &items, "color",          _("Display file colors"), SETTING_BOOL, SETTING_STORE_INT, NULL, filecolors, -1, 0);
+  importSetting(&settingIndexShow, &items, "marked",         _("Show marked file info"), SETTING_SELECT, SETTING_STORE_STRING, NULL, markedinfo, markedCount, 0);
+  importSetting(&settingIndexShow, &items, "sortmode",       _("Sorting mode"), SETTING_SELECT, SETTING_STORE_STRING, NULL, sortmodeInt, sortmodeCount, 0);
+  importSetting(&settingIndexShow, &items, "reverse",        _("Reverse sorting order"), SETTING_BOOL, SETTING_STORE_INT, NULL, reverse, -1, 0);
+  importSetting(&settingIndexShow, &items, "timestyle",      _("Time style"), SETTING_SELECT, SETTING_STORE_STRING, NULL, timestyleInt, timestyleCount, 0);
+  importSetting(&settingIndexShow, &items, "hidden",         _("Show hidden files"), SETTING_BOOL, SETTING_STORE_INT, NULL, showhidden, -1, 0);
+  importSetting(&settingIndexShow, &items, "ignore-backups", _("Hide backup files"), SETTING_BOOL, SETTING_STORE_INT, NULL, showbackup, -1, 1);
+  importSetting(&settingIndexShow, &items, "no-sf",          _("Use 3rd party pager over SF"), SETTING_BOOL, SETTING_STORE_INT, NULL, useEnvPager, -1, 0);
   if (uid == 0 || euid == 0){
-    importSetting(&settingIndexShow, &items, "no-danger",      _("Hide danger lines as root"), SETTING_BOOL, NULL, danger, -1, 1);
+    importSetting(&settingIndexShow, &items, "no-danger",      _("Hide danger lines as root"), SETTING_BOOL, SETTING_STORE_INT, NULL, danger, -1, 1);
   }
-  importSetting(&settingIndexShow, &items, "si",             _("Use SI units"), SETTING_BOOL, NULL, si, -1, 0);
-  importSetting(&settingIndexShow, &items, "human-readable", _("Human readable sizes"), SETTING_BOOL, NULL, human, -1, 0);
-  importSetting(&settingIndexShow, &items, "showInodes",     _("Show Inode"), SETTING_BOOL, NULL, showInodes, -1, 0);
-  importSetting(&settingIndexShow, &items, "numericIds",     _("Use numeric UID and GIDs"), SETTING_BOOL, NULL, numericIds, -1, 0);
-  importSetting(&settingIndexShow, &items, "show-on-enter",  _("Enter key acts like Show"), SETTING_BOOL, NULL, enterAsShow, -1, 0);
-  importSetting(&settingIndexShow, &items, "owner",          _("Owner Column"), SETTING_MULTI, NULL, ogavis, ownerCount, 0);
-  importSetting(&settingIndexShow, &items, "context",        _("Show security context of files"), SETTING_BOOL, NULL, showContext, -1, 0);
-  importSetting(&settingIndexShow, &items, "skip-to-first",  _("Skip to the first object"), SETTING_BOOL, NULL, skipToFirstFile, -1, 0);
+  importSetting(&settingIndexShow, &items, "si",             _("Use SI units"), SETTING_BOOL, SETTING_STORE_INT, NULL, si, -1, 0);
+  importSetting(&settingIndexShow, &items, "human-readable", _("Human readable sizes"), SETTING_BOOL, SETTING_STORE_INT, NULL, human, -1, 0);
+  importSetting(&settingIndexShow, &items, "showInodes",     _("Show Inode"), SETTING_BOOL, SETTING_STORE_INT, NULL, showInodes, -1, 0);
+  importSetting(&settingIndexShow, &items, "numericIds",     _("Use numeric UID and GIDs"), SETTING_BOOL, SETTING_STORE_INT, NULL, numericIds, -1, 0);
+  importSetting(&settingIndexShow, &items, "show-on-enter",  _("Enter key acts like Show"), SETTING_BOOL, SETTING_STORE_INT, NULL, enterAsShow, -1, 0);
+  importSetting(&settingIndexShow, &items, "owner",          _("Owner Column"), SETTING_MULTI, SETTING_STORE_GROUP, NULL, ogavis, ownerCount, 0);
+  importSetting(&settingIndexShow, &items, "context",        _("Show security context of files"), SETTING_BOOL, SETTING_STORE_INT, NULL, showContext, -1, 0);
+  importSetting(&settingIndexShow, &items, "skip-to-first",  _("Skip to the first object"), SETTING_BOOL, SETTING_STORE_INT, NULL, skipToFirstFile, -1, 0);
 #ifdef HAVE_ACL_TYPE_EXTENDED
-  importSetting(&settingIndexShow, &items, "showXAttrs",     _("Display extended attribute keys and sizes"), SETTING_BOOL, NULL, showXAttrs, -1, 0);
+  importSetting(&settingIndexShow, &items, "showXAttrs",     _("Display extended attribute keys and sizes"), SETTING_BOOL, SETTING_STORE_INT, NULL, showXAttrs, -1, 0);
 #endif
-  importSetting(&settingIndexShow, &items, "directory",      _("Display only current directory"), SETTING_BOOL, NULL, currentDirOnly, -1, 0);
-  importSetting(&settingIndexShow, &items, "only-dirs",      _("Display only directories"), SETTING_BOOL, NULL, dirOnly, -1, 0);
-  importSetting(&settingIndexShow, &items, "sizeblocks",     _("Show allocated size in blocks"), SETTING_BOOL, NULL, showSizeBlocks, -1, 0);
-  importSetting(&settingIndexShow, &items, "scrollStep",     _("Mouse scroll interval size"), SETTING_SELECT, NULL, showScrollStep - 1, scrollStepCount, 0);
-  importSetting(&settingIndexShow, &items, "defined-editor", _("Override default editor"), SETTING_BOOL, NULL, useDefinedEditor, -1, 0);
-  importSetting(&settingIndexShow, &items, "visualPath",     _("Editor utility program command"), SETTING_FREE, visualPath, -1, -1, 0);
-  importSetting(&settingIndexShow, &items, "defined-pager",  _("Override default pager"), SETTING_BOOL, NULL, useDefinedPager, -1, 0);
-  importSetting(&settingIndexShow, &items, "pagerPath",      _("Pager utility program command"), SETTING_FREE, pagerPath, -1, -1, 0);
+  importSetting(&settingIndexShow, &items, "directory",      _("Display only current directory"), SETTING_BOOL, SETTING_STORE_INT, NULL, currentDirOnly, -1, 0);
+  importSetting(&settingIndexShow, &items, "only-dirs",      _("Display only directories"), SETTING_BOOL, SETTING_STORE_INT, NULL, dirOnly, -1, 0);
+  importSetting(&settingIndexShow, &items, "sizeblocks",     _("Show allocated size in blocks"), SETTING_BOOL, SETTING_STORE_INT, NULL, showSizeBlocks, -1, 0);
+  importSetting(&settingIndexShow, &items, "scrollStep",     _("Mouse scroll interval size"), SETTING_SELECT, SETTING_STORE_INT, NULL, showScrollStep - 1, scrollStepCount, 0);
+  importSetting(&settingIndexShow, &items, "defined-editor", _("Override default editor"), SETTING_BOOL, SETTING_STORE_INT, NULL, useDefinedEditor, -1, 0);
+  importSetting(&settingIndexShow, &items, "visualPath",     _("Editor utility program command"), SETTING_FREE, SETTING_STORE_STRING, visualPath, -1, -1, 0);
+  importSetting(&settingIndexShow, &items, "defined-pager",  _("Override default pager"), SETTING_BOOL, SETTING_STORE_INT, NULL, useDefinedPager, -1, 0);
+  importSetting(&settingIndexShow, &items, "pagerPath",      _("Pager utility program command"), SETTING_FREE, SETTING_STORE_STRING, pagerPath, -1, -1, 0);
 
   populateBool(&binValuesShow, "owner", ogavis, binValuesCount);
 
