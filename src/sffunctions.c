@@ -174,6 +174,32 @@ void saveSfConfig(const char * confFile, settingIndex **settings, t1CharValues *
   config_read_file(&cfg, confFile);
   root = config_root_setting(&cfg);
 
+  // Global Settings
+  group = config_setting_get_member(root, "common");
+
+  if (!group){
+    group = config_setting_add(root, "common", CONFIG_TYPE_GROUP);
+  }
+
+  for (i = 0; i < items; i++){
+    config_setting_remove(group, (*settings)[i].refLabel);
+    storeType = (*settings)[i].storeType;
+    if (storeType == SETTING_STORE_STRING){
+      setting = config_setting_add(group, (*settings)[i].refLabel, CONFIG_TYPE_STRING);
+    } else if (storeType == SETTING_STORE_GROUP){
+      // Groups are handled by subgroups
+    } else {
+      setting = config_setting_add(group, (*settings)[i].refLabel, CONFIG_TYPE_INT);
+    }
+    if ((*settings)[i].type == SETTING_BOOL){
+
+      if (!strcmp((*settings)[i].refLabel, "enable-mouse")){
+        config_setting_set_int(setting, enableMouse);
+      }
+    }
+  }
+
+  // Sf Settings
   group = config_setting_get_member(root, "sf");
 
   if (!group){
@@ -186,7 +212,7 @@ void saveSfConfig(const char * confFile, settingIndex **settings, t1CharValues *
     if (storeType == SETTING_STORE_STRING){
       setting = config_setting_add(group, (*settings)[i].refLabel, CONFIG_TYPE_STRING);
     } else if (storeType == SETTING_STORE_GROUP){
-      // Groupes are handled by subgroups
+      // Groups are handled by subgroups
     } else {
       setting = config_setting_add(group, (*settings)[i].refLabel, CONFIG_TYPE_INT);
     }
@@ -225,8 +251,9 @@ int generateSfSettingsVars()
   addT1CharValue(&charValuesSf, &charValuesCount, &scrollStepCount, "scrollStep", "8");
   addT1CharValue(&charValuesSf, &charValuesCount, &scrollStepCount, "scrollStep", "9");
 
-  importSetting(&settingIndexSf, &items, "wrap",       _("Enable text wrapping"), SETTING_BOOL, SETTING_STORE_INT, NULL, wrap, -1, 0);
-  importSetting(&settingIndexSf, &items, "scrollStep", _("Mouse scroll interval size"), SETTING_SELECT, SETTING_STORE_INT, NULL, sfScrollStep - 1, scrollStepCount, 0);
+  importSetting(&settingIndexSf, &items, "enable-mouse", _("Enable mouse (Global - Requires restart)"), SETTING_BOOL, SETTING_STORE_INT, NULL, enableMouse, -1, 0);
+  importSetting(&settingIndexSf, &items, "wrap",         _("Enable text wrapping"), SETTING_BOOL, SETTING_STORE_INT, NULL, wrap, -1, 0);
+  importSetting(&settingIndexSf, &items, "scrollStep",   _("Mouse scroll interval size"), SETTING_SELECT, SETTING_STORE_INT, NULL, sfScrollStep - 1, scrollStepCount, 0);
 
   totalBinItemsSf = binValuesCount;
   totalCharItemsSf = charValuesCount;
@@ -459,7 +486,9 @@ void applySfSettings(settingIndex **settings, t1CharValues **values, int items, 
 {
   int i, j;
   for (i = 0; i < items; i++){
-    if (!strcmp((*settings)[i].refLabel, "wrap")){
+    if (!strcmp((*settings)[i].refLabel, "enable-mouse")){
+      enableMouse = (*settings)[i].intSetting;
+    } else if (!strcmp((*settings)[i].refLabel, "wrap")){
       wrap = (*settings)[i].intSetting;
     } else if (!strcmp((*settings)[i].refLabel, "scrollStep")){
       for (j = 0; j < valuesCount; j++){

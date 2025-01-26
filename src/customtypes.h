@@ -35,7 +35,7 @@ typedef struct {
   int type;
   int storeType;
   char refLabel[16];
-  wchar_t textLabel[32];
+  wchar_t textLabel[64];
   int invert;
   int intSetting;
   char *charSetting;
