@@ -10,6 +10,7 @@
 #include <wchar.h>
 #include "customtypes.h"
 
+void addSettingSection(char *refLabel, wchar_t *textLabel);
 void settingsAction(char *action, char *application, wchar_t *settingsMenuLabel, settingIndex **settings, t1CharValues **charValues, t2BinValues **binValues, int totalCharItems, int totalBinItems, int totalItems, const char * confFile);
 void addT1CharValue(t1CharValues **values, int *totalItems, int *maxItem, char *refLabel, char *value);
 void addT2BinValue(t2BinValues **values, int *totalItems, int *maxItem, char *refLabel, char *settingLabel, int reset);

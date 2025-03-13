@@ -191,6 +191,8 @@ void addT2BinValue(t2BinValues **values, int *totalItems, int *maxItem, char *re
 
 }
 
+void addSettingSection(char *refLabel, wchar_t *textLabel);
+
 void importSetting(settingIndex **settings, int *items, char *refLabel, char *textLabel, int type, int storeType, char *charSetting, int intSetting, int maxValue, int invert)
 {
   settingIndex *tmp;

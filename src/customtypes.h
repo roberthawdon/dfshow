@@ -32,10 +32,16 @@ typedef struct {
 } menuButton;
 
 typedef struct {
+  char refLabel[16];
+  wchar_t textLabel[64];
+} settingSection;
+
+typedef struct {
   int type;
   int storeType;
   char refLabel[16];
   wchar_t textLabel[64];
+  char section[16];
   int invert;
   int intSetting;
   char *charSetting;
