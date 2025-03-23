@@ -191,7 +191,17 @@ void addT2BinValue(t2BinValues **values, int *totalItems, int *maxItem, char *re
 
 }
 
-void addSettingSection(char *refLabel, wchar_t *textLabel);
+void addSettingSection(char *refLabel, char *textLabel){
+  settingSection *tmp;
+  wchar_t *wideTextLabel;
+
+  wideTextLabel = malloc(sizeof(wchar_t) * (strlen(textLabel) + 1));
+  mbstowcs(wideTextLabel, textLabel, (strlen(textLabel) + 1));
+
+  //TODO
+
+  return;
+}
 
 void importSetting(settingIndex **settings, int *items, char *refLabel, char *textLabel, int type, int storeType, char *charSetting, int intSetting, int maxValue, int invert)
 {

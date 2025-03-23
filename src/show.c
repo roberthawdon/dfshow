@@ -117,6 +117,7 @@ results *ob;
 int segOrder[10] = {COL_MARK, COL_INODE, COL_SIZEBLOCKS, COL_ATTR, COL_HLINK, COL_OWNER, COL_CONTEXT, COL_SIZE, COL_DATE, COL_NAME};
 // int segOrder[10] = {COL_MARK, COL_NAME, COL_SIZE, COL_DATE, COL_ATTR}; // Emulating NET-DF-EDIT's XENIX layout
 
+settingSection *settingSectionsShow;
 settingIndex *settingIndexShow;
 t1CharValues *charValuesShow;
 t2BinValues *binValuesShow;
