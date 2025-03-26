@@ -117,6 +117,7 @@ results *ob;
 int segOrder[10] = {COL_MARK, COL_INODE, COL_SIZEBLOCKS, COL_ATTR, COL_HLINK, COL_OWNER, COL_CONTEXT, COL_SIZE, COL_DATE, COL_NAME};
 // int segOrder[10] = {COL_MARK, COL_NAME, COL_SIZE, COL_DATE, COL_ATTR}; // Emulating NET-DF-EDIT's XENIX layout
 
+
 settingSection *settingSectionsShow;
 settingIndex *settingIndexShow;
 t1CharValues *charValuesShow;
@@ -651,11 +652,18 @@ void applyShowSettings(settingIndex **settings, t1CharValues **values, int items
 int generateShowSettingsVars()
 {
   uid_t uid=getuid(), euid=geteuid();
+  int settingSectionsShowCount = 0;
   int items = 0;
   int markedCount = 0, sortmodeCount = 0, timestyleCount = 0, ownerCount = 0, scrollStepCount = 0;
   int sortmodeInt = 0, timestyleInt = 0;
   int charValuesCount = 0;
   int binValuesCount = 0;
+
+  addSettingSection(&settingSectionsShow, &settingSectionsShowCount, "global",       _("Global Settings"));
+  addSettingSection(&settingSectionsShow, &settingSectionsShowCount, "display",      _("Display Settings"));
+  addSettingSection(&settingSectionsShow, &settingSectionsShowCount, "file",         _("File Settings"));
+  addSettingSection(&settingSectionsShow, &settingSectionsShowCount, "behavior",     _("Behavior Settings"));
+  addSettingSection(&settingSectionsShow, &settingSectionsShowCount, "externalapps", _("External App Settings"));
 
   addT1CharValue(&charValuesShow, &charValuesCount, &markedCount, "marked", _("never"));
   addT1CharValue(&charValuesShow, &charValuesCount, &markedCount, "marked", _("always"));

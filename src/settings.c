@@ -191,14 +191,29 @@ void addT2BinValue(t2BinValues **values, int *totalItems, int *maxItem, char *re
 
 }
 
-void addSettingSection(char *refLabel, char *textLabel){
+void addSettingSection(settingSection **settingSections, int *settingSectionsCount, char *refLabel, char *textLabel){
   settingSection *tmp;
+  int currentItem = *settingSectionsCount;
   wchar_t *wideTextLabel;
 
   wideTextLabel = malloc(sizeof(wchar_t) * (strlen(textLabel) + 1));
   mbstowcs(wideTextLabel, textLabel, (strlen(textLabel) + 1));
 
-  //TODO
+  if (*settingSectionsCount == 0){
+    tmp = malloc(sizeof(settingSection) * 2);
+  } else {
+    tmp = realloc(*settingSections, (currentItem + 1) * (sizeof(settingSection) + 1));
+  }
+
+  if (tmp){
+    *settingSections = tmp;
+  }
+
+  snprintf((*settingSections)[currentItem].refLabel, 16, "%s", refLabel);
+  swprintf((*settingSections)[currentItem].textLabel, 64, L"%ls", wideTextLabel);
+  free(wideTextLabel);
+
+  ++*settingSectionsCount;
 
   return;
 }
@@ -237,6 +252,8 @@ void importSetting(settingIndex **settings, int *items, char *refLabel, char *te
   }
 
   ++*items;
+
+  return;
 }
 
 int intSettingValue(int *setting, int newValue){
