@@ -696,37 +696,37 @@ int generateShowSettingsVars()
   sortmodeInt = textValueLookup(&charValuesShow, &charValuesCount, "sortmode", sortmode);
   timestyleInt = textValueLookup(&charValuesShow, &charValuesCount, "timestyle", timestyle);
 
-  importSetting(&settingIndexShow, &items, "enable-mouse",   _("Enable mouse (Global - Requires restart)"), SETTING_BOOL, SETTING_STORE_INT, NULL, enableMouse, -1, 0);
-  importSetting(&settingIndexShow, &items, "color",          _("Display file colors"), SETTING_BOOL, SETTING_STORE_INT, NULL, filecolors, -1, 0);
-  importSetting(&settingIndexShow, &items, "marked",         _("Show marked file info"), SETTING_SELECT, SETTING_STORE_STRING, NULL, markedinfo, markedCount, 0);
-  importSetting(&settingIndexShow, &items, "sortmode",       _("Sorting mode"), SETTING_SELECT, SETTING_STORE_STRING, NULL, sortmodeInt, sortmodeCount, 0);
-  importSetting(&settingIndexShow, &items, "reverse",        _("Reverse sorting order"), SETTING_BOOL, SETTING_STORE_INT, NULL, reverse, -1, 0);
-  importSetting(&settingIndexShow, &items, "timestyle",      _("Time style"), SETTING_SELECT, SETTING_STORE_STRING, NULL, timestyleInt, timestyleCount, 0);
-  importSetting(&settingIndexShow, &items, "hidden",         _("Show hidden files"), SETTING_BOOL, SETTING_STORE_INT, NULL, showhidden, -1, 0);
-  importSetting(&settingIndexShow, &items, "ignore-backups", _("Hide backup files"), SETTING_BOOL, SETTING_STORE_INT, NULL, showbackup, -1, 1);
-  importSetting(&settingIndexShow, &items, "no-sf",          _("Use 3rd party pager over SF"), SETTING_BOOL, SETTING_STORE_INT, NULL, useEnvPager, -1, 0);
+  importSetting(&settingIndexShow, &items, "general",      "enable-mouse",   _("Enable mouse (Global - Requires restart)"), SETTING_BOOL, SETTING_STORE_INT, NULL, enableMouse, -1, 0);
+  importSetting(&settingIndexShow, &items, "display",      "color",          _("Display file colors"), SETTING_BOOL, SETTING_STORE_INT, NULL, filecolors, -1, 0);
+  importSetting(&settingIndexShow, &items, "display",      "marked",         _("Show marked file info"), SETTING_SELECT, SETTING_STORE_STRING, NULL, markedinfo, markedCount, 0);
+  importSetting(&settingIndexShow, &items, "display",      "sortmode",       _("Sorting mode"), SETTING_SELECT, SETTING_STORE_STRING, NULL, sortmodeInt, sortmodeCount, 0);
+  importSetting(&settingIndexShow, &items, "display",      "reverse",        _("Reverse sorting order"), SETTING_BOOL, SETTING_STORE_INT, NULL, reverse, -1, 0);
+  importSetting(&settingIndexShow, &items, "display",      "timestyle",      _("Time style"), SETTING_SELECT, SETTING_STORE_STRING, NULL, timestyleInt, timestyleCount, 0);
+  importSetting(&settingIndexShow, &items, "file",         "hidden",         _("Show hidden files"), SETTING_BOOL, SETTING_STORE_INT, NULL, showhidden, -1, 0);
+  importSetting(&settingIndexShow, &items, "file",         "ignore-backups", _("Hide backup files"), SETTING_BOOL, SETTING_STORE_INT, NULL, showbackup, -1, 1);
+  importSetting(&settingIndexShow, &items, "behavior",     "no-sf",          _("Use 3rd party pager over SF"), SETTING_BOOL, SETTING_STORE_INT, NULL, useEnvPager, -1, 0);
   if (uid == 0 || euid == 0){
-    importSetting(&settingIndexShow, &items, "no-danger",      _("Hide danger lines as root"), SETTING_BOOL, SETTING_STORE_INT, NULL, danger, -1, 1);
+    importSetting(&settingIndexShow, &items, "display",      "no-danger",      _("Hide danger lines as root"), SETTING_BOOL, SETTING_STORE_INT, NULL, danger, -1, 1);
   }
-  importSetting(&settingIndexShow, &items, "si",             _("Use SI units"), SETTING_BOOL, SETTING_STORE_INT, NULL, si, -1, 0);
-  importSetting(&settingIndexShow, &items, "human-readable", _("Human readable sizes"), SETTING_BOOL, SETTING_STORE_INT, NULL, human, -1, 0);
-  importSetting(&settingIndexShow, &items, "showInodes",     _("Show Inode"), SETTING_BOOL, SETTING_STORE_INT, NULL, showInodes, -1, 0);
-  importSetting(&settingIndexShow, &items, "numericIds",     _("Use numeric UID and GIDs"), SETTING_BOOL, SETTING_STORE_INT, NULL, numericIds, -1, 0);
-  importSetting(&settingIndexShow, &items, "show-on-enter",  _("Enter key acts like Show"), SETTING_BOOL, SETTING_STORE_INT, NULL, enterAsShow, -1, 0);
-  importSetting(&settingIndexShow, &items, "owner",          _("Owner Column"), SETTING_MULTI, SETTING_STORE_GROUP, NULL, ogavis, ownerCount, 0);
-  importSetting(&settingIndexShow, &items, "context",        _("Show security context of files"), SETTING_BOOL, SETTING_STORE_INT, NULL, showContext, -1, 0);
-  importSetting(&settingIndexShow, &items, "skip-to-first",  _("Skip to the first object"), SETTING_BOOL, SETTING_STORE_INT, NULL, skipToFirstFile, -1, 0);
+  importSetting(&settingIndexShow, &items, "display",      "si",             _("Use SI units"), SETTING_BOOL, SETTING_STORE_INT, NULL, si, -1, 0);
+  importSetting(&settingIndexShow, &items, "display",      "human-readable", _("Human readable sizes"), SETTING_BOOL, SETTING_STORE_INT, NULL, human, -1, 0);
+  importSetting(&settingIndexShow, &items, "display",      "showInodes",     _("Show Inode"), SETTING_BOOL, SETTING_STORE_INT, NULL, showInodes, -1, 0);
+  importSetting(&settingIndexShow, &items, "display",      "numericIds",     _("Use numeric UID and GIDs"), SETTING_BOOL, SETTING_STORE_INT, NULL, numericIds, -1, 0);
+  importSetting(&settingIndexShow, &items, "behavior",     "show-on-enter",  _("Enter key acts like Show"), SETTING_BOOL, SETTING_STORE_INT, NULL, enterAsShow, -1, 0);
+  importSetting(&settingIndexShow, &items, "display",      "owner",          _("Owner Column"), SETTING_MULTI, SETTING_STORE_GROUP, NULL, ogavis, ownerCount, 0);
+  importSetting(&settingIndexShow, &items, "display",      "context",        _("Show security context of files"), SETTING_BOOL, SETTING_STORE_INT, NULL, showContext, -1, 0);
+  importSetting(&settingIndexShow, &items, "behavior",     "skip-to-first",  _("Skip to the first object"), SETTING_BOOL, SETTING_STORE_INT, NULL, skipToFirstFile, -1, 0);
 #ifdef HAVE_ACL_TYPE_EXTENDED
-  importSetting(&settingIndexShow, &items, "showXAttrs",     _("Display extended attribute keys and sizes"), SETTING_BOOL, SETTING_STORE_INT, NULL, showXAttrs, -1, 0);
+  importSetting(&settingIndexShow, &items, "display",      "showXAttrs",     _("Display extended attribute keys and sizes"), SETTING_BOOL, SETTING_STORE_INT, NULL, showXAttrs, -1, 0);
 #endif
-  importSetting(&settingIndexShow, &items, "directory",      _("Display only current directory"), SETTING_BOOL, SETTING_STORE_INT, NULL, currentDirOnly, -1, 0);
-  importSetting(&settingIndexShow, &items, "only-dirs",      _("Display only directories"), SETTING_BOOL, SETTING_STORE_INT, NULL, dirOnly, -1, 0);
-  importSetting(&settingIndexShow, &items, "sizeblocks",     _("Show allocated size in blocks"), SETTING_BOOL, SETTING_STORE_INT, NULL, showSizeBlocks, -1, 0);
-  importSetting(&settingIndexShow, &items, "scrollStep",     _("Mouse scroll interval size"), SETTING_SELECT, SETTING_STORE_INT, NULL, showScrollStep - 1, scrollStepCount, 0);
-  importSetting(&settingIndexShow, &items, "defined-editor", _("Override default editor"), SETTING_BOOL, SETTING_STORE_INT, NULL, useDefinedEditor, -1, 0);
-  importSetting(&settingIndexShow, &items, "visualPath",     _("Editor utility program command"), SETTING_FREE, SETTING_STORE_STRING, visualPath, -1, -1, 0);
-  importSetting(&settingIndexShow, &items, "defined-pager",  _("Override default pager"), SETTING_BOOL, SETTING_STORE_INT, NULL, useDefinedPager, -1, 0);
-  importSetting(&settingIndexShow, &items, "pagerPath",      _("Pager utility program command"), SETTING_FREE, SETTING_STORE_STRING, pagerPath, -1, -1, 0);
+  importSetting(&settingIndexShow, &items, "display",      "directory",      _("Display only current directory"), SETTING_BOOL, SETTING_STORE_INT, NULL, currentDirOnly, -1, 0);
+  importSetting(&settingIndexShow, &items, "display",      "only-dirs",      _("Display only directories"), SETTING_BOOL, SETTING_STORE_INT, NULL, dirOnly, -1, 0);
+  importSetting(&settingIndexShow, &items, "display",      "sizeblocks",     _("Show allocated size in blocks"), SETTING_BOOL, SETTING_STORE_INT, NULL, showSizeBlocks, -1, 0);
+  importSetting(&settingIndexShow, &items, "behavior",     "scrollStep",     _("Mouse scroll interval size"), SETTING_SELECT, SETTING_STORE_INT, NULL, showScrollStep - 1, scrollStepCount, 0);
+  importSetting(&settingIndexShow, &items, "externalapps", "defined-editor", _("Override default editor"), SETTING_BOOL, SETTING_STORE_INT, NULL, useDefinedEditor, -1, 0);
+  importSetting(&settingIndexShow, &items, "externalapps", "visualPath",     _("Editor utility program command"), SETTING_FREE, SETTING_STORE_STRING, visualPath, -1, -1, 0);
+  importSetting(&settingIndexShow, &items, "externalapps", "defined-pager",  _("Override default pager"), SETTING_BOOL, SETTING_STORE_INT, NULL, useDefinedPager, -1, 0);
+  importSetting(&settingIndexShow, &items, "externalapps", "pagerPath",      _("Pager utility program command"), SETTING_FREE, SETTING_STORE_STRING, pagerPath, -1, -1, 0);
 
   populateBool(&binValuesShow, "owner", ogavis, binValuesCount);
 

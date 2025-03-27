@@ -40,6 +40,7 @@ typedef struct {
   int type;
   int storeType;
   char refLabel[16];
+  char sectionRef[16];
   wchar_t textLabel[64];
   char section[16];
   int invert;

@@ -218,7 +218,7 @@ void addSettingSection(settingSection **settingSections, int *settingSectionsCou
   return;
 }
 
-void importSetting(settingIndex **settings, int *items, char *refLabel, char *textLabel, int type, int storeType, char *charSetting, int intSetting, int maxValue, int invert)
+void importSetting(settingIndex **settings, int *items, char *sectionRef, char *refLabel, char *textLabel, int type, int storeType, char *charSetting, int intSetting, int maxValue, int invert)
 {
   settingIndex *tmp;
   int currentItem = *items;
