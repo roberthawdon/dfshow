@@ -70,6 +70,7 @@ char regexinput[1024];
 long int *filePos;
 
 settingSection *settingSectionsSf;
+int settingSectionsSfCount = 0;
 settingIndex *settingIndexSf;
 t1CharValues *charValuesSf;
 t2BinValues *binValuesSf;
@@ -238,7 +239,6 @@ void saveSfConfig(const char * confFile, settingIndex **settings, t1CharValues *
 
 int generateSfSettingsVars()
 {
-  int settingSectionsSfCount = 0;
   int items = 0;
   int charValuesCount = 0, scrollStepCount = 0;
   int binValuesCount = 0;
@@ -256,7 +256,7 @@ int generateSfSettingsVars()
   addT1CharValue(&charValuesSf, &charValuesCount, &scrollStepCount, "scrollStep", "8");
   addT1CharValue(&charValuesSf, &charValuesCount, &scrollStepCount, "scrollStep", "9");
 
-  importSetting(&settingIndexSf, &items, "general",      "enable-mouse", _("Enable mouse (Global - Requires restart)"), SETTING_BOOL, SETTING_STORE_INT, NULL, enableMouse, -1, 0);
+  importSetting(&settingIndexSf, &items, "global",       "enable-mouse", _("Enable mouse (Requires restart)"), SETTING_BOOL, SETTING_STORE_INT, NULL, enableMouse, -1, 0);
   importSetting(&settingIndexSf, &items, "behavior",     "wrap",         _("Enable text wrapping"), SETTING_BOOL, SETTING_STORE_INT, NULL, wrap, -1, 0);
   importSetting(&settingIndexSf, &items, "behavior",     "scrollStep",   _("Mouse scroll interval size"), SETTING_SELECT, SETTING_STORE_INT, NULL, sfScrollStep - 1, scrollStepCount, 0);
 

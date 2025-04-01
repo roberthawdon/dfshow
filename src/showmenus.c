@@ -88,6 +88,9 @@ extern int abortinput;
 
 extern int s;
 
+extern settingSection *settingSectionsShow;
+extern int settingSectionsShowCount;
+
 extern settingIndex *settingIndexShow;
 extern t1CharValues *charValuesShow;
 extern t2BinValues *binValuesShow;
@@ -2010,7 +2013,7 @@ void functionAction(const char *refLabel){
       global_menu_inputs();
     }
   } else if (!strcmp(refLabel, "g_config")){
-    settingsMenuView(showSettingsMenuLabel, showSettingsMenuSize, showSettingsMenu, showSettingsMenuButtons, &settingIndexShow, &charValuesShow, &binValuesShow, totalCharItemsShow, totalBinItemsShow, generateShowSettingsVars(), "show");
+    settingsMenuView(showSettingsMenuLabel, showSettingsMenuSize, showSettingsMenu, showSettingsMenuButtons, &settingSectionsShow, settingSectionsShowCount, &settingIndexShow, &charValuesShow, &binValuesShow, totalCharItemsShow, totalBinItemsShow, generateShowSettingsVars(), "show");
     if (historyref == 0){
       clear();
       global_menu_inputs();

@@ -119,6 +119,7 @@ int segOrder[10] = {COL_MARK, COL_INODE, COL_SIZEBLOCKS, COL_ATTR, COL_HLINK, CO
 
 
 settingSection *settingSectionsShow;
+int settingSectionsShowCount = 0;
 settingIndex *settingIndexShow;
 t1CharValues *charValuesShow;
 t2BinValues *binValuesShow;
@@ -652,7 +653,6 @@ void applyShowSettings(settingIndex **settings, t1CharValues **values, int items
 int generateShowSettingsVars()
 {
   uid_t uid=getuid(), euid=geteuid();
-  int settingSectionsShowCount = 0;
   int items = 0;
   int markedCount = 0, sortmodeCount = 0, timestyleCount = 0, ownerCount = 0, scrollStepCount = 0;
   int sortmodeInt = 0, timestyleInt = 0;
@@ -696,7 +696,7 @@ int generateShowSettingsVars()
   sortmodeInt = textValueLookup(&charValuesShow, &charValuesCount, "sortmode", sortmode);
   timestyleInt = textValueLookup(&charValuesShow, &charValuesCount, "timestyle", timestyle);
 
-  importSetting(&settingIndexShow, &items, "general",      "enable-mouse",   _("Enable mouse (Global - Requires restart)"), SETTING_BOOL, SETTING_STORE_INT, NULL, enableMouse, -1, 0);
+  importSetting(&settingIndexShow, &items, "global",       "enable-mouse",   _("Enable mouse (Requires restart)"), SETTING_BOOL, SETTING_STORE_INT, NULL, enableMouse, -1, 0);
   importSetting(&settingIndexShow, &items, "display",      "color",          _("Display file colors"), SETTING_BOOL, SETTING_STORE_INT, NULL, filecolors, -1, 0);
   importSetting(&settingIndexShow, &items, "display",      "marked",         _("Show marked file info"), SETTING_SELECT, SETTING_STORE_STRING, NULL, markedinfo, markedCount, 0);
   importSetting(&settingIndexShow, &items, "display",      "sortmode",       _("Sorting mode"), SETTING_SELECT, SETTING_STORE_STRING, NULL, sortmodeInt, sortmodeCount, 0);
@@ -1390,14 +1390,14 @@ Valid arguments are:\n\
     mouseinterval(0);
   }
 
-  showMenuItems = generateShowSettingsVars();
+  // showMenuItems = generateShowSettingsVars();
 
   if (launchThemeEditor == 1){
     themeBuilder();
     theme_menu_inputs();
     exittoshell();
   } else if (launchSettingsMenu == 1) {
-    settingsMenuView(showSettingsMenuLabel, showSettingsMenuSize, showSettingsMenu, showSettingsMenuButtons, &settingIndexShow, &charValuesShow, &binValuesShow, totalCharItemsShow, totalBinItemsShow, showMenuItems, "show");
+    settingsMenuView(showSettingsMenuLabel, showSettingsMenuSize, showSettingsMenu, showSettingsMenuButtons, &settingSectionsShow, settingSectionsShowCount, &settingIndexShow, &charValuesShow, &binValuesShow, totalCharItemsShow, totalBinItemsShow, generateShowSettingsVars(), "show");
     exittoshell();
   } else {
     // Remaining arguments passed as working directory

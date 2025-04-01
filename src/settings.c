@@ -241,6 +241,7 @@ void importSetting(settingIndex **settings, int *items, char *sectionRef, char *
   (*settings)[currentItem].storeType = storeType;
   snprintf((*settings)[currentItem].refLabel, 16, "%s", refLabel);
   swprintf((*settings)[currentItem].textLabel, 64, L"%ls", wideTextLabel);
+  snprintf((*settings)[currentItem].sectionRef, 16, "%s", sectionRef);
   free(wideTextLabel);
   (*settings)[currentItem].intSetting = intSetting;
   (*settings)[currentItem].maxValue = maxValue;
@@ -463,10 +464,12 @@ int settingButtonAction(const char * refLabel, settingIndex **settings, int menu
   return output;
 }
 
-void settingsMenuView(wchar_t *settingsMenuLabel, int settingsMenuSize, menuDef *settingsMenu, menuButton *settingsMenuButtons, settingIndex **settings, t1CharValues **charValues, t2BinValues **binValues, int totalCharItems, int totalBinItems, int totalItems, char *application)
+void settingsMenuView(wchar_t *settingsMenuLabel, int settingsMenuSize, menuDef *settingsMenu, menuButton *settingsMenuButtons, settingSection **settingSections, int settingSectionSize, settingIndex **settings, t1CharValues **charValues, t2BinValues **binValues, int totalCharItems, int totalBinItems, int totalItems, char *application)
 {
   viewMode = 3;
   int count = 0;
+  int countSection = 0;
+  int settingPosition = 0;
   int x = 2;
   int y = 3;
   int markedCount, sortmodeCount, timestyleCount, ownerCount;
@@ -486,15 +489,26 @@ void settingsMenuView(wchar_t *settingsMenuLabel, int settingsMenuSize, menuDef 
 
   while(1)
     {
-      for (count = 0; count < totalItems; count++){
-      // printSetting(2 + count, 3, settings, charValues, binValues, count, totalCharItems, totalBinItems, settings[count]->type, settings[count]->invert);
-      printSetting(2 + count, 3, settings, charValues, binValues, count, totalCharItems, totalBinItems, (*settings)[count].type, (*settings)[count].invert);
-      b = wcslen((*settings)[count].textLabel);
-      snprintf(settingButtons[count].refLabel, 16, "%s", (*settings)[count].refLabel);
-      settingButtons[count].topX = 3;
-      settingButtons[count].bottomX = 7 + b; // Including check mark
-      settingButtons[count].topY = settingButtons[count].bottomY = count + 2;
+      for (countSection = 0; countSection < settingSectionSize; countSection++){
+        // To Do
+        mvprintw(2 + settingPosition, 3, "%ls", (*settingSections)[countSection].textLabel);
+        settingPosition++;
+        for (count = 0; count < totalItems; count++){
+          if (!strcmp((*settingSections)[countSection].refLabel, (*settings)[count].sectionRef)){
+            // printSetting(2 + count, 3, settings, charValues, binValues, count, totalCharItems, totalBinItems, settings[count]->type, settings[count]->invert);
+            printSetting(2 + settingPosition, 7, settings, charValues, binValues, count, totalCharItems, totalBinItems, (*settings)[count].type, (*settings)[count].invert);
+            settingPosition++;
+            b = wcslen((*settings)[count].textLabel);
+            snprintf(settingButtons[count].refLabel, 16, "%s", (*settings)[count].refLabel);
+            settingButtons[count].topX = 3;
+            settingButtons[count].bottomX = 7 + b; // Including check mark
+            settingButtons[count].topY = settingButtons[count].bottomY = count + 2;
+          }
+        }
+        settingPosition++;
       }
+
+      settingPosition = 0;
 
       move(x + settingsPos, y + 1);
       *pc = getch10th();

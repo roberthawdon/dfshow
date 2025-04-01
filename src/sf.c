@@ -73,6 +73,9 @@ extern char fileName[4096];
 
 int resized = 0;
 
+extern settingSection *settingSectionsSf;
+extern int settingSectionsSfCount;
+
 extern settingIndex *settingIndexSf;
 extern t1CharValues *charValuesSf;
 extern t2BinValues *binValuesSf;
@@ -266,7 +269,7 @@ Valid arguments are:\n\
   }
 
   if (launchSettingsMenu == 1) {
-    settingsMenuView(sfSettingsMenuLabel, sfSettingsMenuSize, sfSettingsMenu, sfSettingsMenuButtons, &settingIndexSf, &charValuesSf, &binValuesSf, totalCharItemsSf, totalBinItemsSf, generateSfSettingsVars(), "sf");
+    settingsMenuView(sfSettingsMenuLabel, sfSettingsMenuSize, sfSettingsMenu, sfSettingsMenuButtons, &settingSectionsSf, settingSectionsSfCount, &settingIndexSf, &charValuesSf, &binValuesSf, totalCharItemsSf, totalBinItemsSf, generateSfSettingsVars(), "sf");
   } else {
     if (optind < argc){
       snprintf(fileName, 4096, "%s", argv[optind]);
