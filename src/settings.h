@@ -23,3 +23,4 @@ void printSetting(int line, int col, settingIndex **settings, t1CharValues **val
 int textValueLookup(t1CharValues **values, int *items, char *refLabel, char *value);
 int settingButtonAction(const char * refLabel, settingIndex **settings, int menuItems);
 void settingsMenuView(wchar_t *settingsMenuLabel, int settingsMenuSize, menuDef *settingsMenu, menuButton *settingsMenuButtons, settingSection **settingSections, int settingSectionSize, settingIndex **settings, t1CharValues **charValues, t2BinValues **binValues, int totalCharItems, int totalBinItems, int totalItems, char *application);
+int settingIndexLookup(settingIndex **settings, int settingsSize, const char * refLabel);

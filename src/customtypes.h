@@ -33,6 +33,11 @@ typedef struct {
 
 typedef struct {
   char refLabel[16];
+  int linePos;
+} settingsOrder;
+
+typedef struct {
+  char refLabel[16];
   wchar_t textLabel[64];
 } settingSection;
 

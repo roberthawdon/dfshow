@@ -464,6 +464,19 @@ int settingButtonAction(const char * refLabel, settingIndex **settings, int menu
   return output;
 }
 
+int settingIndexLookup(settingIndex **settings, int settingsSize, const char * refLabel){
+  int i;
+  int count = -1;
+
+  for (i = 0; i < settingsSize; i++){
+    if (!strcmp((*settings)[i].refLabel, refLabel)){
+      return(i);
+    }
+  }
+
+  return(count);
+}
+
 void settingsMenuView(wchar_t *settingsMenuLabel, int settingsMenuSize, menuDef *settingsMenu, menuButton *settingsMenuButtons, settingSection **settingSections, int settingSectionSize, settingIndex **settings, t1CharValues **charValues, t2BinValues **binValues, int totalCharItems, int totalBinItems, int totalItems, char *application)
 {
   viewMode = 3;
@@ -471,12 +484,13 @@ void settingsMenuView(wchar_t *settingsMenuLabel, int settingsMenuSize, menuDef 
   int countSection = 0;
   int settingPosition = 0;
   int x = 2;
-  int y = 3;
+  int y = 7;
   int markedCount, sortmodeCount, timestyleCount, ownerCount;
   int sortmodeInt, timestyleInt;
   int e;
   int b;
   char charTempValue[1024];
+  settingsOrder order[totalItems];
 
   clear();
   wPrintMenu(0,0,settingsMenuLabel);
@@ -496,11 +510,13 @@ void settingsMenuView(wchar_t *settingsMenuLabel, int settingsMenuSize, menuDef 
         for (count = 0; count < totalItems; count++){
           if (!strcmp((*settingSections)[countSection].refLabel, (*settings)[count].sectionRef)){
             // printSetting(2 + count, 3, settings, charValues, binValues, count, totalCharItems, totalBinItems, settings[count]->type, settings[count]->invert);
-            printSetting(2 + settingPosition, 7, settings, charValues, binValues, count, totalCharItems, totalBinItems, (*settings)[count].type, (*settings)[count].invert);
+            order[count].linePos = settingPosition;
+            snprintf(order[count].refLabel, 16, "%s", (*settings)[count].refLabel);
+            printSetting(2 + settingPosition, y, settings, charValues, binValues, count, totalCharItems, totalBinItems, (*settings)[count].type, (*settings)[count].invert);
             b = wcslen((*settings)[count].textLabel);
             snprintf(settingButtons[count].refLabel, 16, "%s", (*settings)[count].refLabel);
-            settingButtons[count].topX = 3;
-            settingButtons[count].bottomX = 7 + b; // Including check mark
+            settingButtons[count].topX = y;
+            settingButtons[count].bottomX = 3 + y + b; // Including check mark
             settingButtons[count].topY = settingButtons[count].bottomY = settingPosition + 2;
             settingPosition++;
           }
@@ -593,7 +609,7 @@ void settingsMenuView(wchar_t *settingsMenuLabel, int settingsMenuSize, menuDef 
         } else if ((*settings)[settingsPos].type == SETTING_FREE){
           if (*pc == 32 || *pc == 261) {
             settingsFreePos = 0;
-            move(x + settingsPos, y + wcslen((*settings)[settingsPos].textLabel) + 6);
+            move(x + order[settingsPos].linePos, y + wcslen((*settings)[settingsPos].textLabel) + 6);
             e = readline(charTempValue, 1024, (*settings)[settingsPos].charSetting);
             if (strcmp(charTempValue, "")){
               free((*settings)[settingsPos].charSetting);
