@@ -464,15 +464,27 @@ int settingButtonAction(const char * refLabel, settingIndex **settings, int menu
   return output;
 }
 
-int settingIndexLookup(settingIndex **settings, int settingsSize, const char * refLabel){
-  int i;
+int settingIndexLookup(settingIndex **settings, settingsOrder *order, int settingsSize, const char * refLabel, const int index){
+  int i, e;
   int count = -1;
 
-  for (i = 0; i < settingsSize; i++){
-    if (!strcmp((*settings)[i].refLabel, refLabel)){
-      return(i);
+  if (refLabel != NULL) {
+    for (i = 0; i < settingsSize; i++){
+      if (!strcmp((*settings)[i].refLabel, refLabel)){
+        return(i);
+      }
     }
+  } else if ( index > -1 ){
+    for (i = 0; i < settingsSize; i++){
+      for (e = 0; e < settingsSize; e++){
+        if (!strcmp((*settings)[i].refLabel, (order)[e].refLabel)){
+          return(i);
+        }
+      }
+    }
+
   }
+
 
   return(count);
 }
@@ -483,6 +495,7 @@ void settingsMenuView(wchar_t *settingsMenuLabel, int settingsMenuSize, menuDef 
   int count = 0;
   int countSection = 0;
   int settingPosition = 0;
+  int orderPos = 0;
   int x = 2;
   int y = 7;
   int markedCount, sortmodeCount, timestyleCount, ownerCount;
