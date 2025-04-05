@@ -353,7 +353,6 @@ void show_file_inputs()
         }
         updateView();
       } else if (*pc == menuHotkeyLookup(sfFileMenu, "f_config", sfFileMenuSize)){
-        sfMenuItems = generateSfSettingsVars(); // This might need moving
         settingsMenuView(sfSettingsMenuLabel, sfSettingsMenuSize, sfSettingsMenu, sfSettingsMenuButtons, &settingSectionsSf, settingSectionsSfCount, &settingIndexSf, &charValuesSf, &binValuesSf, totalCharItemsSf, totalBinItemsSf, generateSfSettingsVars(), "sf");
         wPrintMenu(0, 0, sfFileMenuLabel);
         if(wrap){
