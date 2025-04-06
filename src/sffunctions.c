@@ -243,6 +243,8 @@ int generateSfSettingsVars()
   int charValuesCount = 0, scrollStepCount = 0;
   int binValuesCount = 0;
 
+  settingSectionsSfCount = 0;
+
   addSettingSection(&settingSectionsSf, &settingSectionsSfCount, "global",       _("Global Settings"));
   addSettingSection(&settingSectionsSf, &settingSectionsSfCount, "behavior",     _("Behavior Settings"));
 

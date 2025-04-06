@@ -659,6 +659,8 @@ int generateShowSettingsVars()
   int charValuesCount = 0;
   int binValuesCount = 0;
 
+  settingSectionsShowCount = 0;
+
   addSettingSection(&settingSectionsShow, &settingSectionsShowCount, "global",       _("Global Settings"));
   addSettingSection(&settingSectionsShow, &settingSectionsShowCount, "display",      _("Display Settings"));
   addSettingSection(&settingSectionsShow, &settingSectionsShowCount, "file",         _("File Settings"));
