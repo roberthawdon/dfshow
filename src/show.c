@@ -119,7 +119,7 @@ int segOrder[10] = {COL_MARK, COL_INODE, COL_SIZEBLOCKS, COL_ATTR, COL_HLINK, CO
 
 
 settingSection *settingSectionsShow;
-int settingSectionsShowCount = 0;
+int settingSectionsShowCount;
 settingIndex *settingIndexShow;
 t1CharValues *charValuesShow;
 t2BinValues *binValuesShow;
@@ -1392,7 +1392,7 @@ Valid arguments are:\n\
     mouseinterval(0);
   }
 
-  // showMenuItems = generateShowSettingsVars();
+  showMenuItems = generateShowSettingsVars();
 
   if (launchThemeEditor == 1){
     themeBuilder();
