@@ -519,6 +519,7 @@ void settingsMenuView(wchar_t *settingsMenuLabel, int settingsMenuSize, menuDef 
   int sortmodeInt, timestyleInt;
   int e;
   int b;
+  int topPos = 0;
   char charTempValue[1024];
   settingsOrder order[totalItems];
 
@@ -533,16 +534,17 @@ void settingsMenuView(wchar_t *settingsMenuLabel, int settingsMenuSize, menuDef 
 
   while(1)
     {
+      settingPosition = 2;
       for (countSection = 0; countSection < settingSectionSize; countSection++){
         // To Do
-        mvprintw(2 + settingPosition, 3, "%ls", (*settingSections)[countSection].textLabel);
+        mvprintw(settingPosition, 3, "%ls", (*settingSections)[countSection].textLabel);
         settingPosition++;
         for (count = 0; count < totalItems; count++){
           if (!strcmp((*settingSections)[countSection].refLabel, (*settings)[count].sectionRef)){
             // printSetting(2 + count, 3, settings, charValues, binValues, count, totalCharItems, totalBinItems, settings[count]->type, settings[count]->invert);
             order[orderCount].linePos = settingPosition;
             snprintf(order[orderCount].refLabel, 16, "%s", (*settings)[count].refLabel);
-            printSetting(2 + settingPosition, y, settings, charValues, binValues, count, totalCharItems, totalBinItems, (*settings)[count].type, (*settings)[count].invert);
+            printSetting(settingPosition, y, settings, charValues, binValues, count, totalCharItems, totalBinItems, (*settings)[count].type, (*settings)[count].invert);
             b = wcslen((*settings)[count].textLabel);
             snprintf(settingButtons[count].refLabel, 16, "%s", (*settings)[count].refLabel);
             settingButtons[count].topX = y;

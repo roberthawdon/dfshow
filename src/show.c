@@ -915,8 +915,8 @@ int setBlockSize(const char * arg){
 
 void refreshScreenShow()
 {
-  unloadShowMenuLabels();
-  refreshShowMenuLabels();
+  // unloadShowMenuLabels();
+  // refreshShowMenuLabels();
   switch(viewMode)
     {
     case 0: // Directory View

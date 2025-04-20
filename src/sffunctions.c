@@ -274,8 +274,8 @@ int generateSfSettingsVars()
 
 void refreshScreenSf()
 {
-  unloadSfMenuLabels();
-  refreshSfMenuLabels();
+  // unloadSfMenuLabels();
+  // refreshSfMenuLabels();
   switch(viewMode)
     {
     case 3: // Settings View
