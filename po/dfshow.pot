@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: dfshow 1.0.0-b.1\n"
 "Report-Msgid-Bugs-To: https://github.com/roberthawdon/dfshow/issues\n"
-"POT-Creation-Date: 2025-04-06 01:08+0100\n"
+"POT-Creation-Date: 2025-04-23 02:45+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -235,7 +235,7 @@ msgstr ""
 msgid "!Stop"
 msgstr ""
 
-#: src//settings.c:598
+#: src//settings.c:614
 msgid "Settings saved."
 msgstr ""
 
@@ -383,7 +383,7 @@ msgstr ""
 msgid "Position relative (<+num> || <-num>) or absolute (<num>):"
 msgstr ""
 
-#: src//sfmenus.c:426
+#: src//sfmenus.c:427
 msgid "Show File - Enter pathname:"
 msgstr ""
 

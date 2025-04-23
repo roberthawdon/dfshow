@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: dfshow 0.10.0\n"
 "Report-Msgid-Bugs-To: https://github.com/roberthawdon/dfshow/issues\n"
-"POT-Creation-Date: 2025-04-06 01:08+0100\n"
+"POT-Creation-Date: 2025-04-23 02:45+0100\n"
 "PO-Revision-Date: 2023-05-24 05:19+0100\n"
 "Last-Translator: Robert Hawdon <git@robertianhawdon.me.uk>\n"
 "Language-Team: English (British) <(nothing)>\n"
@@ -241,7 +241,7 @@ msgstr ""
 msgid "!Stop"
 msgstr ""
 
-#: src//settings.c:598
+#: src//settings.c:614
 msgid "Settings saved."
 msgstr "Settings saved."
 
@@ -398,7 +398,7 @@ msgstr "No further references to '%s' found."
 msgid "Position relative (<+num> || <-num>) or absolute (<num>):"
 msgstr "Position relative (<+num> || <-num>) or absolute (<num>):"
 
-#: src//sfmenus.c:426
+#: src//sfmenus.c:427
 msgid "Show File - Enter pathname:"
 msgstr "Show File - Enter pathname:"
 
