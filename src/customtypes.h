@@ -34,6 +34,7 @@ typedef struct {
 typedef struct {
   char refLabel[16];
   int linePos;
+  int screenPos;
 } settingsOrder;
 
 typedef struct {
