@@ -630,9 +630,6 @@ void settingsMenuView(wchar_t *settingsMenuLabel, int settingsMenuSize, menuDef 
           settingsBinPos = -1;
           orderPos++;
           if (order[orderPos].screenPos > (LINES - 1)){
-            // endwin();
-            // printf("TRIGGERED - %i - %s\n", order[orderPos].screenPos - topPos, order[orderPos].refLabel);
-            // exit(123);
             free(settingButtons);
             settingButtons = malloc(sizeof(menuButton) * totalItems);
             clear();
