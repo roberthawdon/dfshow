@@ -541,6 +541,7 @@ void settingsMenuView(wchar_t *settingsMenuLabel, int settingsMenuSize, menuDef 
 
   while(1)
     {
+      loopDraw:
       settingPosition = topPos;
       free(settingButtons);
       settingButtons = malloc(sizeof(menuButton) * totalItems);
@@ -574,6 +575,15 @@ void settingsMenuView(wchar_t *settingsMenuLabel, int settingsMenuSize, menuDef 
       orderCount = 0;
       settingPosition = topPos;
 
+      if (order[orderPos].screenPos > (LINES - 1)){
+        clear();
+        wPrintMenu(0,0,settingsMenuLabel);
+        settingPosition = 0;
+        orderCount = 0;
+        orderPos = 0;
+        topPos = 2;
+        goto loopDraw;
+      }
       // move(order[orderPos].linePos, y + 1);
       *pc = getch10th();
       loop:
