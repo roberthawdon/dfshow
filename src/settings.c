@@ -675,7 +675,7 @@ void settingsMenuView(wchar_t *settingsMenuLabel, int settingsMenuSize, menuDef 
         } else if ((*settings)[settingsPos].type == SETTING_FREE){
           if (*pc == 32 || *pc == 261) {
             settingsFreePos = 0;
-            move(x + order[settingsPos].linePos, y + wcslen((*settings)[settingsPos].textLabel) + 6);
+            move(order[settingsPos].screenPos, y + wcslen((*settings)[settingsPos].textLabel) + 6);
             e = readline(charTempValue, 1024, (*settings)[settingsPos].charSetting);
             if (strcmp(charTempValue, "")){
               free((*settings)[settingsPos].charSetting);

@@ -184,19 +184,21 @@ void saveSfConfig(const char * confFile, settingIndex **settings, t1CharValues *
   }
 
   for (i = 0; i < items; i++){
-    config_setting_remove(group, (*settings)[i].refLabel);
-    storeType = (*settings)[i].storeType;
-    if (storeType == SETTING_STORE_STRING){
-      setting = config_setting_add(group, (*settings)[i].refLabel, CONFIG_TYPE_STRING);
-    } else if (storeType == SETTING_STORE_GROUP){
-      // Groups are handled by subgroups
-    } else {
-      setting = config_setting_add(group, (*settings)[i].refLabel, CONFIG_TYPE_INT);
-    }
-    if ((*settings)[i].type == SETTING_BOOL){
+    if (!strcmp((*settings)[i].sectionRef, "global")){
+      config_setting_remove(group, (*settings)[i].refLabel);
+      storeType = (*settings)[i].storeType;
+      if (storeType == SETTING_STORE_STRING){
+        setting = config_setting_add(group, (*settings)[i].refLabel, CONFIG_TYPE_STRING);
+      } else if (storeType == SETTING_STORE_GROUP){
+        // Groups are handled by subgroups
+      } else {
+        setting = config_setting_add(group, (*settings)[i].refLabel, CONFIG_TYPE_INT);
+      }
+      if ((*settings)[i].type == SETTING_BOOL){
 
-      if (!strcmp((*settings)[i].refLabel, "enable-mouse")){
-        config_setting_set_int(setting, enableMouse);
+        if (!strcmp((*settings)[i].refLabel, "enable-mouse")){
+          config_setting_set_int(setting, enableMouse);
+        }
       }
     }
   }
@@ -209,25 +211,27 @@ void saveSfConfig(const char * confFile, settingIndex **settings, t1CharValues *
   }
 
   for (i = 0; i < items; i++){
-    config_setting_remove(group, (*settings)[i].refLabel);
-    storeType = (*settings)[i].storeType;
-    if (storeType == SETTING_STORE_STRING){
-      setting = config_setting_add(group, (*settings)[i].refLabel, CONFIG_TYPE_STRING);
-    } else if (storeType == SETTING_STORE_GROUP){
-      // Groups are handled by subgroups
-    } else {
-      setting = config_setting_add(group, (*settings)[i].refLabel, CONFIG_TYPE_INT);
-    }
-    if ((*settings)[i].type == SETTING_BOOL){
-      if (!strcmp((*settings)[i].refLabel, "wrap")){
-        config_setting_set_int(setting, wrap);
+    if (strcmp((*settings)[i].sectionRef, "global")){
+      config_setting_remove(group, (*settings)[i].refLabel);
+      storeType = (*settings)[i].storeType;
+      if (storeType == SETTING_STORE_STRING){
+        setting = config_setting_add(group, (*settings)[i].refLabel, CONFIG_TYPE_STRING);
+      } else if (storeType == SETTING_STORE_GROUP){
+        // Groups are handled by subgroups
+      } else {
+        setting = config_setting_add(group, (*settings)[i].refLabel, CONFIG_TYPE_INT);
       }
-    } else if ((*settings)[i].type == SETTING_SELECT){
-      if (!strcmp((*settings)[i].refLabel, "scrollStep")){
-        config_setting_set_int(setting, sfScrollStep);
+      if ((*settings)[i].type == SETTING_BOOL){
+        if (!strcmp((*settings)[i].refLabel, "wrap")){
+          config_setting_set_int(setting, wrap);
+        }
+      } else if ((*settings)[i].type == SETTING_SELECT){
+        if (!strcmp((*settings)[i].refLabel, "scrollStep")){
+          config_setting_set_int(setting, sfScrollStep);
+        }
+      } else if ((*settings)[i].type == SETTING_MULTI){
+        // None of those in SF (yet?)
       }
-    } else if ((*settings)[i].type == SETTING_MULTI){
-      // None of those in SF (yet?)
     }
   }
 

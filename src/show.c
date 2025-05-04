@@ -460,19 +460,21 @@ void saveShowConfig(const char * confFile, settingIndex **settings, t1CharValues
   }
 
   for (i = 0; i < items; i++){
-    config_setting_remove(group, (*settings)[i].refLabel);
-    storeType = (*settings)[i].storeType;
-    if (storeType == SETTING_STORE_STRING){
-      setting = config_setting_add(group, (*settings)[i].refLabel, CONFIG_TYPE_STRING);
-    } else if (storeType == SETTING_STORE_GROUP){
-      // Groups are handled by subgroups
-    } else {
-      setting = config_setting_add(group, (*settings)[i].refLabel, CONFIG_TYPE_INT);
-    }
-    if ((*settings)[i].type == SETTING_BOOL){
+    if (!strcmp((*settings)[i].sectionRef, "global")){
+      config_setting_remove(group, (*settings)[i].refLabel);
+      storeType = (*settings)[i].storeType;
+      if (storeType == SETTING_STORE_STRING){
+        setting = config_setting_add(group, (*settings)[i].refLabel, CONFIG_TYPE_STRING);
+      } else if (storeType == SETTING_STORE_GROUP){
+        // Groups are handled by subgroups
+      } else {
+        setting = config_setting_add(group, (*settings)[i].refLabel, CONFIG_TYPE_INT);
+      }
+      if ((*settings)[i].type == SETTING_BOOL){
 
-      if (!strcmp((*settings)[i].refLabel, "enable-mouse")){
-        config_setting_set_int(setting, enableMouse);
+        if (!strcmp((*settings)[i].refLabel, "enable-mouse")){
+          config_setting_set_int(setting, enableMouse);
+        }
       }
     }
   }
@@ -485,84 +487,86 @@ void saveShowConfig(const char * confFile, settingIndex **settings, t1CharValues
   }
 
   for (i = 0; i < items; i++){
-    config_setting_remove(group, (*settings)[i].refLabel);
-    storeType = (*settings)[i].storeType;
-    if (storeType == SETTING_STORE_STRING){
-      setting = config_setting_add(group, (*settings)[i].refLabel, CONFIG_TYPE_STRING);
-    } else if (storeType == SETTING_STORE_GROUP){
-      // Groups are handled by subgroups
-    } else {
-      setting = config_setting_add(group, (*settings)[i].refLabel, CONFIG_TYPE_INT);
-    }
-    if ((*settings)[i].type == SETTING_BOOL){
-
-      if (!strcmp((*settings)[i].refLabel, "color")){
-        config_setting_set_int(setting, filecolors);
-      } else if (!strcmp((*settings)[i].refLabel, "reverse")){
-        config_setting_set_int(setting, reverse);
-      } else if (!strcmp((*settings)[i].refLabel, "hidden")){
-        config_setting_set_int(setting, showhidden);
-      } else if (!strcmp((*settings)[i].refLabel, "ignore-backups")){
-        config_setting_set_int(setting, !showbackup);
-      } else if (!strcmp((*settings)[i].refLabel, "no-sf")){
-        config_setting_set_int(setting, useEnvPager);
-      } else if (!strcmp((*settings)[i].refLabel, "no-danger")){
-        config_setting_set_int(setting, !danger);
-      } else if (!strcmp((*settings)[i].refLabel, "si")){
-        config_setting_set_int(setting, si);
-      } else if (!strcmp((*settings)[i].refLabel, "human-readable")){
-        config_setting_set_int(setting, human);
-      } else if (!strcmp((*settings)[i].refLabel, "showInodes")){
-        config_setting_set_int(setting, showInodes);
-      } else if (!strcmp((*settings)[i].refLabel, "numericIds")){
-        config_setting_set_int(setting, numericIds);
-      } else if (!strcmp((*settings)[i].refLabel, "show-on-enter")){
-        config_setting_set_int(setting, enterAsShow);
-      } else if (!strcmp((*settings)[i].refLabel, "context")){
-        config_setting_set_int(setting, showContext);
-      } else if (!strcmp((*settings)[i].refLabel, "skip-to-first")){
-        config_setting_set_int(setting, skipToFirstFile);
-      } else if (!strcmp((*settings)[i].refLabel, "showXAttrs")){
-        config_setting_set_int(setting, showXAttrs);
-      } else if (!strcmp((*settings)[i].refLabel, "directory")){
-        config_setting_set_int(setting, currentDirOnly);
-      } else if (!strcmp((*settings)[i].refLabel, "only-dirs")){
-        config_setting_set_int(setting, dirOnly);
-      } else if (!strcmp((*settings)[i].refLabel, "sizeblocks")){
-        config_setting_set_int(setting, showSizeBlocks);
-      } else if (!strcmp((*settings)[i].refLabel, "defined-editor")){
-        config_setting_set_int(setting, useDefinedEditor);
-      } else if (!strcmp((*settings)[i].refLabel, "defined-pager")){
-        config_setting_set_int(setting, useDefinedPager);
+    if (strcmp((*settings)[i].sectionRef, "global")){
+      config_setting_remove(group, (*settings)[i].refLabel);
+      storeType = (*settings)[i].storeType;
+      if (storeType == SETTING_STORE_STRING){
+        setting = config_setting_add(group, (*settings)[i].refLabel, CONFIG_TYPE_STRING);
+      } else if (storeType == SETTING_STORE_GROUP){
+        // Groups are handled by subgroups
+      } else {
+        setting = config_setting_add(group, (*settings)[i].refLabel, CONFIG_TYPE_INT);
       }
-    } else if ((*settings)[i].type == SETTING_SELECT){
-      //
-      if (!strcmp((*settings)[i].refLabel, "marked")){
-        for(v = 0; v < charIndex; v++){
-          if (!strcmp((*values)[v].refLabel, "marked") && ((*settings)[i].intSetting == (*values)[v].index)){
-            config_setting_set_string(setting, (*values)[v].value);
+      if ((*settings)[i].type == SETTING_BOOL){
+
+        if (!strcmp((*settings)[i].refLabel, "color")){
+          config_setting_set_int(setting, filecolors);
+        } else if (!strcmp((*settings)[i].refLabel, "reverse")){
+          config_setting_set_int(setting, reverse);
+        } else if (!strcmp((*settings)[i].refLabel, "hidden")){
+          config_setting_set_int(setting, showhidden);
+        } else if (!strcmp((*settings)[i].refLabel, "ignore-backups")){
+          config_setting_set_int(setting, !showbackup);
+        } else if (!strcmp((*settings)[i].refLabel, "no-sf")){
+          config_setting_set_int(setting, useEnvPager);
+        } else if (!strcmp((*settings)[i].refLabel, "no-danger")){
+          config_setting_set_int(setting, !danger);
+        } else if (!strcmp((*settings)[i].refLabel, "si")){
+          config_setting_set_int(setting, si);
+        } else if (!strcmp((*settings)[i].refLabel, "human-readable")){
+          config_setting_set_int(setting, human);
+        } else if (!strcmp((*settings)[i].refLabel, "showInodes")){
+          config_setting_set_int(setting, showInodes);
+        } else if (!strcmp((*settings)[i].refLabel, "numericIds")){
+          config_setting_set_int(setting, numericIds);
+        } else if (!strcmp((*settings)[i].refLabel, "show-on-enter")){
+          config_setting_set_int(setting, enterAsShow);
+        } else if (!strcmp((*settings)[i].refLabel, "context")){
+          config_setting_set_int(setting, showContext);
+        } else if (!strcmp((*settings)[i].refLabel, "skip-to-first")){
+          config_setting_set_int(setting, skipToFirstFile);
+        } else if (!strcmp((*settings)[i].refLabel, "showXAttrs")){
+          config_setting_set_int(setting, showXAttrs);
+        } else if (!strcmp((*settings)[i].refLabel, "directory")){
+          config_setting_set_int(setting, currentDirOnly);
+        } else if (!strcmp((*settings)[i].refLabel, "only-dirs")){
+          config_setting_set_int(setting, dirOnly);
+        } else if (!strcmp((*settings)[i].refLabel, "sizeblocks")){
+          config_setting_set_int(setting, showSizeBlocks);
+        } else if (!strcmp((*settings)[i].refLabel, "defined-editor")){
+          config_setting_set_int(setting, useDefinedEditor);
+        } else if (!strcmp((*settings)[i].refLabel, "defined-pager")){
+          config_setting_set_int(setting, useDefinedPager);
+        }
+      } else if ((*settings)[i].type == SETTING_SELECT){
+        //
+        if (!strcmp((*settings)[i].refLabel, "marked")){
+          for(v = 0; v < charIndex; v++){
+            if (!strcmp((*values)[v].refLabel, "marked") && ((*settings)[i].intSetting == (*values)[v].index)){
+              config_setting_set_string(setting, (*values)[v].value);
+            }
+          }
+        } else if (!strcmp((*settings)[i].refLabel, "sortmode")){
+          config_setting_set_string(setting, sortmode);
+        } else if (!strcmp((*settings)[i].refLabel, "timestyle")){
+          config_setting_set_string(setting, timestyle);
+        } else if (!strcmp((*settings)[i].refLabel, "scrollStep")){
+          config_setting_set_int(setting, showScrollStep);
+        }
+      } else if ((*settings)[i].type == SETTING_MULTI){
+        if (!strcmp((*settings)[i].refLabel, "owner")){
+          subgroup = config_setting_add(group, "owner", CONFIG_TYPE_GROUP);
+          for (v = 0; v < binIndex; v++){
+            setting = config_setting_add(subgroup, (*bins)[v].settingLabel, CONFIG_TYPE_INT);
+            config_setting_set_int(setting, (*bins)[v].boolVal);
           }
         }
-      } else if (!strcmp((*settings)[i].refLabel, "sortmode")){
-        config_setting_set_string(setting, sortmode);
-      } else if (!strcmp((*settings)[i].refLabel, "timestyle")){
-        config_setting_set_string(setting, timestyle);
-      } else if (!strcmp((*settings)[i].refLabel, "scrollStep")){
-        config_setting_set_int(setting, showScrollStep);
-      }
-    } else if ((*settings)[i].type == SETTING_MULTI){
-      if (!strcmp((*settings)[i].refLabel, "owner")){
-        subgroup = config_setting_add(group, "owner", CONFIG_TYPE_GROUP);
-        for (v = 0; v < binIndex; v++){
-          setting = config_setting_add(subgroup, (*bins)[v].settingLabel, CONFIG_TYPE_INT);
-          config_setting_set_int(setting, (*bins)[v].boolVal);
+      } else if ((*settings)[i].type == SETTING_FREE){
+        if (!strcmp((*settings)[i].refLabel, "visualPath")){
+          config_setting_set_string(setting, (*settings)[i].charSetting);
+        } else if (!strcmp((*settings)[i].refLabel, "pagerPath")){
+          config_setting_set_string(setting, (*settings)[i].charSetting);
         }
-      }
-    } else if ((*settings)[i].type == SETTING_FREE){
-      if (!strcmp((*settings)[i].refLabel, "visualPath")){
-        config_setting_set_string(setting, (*settings)[i].charSetting);
-      } else if (!strcmp((*settings)[i].refLabel, "pagerPath")){
-        config_setting_set_string(setting, (*settings)[i].charSetting);
       }
     }
   }
