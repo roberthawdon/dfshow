@@ -552,7 +552,6 @@ void settingsMenuView(wchar_t *settingsMenuLabel, int settingsMenuSize, menuDef 
         settingPosition++;
         for (count = 0; count < totalItems; count++){
           if (!strcmp((*settingSections)[countSection].refLabel, (*settings)[count].sectionRef)){
-            // printSetting(2 + count, 3, settings, charValues, binValues, count, totalCharItems, totalBinItems, settings[count]->type, settings[count]->invert);
             order[orderCount].linePos = settingPosition;
             snprintf(order[orderCount].refLabel, 16, "%s", (*settings)[count].refLabel);
             if (settingPosition < 1){
@@ -584,7 +583,6 @@ void settingsMenuView(wchar_t *settingsMenuLabel, int settingsMenuSize, menuDef 
         topPos = 2;
         goto loopDraw;
       }
-      // move(order[orderPos].linePos, y + 1);
       *pc = getch10th();
       loop:
       if (getmouse(&event) == OK) {
@@ -594,7 +592,6 @@ void settingsMenuView(wchar_t *settingsMenuLabel, int settingsMenuSize, menuDef 
             *pc = menuHotkeyLookup(settingsMenu, (menuButtonLookup(settingsMenuButtons, settingsMenuSize, event.x, event.y, 0, 0, true)), settingsMenuSize);
             goto loop;
           } else {
-            // To Do
             *pc = settingButtonAction(menuButtonLookup(settingButtons, totalItems, event.x, event.y, 0, 0, false), settings, totalItems);
             orderPos = settingOrderLookup(settings, order, totalItems, NULL, settingsPos);
             goto loop;
