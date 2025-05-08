@@ -432,6 +432,7 @@ void updateView()
 
 void loadFile(const char * currentfile)
 {
+  int longlinelen = 0;
 
   len = 0;
   longestline = 0;
@@ -448,8 +449,8 @@ void loadFile(const char * currentfile)
     return;
     }
 
-  line = malloc(sizeof(char) + 1);
-  longline = malloc(sizeof(wchar_t));
+  line = calloc(1, sizeof(char));
+  longline = calloc(1, sizeof(wchar_t));
 
   while ((nread = getline(&line, &len, stream)) != -1) {
     totallines++;
@@ -460,8 +461,11 @@ void loadFile(const char * currentfile)
       longline = realloc(longline, sizeof(wchar_t) * (longestline + 1));
     }
     mbstowcs(longline, line, len);
-    if (wcslen(longline) > longestlongline){
-      longestlongline = wcslen(longline);
+    if (longline){
+      longlinelen = wcslen(longline);
+      if (longlinelen > longestlongline){
+        longestlongline = longlinelen;
+      }
     }
   }
   free(line);
