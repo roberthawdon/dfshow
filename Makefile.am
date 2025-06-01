@@ -10,6 +10,8 @@ AM_CFLAGS = -DSYSCONFIG=\"$(dfshowconfdir)\" -DDATADIR=\"$(dfshowdatadir)\" -D_X
 
 LDADD = -lm -lconfig $(LIBINTL)
 
+ACLOCAL_AMFLAGS = -I m4
+
 if DARWIN
 LDADD += -lncurses
 else
