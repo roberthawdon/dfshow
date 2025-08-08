@@ -599,8 +599,8 @@ void settingsMenuView(wchar_t *settingsMenuLabel, int settingsMenuSize, menuDef 
         free(binButtons);
       }
       settingButtons = malloc(sizeof(menuButton) * totalItems);
-      charButtons = malloc(sizeof(menuButton) * totalItems);
-      binButtons = malloc(sizeof(menuButton) * totalItems);
+      charButtons = malloc(sizeof(menuButton) * totalCharItems);
+      binButtons = malloc(sizeof(menuButton) * totalBinItems);
       for (countSection = 0; countSection < settingSectionSize; countSection++){
         if (settingPosition > 0){
           mvprintw(settingPosition, 3, "%ls", (*settingSections)[countSection].textLabel);
