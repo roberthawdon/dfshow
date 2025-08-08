@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: dfshow 0.10.0\n"
 "Report-Msgid-Bugs-To: https://github.com/roberthawdon/dfshow/issues\n"
-"POT-Creation-Date: 2025-04-24 08:06+0100\n"
+"POT-Creation-Date: 2025-08-08 08:36+0100\n"
 "PO-Revision-Date: 2023-05-24 05:19+0100\n"
 "Last-Translator: Robert Hawdon <git@robertianhawdon.me.uk>\n"
 "Language-Team: English (British) <(nothing)>\n"
@@ -241,22 +241,22 @@ msgstr ""
 msgid "!Stop"
 msgstr ""
 
-#: src//settings.c:624
+#: src//settings.c:721
 msgid "Settings saved."
 msgstr "Settings saved."
 
-#: src//sf.c:203 src//show.c:1208
+#: src//sf.c:203 src//show.c:1212
 #, c-format
 msgid "%s: The following themes are available:\n"
 msgstr "%s: The following themes are available:\n"
 
-#: src//sf.c:217 src//show.c:1337
+#: src//sf.c:217 src//show.c:1341
 #, fuzzy, c-format
 #| msgid "%s: invalid argument '%s' for 'block-size'\n"
 msgid "%s: invalid argument '%s' for 'enable-mouse'\n"
 msgstr "%s: invalid argument '%s' for 'block-size'\n"
 
-#: src//sf.c:218 src//show.c:1338
+#: src//sf.c:218 src//show.c:1342
 #, fuzzy
 #| msgid ""
 #| "Valid arguments are:\n"
@@ -271,43 +271,43 @@ msgstr ""
 "  - always\n"
 "  - never\n"
 
-#: src//sf.c:222 src//show.c:1194 src//show.c:1241 src//show.c:1288
-#: src//show.c:1342
+#: src//sf.c:222 src//show.c:1198 src//show.c:1245 src//show.c:1292
+#: src//show.c:1346
 #, c-format
 msgid "Try '%s --help' for more information.\n"
 msgstr "Try '%s --help' for more information.\n"
 
-#: src//sffunctions.c:248 src//show.c:664
+#: src//sffunctions.c:252 src//show.c:668
 msgid "Global Settings"
 msgstr ""
 
-#: src//sffunctions.c:249 src//show.c:667
+#: src//sffunctions.c:253 src//show.c:671
 msgid "Behavior Settings"
 msgstr "Behaviour Settings"
 
-#: src//sffunctions.c:261 src//show.c:701
+#: src//sffunctions.c:265 src//show.c:705
 msgid "Enable mouse (Requires restart)"
 msgstr ""
 
-#: src//sffunctions.c:262
+#: src//sffunctions.c:266
 msgid "Enable text wrapping"
 msgstr ""
 
-#: src//sffunctions.c:263 src//show.c:727
+#: src//sffunctions.c:267 src//show.c:731
 msgid "Mouse scroll interval size"
 msgstr ""
 
-#: src//sffunctions.c:362
+#: src//sffunctions.c:366
 #, c-format
 msgid "File = <%s>  Top = <%i>"
 msgstr ""
 
-#: src//sffunctions.c:364
+#: src//sffunctions.c:368
 #, c-format
 msgid "File = <%s>  Top = <%i:%i>"
 msgstr ""
 
-#: src//sffunctions.c:483
+#: src//sffunctions.c:491
 #, c-format
 msgid "File [%s] does not exist"
 msgstr ""
@@ -402,177 +402,177 @@ msgstr "Position relative (<+num> || <-num>) or absolute (<num>):"
 msgid "Show File - Enter pathname:"
 msgstr "Show File - Enter pathname:"
 
-#: src//show.c:665
+#: src//show.c:669
 #, fuzzy
 #| msgid "Display lines"
 msgid "Display Settings"
 msgstr "Display lines"
 
-#: src//show.c:666
+#: src//show.c:670
 #, fuzzy
 #| msgid "SF Settings Menu -"
 msgid "File Settings"
 msgstr "SF Settings Menu -"
 
-#: src//show.c:668
+#: src//show.c:672
 msgid "External App Settings"
 msgstr ""
 
-#: src//show.c:670
+#: src//show.c:674
 msgid "never"
 msgstr "never"
 
-#: src//show.c:671
+#: src//show.c:675
 msgid "always"
 msgstr "always"
 
-#: src//show.c:672
+#: src//show.c:676
 msgid "auto"
 msgstr "auto"
 
-#: src//show.c:674
+#: src//show.c:678
 msgid "name"
 msgstr "name"
 
-#: src//show.c:675
+#: src//show.c:679
 msgid "date"
 msgstr "date"
 
-#: src//show.c:676
+#: src//show.c:680
 msgid "size"
 msgstr "size"
 
-#: src//show.c:677
+#: src//show.c:681
 msgid "unsorted"
 msgstr "unsorted"
 
-#: src//show.c:679
+#: src//show.c:683
 msgid "locale"
 msgstr "locale"
 
-#: src//show.c:680
+#: src//show.c:684
 msgid "iso"
 msgstr "iso"
 
-#: src//show.c:681
+#: src//show.c:685
 msgid "long-iso"
 msgstr "long-iso"
 
-#: src//show.c:682
+#: src//show.c:686
 msgid "full-iso"
 msgstr "full-iso"
 
-#: src//show.c:702
+#: src//show.c:706
 msgid "Display file colors"
 msgstr "Display file colours"
 
-#: src//show.c:703
+#: src//show.c:707
 msgid "Show marked file info"
 msgstr "Show marked file info"
 
-#: src//show.c:704
+#: src//show.c:708
 msgid "Sorting mode"
 msgstr "Sorting mode"
 
-#: src//show.c:705
+#: src//show.c:709
 msgid "Reverse sorting order"
 msgstr "Reverse sorting order"
 
-#: src//show.c:706
+#: src//show.c:710
 msgid "Time style"
 msgstr "Time style"
 
-#: src//show.c:707
+#: src//show.c:711
 msgid "Show hidden files"
 msgstr "Show hidden files"
 
-#: src//show.c:708
+#: src//show.c:712
 msgid "Hide backup files"
 msgstr "Hide backup files"
 
-#: src//show.c:709
+#: src//show.c:713
 msgid "Use 3rd party pager over SF"
 msgstr "Use 3rd party pager over SF"
 
-#: src//show.c:711
+#: src//show.c:715
 msgid "Hide danger lines as root"
 msgstr "Hide danger lines as root"
 
-#: src//show.c:713
+#: src//show.c:717
 msgid "Use SI units"
 msgstr "Use SI units"
 
-#: src//show.c:714
+#: src//show.c:718
 msgid "Human readable sizes"
 msgstr "Human readable sizes"
 
-#: src//show.c:715
+#: src//show.c:719
 msgid "Show Inode"
 msgstr "Show Inode"
 
-#: src//show.c:716
+#: src//show.c:720
 msgid "Use numeric UID and GIDs"
 msgstr "Use numeric UID and GIDs"
 
-#: src//show.c:717
+#: src//show.c:721
 msgid "Enter key acts like Show"
 msgstr "Enter key acts like Show"
 
-#: src//show.c:718
+#: src//show.c:722
 msgid "Owner Column"
 msgstr "Owner Column"
 
-#: src//show.c:719
+#: src//show.c:723
 msgid "Show security context of files"
 msgstr "Show security context of files"
 
-#: src//show.c:720
+#: src//show.c:724
 msgid "Skip to the first object"
 msgstr "Skip to the first object"
 
-#: src//show.c:722
+#: src//show.c:726
 msgid "Display extended attribute keys and sizes"
 msgstr "Display extended attribute keys and sizes"
 
-#: src//show.c:724
+#: src//show.c:728
 msgid "Display only current directory"
 msgstr "Display only current directory"
 
-#: src//show.c:725
+#: src//show.c:729
 msgid "Display only directories"
 msgstr "Display only directories"
 
-#: src//show.c:726
+#: src//show.c:730
 msgid "Show allocated size in blocks"
 msgstr "Show allocated size in blocks"
 
-#: src//show.c:728
+#: src//show.c:732
 msgid "Override default editor"
 msgstr "Override default editor"
 
-#: src//show.c:729
+#: src//show.c:733
 msgid "Editor utility program command"
 msgstr "Editor utility program command"
 
-#: src//show.c:730
+#: src//show.c:734
 msgid "Override default pager"
 msgstr "Override default pager"
 
-#: src//show.c:731
+#: src//show.c:735
 msgid "Pager utility program command"
 msgstr "Pager utility program command"
 
-#: src//show.c:1178
+#: src//show.c:1182
 #, c-format
 msgid "%s: invalid argument '%s' for 'block-size'\n"
 msgstr "%s: invalid argument '%s' for 'block-size'\n"
 
-#: src//show.c:1189
+#: src//show.c:1193
 #, c-format
 msgid "%s: invalid argument '%s' for 'color'\n"
 msgstr "%s: invalid argument '%s' for 'colour'\n"
 
-#: src//show.c:1190
+#: src//show.c:1194
 msgid ""
 "Valid arguments are:\n"
 "  - always\n"
@@ -582,12 +582,12 @@ msgstr ""
 "  - always\n"
 "  - never\n"
 
-#: src//show.c:1234
+#: src//show.c:1238
 #, c-format
 msgid "%s: invalid argument '%s' for 'time style'\n"
 msgstr "%s: invalid argument '%s' for 'time style'\n"
 
-#: src//show.c:1235
+#: src//show.c:1239
 msgid ""
 "Valid arguments are:\n"
 "  - full-iso\n"
@@ -601,12 +601,12 @@ msgstr ""
 "  - iso\n"
 "  - locale\n"
 
-#: src//show.c:1282
+#: src//show.c:1286
 #, c-format
 msgid "%s: invalid argument '%s' for 'marked'\n"
 msgstr "%s: invalid argument '%s' for 'marked'\n"
 
-#: src//show.c:1283
+#: src//show.c:1287
 msgid ""
 "Valid arguments are:\n"
 "  - always\n"
@@ -618,7 +618,7 @@ msgstr ""
 "  - never\n"
 "  - auto\n"
 
-#: src//show.c:1309
+#: src//show.c:1313
 #, c-format
 msgid ""
 "There are currently %i running parent show application(s).\n"
@@ -629,7 +629,7 @@ msgstr ""
 "\n"
 "Use 'exit' to return to Show.\n"
 
-#: src//show.c:1312
+#: src//show.c:1316
 #, c-format
 msgid "There are no parent show applications currently running.\n"
 msgstr "There are no parent show applications currently running.\n"
