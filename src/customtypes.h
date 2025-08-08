@@ -25,6 +25,7 @@ typedef struct {
 
 typedef struct {
   char refLabel[16];
+  int subIndex;
   int topX;
   int topY;
   int bottomX;

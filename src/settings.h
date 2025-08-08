@@ -25,3 +25,4 @@ int settingButtonAction(const char * refLabel, settingIndex **settings, int menu
 void settingsMenuView(wchar_t *settingsMenuLabel, int settingsMenuSize, menuDef *settingsMenu, menuButton *settingsMenuButtons, settingSection **settingSections, int settingSectionSize, settingIndex **settings, t1CharValues **charValues, t2BinValues **binValues, int totalCharItems, int totalBinItems, int totalItems, char *application);
 int settingIndexLookup(settingIndex **settings, settingsOrder *order, int settingsSize, const char * refLabel, const int index);
 int settingOrderLookup(settingIndex **settings, settingsOrder *order, int settingsSize, const char * refLabel, const int index);
+int settingSubButtonAction(settingIndex **settings, int settingsItems, int type, menuButton *subButtons, int size, int xpos, int ypos, int xdelta, int ydelta);
