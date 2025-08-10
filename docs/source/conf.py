@@ -16,6 +16,55 @@
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
 
+import subprocess
+import os
+import re
+
+# -- Functions ---------------------------------------------------------------
+
+def get_version():
+    """Get version from git describe or fallback file."""
+    try:
+        # Try to get version from git
+        if os.path.exists('.git') or os.environ.get('GITHUB_ACTIONS'):
+            result = subprocess.run(
+                ['git', 'describe', '--tags', '--dirty', '--always'],
+                capture_output=True,
+                text=True,
+                check=True
+            )
+            full_version = result.stdout.strip()
+
+            # Remove 'v' prefix if present
+            if full_version.startswith('v'):
+                full_version = full_version[1:]
+
+            # Extract short version (X.Y) from full version
+            version_match = re.match(r'(\d+\.\d+)', full_version)
+            short_version = version_match.group(1) if version_match else '1.0'
+
+            return short_version, full_version
+
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        pass
+
+    # Fallback: try to read from tarball version file
+    try:
+        if os.path.exists('.tarball-version'):
+            with open('.tarball-version', 'r') as f:
+                full_version = f.read().strip()
+                if full_version.startswith('v'):
+                    full_version = full_version[1:]
+
+                version_match = re.match(r'(\d+\.\d+)', full_version)
+                short_version = version_match.group(1) if version_match else '1.0'
+
+                return short_version, full_version
+    except (IOError, OSError):
+        pass
+
+    # Final fallback
+    return '1.0', '1.0.0-unknown'
 
 # -- Project information -----------------------------------------------------
 
@@ -24,10 +73,11 @@ copyright = '2025, Robert Ian Hawdon'
 author = 'Robert Ian Hawdon'
 
 # The short X.Y version
-version = '1.0'
+# version = '1.0'
 # The full version, including alpha/beta/rc tags
-release = '1.0.0-b.1'
+# release = '1.0.0-b.1'
 
+version, release = get_version()
 
 # -- General configuration ---------------------------------------------------
 
