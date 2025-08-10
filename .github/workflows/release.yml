@@ -33,6 +33,7 @@ jobs:
           libconfig-dev \
           libacl1-dev \
           gettext \
+          gettext-base \
           autopoint
 
     - name: Create tarball version file

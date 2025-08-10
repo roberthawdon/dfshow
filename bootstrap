@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
 
-aclocal
+aclocal -I /usr/share/gettext/m4
 autoconf --force  # Force regeneration even if configure exists
 automake --add-missing --copy
