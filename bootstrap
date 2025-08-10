@@ -8,4 +8,5 @@ fi
 
 autoconf --force  # Force regeneration even if configure exists
 autoheader
+autopoint
 automake --add-missing --copy
