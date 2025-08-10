@@ -1,4 +1,5 @@
 #!/usr/bin/env sh
 
-autoreconf --install
-automake --add-missing
+aclocal
+autoconf --force  # Force regeneration even if configure exists
+automake --add-missing --copy
