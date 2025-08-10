@@ -78,7 +78,7 @@ The following options are shared with ``ls``:
 ``-S``
   Sorts files and directories by size, largest first.
 
-``--time-style``\ =[TIME_STYLE]
+``--time-style``\ =TIME_STYLE
   Time/Date format. Can be set to ``full-iso``, ``long-iso``,
   ``iso``, or ``locale``.
 
@@ -137,6 +137,9 @@ The following options are specific to ``show``:
 
 ``--skip-to-first``
   Sets the highlighted item to the first object that isn't ``.`` or ``..``
+
+``--enable-mouse``\ =BOOLEAN
+  Launches ``show`` with mouse support.
 
 Commands
 --------
@@ -366,10 +369,9 @@ the command has any additional propts, they are also described here.
   marked if the string matches. When using multiple files, any files
   not matching the string will be unselected. Case sensitivity is
   requested by the following prompt, afterwards the user is asked to
-  input the string to search. To abort at this prompt, the *ESC* key
-  must be used.
+  input the string to search.
 
-  ``Case Sensitive, Yes/No/ESC (enter = no)``
+  ``Case Sensitive? (Default = no) (Yes/No)``
 
   Following this selection, one of the following prompts will be
   displayed.
@@ -400,7 +402,7 @@ Creating parent directories
 A number of the commands above will display the following prompt to create
 parent directories if they are not present.
 
-  ``Directory [/path/to/directory] does not exist. Create it? Yes/No (enter = no)``
+  ``Directory [/path/to/directory] does not exist. Create it? (Default = no) (Yes/No)``
 
   Selecting "Y" will instruct ``show`` to create the missing parent directories
   required to complete the command.
@@ -649,29 +651,40 @@ The following screen is displayed.
 
    SHOW Settings Menu - Quit, Revert, Save
 
-      [ ] Display file colors
-      <-> Show marked file info: <never> <always> <auto>
-      <-> Sorting mode: <name> <date> <size> <unsorted>
-      [ ] Reverse sorting order
-      <-> Time style: <locale> <iso> <long-iso> <full-iso>
-      [ ] Show hidden files
-      [ ] Hide backup files
-      [ ] Use 3rd party pager over SF
-      [ ] Use SI units
-      [ ] Human readable sizes
-      [ ] Show Inode
-      [ ] Use numeric UID and GIDs
-      [ ] Enter key acts like Show
-      < > Owner Column: <owner> <group> <author>
-      [ ] Show security context of files
-      [ ] Skip to the first object
-      [ ] Display only current directory
-      [ ] Disply only directories
-      [ ] Show allocated size in blocks
-      [ ] Override default editor
-       -> Editor utility program command: vi
-      [ ] Override default pager
-       -> Pager utility program command: more
+      Global Settings
+          [ ] Enable mouse (Requires restart)
+
+      Display Settings
+          [ ] Display file colors
+          <-> Show marked file info: <never> <always> <auto>
+          <-> Sorting mode: <name> <date> <size> <unsorted>
+          [ ] Reverse sorting order
+          <-> Time style: <locale> <iso> <long-iso> <full-iso>
+          [ ] Use SI units
+          [ ] Human readable sizes
+          [ ] Show Inode
+          [ ] Use numeric UID and GIDs
+          < > Owner Column: <owner> <group> <author>
+          [ ] Show security context of files
+          [ ] Display only current directory
+          [ ] Display only directories
+          [ ] Show allocated size in blocks
+
+      File Settings
+          [ ] Show hidden files
+          [ ] Hide backup files
+
+      Behavior Settings
+          [ ] Use 3rd party pager over SF
+          [ ] Enter key acts like Show
+          [ ] Skip to the first object
+          <-> Mouse scroll interval size: <1> <2> <3> <4> <5> <6> <7> <8> <9>
+
+      External App Settings
+          [ ] Override default editor
+           -> Editor utility program command: nvim
+          [ ] Override default pager
+           -> Pager utility program command: less
 
 There are three types of configuration items, each denoted with a different
 symbol:

@@ -1,7 +1,7 @@
 /*
   DF-SHOW: An interactive directory/file browser written for Unix-like systems.
   Based on the applications from the PC-DOS DF-EDIT suite by Larry Kroeker.
-  Copyright (C) 2018-2024  Robert Ian Hawdon
+  Copyright (C) 2018-2025  Robert Ian Hawdon
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -108,16 +108,29 @@ char *objectWild;
 
 char block_unit[4] = "\0\0\0\0";
 
+int showScrollStep = 4;
+
+int showMenuItems = 0;
+
 results *ob;
 
 int segOrder[10] = {COL_MARK, COL_INODE, COL_SIZEBLOCKS, COL_ATTR, COL_HLINK, COL_OWNER, COL_CONTEXT, COL_SIZE, COL_DATE, COL_NAME};
 // int segOrder[10] = {COL_MARK, COL_NAME, COL_SIZE, COL_DATE, COL_ATTR}; // Emulating NET-DF-EDIT's XENIX layout
 
+
+settingSection *settingSectionsShow;
+int settingSectionsShowCount;
 settingIndex *settingIndexShow;
 t1CharValues *charValuesShow;
 t2BinValues *binValuesShow;
 int totalCharItemsShow;
 int totalBinItemsShow;
+
+int clickMode = CLICK_SHOW;
+
+extern MEVENT event;
+
+extern bool enableMouse;
 
 extern int returnCode;
 
@@ -134,6 +147,7 @@ extern int settingsFreePos;
 extern menuDef *showSettingsMenu;
 extern int showSettingsMenuSize;
 extern wchar_t *showSettingsMenuLabel;
+extern menuButton *showSettingsMenuButtons;
 
 extern int * pc;
 
@@ -192,10 +206,18 @@ void readShowConfig(const char * confFile)
           setenv("DFS_THEME", themeName, 1);
         }
       }
+      // Is sigint enabled? This allows for using CTRL-C to kill the DF-SHOW applications. It is a hidden, config only, option and defaults to false.
       setting = config_setting_get_member(group, "sigint");
       if (setting){
         if (config_setting_get_int(setting)){
           enableCtrlC = 1;
+        }
+      }
+      // Are we enabling mouse support?
+      setting = config_setting_get_member(group, "enable-mouse");
+      if (setting){
+        if (config_setting_get_int(setting)){
+          enableMouse = true;
         }
       }
     }
@@ -372,6 +394,13 @@ void readShowConfig(const char * confFile)
         pagerPath = calloc(strlen(config_setting_get_string(setting)) + 1, sizeof(char));
         snprintf(pagerPath, (strlen(config_setting_get_string(setting)) + 1), "%s", config_setting_get_string(setting));
       }
+      // Check scrollStep
+      setting = config_setting_get_member(group, "scrollStep");
+      if (setting){
+        if (config_setting_get_int(setting)){
+          showScrollStep = config_setting_get_int(setting);
+        }
+      }
       // Check Layout
       array = config_setting_get_member(group, "layout");
       if (array){
@@ -416,12 +445,41 @@ void saveShowConfig(const char * confFile, settingIndex **settings, t1CharValues
   config_t cfg;
   config_setting_t *root, *setting, *group, *subgroup;
   int i, v;
+  int storeType;
 
   config_init(&cfg);
 
   config_read_file(&cfg, confFile);
   root = config_root_setting(&cfg);
 
+  // Global Settings
+  group = config_setting_get_member(root, "common");
+
+  if (!group){
+    group = config_setting_add(root, "common", CONFIG_TYPE_GROUP);
+  }
+
+  for (i = 0; i < items; i++){
+    if (!strcmp((*settings)[i].sectionRef, "global")){
+      config_setting_remove(group, (*settings)[i].refLabel);
+      storeType = (*settings)[i].storeType;
+      if (storeType == SETTING_STORE_STRING){
+        setting = config_setting_add(group, (*settings)[i].refLabel, CONFIG_TYPE_STRING);
+      } else if (storeType == SETTING_STORE_GROUP){
+        // Groups are handled by subgroups
+      } else {
+        setting = config_setting_add(group, (*settings)[i].refLabel, CONFIG_TYPE_INT);
+      }
+      if ((*settings)[i].type == SETTING_BOOL){
+
+        if (!strcmp((*settings)[i].refLabel, "enable-mouse")){
+          config_setting_set_int(setting, enableMouse);
+        }
+      }
+    }
+  }
+
+  // Show Settings
   group = config_setting_get_member(root, PROGRAM_NAME);
 
   if (!group){
@@ -429,77 +487,86 @@ void saveShowConfig(const char * confFile, settingIndex **settings, t1CharValues
   }
 
   for (i = 0; i < items; i++){
-    config_setting_remove(group, (*settings)[i].refLabel);
-    if ((*settings)[i].type == SETTING_BOOL){
-      setting = config_setting_add(group, (*settings)[i].refLabel, CONFIG_TYPE_INT);
-
-      if (!strcmp((*settings)[i].refLabel, "color")){
-        config_setting_set_int(setting, filecolors);
-      } else if (!strcmp((*settings)[i].refLabel, "reverse")){
-        config_setting_set_int(setting, reverse);
-      } else if (!strcmp((*settings)[i].refLabel, "hidden")){
-        config_setting_set_int(setting, showhidden);
-      } else if (!strcmp((*settings)[i].refLabel, "ignore-backups")){
-        config_setting_set_int(setting, !showbackup);
-      } else if (!strcmp((*settings)[i].refLabel, "no-sf")){
-        config_setting_set_int(setting, useEnvPager);
-      } else if (!strcmp((*settings)[i].refLabel, "no-danger")){
-        config_setting_set_int(setting, !danger);
-      } else if (!strcmp((*settings)[i].refLabel, "si")){
-        config_setting_set_int(setting, si);
-      } else if (!strcmp((*settings)[i].refLabel, "human-readable")){
-        config_setting_set_int(setting, human);
-      } else if (!strcmp((*settings)[i].refLabel, "showInodes")){
-        config_setting_set_int(setting, showInodes);
-      } else if (!strcmp((*settings)[i].refLabel, "numericIds")){
-        config_setting_set_int(setting, numericIds);
-      } else if (!strcmp((*settings)[i].refLabel, "show-on-enter")){
-        config_setting_set_int(setting, enterAsShow);
-      } else if (!strcmp((*settings)[i].refLabel, "context")){
-        config_setting_set_int(setting, showContext);
-      } else if (!strcmp((*settings)[i].refLabel, "skip-to-first")){
-        config_setting_set_int(setting, skipToFirstFile);
-      } else if (!strcmp((*settings)[i].refLabel, "showXAttrs")){
-        config_setting_set_int(setting, showXAttrs);
-      } else if (!strcmp((*settings)[i].refLabel, "directory")){
-        config_setting_set_int(setting, currentDirOnly);
-      } else if (!strcmp((*settings)[i].refLabel, "only-dirs")){
-        config_setting_set_int(setting, dirOnly);
-      } else if (!strcmp((*settings)[i].refLabel, "sizeblocks")){
-        config_setting_set_int(setting, showSizeBlocks);
-      } else if (!strcmp((*settings)[i].refLabel, "defined-editor")){
-        config_setting_set_int(setting, useDefinedEditor);
-      } else if (!strcmp((*settings)[i].refLabel, "defined-pager")){
-        config_setting_set_int(setting, useDefinedPager);
+    if (strcmp((*settings)[i].sectionRef, "global")){
+      config_setting_remove(group, (*settings)[i].refLabel);
+      storeType = (*settings)[i].storeType;
+      if (storeType == SETTING_STORE_STRING){
+        setting = config_setting_add(group, (*settings)[i].refLabel, CONFIG_TYPE_STRING);
+      } else if (storeType == SETTING_STORE_GROUP){
+        // Groups are handled by subgroups
+      } else {
+        setting = config_setting_add(group, (*settings)[i].refLabel, CONFIG_TYPE_INT);
       }
-    } else if ((*settings)[i].type == SETTING_SELECT){
-      //
-      setting = config_setting_add(group, (*settings)[i].refLabel, CONFIG_TYPE_STRING);
-      if (!strcmp((*settings)[i].refLabel, "marked")){
-        for(v = 0; v < charIndex; v++){
-          if (!strcmp((*values)[v].refLabel, "marked") && ((*settings)[i].intSetting == (*values)[v].index)){
-            config_setting_set_string(setting, (*values)[v].value);
+      if ((*settings)[i].type == SETTING_BOOL){
+
+        if (!strcmp((*settings)[i].refLabel, "color")){
+          config_setting_set_int(setting, filecolors);
+        } else if (!strcmp((*settings)[i].refLabel, "reverse")){
+          config_setting_set_int(setting, reverse);
+        } else if (!strcmp((*settings)[i].refLabel, "hidden")){
+          config_setting_set_int(setting, showhidden);
+        } else if (!strcmp((*settings)[i].refLabel, "ignore-backups")){
+          config_setting_set_int(setting, !showbackup);
+        } else if (!strcmp((*settings)[i].refLabel, "no-sf")){
+          config_setting_set_int(setting, useEnvPager);
+        } else if (!strcmp((*settings)[i].refLabel, "no-danger")){
+          config_setting_set_int(setting, !danger);
+        } else if (!strcmp((*settings)[i].refLabel, "si")){
+          config_setting_set_int(setting, si);
+        } else if (!strcmp((*settings)[i].refLabel, "human-readable")){
+          config_setting_set_int(setting, human);
+        } else if (!strcmp((*settings)[i].refLabel, "showInodes")){
+          config_setting_set_int(setting, showInodes);
+        } else if (!strcmp((*settings)[i].refLabel, "numericIds")){
+          config_setting_set_int(setting, numericIds);
+        } else if (!strcmp((*settings)[i].refLabel, "show-on-enter")){
+          config_setting_set_int(setting, enterAsShow);
+        } else if (!strcmp((*settings)[i].refLabel, "context")){
+          config_setting_set_int(setting, showContext);
+        } else if (!strcmp((*settings)[i].refLabel, "skip-to-first")){
+          config_setting_set_int(setting, skipToFirstFile);
+        } else if (!strcmp((*settings)[i].refLabel, "showXAttrs")){
+          config_setting_set_int(setting, showXAttrs);
+        } else if (!strcmp((*settings)[i].refLabel, "directory")){
+          config_setting_set_int(setting, currentDirOnly);
+        } else if (!strcmp((*settings)[i].refLabel, "only-dirs")){
+          config_setting_set_int(setting, dirOnly);
+        } else if (!strcmp((*settings)[i].refLabel, "sizeblocks")){
+          config_setting_set_int(setting, showSizeBlocks);
+        } else if (!strcmp((*settings)[i].refLabel, "defined-editor")){
+          config_setting_set_int(setting, useDefinedEditor);
+        } else if (!strcmp((*settings)[i].refLabel, "defined-pager")){
+          config_setting_set_int(setting, useDefinedPager);
+        }
+      } else if ((*settings)[i].type == SETTING_SELECT){
+        //
+        if (!strcmp((*settings)[i].refLabel, "marked")){
+          for(v = 0; v < charIndex; v++){
+            if (!strcmp((*values)[v].refLabel, "marked") && ((*settings)[i].intSetting == (*values)[v].index)){
+              config_setting_set_string(setting, (*values)[v].value);
+            }
+          }
+        } else if (!strcmp((*settings)[i].refLabel, "sortmode")){
+          config_setting_set_string(setting, sortmode);
+        } else if (!strcmp((*settings)[i].refLabel, "timestyle")){
+          config_setting_set_string(setting, timestyle);
+        } else if (!strcmp((*settings)[i].refLabel, "scrollStep")){
+          config_setting_set_int(setting, showScrollStep);
+        }
+      } else if ((*settings)[i].type == SETTING_MULTI){
+        if (!strcmp((*settings)[i].refLabel, "owner")){
+          subgroup = config_setting_add(group, "owner", CONFIG_TYPE_GROUP);
+          for (v = 0; v < binIndex; v++){
+            setting = config_setting_add(subgroup, (*bins)[v].settingLabel, CONFIG_TYPE_INT);
+            config_setting_set_int(setting, (*bins)[v].boolVal);
           }
         }
-      } else if (!strcmp((*settings)[i].refLabel, "sortmode")){
-        config_setting_set_string(setting, sortmode);
-      } else if (!strcmp((*settings)[i].refLabel, "timestyle")){
-        config_setting_set_string(setting, timestyle);
-      }
-    } else if ((*settings)[i].type == SETTING_MULTI){
-      if (!strcmp((*settings)[i].refLabel, "owner")){
-        subgroup = config_setting_add(group, "owner", CONFIG_TYPE_GROUP);
-        for (v = 0; v < binIndex; v++){
-          setting = config_setting_add(subgroup, (*bins)[v].settingLabel, CONFIG_TYPE_INT);
-          config_setting_set_int(setting, (*bins)[v].boolVal);
+      } else if ((*settings)[i].type == SETTING_FREE){
+        if (!strcmp((*settings)[i].refLabel, "visualPath")){
+          config_setting_set_string(setting, (*settings)[i].charSetting);
+        } else if (!strcmp((*settings)[i].refLabel, "pagerPath")){
+          config_setting_set_string(setting, (*settings)[i].charSetting);
         }
-      }
-    } else if ((*settings)[i].type == SETTING_FREE){
-      setting = config_setting_add(group, (*settings)[i].refLabel, CONFIG_TYPE_STRING);
-      if (!strcmp((*settings)[i].refLabel, "visualPath")){
-        config_setting_set_string(setting, (*settings)[i].charSetting);
-      } else if (!strcmp((*settings)[i].refLabel, "pagerPath")){
-        config_setting_set_string(setting, (*settings)[i].charSetting);
       }
     }
   }
@@ -513,7 +580,9 @@ void applyShowSettings(settingIndex **settings, t1CharValues **values, int items
 {
   int i, j;
   for (i = 0; i < items; i++){
-    if (!strcmp((*settings)[i].refLabel, "color")){
+    if (!strcmp((*settings)[i].refLabel, "enable-mouse")){
+      enableMouse = (*settings)[i].intSetting;
+    } else if (!strcmp((*settings)[i].refLabel, "color")){
       filecolors = (*settings)[i].intSetting;
     } else if (!strcmp((*settings)[i].refLabel, "reverse")){
       reverse = (*settings)[i].intSetting;
@@ -565,6 +634,12 @@ void applyShowSettings(settingIndex **settings, t1CharValues **values, int items
       showSizeBlocks = (*settings)[i].intSetting;
     } else if (!strcmp((*settings)[i].refLabel, "defined-editor")){
       useDefinedEditor = (*settings)[i].intSetting;
+    } else if (!strcmp((*settings)[i].refLabel, "scrollStep")){
+      for (j = 0; j < valuesCount; j++){
+        if (!strcmp((*values)[j].refLabel, "scrollStep") && ((*values)[j].index == (*settings)[i].intSetting)){
+          showScrollStep = strToInt((*values)[j].value);
+        }
+      }
     } else if (!strcmp((*settings)[i].refLabel, "visualPath")){
       free(visualPath);
       visualPath = calloc((strlen((*settings)[i].charSetting) + 1), sizeof(char));
@@ -583,10 +658,18 @@ int generateShowSettingsVars()
 {
   uid_t uid=getuid(), euid=geteuid();
   int items = 0;
-  int markedCount = 0, sortmodeCount = 0, timestyleCount = 0, ownerCount = 0;
+  int markedCount = 0, sortmodeCount = 0, timestyleCount = 0, ownerCount = 0, scrollStepCount = 0;
   int sortmodeInt = 0, timestyleInt = 0;
   int charValuesCount = 0;
   int binValuesCount = 0;
+
+  settingSectionsShowCount = 0;
+
+  addSettingSection(&settingSectionsShow, &settingSectionsShowCount, "global",       _("Global Settings"));
+  addSettingSection(&settingSectionsShow, &settingSectionsShowCount, "display",      _("Display Settings"));
+  addSettingSection(&settingSectionsShow, &settingSectionsShowCount, "file",         _("File Settings"));
+  addSettingSection(&settingSectionsShow, &settingSectionsShowCount, "behavior",     _("Behavior Settings"));
+  addSettingSection(&settingSectionsShow, &settingSectionsShowCount, "externalapps", _("External App Settings"));
 
   addT1CharValue(&charValuesShow, &charValuesCount, &markedCount, "marked", _("never"));
   addT1CharValue(&charValuesShow, &charValuesCount, &markedCount, "marked", _("always"));
@@ -602,6 +685,16 @@ int generateShowSettingsVars()
   addT1CharValue(&charValuesShow, &charValuesCount, &timestyleCount, "timestyle", _("long-iso"));
   addT1CharValue(&charValuesShow, &charValuesCount, &timestyleCount, "timestyle", _("full-iso"));
 
+  addT1CharValue(&charValuesShow, &charValuesCount, &scrollStepCount, "scrollStep", "1");
+  addT1CharValue(&charValuesShow, &charValuesCount, &scrollStepCount, "scrollStep", "2");
+  addT1CharValue(&charValuesShow, &charValuesCount, &scrollStepCount, "scrollStep", "3");
+  addT1CharValue(&charValuesShow, &charValuesCount, &scrollStepCount, "scrollStep", "4");
+  addT1CharValue(&charValuesShow, &charValuesCount, &scrollStepCount, "scrollStep", "5");
+  addT1CharValue(&charValuesShow, &charValuesCount, &scrollStepCount, "scrollStep", "6");
+  addT1CharValue(&charValuesShow, &charValuesCount, &scrollStepCount, "scrollStep", "7");
+  addT1CharValue(&charValuesShow, &charValuesCount, &scrollStepCount, "scrollStep", "8");
+  addT1CharValue(&charValuesShow, &charValuesCount, &scrollStepCount, "scrollStep", "9");
+
   addT2BinValue(&binValuesShow, &binValuesCount, &ownerCount, "owner", "owner", 1);
   addT2BinValue(&binValuesShow, &binValuesCount, &ownerCount, "owner", "group", 0);
   addT2BinValue(&binValuesShow, &binValuesCount, &ownerCount, "owner", "author", 0);
@@ -609,35 +702,37 @@ int generateShowSettingsVars()
   sortmodeInt = textValueLookup(&charValuesShow, &charValuesCount, "sortmode", sortmode);
   timestyleInt = textValueLookup(&charValuesShow, &charValuesCount, "timestyle", timestyle);
 
-  importSetting(&settingIndexShow, &items, "color",          _("Display file colors"), SETTING_BOOL, NULL, filecolors, -1, 0);
-  importSetting(&settingIndexShow, &items, "marked",         _("Show marked file info"), SETTING_SELECT, NULL, markedinfo, markedCount, 0);
-  importSetting(&settingIndexShow, &items, "sortmode",       _("Sorting mode"), SETTING_SELECT, NULL, sortmodeInt, sortmodeCount, 0);
-  importSetting(&settingIndexShow, &items, "reverse",        _("Reverse sorting order"), SETTING_BOOL, NULL, reverse, -1, 0);
-  importSetting(&settingIndexShow, &items, "timestyle",      _("Time style"), SETTING_SELECT, NULL, timestyleInt, timestyleCount, 0);
-  importSetting(&settingIndexShow, &items, "hidden",         _("Show hidden files"), SETTING_BOOL, NULL, showhidden, -1, 0);
-  importSetting(&settingIndexShow, &items, "ignore-backups", _("Hide backup files"), SETTING_BOOL, NULL, showbackup, -1, 1);
-  importSetting(&settingIndexShow, &items, "no-sf",          _("Use 3rd party pager over SF"), SETTING_BOOL, NULL, useEnvPager, -1, 0);
+  importSetting(&settingIndexShow, &items, "global",       "enable-mouse",   _("Enable mouse (Requires restart)"), SETTING_BOOL, SETTING_STORE_INT, NULL, enableMouse, -1, 0);
+  importSetting(&settingIndexShow, &items, "display",      "color",          _("Display file colors"), SETTING_BOOL, SETTING_STORE_INT, NULL, filecolors, -1, 0);
+  importSetting(&settingIndexShow, &items, "display",      "marked",         _("Show marked file info"), SETTING_SELECT, SETTING_STORE_STRING, NULL, markedinfo, markedCount, 0);
+  importSetting(&settingIndexShow, &items, "display",      "sortmode",       _("Sorting mode"), SETTING_SELECT, SETTING_STORE_STRING, NULL, sortmodeInt, sortmodeCount, 0);
+  importSetting(&settingIndexShow, &items, "display",      "reverse",        _("Reverse sorting order"), SETTING_BOOL, SETTING_STORE_INT, NULL, reverse, -1, 0);
+  importSetting(&settingIndexShow, &items, "display",      "timestyle",      _("Time style"), SETTING_SELECT, SETTING_STORE_STRING, NULL, timestyleInt, timestyleCount, 0);
+  importSetting(&settingIndexShow, &items, "file",         "hidden",         _("Show hidden files"), SETTING_BOOL, SETTING_STORE_INT, NULL, showhidden, -1, 0);
+  importSetting(&settingIndexShow, &items, "file",         "ignore-backups", _("Hide backup files"), SETTING_BOOL, SETTING_STORE_INT, NULL, showbackup, -1, 1);
+  importSetting(&settingIndexShow, &items, "behavior",     "no-sf",          _("Use 3rd party pager over SF"), SETTING_BOOL, SETTING_STORE_INT, NULL, useEnvPager, -1, 0);
   if (uid == 0 || euid == 0){
-    importSetting(&settingIndexShow, &items, "no-danger",      _("Hide danger lines as root"), SETTING_BOOL, NULL, danger, -1, 1);
+    importSetting(&settingIndexShow, &items, "display",      "no-danger",      _("Hide danger lines as root"), SETTING_BOOL, SETTING_STORE_INT, NULL, danger, -1, 1);
   }
-  importSetting(&settingIndexShow, &items, "si",             _("Use SI units"), SETTING_BOOL, NULL, si, -1, 0);
-  importSetting(&settingIndexShow, &items, "human-readable", _("Human readable sizes"), SETTING_BOOL, NULL, human, -1, 0);
-  importSetting(&settingIndexShow, &items, "showInodes",     _("Show Inode"), SETTING_BOOL, NULL, showInodes, -1, 0);
-  importSetting(&settingIndexShow, &items, "numericIds",     _("Use numeric UID and GIDs"), SETTING_BOOL, NULL, numericIds, -1, 0);
-  importSetting(&settingIndexShow, &items, "show-on-enter",  _("Enter key acts like Show"), SETTING_BOOL, NULL, enterAsShow, -1, 0);
-  importSetting(&settingIndexShow, &items, "owner",          _("Owner Column"), SETTING_MULTI, NULL, ogavis, ownerCount, 0);
-  importSetting(&settingIndexShow, &items, "context",        _("Show security context of files"), SETTING_BOOL, NULL, showContext, -1, 0);
-  importSetting(&settingIndexShow, &items, "skip-to-first",  _("Skip to the first object"), SETTING_BOOL, NULL, skipToFirstFile, -1, 0);
+  importSetting(&settingIndexShow, &items, "display",      "si",             _("Use SI units"), SETTING_BOOL, SETTING_STORE_INT, NULL, si, -1, 0);
+  importSetting(&settingIndexShow, &items, "display",      "human-readable", _("Human readable sizes"), SETTING_BOOL, SETTING_STORE_INT, NULL, human, -1, 0);
+  importSetting(&settingIndexShow, &items, "display",      "showInodes",     _("Show Inode"), SETTING_BOOL, SETTING_STORE_INT, NULL, showInodes, -1, 0);
+  importSetting(&settingIndexShow, &items, "display",      "numericIds",     _("Use numeric UID and GIDs"), SETTING_BOOL, SETTING_STORE_INT, NULL, numericIds, -1, 0);
+  importSetting(&settingIndexShow, &items, "behavior",     "show-on-enter",  _("Enter key acts like Show"), SETTING_BOOL, SETTING_STORE_INT, NULL, enterAsShow, -1, 0);
+  importSetting(&settingIndexShow, &items, "display",      "owner",          _("Owner Column"), SETTING_MULTI, SETTING_STORE_GROUP, NULL, ogavis, ownerCount, 0);
+  importSetting(&settingIndexShow, &items, "display",      "context",        _("Show security context of files"), SETTING_BOOL, SETTING_STORE_INT, NULL, showContext, -1, 0);
+  importSetting(&settingIndexShow, &items, "behavior",     "skip-to-first",  _("Skip to the first object"), SETTING_BOOL, SETTING_STORE_INT, NULL, skipToFirstFile, -1, 0);
 #ifdef HAVE_ACL_TYPE_EXTENDED
-  importSetting(&settingIndexShow, &items, "showXAttrs",     _("Display extended attribute keys and sizes"), SETTING_BOOL, NULL, showXAttrs, -1, 0);
+  importSetting(&settingIndexShow, &items, "display",      "showXAttrs",     _("Display extended attribute keys and sizes"), SETTING_BOOL, SETTING_STORE_INT, NULL, showXAttrs, -1, 0);
 #endif
-  importSetting(&settingIndexShow, &items, "directory",      _("Display only current directory"), SETTING_BOOL, NULL, currentDirOnly, -1, 0);
-  importSetting(&settingIndexShow, &items, "only-dirs",      _("Display only directories"), SETTING_BOOL, NULL, dirOnly, -1, 0);
-  importSetting(&settingIndexShow, &items, "sizeblocks",     _("Show allocated size in blocks"), SETTING_BOOL, NULL, showSizeBlocks, -1, 0);
-  importSetting(&settingIndexShow, &items, "defined-editor", _("Override default editor"), SETTING_BOOL, NULL, useDefinedEditor, -1, 0);
-  importSetting(&settingIndexShow, &items, "visualPath",     _("Editor utility program command"), SETTING_FREE, visualPath, -1, -1, 0);
-  importSetting(&settingIndexShow, &items, "defined-pager",  _("Override default pager"), SETTING_BOOL, NULL, useDefinedPager, -1, 0);
-  importSetting(&settingIndexShow, &items, "pagerPath",      _("Pager utility program command"), SETTING_FREE, pagerPath, -1, -1, 0);
+  importSetting(&settingIndexShow, &items, "display",      "directory",      _("Display only current directory"), SETTING_BOOL, SETTING_STORE_INT, NULL, currentDirOnly, -1, 0);
+  importSetting(&settingIndexShow, &items, "display",      "only-dirs",      _("Display only directories"), SETTING_BOOL, SETTING_STORE_INT, NULL, dirOnly, -1, 0);
+  importSetting(&settingIndexShow, &items, "display",      "sizeblocks",     _("Show allocated size in blocks"), SETTING_BOOL, SETTING_STORE_INT, NULL, showSizeBlocks, -1, 0);
+  importSetting(&settingIndexShow, &items, "behavior",     "scrollStep",     _("Mouse scroll interval size"), SETTING_SELECT, SETTING_STORE_INT, NULL, showScrollStep - 1, scrollStepCount, 0);
+  importSetting(&settingIndexShow, &items, "externalapps", "defined-editor", _("Override default editor"), SETTING_BOOL, SETTING_STORE_INT, NULL, useDefinedEditor, -1, 0);
+  importSetting(&settingIndexShow, &items, "externalapps", "visualPath",     _("Editor utility program command"), SETTING_FREE, SETTING_STORE_STRING, visualPath, -1, -1, 0);
+  importSetting(&settingIndexShow, &items, "externalapps", "defined-pager",  _("Override default pager"), SETTING_BOOL, SETTING_STORE_INT, NULL, useDefinedPager, -1, 0);
+  importSetting(&settingIndexShow, &items, "externalapps", "pagerPath",      _("Pager utility program command"), SETTING_FREE, SETTING_STORE_STRING, pagerPath, -1, -1, 0);
 
   populateBool(&binValuesShow, "owner", ogavis, binValuesCount);
 
@@ -824,32 +919,48 @@ int setBlockSize(const char * arg){
 
 void refreshScreenShow()
 {
-  unloadShowMenuLabels();
-  refreshShowMenuLabels();
+  // unloadShowMenuLabels();
+  // refreshShowMenuLabels();
   switch(viewMode)
     {
     case 0: // Directory View
       resizeDisplayDir(ob);
-      wPrintMenu(0, 0, topMenuBuffer);
-      wPrintMenu(LINES-1, 0, bottomMenuBuffer);
+      if (topMenuBuffer){
+        wPrintMenu(0, 0, topMenuBuffer);
+      }
+      if (bottomMenuBuffer){
+        wPrintMenu(LINES-1, 0, bottomMenuBuffer);
+      }
       break;
     case 1: // Global Menu View
-      wPrintMenu(0, 0, topMenuBuffer);
+      if (topMenuBuffer){
+        wPrintMenu(0, 0, topMenuBuffer);
+      }
       break;
     case 2: // Colors View
       themeBuilder();
       break;
     case 3: // Settings View
-      wPrintMenu(0, 0, topMenuBuffer);
+      if (topMenuBuffer){
+        wPrintMenu(0, 0, topMenuBuffer);
+      }
       break;
     case 4: // SF View
       updateView();
-      wPrintMenu(0, 0, topMenuBuffer);
-      wPrintMenu(LINES-1, 0, bottomMenuBuffer);
+      if (topMenuBuffer){
+        wPrintMenu(0, 0, topMenuBuffer);
+      }
+      if (bottomMenuBuffer){
+        wPrintMenu(LINES-1, 0, bottomMenuBuffer);
+      }
       break;
     default: // Fallback
-      wPrintMenu(0, 0, topMenuBuffer);
-      wPrintMenu(LINES-1, 0, bottomMenuBuffer);
+      if (topMenuBuffer){
+        wPrintMenu(0, 0, topMenuBuffer);
+      }
+      if (bottomMenuBuffer){
+        wPrintMenu(LINES-1, 0, bottomMenuBuffer);
+      }
       break;
     }
 }
@@ -917,10 +1028,14 @@ Options specific to show:\n\
       --running                display number of parent show processes\n\
       --settings-menu          launch settings menu\n\
       --edit-themes            launchs directly into the theme editor\n\
-      --skip-to-first          skips navigation items if at the top of list\n"), stdout);
+      --skip-to-first          skips navigation items if at the top of list\n\
+      --enable-mouse=BOOLEAN   enables/disables mouse support. Can be either\n\
+                                 'true' or 'false'\n"), stdout);
   fputs (("\n\
 The THEME argument can be:\n"), stdout);
   listThemes();
+  fputs (("\n\
+The MARKED argument can be: always; never; auto.\n"), stdout);
   fputs (("\n\
 Exit status:\n\
  0  if OK,\n\
@@ -1040,8 +1155,9 @@ int main(int argc, char *argv[])
          {"full-time",        no_argument,       0, GETOPT_FULLTIME_CHAR},
          {"edit-themes",      no_argument,       0, GETOPT_THEMEEDIT_CHAR},
          {"settings-menu",    no_argument,       0, GETOPT_OPTIONSMENU_CHAR},
-         {"contect",          no_argument,       0, 'Z'},
+         {"context",          no_argument,       0, 'Z'},
          {"skip-to-first",    no_argument,       0, GETOPT_SKIPTOFIRST_CHAR},
+         {"enable-mouse",     required_argument, 0, GETOPT_ENABLE_MOUSE},
          {0, 0, 0, 0}
         };
       int option_index = 0;
@@ -1216,6 +1332,21 @@ Valid arguments are:\n\
     case GETOPT_SKIPTOFIRST_CHAR:
       skipToFirstFile = 1;
       break;
+    case GETOPT_ENABLE_MOUSE:
+      if (!strcmp(optarg, "true")) {
+        enableMouse = true;
+      } else if (!strcmp(optarg, "false")) {
+        enableMouse = false;
+      } else {
+        printf(_("%s: invalid argument '%s' for 'enable-mouse'\n"), argv[0], optarg);
+        fputs ((_("\
+Valid arguments are:\n\
+- true\n\
+- false\n")), stdout);
+        printf(_("Try '%s --help' for more information.\n"), argv[0]);
+        exit(2);
+      }
+      break;
     case '@':
       showXAttrs = 1;
       break;
@@ -1259,14 +1390,20 @@ Valid arguments are:\n\
   curs_set(FALSE); // Hide Curser (Will want to bring it back later)
   keypad(stdscr, TRUE);
 
-  generateShowSettingsVars();
+  // Enable mouse events
+  if (enableMouse) {
+    mousemask(ALL_MOUSE_EVENTS | REPORT_MOUSE_POSITION, NULL);
+    mouseinterval(0);
+  }
+
+  showMenuItems = generateShowSettingsVars();
 
   if (launchThemeEditor == 1){
     themeBuilder();
     theme_menu_inputs();
     exittoshell();
   } else if (launchSettingsMenu == 1) {
-    settingsMenuView(showSettingsMenuLabel, showSettingsMenuSize, showSettingsMenu, &settingIndexShow, &charValuesShow, &binValuesShow, totalCharItemsShow, totalBinItemsShow, generateShowSettingsVars(), "show");
+    settingsMenuView(showSettingsMenuLabel, showSettingsMenuSize, showSettingsMenu, showSettingsMenuButtons, &settingSectionsShow, settingSectionsShowCount, &settingIndexShow, &charValuesShow, &binValuesShow, totalCharItemsShow, totalBinItemsShow, generateShowSettingsVars(), "show");
     exittoshell();
   } else {
     // Remaining arguments passed as working directory

@@ -1,7 +1,7 @@
 /*
   DF-SHOW: An interactive directory/file browser written for Unix-like systems.
   Based on the applications from the PC-DOS DF-EDIT suite by Larry Kroeker.
-  Copyright (C) 2018-2024  Robert Ian Hawdon
+  Copyright (C) 2018-2025  Robert Ian Hawdon
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -635,12 +635,49 @@ int writePermsEntry(char * perms, mode_t mode, int axFlag, int sLinkCheck){
 
 }
 
+char* sanitizeFilename(const char* filename){
+  if (!filename) return NULL;
+
+  size_t extraChars = 0;
+
+  const char* ptr = filename;
+  while (*ptr) {
+    if (*ptr == '\r') (extraChars = extraChars + 4);
+    ptr++;
+  }
+
+  size_t orig_len = strlen(filename);
+  char* escaped = malloc(orig_len + extraChars + 1);
+
+  if (!escaped) return NULL;
+
+  const char* src = filename;
+  char* dst = escaped;
+
+  while (*src) {
+    if (*src == '\r'){
+      *dst++ = '$';
+      *dst++ = '\'';
+      *dst++ = '\\';
+      *dst++ = 'r';
+      *dst++ = '\'';
+    } else {
+      *dst++ = *src;
+    }
+    src++;
+  }
+  *dst = '\0';
+
+  return escaped;
+}
+
 void writeResultStruct(results* ob, const char * filename, struct stat buffer, int count, bool xAcl, ssize_t xattr, int seLinuxCon, char * contextText, char * xattrs, const int xattrsNum){
   char perms[12] = {0};
   struct group *gr;
   struct passwd *pw;
   struct passwd *au;
   char *filedate;
+  char *sanitizedFilename;
   ssize_t cslinklen = 0, datedisplayLen = 0;
   int axFlag = 0;
   int i;
@@ -740,6 +777,13 @@ void writeResultStruct(results* ob, const char * filename, struct stat buffer, i
 
   ob[count].name = malloc(sizeof(char) * (strlen(filename) + 1));
   snprintf(ob[count].name, (strlen(filename) + 1), "%s", filename);
+
+  sanitizedFilename = sanitizeFilename(filename);
+
+  ob[count].displayName = malloc(sizeof(char) * (strlen(sanitizedFilename) + 1));
+  snprintf(ob[count].displayName, (strlen(sanitizedFilename) + 1), "%s", sanitizedFilename);
+
+  free(sanitizedFilename);
 
   if (S_ISLNK(buffer.st_mode)) {
     ob[count].slink = malloc(sizeof(char) * 4096);
@@ -1277,10 +1321,10 @@ void printEntry(int start, int inodelen, int hlinklen, int sizeblocklen, int own
 
   free(printPerm);
 
-  // Writing Name Segment Data
+  // Writing Display Name Segment Data
   nameSegmentData = malloc(sizeof(nameStruct));
-  nameSegmentData[0].name = malloc(sizeof(wchar_t) * (strlen(ob[currentitem].name) + 1));
-  swprintf(nameSegmentData[0].name, (strlen(ob[currentitem].name) + 1), L"%s", ob[currentitem].name);
+  nameSegmentData[0].name = malloc(sizeof(wchar_t) * (strlen(ob[currentitem].displayName) + 1));
+  swprintf(nameSegmentData[0].name, (strlen(ob[currentitem].displayName) + 1), L"%s", ob[currentitem].displayName);
   if ( !strcmp(ob[currentitem].slink, "") ){
     nameSegmentData[0].linkStat = 0;
     nameSegmentData[0].link = malloc(sizeof(wchar_t));
@@ -1307,11 +1351,11 @@ void printEntry(int start, int inodelen, int hlinklen, int sizeblocklen, int own
   nameSegmentData[0].padding = wGenPadding(nameFullSegPadding);
 
 
-  entryNameLen = snprintf(NULL, 0, "%s", ob[currentitem].name) + 1;
+  entryNameLen = snprintf(NULL, 0, "%s", ob[currentitem].displayName) + 1;
 
   entryName = realloc(entryName, sizeof(wchar_t) * (entryNameLen + 1));
 
-  swprintf(entryName, (entryNameLen + 1), L"%s", ob[currentitem].name);
+  swprintf(entryName, (entryNameLen + 1), L"%s", ob[currentitem].displayName);
 
   entryNameLen = wcswidth(entryName, wcslen(entryName));
 
@@ -1785,11 +1829,11 @@ int seglength(const void *seg, char *segname, int LEN)
       }
       else if (!strcmp(segname, "inode")) {
         snprintf(inodestr, 32, "%ju", (uintmax_t)dfseg[i].inode);
-        len = strlen(inodestr);
+        len = strlen(inodestr) + 1;
       }
       else if (!strcmp(segname, "sizeBlocks")) {
         snprintf(sizeblocksstr, 32, "%ju", (uintmax_t)dfseg[i].sizeBlocks);
-        len = strlen(sizeblocksstr);
+        len = strlen(sizeblocksstr) + 1;
       }
       else if (!strcmp(segname, "size")) {
         if (human){
@@ -2574,7 +2618,7 @@ void display_dir(char *pwd, results* ob){
   }
 
   // Replacement to "sanitizeTopFileRef" - should be simpler with the lookup table.
-  if ((selected > bottomFileRef) || ((selected < topfileref + 1)) || ((bottomFileRef - topfileref - 1) > displaysize) || lineStart > selected){
+  if ((selected > bottomFileRef) || ((selected < topfileref + 1)) || ((bottomFileRef - topfileref - 1) > displaysize)){
     adjustViewForSelected(selected, el, listLen, displaysize);
   }
 

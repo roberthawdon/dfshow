@@ -5,6 +5,13 @@
 #define M_NONE 0x00
 #define M_NORMAL 0x01
 
+#define D_DOWN    0
+#define D_UP      1
+#define D_LEFT    2
+#define D_RIGHT   3
+#define D_PG_UP   4
+#define D_PG_DOWN 5
+
 #include "customtypes.h"
 
 void refreshScreen(char *application);
@@ -35,3 +42,4 @@ void buildCommandArguments(const char *cmd, char **args, size_t items);
 int launchExternalCommand(char *cmd, char **args, ushort_t mode);
 void sigintHandle(int sig);
 int exittoshell();
+int strToInt(const char *str);

@@ -1,7 +1,7 @@
 /*
   DF-SHOW: An interactive directory/file browser written for Unix-like systems.
   Based on the applications from the PC-DOS DF-EDIT suite by Larry Kroeker.
-  Copyright (C) 2018-2024  Robert Ian Hawdon
+  Copyright (C) 2018-2025  Robert Ian Hawdon
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -43,6 +43,8 @@
 DIR *folder;
 FILE *file;
 
+MEVENT event;
+
 int c;
 int * pc = &c;
 
@@ -51,12 +53,14 @@ bool parentShow = false;
 int exitCode = 0;
 int enableCtrlC = 0;
 
-char globalConfLocation[128];
-char homeConfLocation[128];
+char globalConfLocation[4096];
+char homeConfLocation[4096];
 
-char themeName[128] = "default";
+char themeName[256] = "default";
 
 char *errmessage;
+
+bool enableMouse = false;
 
 int displaycount;
 
@@ -221,27 +225,28 @@ int splitString(splitStrStruct **result, char *input, int splitChar, bool filePa
 int createParentsInput(char *path)
 {
   int result = 0;
+  int r;
   char *message;
 
-  setDynamicChar(&message, _("Directory [<%s>] does not exist. Create it? !Yes/!No (enter = no)"), path);
-
-  printMenu(0,0, message);
-
+  setDynamicChar(&message, _("Directory [<%s>] does not exist. Create it? (Default = no)"), path);
+  r = commonConfirmMenu(0,0, message, false, NO);
+  free(message);
   while(1)
     {
-      *pc = getch10th();
-      if (*pc == 'y'){
-        result = 1;
-        break;
-      } else if ((*pc == 'n') || (*pc == 10)){
-        result = 0;
-        break;
-      } else if (*pc == 27){
-        result = -1;
-        break;
-      }
+      switch(r)
+        {
+          case YES:
+            result = 1;
+            break;
+          case NO:
+            result = 0;
+            break;
+          default:
+            result = -1;
+            break;
+        }
+      break;
     }
-  free(message);
   return(result);
 }
 
@@ -349,7 +354,7 @@ char * objectFromPath(const char *myStr){
 void printVersion(char* programName){
   printf (("Directory File Show (DF-SHOW) - %s %s\n"), programName, VERSION);
   fputs (("\
-Copyright (C) 2024 Robert Ian Hawdon\n\
+Copyright (C) 2025 Robert Ian Hawdon\n\
 License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.\n\
 This program comes with ABSOLUTELY NO WARRANTY. This is free software, and you\n\
 are welcome to redistribute it under certain conditions.\n"), stdout);
@@ -765,3 +770,16 @@ void sigintHandle(int sig){
   // Does nothing
 }
 
+int strToInt(const char *str){
+  char *endptr;
+  int num = (int)strtol(str, &endptr, 10);
+
+  // Check for conversion errors
+  if (endptr == str) {
+      return -1;
+      // No conversion performed (invalid input)
+  }
+
+  return num;
+
+}

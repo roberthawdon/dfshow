@@ -1,7 +1,7 @@
 /*
   DF-SHOW: An interactive directory/file browser written for Unix-like systems.
   Based on the applications from the PC-DOS DF-EDIT suite by Larry Kroeker.
-  Copyright (C) 2018-2024  Robert Ian Hawdon
+  Copyright (C) 2018-2025  Robert Ian Hawdon
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -40,10 +40,22 @@ bool findSet = false;
 menuDef *sfFileMenu;
 int sfFileMenuSize = 0;
 wchar_t *sfFileMenuLabel;
+menuButton *sfFileMenuButtons;
 
 menuDef *caseMenu;
 int caseMenuSize = 0;
 wchar_t *caseMenuLabel;
+menuButton *caseMenuButtons;
+
+menuDef *sfSettingsMenu;
+int sfSettingsMenuSize;
+wchar_t *sfSettingsMenuLabel;
+menuButton *sfSettingsMenuButtons;
+
+extern MEVENT event;
+
+extern int topMenuStart;
+extern int bottomMenuStart;
 
 extern bool parentShow;
 
@@ -52,15 +64,14 @@ extern int * pc;
 
 extern int abortinput;
 
+extern settingSection *settingSectionsSf;
+extern int settingSectionsSfCount;
+
 extern settingIndex *settingIndexSf;
 extern t1CharValues *charValuesSf;
 extern t2BinValues *binValuesSf;
 extern int totalCharItemsSf;
 extern int totalBinItemsSf;
-
-menuDef *sfSettingsMenu;
-int sfSettingsMenuSize;
-wchar_t *sfSettingsMenuLabel;
 
 extern char regexinput[1024];
 extern FILE *file;
@@ -72,6 +83,8 @@ extern int totallines;
 extern int longestlongline;
 extern int viewMode;
 
+extern int sfScrollStep;
+
 extern int wrap;
 extern int wrapmode;
 
@@ -80,6 +93,8 @@ extern char *line;
 
 extern long int *filePos;
 extern wchar_t *longline;
+
+extern int sfMenuItems;
 
 void generateDefaultSfMenus(){
   // File Menu
@@ -109,9 +124,9 @@ void generateDefaultSfMenus(){
 }
 
 void refreshSfMenuLabels(){
-  sfFileMenuLabel     = genMenuDisplayLabel("", sfFileMenu, sfFileMenuSize, "", 1);
-  caseMenuLabel     = genMenuDisplayLabel("", caseMenu, caseMenuSize, _("(enter = I)"), 0);
-  sfSettingsMenuLabel = genMenuDisplayLabel(_("SF Settings Menu -"), sfSettingsMenu, sfSettingsMenuSize, "", 1);
+  sfFileMenuLabel     = genMenuDisplayLabel("", sfFileMenu, sfFileMenuSize, "", 1, &sfFileMenuButtons);
+  caseMenuLabel     = genMenuDisplayLabel("", caseMenu, caseMenuSize, _("(enter = I)"), 0, &caseMenuButtons);
+  sfSettingsMenuLabel = genMenuDisplayLabel(_("SF Settings Menu -"), sfSettingsMenu, sfSettingsMenuSize, "", 1, &sfSettingsMenuButtons);
 }
 
 void unloadSfMenuLabels(){
@@ -170,7 +185,16 @@ int show_file_find_case_input()
   while(1)
     {
       *pc = getch10th();
-      if (*pc == menuHotkeyLookup(caseMenu, "c1_ignore", caseMenuSize) || *pc == 10){
+      loop:
+      if (getmouse(&event) == OK) {
+        if (event.bstate & BUTTON1_PRESSED){
+          if (event.y == 0){
+            // Setting key based on click
+            *pc = menuHotkeyLookup(caseMenu, (menuButtonLookup(caseMenuButtons, caseMenuSize, event.x, event.y, 0, 0, true)), caseMenuSize);
+            goto loop;
+          }
+        }
+      } else if (*pc == menuHotkeyLookup(caseMenu, "c1_ignore", caseMenuSize) || *pc == 10){
         result = 0;
         break;
       } else if (*pc == menuHotkeyLookup(caseMenu, "c2_sensitive", caseMenuSize)){
@@ -222,6 +246,66 @@ void show_file_position_input(int currentpos)
   wPrintMenu(0, 0, sfFileMenuLabel);
 }
 
+void sfNavigate(int direction, int step){
+
+  int testStep = 0;
+  int i = 0;
+
+  switch(direction){
+    case D_DOWN:
+      testStep = (totallines +1) - topline;
+      if ((testStep > 0) && (testStep >= step)){
+        i = step;
+      } else if ((testStep > 0) && (testStep < step)){
+        i = testStep;
+      } else {
+        break;
+      }
+      topline = topline + i;
+      updateView();
+      break;
+    case D_UP:
+      if (topline > step){
+        topline = topline - step;
+      } else if (topline <= step) {
+        topline = 1;
+      }
+      updateView();
+      break;
+    case D_LEFT:
+      if ((leftcol > 1) && (wrap != 1)){
+        leftcol = leftcol - step;
+        updateView();
+      }
+      break;
+    case D_RIGHT:
+      if ((leftcol < longestlongline) && (wrap != 1)){
+        leftcol = leftcol + step;
+        updateView();
+      }
+      break;
+    default:
+      break;
+  }
+
+}
+
+int toggleWrap(){
+  if (wrap){
+    updateMenuItem(&sfFileMenu, &sfFileMenuSize, "f_wrap", _("!Wrap-on"));
+    wrap = 0;
+  } else {
+    updateMenuItem(&sfFileMenu, &sfFileMenuSize, "f_wrap", _("!Wrap-off"));
+    leftcol = 1;
+    wrap = 1;
+  }
+  unloadSfMenuLabels();
+  refreshSfMenuLabels();
+  wPrintMenu(0,0,sfFileMenuLabel);
+  updateView();
+  return(wrap);
+}
+
 void show_file_inputs()
 {
   int e = 0;
@@ -230,7 +314,20 @@ void show_file_inputs()
   while(1)
     {
       *pc = getch10th();
-      if (*pc == menuHotkeyLookup(sfFileMenu,"f_find", sfFileMenuSize)){
+      loop:
+      if (getmouse(&event) == OK) {
+        if (event.bstate & BUTTON1_PRESSED){
+          if (event.y == 0){
+            // Setting key based on click
+            *pc = menuHotkeyLookup(sfFileMenu, (menuButtonLookup(sfFileMenuButtons, sfFileMenuSize, event.x, event.y, 0, 0, true)), sfFileMenuSize);
+            goto loop;
+          }
+        } else if(event.bstate & BUTTON5_PRESSED) {
+          sfNavigate(D_DOWN, sfScrollStep);
+        } else if (event.bstate & BUTTON4_PRESSED){
+          sfNavigate(D_UP, sfScrollStep);
+        }
+      } else if (*pc == menuHotkeyLookup(sfFileMenu,"f_find", sfFileMenuSize)){
         e = show_file_find_case_input();
         if (e != -1){
           show_file_find(e, false);
@@ -256,7 +353,8 @@ void show_file_inputs()
         }
         updateView();
       } else if (*pc == menuHotkeyLookup(sfFileMenu, "f_config", sfFileMenuSize)){
-        settingsMenuView(sfSettingsMenuLabel, sfSettingsMenuSize, sfSettingsMenu, &settingIndexSf, &charValuesSf, &binValuesSf, totalCharItemsSf, totalBinItemsSf, generateSfSettingsVars(), "sf");
+        sfMenuItems = generateSfSettingsVars(); // This might need moving
+        settingsMenuView(sfSettingsMenuLabel, sfSettingsMenuSize, sfSettingsMenu, sfSettingsMenuButtons, &settingSectionsSf, settingSectionsSfCount, &settingIndexSf, &charValuesSf, &binValuesSf, totalCharItemsSf, totalBinItemsSf, generateSfSettingsVars(), "sf");
         wPrintMenu(0, 0, sfFileMenuLabel);
         if(wrap){
         }
@@ -268,24 +366,13 @@ void show_file_inputs()
         free(longline);
         free(filePos);
         fclose(stream);
-	if (!parentShow){
+        if (!parentShow){
           exittoshell();
-	} else {
-          return;
-	}
-      } else if (*pc == menuHotkeyLookup(sfFileMenu, "f_wrap", sfFileMenuSize)){
-        if (wrap){
-          updateMenuItem(&sfFileMenu, &sfFileMenuSize, "f_wrap", _("!Wrap-on"));
-          wrap = 0;
         } else {
-          updateMenuItem(&sfFileMenu, &sfFileMenuSize, "f_wrap", _("!Wrap-off"));
-          leftcol = 1;
-          wrap = 1;
+          return;
         }
-        unloadSfMenuLabels();
-        refreshSfMenuLabels();
-        wPrintMenu(0,0,sfFileMenuLabel);
-        updateView();
+      } else if (*pc == menuHotkeyLookup(sfFileMenu, "f_wrap", sfFileMenuSize)){
+        toggleWrap();
       } else if (*pc == menuHotkeyLookup(sfFileMenu, "f_01", sfFileMenuSize) || *pc == 338){
         topline = topline + displaysize;
         if (topline > totallines + 1){
@@ -306,29 +393,16 @@ void show_file_inputs()
         updateView();
       } else if (*pc == 258){
         // Down Arrow
-        if (topline < totallines + 1){
-          topline++;
-          //loadFile(fileName);
-          updateView();
-        }
+        sfNavigate(D_DOWN, 1);
       } else if (*pc == 259){
         // Up Arrow
-        if (topline > 1){
-          topline--;
-          updateView();
-        }
+        sfNavigate(D_UP, 1);
       } else if (*pc == 260){
         // Left Arrow
-        if ((leftcol > 1) && (wrap != 1)){
-          leftcol--;
-          updateView();
-        }
+        sfNavigate(D_LEFT, 1);
       } else if (*pc == 261){
         // Right Arrow
-        if ((leftcol < longestlongline) && (wrap != 1)){
-          leftcol++;
-          updateView();
-        }
+        sfNavigate(D_RIGHT, 1);
       } else if (*pc == 262){
         // Home
         // Let's not disable this key when Wrapping is on, just in case.

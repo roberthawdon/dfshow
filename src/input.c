@@ -1,7 +1,7 @@
 /*
   DF-SHOW: An interactive directory/file browser written for Unix-like systems.
   Based on the applications from the PC-DOS DF-EDIT suite by Larry Kroeker.
-  Copyright (C) 2018-2024  Robert Ian Hawdon
+  Copyright (C) 2018-2025  Robert Ian Hawdon
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -26,6 +26,8 @@
 #include <wctype.h>
 #include "colors.h"
 #include "banned.h"
+
+extern MEVENT event;
 
 int wReadLine(wchar_t *buffer, int buflen, wchar_t *oldbuf)
 /* Read up to buflen-1 characters into `buffer`.
@@ -71,6 +73,14 @@ int wReadLine(wchar_t *buffer, int buflen, wchar_t *oldbuf)
       over = (x+pos) - COLS;
     }
     get_wch(&c);
+
+    loop:
+    if (getmouse(&event) == OK) {
+      if(event.bstate & BUTTON1_PRESSED){
+        c = 27;
+        goto loop;
+      }
+    }
 
     if (c == KEY_ENTER || c == '\n' || c == '\r') {
       // Enter Key
@@ -123,7 +133,7 @@ int wReadLine(wchar_t *buffer, int buflen, wchar_t *oldbuf)
       wcscpy(buffer, L""); //abort by blanking
       setColors(COMMAND_PAIR);
       break;
-    } else if ((c == KEY_UP) || (c == KEY_DOWN) || (c == KEY_IC) || (c == 265) || (c == 266) || (c == 267) || (c == 268) || (c == 269) || (c == 270) || (c == 271) || (c == 272) || (c == 273) || (c == 274) || (c == 275) || (c == 276) || (c == 338) || (c == 339)) {
+    } else if ((c == KEY_UP) || (c == KEY_DOWN) || (c == KEY_IC) || (c == 265) || (c == 266) || (c == 267) || (c == 268) || (c == 269) || (c == 270) || (c == 271) || (c == 272) || (c == 273) || (c == 274) || (c == 275) || (c == 276) || (c == 338) || (c == 339) || (c == KEY_MOUSE)) {
       // Ignore navigation and function keys.
       continue;
     } else if (iswprint(c)) {

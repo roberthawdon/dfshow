@@ -1,7 +1,7 @@
 /*
   DF-SHOW: An interactive directory/file browser written for Unix-like systems.
   Based on the applications from the PC-DOS DF-EDIT suite by Larry Kroeker.
-  Copyright (C) 2018-2024  Robert Ian Hawdon
+  Copyright (C) 2018-2025  Robert Ian Hawdon
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -40,6 +40,11 @@ int settingsPos = 0;
 int settingsBinPos = -1;
 int settingsFreePos = -1;
 
+menuButton *settingButtons;
+menuButton *charButtons;
+menuButton *binButtons;
+
+
 extern int * pc;
 
 extern char globalConfLocation[4096];
@@ -47,6 +52,7 @@ extern char homeConfLocation[4096];
 
 extern int viewMode;
 
+extern MEVENT event;
 
 void updateSetting(settingIndex **settings, int index, int type, int intSetting)
 {
@@ -188,7 +194,34 @@ void addT2BinValue(t2BinValues **values, int *totalItems, int *maxItem, char *re
 
 }
 
-void importSetting(settingIndex **settings, int *items, char *refLabel, char *textLabel, int type, char *charSetting, int intSetting, int maxValue, int invert)
+void addSettingSection(settingSection **settingSections, int *settingSectionsCount, char *refLabel, char *textLabel){
+  settingSection *tmp;
+  int currentItem = *settingSectionsCount;
+  wchar_t *wideTextLabel;
+
+  wideTextLabel = malloc(sizeof(wchar_t) * (strlen(textLabel) + 1));
+  mbstowcs(wideTextLabel, textLabel, (strlen(textLabel) + 1));
+
+  if (*settingSectionsCount == 0){
+    tmp = malloc(sizeof(settingSection) * 2);
+  } else {
+    tmp = realloc(*settingSections, (currentItem + 1) * (sizeof(settingSection) + 1));
+  }
+
+  if (tmp){
+    *settingSections = tmp;
+  }
+
+  snprintf((*settingSections)[currentItem].refLabel, 16, "%s", refLabel);
+  swprintf((*settingSections)[currentItem].textLabel, 64, L"%ls", wideTextLabel);
+  free(wideTextLabel);
+
+  ++*settingSectionsCount;
+
+  return;
+}
+
+void importSetting(settingIndex **settings, int *items, char *sectionRef, char *refLabel, char *textLabel, int type, int storeType, char *charSetting, int intSetting, int maxValue, int invert)
 {
   settingIndex *tmp;
   int currentItem = *items;
@@ -208,8 +241,10 @@ void importSetting(settingIndex **settings, int *items, char *refLabel, char *te
   }
 
   (*settings)[currentItem].type = type;
+  (*settings)[currentItem].storeType = storeType;
   snprintf((*settings)[currentItem].refLabel, 16, "%s", refLabel);
-  swprintf((*settings)[currentItem].textLabel, 32, L"%ls", wideTextLabel);
+  swprintf((*settings)[currentItem].textLabel, 64, L"%ls", wideTextLabel);
+  snprintf((*settings)[currentItem].sectionRef, 16, "%s", sectionRef);
   free(wideTextLabel);
   (*settings)[currentItem].intSetting = intSetting;
   (*settings)[currentItem].maxValue = maxValue;
@@ -221,6 +256,8 @@ void importSetting(settingIndex **settings, int *items, char *refLabel, char *te
   }
 
   ++*items;
+
+  return;
 }
 
 int intSettingValue(int *setting, int newValue){
@@ -248,7 +285,7 @@ void adjustBinSetting(settingIndex **settings, t2BinValues **values, char *refLa
 {
   int i;
 
-  for (i = 0; i < maxValue + 1; i++){
+  for (i = 0; i < maxValue; i++){
     if (!strcmp((*values)[i].refLabel, refLabel) && ((*values)[i].index == settingsBinPos)){
       if ((*values)[i].boolVal > 0){
         (*settings)[settingsPos].intSetting = (*settings)[settingsPos].intSetting - (*values)[i].value;
@@ -261,8 +298,12 @@ void adjustBinSetting(settingIndex **settings, t2BinValues **values, char *refLa
   }
 }
 
-void printSetting(int line, int col, settingIndex **settings, t1CharValues **values, t2BinValues **bins, int index, int charIndex, int binIndex, int type, int invert)
+int printSetting(int line, int col, settingIndex **settings, t1CharValues **values, t2BinValues **bins, int index, int charIndex, int binIndex, int type, int invert, bool noout)
 {
+
+  if (noout){
+    return(line);
+  }
 
   int settingWork, b, c, i, v;
   int labelLen = 0, valueLen = 0, itemAdjust = 0;
@@ -378,6 +419,9 @@ void printSetting(int line, int col, settingIndex **settings, t1CharValues **val
     mvprintw(line, (col + 4 + labelLen + itemAdjust), "%s", (*settings)[index].charSetting); // To Do
     setColors(COMMAND_PAIR);
   }
+
+  return(line);
+
 }
 
 int textValueLookup(t1CharValues **values, int *items, char *refLabel, char *value)
@@ -393,37 +437,277 @@ int textValueLookup(t1CharValues **values, int *items, char *refLabel, char *val
   return -1;
 }
 
-void settingsMenuView(wchar_t *settingsMenuLabel, int settingsMenuSize, menuDef *settingsMenu, settingIndex **settings, t1CharValues **charValues, t2BinValues **binValues, int totalCharItems, int totalBinItems, int totalItems, char *application)
+int settingButtonAction(const char * refLabel, settingIndex **settings, int menuItems){
+  int output = -1;
+  int newPos = -1;
+  int oldPos = -1;
+  int i;
+
+  // endwin();
+  oldPos = settingsPos;
+
+  for (i = 0; i < menuItems; i++){
+    // printf("%i of %i: %s (target: %s)\n", i, menuItems, (*settings)[i].refLabel, refLabel);
+    if (!strcmp((*settings)[i].refLabel, refLabel)){
+        newPos = i;
+        if (newPos == oldPos){
+          switch((*settings)[i].type){
+            case SETTING_BOOL:
+              output = 32;
+              break;
+            case SETTING_SELECT:
+              output = 261;
+              break;
+            case SETTING_FREE:
+              output = 32;
+              break;
+            default:
+              break;
+          }
+        } else {
+          settingsPos = newPos;
+        }
+        return output;
+      }
+  }
+
+  return output;
+}
+
+int settingSubButtonAction(settingIndex **settings, int settingsItems, int type, menuButton *subButtons, int size, int xpos, int ypos, int xdelta, int ydelta){
+  int output = -1;
+  int topX = -1;
+  int bottomX = -1;
+  int topY = -1;
+  int bottomY = -1;
+  int newPos = -1;
+  int oldPos = -1;
+  int i, s;
+  char settingRefLabel[16];
+  int subIndex = -1;
+  int oldSettingsBinPos = -1;
+
+  oldPos = settingsPos;
+  oldSettingsBinPos = settingsBinPos;
+
+  for (s = 0; s < size; s++){
+    topX = subButtons[s].topX + xdelta;
+    bottomX = subButtons[s].bottomX + xdelta;
+    topY = subButtons[s].topY + ydelta;
+    bottomY = subButtons[s].bottomY + ydelta;
+    if ((xpos >= topX && xpos <= bottomX) && (ypos >= topY && ypos <= bottomY)){
+      snprintf(settingRefLabel, 16, "%s", subButtons[s].refLabel);
+      subIndex = subButtons[s].subIndex;
+      for (i = 0; i < settingsItems; i++){
+        if (!strcmp((*settings)[i].refLabel, settingRefLabel)){
+          newPos = i;
+          settingsPos = newPos;
+          if (type == SETTING_SELECT){
+            updateSetting(settings, settingsPos, type, subIndex);
+          } else if (type == SETTING_MULTI){
+            settingsBinPos = subIndex;
+            if (settingsBinPos == oldSettingsBinPos){
+              output = 32;
+              return(output);
+            }
+          }
+        }
+      }
+    }
+  }
+
+
+  return(output);
+}
+
+int settingIndexLookup(settingIndex **settings, settingsOrder *order, int settingsSize, const char * refLabel, const int index){
+  int i;
+
+  if (refLabel != NULL) {
+    for (i = 0; i < settingsSize; i++){
+      if (!strcmp((*settings)[i].refLabel, refLabel)){
+        return(i);
+      }
+    }
+  } else if ( index > -1 ){
+    for (i = 0; i < settingsSize; i++){
+      if (!strcmp((*settings)[i].refLabel, (order)[index].refLabel)){
+        return(i);
+      }
+    }
+
+  }
+  return(-1);
+}
+int settingOrderLookup(settingIndex **settings, settingsOrder *order, int settingsSize, const char * refLabel, const int index){
+  int i;
+
+  if (refLabel != NULL) {
+    for (i = 0; i < settingsSize; i++){
+      if (!strcmp((order)[i].refLabel, refLabel)){
+        return(i);
+      }
+    }
+  } else if ( index > -1 ){
+    for (i = 0; i < settingsSize; i++){
+      if (!strcmp((*settings)[index].refLabel, (order)[i].refLabel)){
+        return(i);
+      }
+    }
+
+  }
+  return(-1);
+}
+
+void settingsMenuView(wchar_t *settingsMenuLabel, int settingsMenuSize, menuDef *settingsMenu, menuButton *settingsMenuButtons, settingSection **settingSections, int settingSectionSize, settingIndex **settings, t1CharValues **charValues, t2BinValues **binValues, int totalCharItems, int totalBinItems, int totalItems, char *application)
 {
-  viewMode = 3;
   int count = 0;
+  int subCount = 0;
+  int subIndex = 0;
+  int countSection = 0;
+  int settingPosition = 0;
+  int settingsPosCache = 0;
+  int orderCount = 0;
+  int orderPos = 0;
   int x = 2;
-  int y = 3;
+  int y = 7;
+  int subY = 0;
   int markedCount, sortmodeCount, timestyleCount, ownerCount;
   int sortmodeInt, timestyleInt;
   int e;
+  int b;
+  int topPos = 2;
   char charTempValue[1024];
+  settingsOrder order[totalItems];
+
+  viewMode = 3;
 
   clear();
   wPrintMenu(0,0,settingsMenuLabel);
 
   while(1)
     {
-      for (count = 0; count < totalItems; count++){
-      // printSetting(2 + count, 3, settings, charValues, binValues, count, totalCharItems, totalBinItems, settings[count]->type, settings[count]->invert);
-      printSetting(2 + count, 3, settings, charValues, binValues, count, totalCharItems, totalBinItems, (*settings)[count].type, (*settings)[count].invert);
+      loopDraw:
+      settingPosition = topPos;
+      if (settingButtons){
+        free(settingButtons);
+      }
+      if (charButtons){
+        free(charButtons);
+      }
+      if (binButtons){
+        free(binButtons);
+      }
+      settingButtons = malloc(sizeof(menuButton) * totalItems);
+      charButtons = malloc(sizeof(menuButton) * totalCharItems);
+      binButtons = malloc(sizeof(menuButton) * totalBinItems);
+      for (countSection = 0; countSection < settingSectionSize; countSection++){
+        if (settingPosition > 0){
+          mvprintw(settingPosition, 3, "%ls", (*settingSections)[countSection].textLabel);
+        }
+        settingPosition++;
+        for (count = 0; count < totalItems; count++){
+          if (!strcmp((*settingSections)[countSection].refLabel, (*settings)[count].sectionRef)){
+            order[orderCount].linePos = settingPosition;
+            snprintf(order[orderCount].refLabel, 16, "%s", (*settings)[count].refLabel);
+            if (settingPosition < 1){
+              order[orderCount].screenPos = printSetting(settingPosition, y, settings, charValues, binValues, count, totalCharItems, totalBinItems, (*settings)[count].type, (*settings)[count].invert, true);
+            } else {
+              order[orderCount].screenPos = printSetting(settingPosition, y, settings, charValues, binValues, count, totalCharItems, totalBinItems, (*settings)[count].type, (*settings)[count].invert, false);
+            }
+            b = wcslen((*settings)[count].textLabel);
+            snprintf(settingButtons[count].refLabel, 16, "%s", (*settings)[count].refLabel);
+            settingButtons[count].topX = y;
+            settingButtons[count].bottomX = 3 + y + b; // Including check mark
+            settingButtons[count].topY = settingButtons[count].bottomY = order[orderCount].screenPos;
+            // endwin();
+            // printf("\n%s:\n", (*settings)[count].refLabel);
+            // Button config for Char Items
+            subIndex = 0;
+            for (subCount = 0; subCount < totalCharItems; subCount++){
+              if (!strcmp((*charValues)[subCount].refLabel, (*settings)[count].refLabel)){
+                subY = 4 + y + b;
+                b = b + strlen((*charValues)[subCount].value) + 3;
+                snprintf(charButtons[subCount].refLabel, 16, "%s", (*settings)[count].refLabel);
+                charButtons[subCount].topX = subY + 2;
+                charButtons[subCount].bottomX = subY + strlen((*charValues)[subCount].value) + 3;
+                charButtons[subCount].topY = charButtons[subCount].bottomY = order[orderCount].screenPos;
+                charButtons[subCount].subIndex = subIndex;
+                subIndex++;
+              }
+            }
+            subIndex = 0;
+            // Button config for Bin Items
+            for (subCount = 0; subCount < totalBinItems; subCount++){
+              if (!strcmp((*binValues)[subCount].refLabel, (*settings)[count].refLabel)){
+                subY = 4 + y + b;
+                b = b + strlen((*binValues)[subCount].settingLabel) + 3;
+                snprintf(binButtons[subCount].refLabel, 16, "%s", (*settings)[count].refLabel);
+                binButtons[subCount].topX = subY + 2;
+                binButtons[subCount].bottomX = subY + strlen((*charValues)[subCount].value) + 3;
+                binButtons[subCount].topY = binButtons[subCount].bottomY = order[orderCount].screenPos;
+                binButtons[subCount].subIndex = subIndex;
+                subIndex++;
+              }
+            }
+            orderCount++;
+            settingPosition++;
+          }
+        }
+        settingPosition++;
       }
 
-      move(x + settingsPos, y + 1);
+      orderCount = 0;
+      settingPosition = topPos;
+
+      if (order[orderPos].screenPos > (LINES - 1)){
+        clear();
+        wPrintMenu(0,0,settingsMenuLabel);
+        settingPosition = 0;
+        orderCount = 0;
+        orderPos = 0;
+        topPos = 2;
+        goto loopDraw;
+      }
       *pc = getch10th();
-      if (*pc == menuHotkeyLookup(settingsMenu, "s_quit", settingsMenuSize)){
+      loop:
+      if (getmouse(&event) == OK) {
+        if (event.bstate & BUTTON1_PRESSED){
+          if (event.y == 0){
+            // Setting key based on click
+            *pc = menuHotkeyLookup(settingsMenu, (menuButtonLookup(settingsMenuButtons, settingsMenuSize, event.x, event.y, 0, 0, true)), settingsMenuSize);
+            goto loop;
+          } else {
+            settingsPosCache = settingsPos;
+            *pc = settingButtonAction(menuButtonLookup(settingButtons, totalItems, event.x, event.y, 0, 0, false), settings, totalItems);
+            // if (*pc == -1 && settingsPos == settingsPosCache ){
+            if (*pc == -1){
+              settingSubButtonAction(settings, totalItems, SETTING_SELECT, charButtons, totalCharItems, event.x, event.y, 0, 0);
+              if (settingsPosCache != settingsPos){
+                settingsBinPos = -1;
+              }
+              *pc = settingSubButtonAction(settings, totalItems, SETTING_MULTI, binButtons, totalBinItems, event.x, event.y, 0, 0);
+              // if ((*settings)[settingsPos].type == SETTING_SELECT){
+              //   endwin();
+              //   printf("Char Button Check\n");
+              //   exit(123);
+              // }
+            }
+            orderPos = settingOrderLookup(settings, order, totalItems, NULL, settingsPos);
+            goto loop;
+          }
+        } else if (event.bstate & BUTTON5_PRESSED){
+          goto down;
+        } else if (event.bstate & BUTTON4_PRESSED){
+          goto up;
+        }
+      } else if (*pc == menuHotkeyLookup(settingsMenu, "s_quit", settingsMenuSize)){
         curs_set(FALSE);
         settingsAction("apply", application, NULL, settings, charValues, NULL, totalCharItems, 0, totalItems, NULL);
         // free(settings);
         return;
       } else if (*pc == menuHotkeyLookup(settingsMenu, "s_revert", settingsMenuSize)){
         // free(settings);
-        // TODO call the settings loader
         settingsAction("read", application, NULL, NULL, NULL, NULL, 0, 0, 0, globalConfLocation);
         settingsAction("read", application, NULL, NULL, NULL, NULL, 0, 0, 0, homeConfLocation);
         settingsAction("generate", application, NULL, NULL, NULL, NULL, 0, 0, 0, NULL);
@@ -438,9 +722,19 @@ void settingsMenuView(wchar_t *settingsMenuLabel, int settingsMenuSize, menuDef 
         curs_set(TRUE);
         wPrintMenu(0,0,settingsMenuLabel);
       } else if (*pc == 258 || *pc == 10){
-        if (settingsPos < (totalItems -1 )){
+        down:
+        if (orderPos < (totalItems -1 )){
           settingsBinPos = -1;
-          settingsPos++;
+          orderPos++;
+          if (order[orderPos].screenPos > (LINES - 1)){
+            free(settingButtons);
+            settingButtons = malloc(sizeof(menuButton) * totalItems);
+            clear();
+            wPrintMenu(0,0,settingsMenuLabel);
+            topPos = topPos + (order[orderPos - 1].screenPos - order[orderPos].screenPos);
+          }
+        } else {
+          orderPos = totalItems - 1;
         }
       } else if (*pc == 32 || *pc == 260 || *pc == 261){
         // Adjust
@@ -470,15 +764,12 @@ void settingsMenuView(wchar_t *settingsMenuLabel, int settingsMenuSize, menuDef 
           } else if (*pc == 260 && (settingsBinPos > -1)){
             settingsBinPos--;
           } else if (*pc == 32 && (settingsBinPos > -1)){
-            // Not fond of this, but it should work
-            if (!strcmp((*settings)[settingsPos].refLabel, "owner")){
-              adjustBinSetting(settings, binValues, "owner", totalBinItems);
-            }
+            adjustBinSetting(settings, binValues, (*settings)[settingsPos].refLabel, totalBinItems);
           }
         } else if ((*settings)[settingsPos].type == SETTING_FREE){
           if (*pc == 32 || *pc == 261) {
             settingsFreePos = 0;
-            move(x + settingsPos, y + wcslen((*settings)[settingsPos].textLabel) + 6);
+            move(order[settingsPos].screenPos, y + wcslen((*settings)[settingsPos].textLabel) + 6);
             e = readline(charTempValue, 1024, (*settings)[settingsPos].charSetting);
             if (strcmp(charTempValue, "")){
               free((*settings)[settingsPos].charSetting);
@@ -491,11 +782,29 @@ void settingsMenuView(wchar_t *settingsMenuLabel, int settingsMenuSize, menuDef 
           }
         }
       } else if (*pc == 259){
-        if (settingsPos > 0){
+        up:
+        if (orderPos > 0){
           settingsBinPos = -1;
-          settingsPos--;
+          orderPos--;
+          if (order[orderPos].screenPos < 1){
+            free(settingButtons);
+            settingButtons = malloc(sizeof(menuButton) * totalItems);
+            clear();
+            wPrintMenu(0,0,settingsMenuLabel);
+            // topPos = 2 + (order[orderPos + 1].screenPos - order[orderPos].screenPos);
+            if (orderPos < 1){
+              orderPos = 0;
+              topPos = 2;
+            } else {
+              topPos = topPos +(order[orderPos + 1].screenPos - order[orderPos].screenPos);
+            }
+          }
+        } else {
+          orderPos = 0;
+          topPos = 2;
         }
       }
+      settingsPos = settingIndexLookup(settings, order, totalItems, NULL, orderPos);
     }
 
 }

@@ -31,17 +31,24 @@ the file window after the last line of the file.
 Command line arguments
 ----------------------
 
-``-w``, ``--wrap`` Enables line wrapping.
+``-w``, ``--wrap``
+  Enables line wrapping.
 
-``--theme``\ =[THEME]: Color themes. Passsing this argument
+``--theme``\ =[THEME]
+  Color themes. Passsing this argument
   without an option will display available themes.
 
 ``--settings-menu``
-Launch ``sf`` directly into the settings menu.
+  Launch ``sf`` directly into the settings menu.
 
-``--help``: Displays help message, then exits.
+``--help``
+  Displays help message, then exits.
 
-``--version``: Displays program version, then exits.
+``--version``
+  Displays program version, then exits.
+
+``--enable-mouse``\ =BOOLEAN
+  Launches ``sf`` with mouse support.
 
 Commands
 --------
@@ -136,7 +143,12 @@ The following screen is displayed.
 
    SF Settings Menu - Quit, Revert, Save
 
-      [ ] Enable text wrapping
+      Global Settings
+          [ ] Enable mouse (Requires restart)
+
+      Behavior Settings
+          [ ] Enable text wrapping
+          <-> Mouse scroll interval size: <1> <2> <3> <4> <5> <6> <7> <8> <9>
 
 The menu is made up of toggle switches. When active, the switch will display
 ``[*]``, when inactive ``[ ]`` is displayed. To toggle a value, press *SPACE*

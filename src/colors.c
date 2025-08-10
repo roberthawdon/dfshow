@@ -1,7 +1,7 @@
 /*
   DF-SHOW: An interactive directory/file browser written for Unix-like systems.
   Based on the applications from the PC-DOS DF-EDIT suite by Larry Kroeker.
-  Copyright (C) 2018-2024  Robert Ian Hawdon
+  Copyright (C) 2018-2025  Robert Ian Hawdon
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -52,20 +52,27 @@ colorPairs colors[256];
 
 char fgbgLabel[11];
 
+char *colorNames[17];
+
+extern MEVENT event;
+
 extern char *errmessage;
 
 extern int colormode;
 extern int c;
 extern int * pc;
 
-extern char globalConfLocation[128];
-extern char homeConfLocation[128];
+extern char globalConfLocation[4096];
+extern char homeConfLocation[4096];
 
 extern int viewMode;
 
 menuDef *colorMenu;
 int colorMenuSize = 0;
 wchar_t *colorMenuLabel;
+menuButton *colorMenuButtons;
+
+menuButton *themeBuilderButtons;
 
 void processListThemes(const char * pathName)
 {
@@ -169,55 +176,55 @@ int itemLookup(int menuPos){
 
 void setColorPairs(int pair, int foreground, int background, int bold){
   switch(pair){
-  case 1:
+  case COMMAND_PAIR:
     snprintf(colors[pair].name, 24, "command");
     break;
-  case 2:
+  case INFO_PAIR:
     snprintf(colors[pair].name, 24, "info");
     break;
-  case 3:
+  case INPUT_PAIR:
     snprintf(colors[pair].name, 24, "input");
     break;
-  case 4:
+  case SELECT_PAIR:
     snprintf(colors[pair].name, 24, "select");
     break;
-  case 5:
+  case DISPLAY_PAIR:
     snprintf(colors[pair].name, 24, "display");
     break;
-  case 6:
+  case DANGER_PAIR:
     snprintf(colors[pair].name, 24, "danger");
     break;
-  case 7:
+  case DIR_PAIR:
     snprintf(colors[pair].name, 24, "dir");
     break;
-  case 8:
+  case SLINK_PAIR:
     snprintf(colors[pair].name, 24, "symlink");
     break;
-  case 9:
+  case EXE_PAIR:
     snprintf(colors[pair].name, 24, "exec");
     break;
-  case 10:
+  case SUID_PAIR:
     snprintf(colors[pair].name, 24, "suid");
     break;
-  case 11:
+  case SGID_PAIR:
     snprintf(colors[pair].name, 24, "sgid");
     break;
-  case 12:
+  case HILITE_PAIR:
     snprintf(colors[pair].name, 24, "hilite");
     break;
-  case 13:
+  case ERROR_PAIR:
     snprintf(colors[pair].name, 24, "error");
     break;
-  case 14:
+  case HEADING_PAIR:
     snprintf(colors[pair].name, 24, "heading");
     break;
-  case 15:
+  case DEADLINK_PAIR:
     snprintf(colors[pair].name, 24, "deadlink");
     break;
-  case 16:
+  case STICKY_PAIR:
     snprintf(colors[pair].name, 24, "sticky");
     break;
-  case 17:
+  case STICKY_OW_PAIR:
     snprintf(colors[pair].name, 24, "sticky-ow");
     break;
   default:
@@ -296,7 +303,7 @@ void refreshColors(){
 void saveTheme(){
   config_t cfg;
   config_setting_t *root, *setting, *group, *array;
-  int e, f, i;
+  int e, f, i, r;
   char filename[1024];
   char * rewrite;
   int curPos=0;
@@ -330,14 +337,20 @@ void saveTheme(){
     if (access(dirFromPath(filename), W_OK) == 0){
       if (check_file(filename)){
         curs_set(FALSE);
-        printMenu(0,0, _("File exists. Replace? (!Yes/!No)"));
-        *pc = getch10th();
-        if (*pc == 'y'){
-          config_write_file(&cfg, filename);
-          setenv("DFS_THEME", objectFromPath(filename), 1);
-        } else {
-          // Skip
-        }
+        r = commonConfirmMenu(0,0, _("File exists. Replace?"), false, -1);
+        while(1)
+          {
+            switch(r)
+              {
+                case YES:
+                  config_write_file(&cfg, filename);
+                  setenv("DFS_THEME", objectFromPath(filename), 1);
+                  break;
+                default:
+                  break;
+              }
+            break;
+          }
         curs_set(TRUE);
         themeBuilder();
       } else {
@@ -574,7 +587,23 @@ void theme_menu_inputs()
   while(1)
     {
       *pc = getch10th();
-      if (*pc == '!'){
+      loop:
+      if (getmouse(&event) == OK) {
+        if (event.bstate & BUTTON1_PRESSED){
+          if (event.y == 0){
+            // Setting key based on click
+            *pc = menuHotkeyLookup(colorMenu, (menuButtonLookup(colorMenuButtons, colorMenuSize, event.x, event.y, 0, 0, true)), colorMenuSize);
+            goto loop;
+          } else {
+            *pc = themeButtonAction(menuButtonLookup(themeBuilderButtons, 35, event.x, event.y, 0, 0, false));
+            goto loop;
+          }
+        } else if (event.bstate & BUTTON5_PRESSED){
+          goto down;
+        } else if (event.bstate & BUTTON4_PRESSED){
+          goto up;
+        }
+      } else if (*pc == '!'){
         updateColorPair(-1, bgToggle);
         refreshColors();
         themeBuilder();
@@ -678,11 +707,13 @@ void theme_menu_inputs()
         }
         themeBuilder();
       } else if (*pc == 258 || *pc ==10){
+        down:
         if (colorThemePos < totalItemCount){
           colorThemePos++;
           setCursorPos(colorThemePos - 1);
         }
       } else if (*pc == 259){
+        up:
         if (colorThemePos > 0) {
           colorThemePos--;
           setCursorPos(colorThemePos + 1);
@@ -691,6 +722,32 @@ void theme_menu_inputs()
         // Do Nothing
       }
     }
+}
+
+int themeButtonAction(const char * refLabel){
+  int prevColorPos = 0;
+  int newPos = -1;
+  int output = -1;
+
+  if (!strncmp(refLabel, "colorThemePos", 13)){
+    sscanf(refLabel + 13, "%i", &newPos);
+    prevColorPos = colorThemePos;
+    colorThemePos = newPos;
+    setCursorPos(prevColorPos);
+    return output;
+  } else {
+    output = refLabel[0];
+  }
+
+  return output;
+}
+
+void addColorButton(int index, const char * refLabel, const char * label, int topX, int topY){
+  snprintf(themeBuilderButtons[index].refLabel, 16, "%s", refLabel);
+  themeBuilderButtons[index].topX = topX;
+  themeBuilderButtons[index].bottomX = topX + strlen(label) - 1;
+  themeBuilderButtons[index].topY = themeBuilderButtons[index].bottomY = topY;
+  mvprintw(topY, topX, "%s", label);
 }
 
 void setDefaultTheme(){
@@ -773,6 +830,38 @@ void setCursorPos(int prev)
 
 void themeBuilder()
 {
+  int i, x, y, b, tipMessageWidth, colorNameWidth, colorNameItems;
+  // size_t colorNameWidthSize;
+  char *tipMessage;
+
+  colorNameItems = 0;
+
+  colorNames[0]  = _("Command lines");
+  colorNames[1]  = _("Display lines");
+  colorNames[2]  = _("Error messages");
+  colorNames[3]  = _("Information lines");
+  colorNames[4]  = _("Heading lines");
+  colorNames[5]  = _("Danger lines");
+  colorNames[6]  = _("Selected block lines");
+  colorNames[7]  = _("Highlight");
+  colorNames[8]  = _("Text input");
+  colorNames[9]  = _("Directories");
+  colorNames[10] = _("Symbolic links");
+  colorNames[11] = _("Orphened symbolic links");
+  colorNames[12] = _("Executable files");
+  colorNames[13] = _("Set user identification");
+  colorNames[14] = _("Set group identification");
+  colorNames[15] = _("Sticky bit directory");
+  colorNames[16] = _("Sticky bit directory - other writable");
+
+  colorNameItems = sizeof(colorNames)/sizeof(colorNames[0]);
+
+  if (themeBuilderButtons){
+    free(themeBuilderButtons);
+  }
+
+  themeBuilderButtons = malloc(sizeof(menuButton) * (colorNameItems + 18));
+
   viewMode = 2;
   clear();
   if (bgToggle){
@@ -782,80 +871,83 @@ void themeBuilder()
   }
   wPrintMenu(0,0,colorMenuLabel);
 
-  setColors(COMMAND_PAIR);
-  mvprintw(2, 4, _("Command lines"));
-  setColors(DISPLAY_PAIR);
-  mvprintw(3, 4, _("Display lines"));
-  setColors(ERROR_PAIR);
-  mvprintw(4, 4, _("Error messages"));
-  setColors(INFO_PAIR);
-  mvprintw(5, 4, _("Information lines"));
-  setColors(HEADING_PAIR);
-  mvprintw(6, 4, _("Heading lines"));
-  setColors(DANGER_PAIR);
-  mvprintw(7, 4, _("Danger lines"));
-  setColors(SELECT_PAIR);
-  mvprintw(8, 4, _("Selected block lines"));
-  setColors(HILITE_PAIR);
-  mvprintw(9, 4, _("Highlight"));
-  setColors(INPUT_PAIR);
-  mvprintw(10, 4, _("Text input"));
-  setColors(DIR_PAIR);
-  mvprintw(11, 4, _("Directories"));
-  setColors(SLINK_PAIR);
-  mvprintw(12, 4, _("Symbolic links"));
-  setColors(DEADLINK_PAIR);
-  mvprintw(13, 4, _("Orphened symbolic links"));
-  setColors(EXE_PAIR);
-  mvprintw(14, 4, _("Executable files"));
-  setColors(SUID_PAIR);
-  mvprintw(15, 4, _("Set user identification"));
-  setColors(SGID_PAIR);
-  mvprintw(16, 4, _("Set group identification"));
-  setColors(STICKY_PAIR);
-  mvprintw(17, 4, _("Sticky bit directory"));
-  setColors(STICKY_OW_PAIR);
-  mvprintw(18, 4, _("Sticky bit directory - other writable"));
+  colorNameWidth = 0;
+  for (i = 0; i < colorNameItems; i++){
+    setColors(i + 1);
+    mvprintw(i + 2, 4, "%s", colorNames[i]);
+    b = strlen(colorNames[i]) - 1;
+    snprintf(themeBuilderButtons[i].refLabel, 16, "colorThemePos%i", i);
+    themeBuilderButtons[i].topX = 4;
+    themeBuilderButtons[i].bottomX = 4 + b;
+    themeBuilderButtons[i].topY = themeBuilderButtons[i].bottomY = i + 2;
+    if (b > colorNameWidth){
+      colorNameWidth = strlen(colorNames[i]);
+    }
+  }
 
+  if ((COLS / 2) < (colorNameWidth + 12)){
+    x = colorNameWidth + 12;
+  } else {
+    x = COLS / 2;
+  }
+
+  i = colorNameItems;
+  b = 2;
   setColors(DEFAULT_COLOR_PAIR);
-  mvprintw(2, 45, _("!-Default      "));
+  addColorButton(i, "!", _("!-Default      "), x, b); i++; b++;
   setColors(DEFAULT_BOLD_PAIR);
-  mvprintw(3, 45, _("?-Default Bold "));
+  addColorButton(i, "?", _("?-Default Bold "), x, b); i++; b++;
   setColors(COLORMENU_PAIR_0);
-  mvprintw(4, 45, _("0-Black        "));
+  addColorButton(i, "0", _("0-Black        "), x, b); i++; b++;
   setColors(COLORMENU_PAIR_1);
-  mvprintw(5, 45, _("1-Red          "));
+  addColorButton(i, "1", _("1-Red          "), x, b); i++; b++;
   setColors(COLORMENU_PAIR_2);
-  mvprintw(6, 45, _("2-Green        "));
+  addColorButton(i, "2", _("2-Green        "), x, b); i++; b++;
   setColors(COLORMENU_PAIR_3);
-  mvprintw(7, 45, _("3-Brown        "));
+  addColorButton(i, "3", _("3-Brown        "), x, b); i++; b++;
   setColors(COLORMENU_PAIR_4);
-  mvprintw(8, 45, _("4-Blue         "));
+  addColorButton(i, "4", _("4-Blue         "), x, b); i++; b++;
   setColors(COLORMENU_PAIR_5);
-  mvprintw(9, 45, _("5-Magenta      "));
+  addColorButton(i, "5", _("5-Magenta      "), x, b); i++; b++;
   setColors(COLORMENU_PAIR_6);
-  mvprintw(10, 45, _("6-Cyan         "));
+  addColorButton(i, "6", _("6-Cyan         "), x, b); i++; b++;
   setColors(COLORMENU_PAIR_7);
-  mvprintw(11, 45, _("7-Light Gray   "));
+  addColorButton(i, "7", _("7-Light Gray   "), x, b); i++; b++;
   setColors(COLORMENU_PAIR_8);
-  mvprintw(12, 45, _("8-Dark Gray    "));
+  addColorButton(i, "8", _("8-Dark Gray    "), x, b); i++; b++;
   setColors(COLORMENU_PAIR_9);
-  mvprintw(13, 45, _("9-Light Red    "));
+  addColorButton(i, "9", _("9-Light Red    "), x, b); i++; b++;
   setColors(COLORMENU_PAIR_A);
-  mvprintw(14, 45, _("A-Light Green  "));
+  addColorButton(i, "a", _("A-Light Green  "), x, b); i++; b++;
   setColors(COLORMENU_PAIR_B);
-  mvprintw(15, 45, _("B-Yellow       "));
+  addColorButton(i, "b", _("B-Yellow       "), x, b); i++; b++;
   setColors(COLORMENU_PAIR_C);
-  mvprintw(16, 45, _("C-Light Blue   "));
+  addColorButton(i, "c", _("C-Light Blue   "), x, b); i++; b++;
   setColors(COLORMENU_PAIR_D);
-  mvprintw(17, 45, _("D-Light Magenta"));
+  addColorButton(i, "d", _("D-Light Magenta"), x, b); i++; b++;
   setColors(COLORMENU_PAIR_E);
-  mvprintw(18, 45, _("E-Light Cyan   "));
+  addColorButton(i, "e", _("E-Light Cyan   "), x, b); i++; b++;
   setColors(COLORMENU_PAIR_F);
-  mvprintw(19, 45, _("F-White        "));
+  addColorButton(i, "f", _("F-White        "), x, b); i++; b++;
+
+  y = LINES - 4;
+
+  if (y <= 22){
+    y = 22;
+  }
+
+  tipMessageWidth = setDynamicChar(&tipMessage, _("Select 0 to F for desired %s color"), fgbgLabel);
+
+  if (COLS < tipMessageWidth){
+    x = 0;
+  } else {
+    x = ((COLS / 2) - (tipMessageWidth / 2));
+  }
+
 
   setColors(DEFAULT_BOLD_PAIR);
-  mvprintw(22, 22, _("Select 0 to F for desired %s color"), fgbgLabel);
+  mvprintw(y, x, "%s", tipMessage);
+
 
   setCursorPos(-1);
 

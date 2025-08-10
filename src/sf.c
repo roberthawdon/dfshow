@@ -1,7 +1,7 @@
 /*
   DF-SHOW: An interactive directory/file browser written for Unix-like systems.
   Based on the applications from the PC-DOS DF-EDIT suite by Larry Kroeker.
-  Copyright (C) 2018-2024  Robert Ian Hawdon
+  Copyright (C) 2018-2025  Robert Ian Hawdon
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -48,6 +48,10 @@ extern char regexinput[1024];
 int colormode = 0;
 int messageBreak = 0;
 
+extern MEVENT event;
+
+extern bool enableMouse;
+
 extern char *programName;
 
 extern int displaysize;
@@ -68,6 +72,9 @@ int launchSettingsMenu = 0;
 extern char fileName[4096];
 
 int resized = 0;
+
+extern settingSection *settingSectionsSf;
+extern int settingSectionsSfCount;
 
 extern settingIndex *settingIndexSf;
 extern t1CharValues *charValuesSf;
@@ -103,6 +110,7 @@ extern char themeName[256];
 extern menuDef *sfSettingsMenu;
 extern int sfSettingsMenuSize;
 extern wchar_t *sfSettingsMenuLabel;
+extern menuButton *sfSettingsMenuButtons;
 
 void sigwinchHandle(int sig)
 {
@@ -121,6 +129,8 @@ Options:\n\
       --theme=[THEME]          color themes, see the THEME section below for\n\
                                valid themes.\n\
       --settings-menu          launch settings menu\n\
+      --enable-mouse=BOOLEAN   enables/disables mouse support. Can be either\n\
+                                 'true' or 'false'\n\
       --help                   displays help message, then exits\n\
       --version                displays version, then exits\n"), stdout);
   fputs (("\n\
@@ -160,6 +170,7 @@ int main(int argc, char *argv[])
          {"version",        no_argument,       0, GETOPT_VERSION_CHAR},
          {"theme",          optional_argument, 0, GETOPT_THEME_CHAR},
          {"settings-menu",  no_argument,       0, GETOPT_OPTIONSMENU_CHAR},
+         {"enable-mouse",   required_argument, 0, GETOPT_ENABLE_MOUSE},
          {0, 0, 0, 0}
         };
       int option_index = 0;
@@ -196,6 +207,21 @@ int main(int argc, char *argv[])
       break;
     case GETOPT_OPTIONSMENU_CHAR:
       launchSettingsMenu = 1;
+      break;
+    case GETOPT_ENABLE_MOUSE:
+      if (!strcmp(optarg, "true")) {
+        enableMouse = true;
+      } else if (!strcmp(optarg, "false")) {
+        enableMouse = false;
+      } else {
+        printf(_("%s: invalid argument '%s' for 'enable-mouse'\n"), argv[0], optarg);
+        fputs ((_("\
+Valid arguments are:\n\
+- true\n\
+- false\n")), stdout);
+        printf(_("Try '%s --help' for more information.\n"), argv[0]);
+        exit(2);
+      }
       break;
     default:
       // abort();
@@ -236,8 +262,14 @@ int main(int argc, char *argv[])
   curs_set(FALSE);
   keypad(stdscr, TRUE);
 
+  // Enable mouse events
+  if (enableMouse) {
+    mousemask(ALL_MOUSE_EVENTS | REPORT_MOUSE_POSITION, NULL);
+    mouseinterval(0);
+  }
+
   if (launchSettingsMenu == 1) {
-    settingsMenuView(sfSettingsMenuLabel, sfSettingsMenuSize, sfSettingsMenu, &settingIndexSf, &charValuesSf, &binValuesSf, totalCharItemsSf, totalBinItemsSf, generateSfSettingsVars(), "sf");
+    settingsMenuView(sfSettingsMenuLabel, sfSettingsMenuSize, sfSettingsMenu, sfSettingsMenuButtons, &settingSectionsSf, settingSectionsSfCount, &settingIndexSf, &charValuesSf, &binValuesSf, totalCharItemsSf, totalBinItemsSf, generateSfSettingsVars(), "sf");
   } else {
     if (optind < argc){
       snprintf(fileName, 4096, "%s", argv[optind]);

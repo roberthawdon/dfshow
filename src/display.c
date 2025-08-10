@@ -1,7 +1,7 @@
 /*
   DF-SHOW: An interactive directory/file browser written for Unix-like systems.
   Based on the applications from the PC-DOS DF-EDIT suite by Larry Kroeker.
-  Copyright (C) 2018-2024  Robert Ian Hawdon
+  Copyright (C) 2018-2025  Robert Ian Hawdon
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -28,6 +28,7 @@
 #include "banned.h"
 
 extern int * pc;
+extern MEVENT event;
 
 void wPrintLine(int line, int col, wchar_t *textString){
   int i;
@@ -52,6 +53,7 @@ void printLine(int line, int col, char *textString){
 
 
 void topLineMessage(const char *message){
+  bool secondClick = false; // Hacky Hack McHacknessness!
   move(0,0);
   clrtoeol();
   setColors(ERROR_PAIR);
@@ -64,6 +66,15 @@ void topLineMessage(const char *message){
         {
         case -1:
           break;
+        case KEY_MOUSE:
+          // And here comes the second part of the hack!
+          if (secondClick){
+            return;
+            break;
+          } else {
+            secondClick = true;
+            break;
+          }
         default: // Where's the "any" key?
           return;
           break;

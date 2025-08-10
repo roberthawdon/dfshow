@@ -1,7 +1,7 @@
 /*
   DF-SHOW: An interactive directory/file browser written for Unix-like systems.
   Based on the applications from the PC-DOS DF-EDIT suite by Larry Kroeker.
-  Copyright (C) 2018-2024  Robert Ian Hawdon
+  Copyright (C) 2018-2025  Robert Ian Hawdon
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -50,6 +50,8 @@ int longestlongline = 0;
 
 int tabsize = 8;
 
+int sfScrollStep = 4;
+
 int wrap = 0;
 int wrapmode = LINE_WRAP;
 
@@ -67,11 +69,15 @@ char regexinput[1024];
 
 long int *filePos;
 
+settingSection *settingSectionsSf;
+int settingSectionsSfCount = 0;
 settingIndex *settingIndexSf;
 t1CharValues *charValuesSf;
 t2BinValues *binValuesSf;
 int totalCharItemsSf;
 int totalBinItemsSf;
+
+int sfMenuItems = 0;
 
 extern char fileName[4096];
 
@@ -86,6 +92,7 @@ extern int exitCode;
 extern wchar_t *sfFileMenuLabel;
 extern char themeName[256];
 extern int enableCtrlC;
+extern bool enableMouse;
 
 extern int * pc;
 
@@ -128,6 +135,13 @@ void readSfConfig(const char * confFile)
           enableCtrlC = 1;
         }
       }
+      // Are we enabling mouse support?
+      setting = config_setting_get_member(group, "enable-mouse");
+      if (setting){
+        if (config_setting_get_int(setting)){
+          enableMouse = true;
+        }
+      }
     }
     // Now for program specific
     group = config_lookup(&cfg, "sf");
@@ -139,6 +153,13 @@ void readSfConfig(const char * confFile)
           wrap = 1;
         }
       }
+      // Check scrollStep
+      setting = config_setting_get_member(group, "scrollStep");
+      if (setting){
+        if (config_setting_get_string(setting)){
+          sfScrollStep = strToInt(config_setting_get_string(setting));
+        }
+      }
     }
   }
 }
@@ -148,12 +169,41 @@ void saveSfConfig(const char * confFile, settingIndex **settings, t1CharValues *
   config_t cfg;
   config_setting_t *root, *setting, *group;
   int i;
+  int storeType;
 
   config_init(&cfg);
 
   config_read_file(&cfg, confFile);
   root = config_root_setting(&cfg);
 
+  // Global Settings
+  group = config_setting_get_member(root, "common");
+
+  if (!group){
+    group = config_setting_add(root, "common", CONFIG_TYPE_GROUP);
+  }
+
+  for (i = 0; i < items; i++){
+    if (!strcmp((*settings)[i].sectionRef, "global")){
+      config_setting_remove(group, (*settings)[i].refLabel);
+      storeType = (*settings)[i].storeType;
+      if (storeType == SETTING_STORE_STRING){
+        setting = config_setting_add(group, (*settings)[i].refLabel, CONFIG_TYPE_STRING);
+      } else if (storeType == SETTING_STORE_GROUP){
+        // Groups are handled by subgroups
+      } else {
+        setting = config_setting_add(group, (*settings)[i].refLabel, CONFIG_TYPE_INT);
+      }
+      if ((*settings)[i].type == SETTING_BOOL){
+
+        if (!strcmp((*settings)[i].refLabel, "enable-mouse")){
+          config_setting_set_int(setting, enableMouse);
+        }
+      }
+    }
+  }
+
+  // Sf Settings
   group = config_setting_get_member(root, "sf");
 
   if (!group){
@@ -161,17 +211,27 @@ void saveSfConfig(const char * confFile, settingIndex **settings, t1CharValues *
   }
 
   for (i = 0; i < items; i++){
-    config_setting_remove(group, (*settings)[i].refLabel);
-    if ((*settings)[i].type == SETTING_BOOL){
-      setting = config_setting_add(group, (*settings)[i].refLabel, CONFIG_TYPE_INT);
-
-      if (!strcmp((*settings)[i].refLabel, "wrap")){
-        config_setting_set_int(setting, wrap);
+    if (strcmp((*settings)[i].sectionRef, "global")){
+      config_setting_remove(group, (*settings)[i].refLabel);
+      storeType = (*settings)[i].storeType;
+      if (storeType == SETTING_STORE_STRING){
+        setting = config_setting_add(group, (*settings)[i].refLabel, CONFIG_TYPE_STRING);
+      } else if (storeType == SETTING_STORE_GROUP){
+        // Groups are handled by subgroups
+      } else {
+        setting = config_setting_add(group, (*settings)[i].refLabel, CONFIG_TYPE_INT);
       }
-    } else if ((*settings)[i].type == SETTING_SELECT){
-      // None of those in SF (yet?)
-    } else if ((*settings)[i].type == SETTING_MULTI){
-      // None of those in SF (yet?)
+      if ((*settings)[i].type == SETTING_BOOL){
+        if (!strcmp((*settings)[i].refLabel, "wrap")){
+          config_setting_set_int(setting, wrap);
+        }
+      } else if ((*settings)[i].type == SETTING_SELECT){
+        if (!strcmp((*settings)[i].refLabel, "scrollStep")){
+          config_setting_set_int(setting, sfScrollStep);
+        }
+      } else if ((*settings)[i].type == SETTING_MULTI){
+        // None of those in SF (yet?)
+      }
     }
   }
 
@@ -184,10 +244,27 @@ void saveSfConfig(const char * confFile, settingIndex **settings, t1CharValues *
 int generateSfSettingsVars()
 {
   int items = 0;
-  int charValuesCount = 0;
+  int charValuesCount = 0, scrollStepCount = 0;
   int binValuesCount = 0;
 
-  importSetting(&settingIndexSf, &items, "wrap", _("Enable text wrapping"), SETTING_BOOL, NULL, wrap, -1, 0);
+  settingSectionsSfCount = 0;
+
+  addSettingSection(&settingSectionsSf, &settingSectionsSfCount, "global",       _("Global Settings"));
+  addSettingSection(&settingSectionsSf, &settingSectionsSfCount, "behavior",     _("Behavior Settings"));
+
+  addT1CharValue(&charValuesSf, &charValuesCount, &scrollStepCount, "scrollStep", "1");
+  addT1CharValue(&charValuesSf, &charValuesCount, &scrollStepCount, "scrollStep", "2");
+  addT1CharValue(&charValuesSf, &charValuesCount, &scrollStepCount, "scrollStep", "3");
+  addT1CharValue(&charValuesSf, &charValuesCount, &scrollStepCount, "scrollStep", "4");
+  addT1CharValue(&charValuesSf, &charValuesCount, &scrollStepCount, "scrollStep", "5");
+  addT1CharValue(&charValuesSf, &charValuesCount, &scrollStepCount, "scrollStep", "6");
+  addT1CharValue(&charValuesSf, &charValuesCount, &scrollStepCount, "scrollStep", "7");
+  addT1CharValue(&charValuesSf, &charValuesCount, &scrollStepCount, "scrollStep", "8");
+  addT1CharValue(&charValuesSf, &charValuesCount, &scrollStepCount, "scrollStep", "9");
+
+  importSetting(&settingIndexSf, &items, "global",       "enable-mouse", _("Enable mouse (Requires restart)"), SETTING_BOOL, SETTING_STORE_INT, NULL, enableMouse, -1, 0);
+  importSetting(&settingIndexSf, &items, "behavior",     "wrap",         _("Enable text wrapping"), SETTING_BOOL, SETTING_STORE_INT, NULL, wrap, -1, 0);
+  importSetting(&settingIndexSf, &items, "behavior",     "scrollStep",   _("Mouse scroll interval size"), SETTING_SELECT, SETTING_STORE_INT, NULL, sfScrollStep - 1, scrollStepCount, 0);
 
   totalBinItemsSf = binValuesCount;
   totalCharItemsSf = charValuesCount;
@@ -201,31 +278,31 @@ int generateSfSettingsVars()
 
 void refreshScreenSf()
 {
-  // endwin();
-  // clear();
-  // refresh();
-  // displaysize = LINES - 2;
-  unloadSfMenuLabels();
-  refreshSfMenuLabels();
-  // if (viewMode == 0){
-  //   mvprintw(0,0,_("Show File - Enter pathname:"));
-  // } else if (viewMode > 0){
-  //   wPrintMenu(0, 0, sfFileMenuLabel);
-  //   loadFile(fileName);
-  // }
+  // unloadSfMenuLabels();
+  // refreshSfMenuLabels();
   switch(viewMode)
     {
     case 3: // Settings View
-      wPrintMenu(0, 0, topMenuBuffer);
+      if (topMenuBuffer){
+        wPrintMenu(0, 0, topMenuBuffer);
+      }
       break;
     case 4: // SF View
       updateView();
-      wPrintMenu(0, 0, topMenuBuffer);
-      wPrintMenu(LINES-1, 0, bottomMenuBuffer);
+      if (topMenuBuffer){
+        wPrintMenu(0, 0, topMenuBuffer);
+      }
+      if (bottomMenuBuffer){
+        wPrintMenu(LINES-1, 0, bottomMenuBuffer);
+      }
       break;
     default: // Fallback
-      wPrintMenu(0, 0, topMenuBuffer);
-      wPrintMenu(LINES-1, 0, bottomMenuBuffer);
+      if (topMenuBuffer){
+        wPrintMenu(0, 0, topMenuBuffer);
+      }
+      if (bottomMenuBuffer){
+        wPrintMenu(LINES-1, 0, bottomMenuBuffer);
+      }
       break;
     }
 }
@@ -304,6 +381,8 @@ void updateView()
   left--;
   displaycount = 0;
 
+  displaysize = LINES - 2;
+
   clear_workspace();
   setColors(DISPLAY_PAIR);
 
@@ -322,6 +401,8 @@ void updateView()
         // This doesn't increase the max line.
         if (line[i] == '\t'){
           s = s + calculateTab(s);
+        } else if (line[i] == '\r') {
+          continue;
         } else {
           s = s + wcwidth(longline[i]);
         }
@@ -351,6 +432,7 @@ void updateView()
 
 void loadFile(const char * currentfile)
 {
+  int longlinelen = 0;
 
   len = 0;
   longestline = 0;
@@ -367,8 +449,8 @@ void loadFile(const char * currentfile)
     return;
     }
 
-  line = malloc(sizeof(char) + 1);
-  longline = malloc(sizeof(wchar_t));
+  line = calloc(1, sizeof(char));
+  longline = calloc(1, sizeof(wchar_t));
 
   while ((nread = getline(&line, &len, stream)) != -1) {
     totallines++;
@@ -379,8 +461,11 @@ void loadFile(const char * currentfile)
       longline = realloc(longline, sizeof(wchar_t) * (longestline + 1));
     }
     mbstowcs(longline, line, len);
-    if (wcslen(longline) > longestlongline){
-      longestlongline = wcslen(longline);
+    if (longline){
+      longlinelen = wcslen(longline);
+      if (longlinelen > longestlongline){
+        longestlongline = longlinelen;
+      }
     }
   }
   free(line);
@@ -397,8 +482,6 @@ void file_view(char * currentfile)
   wPrintMenu(0, 0, sfFileMenuLabel);
   setColors(COMMAND_PAIR);
 
-  displaysize = LINES - 2;
-
   refresh();
 
   if ( check_file(currentfile) && !check_dir(currentfile)){
@@ -410,17 +493,24 @@ void file_view(char * currentfile)
     free(notFoundMessage);
     exitCode = 1;
   }
-  // sleep(10); // No function, so we'll pause for 10 seconds to display our menu
 
   return;
 }
 
 void applySfSettings(settingIndex **settings, t1CharValues **values, int items, int valuesCount)
 {
-  int i;
+  int i, j;
   for (i = 0; i < items; i++){
-    if (!strcmp((*settings)[i].refLabel, "wrap")){
+    if (!strcmp((*settings)[i].refLabel, "enable-mouse")){
+      enableMouse = (*settings)[i].intSetting;
+    } else if (!strcmp((*settings)[i].refLabel, "wrap")){
       wrap = (*settings)[i].intSetting;
+    } else if (!strcmp((*settings)[i].refLabel, "scrollStep")){
+      for (j = 0; j < valuesCount; j++){
+        if (!strcmp((*values)[j].refLabel, "scrollStep") && ((*values)[j].index == (*settings)[i].intSetting)){
+          sfScrollStep = strToInt((*values)[j].value);
+        }
+      }
     }
   }
 }
