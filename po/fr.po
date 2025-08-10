@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: dfshow v0.10.3-1-beta-95-g65387e4\n"
 "Report-Msgid-Bugs-To: https://github.com/roberthawdon/dfshow/issues\n"
-"POT-Creation-Date: 2025-08-10 18:29+0100\n"
+"POT-Creation-Date: 2025-08-10 22:23+0100\n"
 "PO-Revision-Date: 2025-08-10 18:30+0100\n"
 "Last-Translator: Robert Hawdon <git@robertianhawdon.me.uk>\n"
 "Language-Team: French <fr@li.org>\n"
@@ -137,7 +137,9 @@ msgid "foreground"
 msgstr "premier plan"
 
 #: src//colors.c:897
-msgid "!-Default "
+#, fuzzy
+#| msgid "!-Default "
+msgid "!-Default      "
 msgstr "!-Défaut "
 
 #: src//colors.c:899
@@ -145,55 +147,79 @@ msgid "?-Default Bold "
 msgstr "?-Défaut Gras "
 
 #: src//colors.c:901
-msgid "0-Black "
+#, fuzzy
+#| msgid "0-Black "
+msgid "0-Black        "
 msgstr "0-Noir "
 
 #: src//colors.c:903
-msgid "1-Red "
-msgstr "1-Rouge "
+msgid "1-Red          "
+msgstr ""
 
 #: src//colors.c:905
-msgid "2-Green "
+#, fuzzy
+#| msgid "2-Green "
+msgid "2-Green        "
 msgstr "2-Vert "
 
 #: src//colors.c:907
-msgid "3-Brown "
+#, fuzzy
+#| msgid "3-Brown "
+msgid "3-Brown        "
 msgstr "3-Marron "
 
 #: src//colors.c:909
-msgid "4-Blue "
+#, fuzzy
+#| msgid "4-Blue "
+msgid "4-Blue         "
 msgstr "4-Bleu "
 
 #: src//colors.c:911
-msgid "5-Magenta "
+#, fuzzy
+#| msgid "5-Magenta "
+msgid "5-Magenta      "
 msgstr "5-Magenta "
 
 #: src//colors.c:913
-msgid "6-Cyan "
+#, fuzzy
+#| msgid "6-Cyan "
+msgid "6-Cyan         "
 msgstr "6-Cyan "
 
 #: src//colors.c:915
-msgid "7-Light Gray "
+#, fuzzy
+#| msgid "7-Light Gray "
+msgid "7-Light Gray   "
 msgstr "7-Gris Clair "
 
 #: src//colors.c:917
-msgid "8-Dark Gray "
+#, fuzzy
+#| msgid "8-Dark Gray "
+msgid "8-Dark Gray    "
 msgstr "8-Gris Foncé "
 
 #: src//colors.c:919
-msgid "9-Light Red "
+#, fuzzy
+#| msgid "9-Light Red "
+msgid "9-Light Red    "
 msgstr "9-Rouge Clair "
 
 #: src//colors.c:921
-msgid "A-Light Green "
+#, fuzzy
+#| msgid "A-Light Green "
+msgid "A-Light Green  "
 msgstr "A-Vert Clair "
 
 #: src//colors.c:923
-msgid "B-Yellow "
+#, fuzzy
+#| msgid "B-Yellow "
+msgid "B-Yellow       "
 msgstr "B-Jaune "
 
 #: src//colors.c:925
-msgid "C-Light Blue "
+#, fuzzy
+#| msgid "C-Light Blue "
+msgid "C-Light Blue   "
 msgstr "C-Bleu Clair "
 
 #: src//colors.c:927
@@ -201,11 +227,15 @@ msgid "D-Light Magenta"
 msgstr "D-Magenta Clair"
 
 #: src//colors.c:929
-msgid "E-Light Cyan "
+#, fuzzy
+#| msgid "E-Light Cyan "
+msgid "E-Light Cyan   "
 msgstr "E-Cyan Clair "
 
 #: src//colors.c:931
-msgid "F-White "
+#, fuzzy
+#| msgid "F-White "
+msgid "F-White        "
 msgstr "F-Blanc "
 
 #: src//colors.c:939
@@ -285,13 +315,15 @@ msgid "Mouse scroll interval size"
 msgstr "Taille de l'intervalle de défilement de la souris"
 
 #: src//sffunctions.c:366
-#, c-format
-msgid "File = <%s> Top = <%i>"
+#, fuzzy, c-format
+#| msgid "File = <%s> Top = <%i>"
+msgid "File = <%s>  Top = <%i>"
 msgstr "Fichier = <%s> Haut = <%i>"
 
 #: src//sffunctions.c:368
-#, c-format
-msgid "File = <%s> Top = <%i:%i>"
+#, fuzzy, c-format
+#| msgid "File = <%s> Top = <%i:%i>"
+msgid "File = <%s>  Top = <%i:%i>"
 msgstr "Fichier = <%s> Haut = <%i:%i>"
 
 #: src//sffunctions.c:491
@@ -300,19 +332,25 @@ msgid "File [%s] does not exist"
 msgstr "Le fichier [%s] n'existe pas"
 
 #: src//sfmenus.c:101 src//showmenus.c:260
-msgid "-Down"
+#, fuzzy
+#| msgid "-Down"
+msgid "<F1>-Down"
 msgstr "-Bas"
 
 #: src//sfmenus.c:102 src//showmenus.c:261
-msgid "-Up"
-msgstr "-Haut"
+msgid "<F2>-Up"
+msgstr ""
 
 #: src//sfmenus.c:103 src//showmenus.c:262
-msgid "-Top"
+#, fuzzy
+#| msgid "-Top"
+msgid "<F3>-Top"
 msgstr "-Début"
 
 #: src//sfmenus.c:104 src//showmenus.c:263
-msgid "-Bottom"
+#, fuzzy
+#| msgid "-Bottom"
+msgid "<F4>-Bottom"
 msgstr "-Fin"
 
 #: src//sfmenus.c:105 src//showmenus.c:233
@@ -382,7 +420,9 @@ msgid "No further references to '%s' found."
 msgstr "Aucune autre référence à '%s' trouvée."
 
 #: src//sfmenus.c:219
-msgid "Position relative (<+num> || <-num>) or absolute ():"
+#, fuzzy
+#| msgid "Position relative (<+num> || <-num>) or absolute ():"
+msgid "Position relative (<+num> || <-num>) or absolute (<num>):"
 msgstr "Position relative (<+num> || <-num>) ou absolue () :"
 
 #: src//sfmenus.c:427
@@ -556,10 +596,15 @@ msgid "%s: invalid argument '%s' for 'color'\n"
 msgstr "%s : argument invalide '%s' pour 'color'\n"
 
 #: src//show.c:1194
+#, fuzzy
+#| msgid ""
+#| "Valid arguments are:\n"
+#| " - always\n"
+#| " - never\n"
 msgid ""
 "Valid arguments are:\n"
-" - always\n"
-" - never\n"
+"  - always\n"
+"  - never\n"
 msgstr ""
 "Les arguments valides sont :\n"
 " - always\n"
@@ -571,12 +616,19 @@ msgid "%s: invalid argument '%s' for 'time style'\n"
 msgstr "%s : argument invalide '%s' pour 'time style'\n"
 
 #: src//show.c:1239
+#, fuzzy
+#| msgid ""
+#| "Valid arguments are:\n"
+#| " - full-iso\n"
+#| " - long-iso\n"
+#| " - iso\n"
+#| " - locale\n"
 msgid ""
 "Valid arguments are:\n"
-" - full-iso\n"
-" - long-iso\n"
-" - iso\n"
-" - locale\n"
+"  - full-iso\n"
+"  - long-iso\n"
+"  - iso\n"
+"  - locale\n"
 msgstr ""
 "Les arguments valides sont :\n"
 " - full-iso\n"
@@ -590,11 +642,17 @@ msgid "%s: invalid argument '%s' for 'marked'\n"
 msgstr "%s : argument invalide '%s' pour 'marked'\n"
 
 #: src//show.c:1287
+#, fuzzy
+#| msgid ""
+#| "Valid arguments are:\n"
+#| " - always\n"
+#| " - never\n"
+#| " - auto\n"
 msgid ""
 "Valid arguments are:\n"
-" - always\n"
-" - never\n"
-" - auto\n"
+"  - always\n"
+"  - never\n"
+"  - auto\n"
 msgstr ""
 "Les arguments valides sont :\n"
 " - always\n"
@@ -630,7 +688,9 @@ msgstr ""
 
 #: src//showfunctions.c:1700
 msgid "Please set a valid pager utility program command in settings."
-msgstr "Veuillez définir une commande de programme utilitaire pager valide dans les paramètres."
+msgstr ""
+"Veuillez définir une commande de programme utilitaire pager valide dans les "
+"paramètres."
 
 #: src//showfunctions.c:1703 src//showfunctions.c:1765 src//showmenus.c:2271
 msgid "Error: Permission denied"
@@ -638,7 +698,9 @@ msgstr "Erreur : Permission refusée"
 
 #: src//showfunctions.c:1762
 msgid "Please set a valid editor utility program command in settings."
-msgstr "Veuillez définir une commande de programme utilitaire éditeur valide dans les paramètres."
+msgstr ""
+"Veuillez définir une commande de programme utilitaire éditeur valide dans "
+"les paramètres."
 
 #: src//showfunctions.c:2055
 msgid "Error: Unable to move file between mount points"
@@ -735,8 +797,9 @@ msgid "-Owner, Group, & Author-"
 msgstr "-Propriétaire, Groupe et Auteur-"
 
 #: src//showfunctions.c:2811
-#, c-format
-msgid "%i Objects %s Used %s Available"
+#, fuzzy, c-format
+#| msgid "%i Objects %s Used %s Available"
+msgid "%i Objects   %s Used %s Available"
 msgstr "%i Objets %s Utilisé %s Disponible"
 
 #: src//showmenus.c:232
@@ -812,27 +875,39 @@ msgid "e!Xec"
 msgstr "e!Xécuter"
 
 #: src//showmenus.c:264
-msgid "-Refresh"
+#, fuzzy
+#| msgid "-Refresh"
+msgid "<F5>-Refresh"
 msgstr "-Actualiser"
 
 #: src//showmenus.c:265
-msgid "-Mark/Unmark"
+#, fuzzy
+#| msgid "-Mark/Unmark"
+msgid "<F6>-Mark/Unmark"
 msgstr "-Marquer/Démarquer"
 
 #: src//showmenus.c:266
-msgid "-All"
+#, fuzzy
+#| msgid "-All"
+msgid "<F7>-All"
 msgstr "-Tout"
 
 #: src//showmenus.c:267
-msgid "-None"
+#, fuzzy
+#| msgid "-None"
+msgid "<F8>-None"
 msgstr "-Aucun"
 
 #: src//showmenus.c:268
-msgid "-Sort"
+#, fuzzy
+#| msgid "-Sort"
+msgid "<F9>-Sort"
 msgstr "-Trier"
 
 #: src//showmenus.c:269
-msgid "-Block"
+#, fuzzy
+#| msgid "-Block"
+msgid "<F10>-Block"
 msgstr "-Bloc"
 
 #: src//showmenus.c:273
@@ -936,7 +1011,9 @@ msgid "Sort list by -"
 msgstr "Trier la liste par -"
 
 #: src//showmenus.c:326
-msgid "( = reverse)"
+#, fuzzy
+#| msgid "( = reverse)"
+msgid "(<shift> = reverse)"
 msgstr "( = inverser)"
 
 #: src//showmenus.c:327
@@ -1127,5 +1204,11 @@ msgstr "Définir le contexte :"
 
 #: src//showmenus.c:2164
 msgid "Error: Links can only be made against single files."
-msgstr "Erreur : Les liens ne peuvent être créés que vers des fichiers uniques."
+msgstr ""
+"Erreur : Les liens ne peuvent être créés que vers des fichiers uniques."
 
+#~ msgid "1-Red "
+#~ msgstr "1-Rouge "
+
+#~ msgid "-Up"
+#~ msgstr "-Haut"
