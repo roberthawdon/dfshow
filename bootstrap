@@ -7,4 +7,5 @@ else
 fi
 
 autoconf --force  # Force regeneration even if configure exists
+autoheader
 automake --add-missing --copy
