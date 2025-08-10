@@ -24,11 +24,16 @@ import re
 
 def get_version():
     """Get version from git describe or fallback file."""
+    # Get the repository root (two levels up from docs/source/)
+    repo_root = os.path.join(os.path.dirname(__file__), '..', '..')
+    repo_root = os.path.abspath(repo_root)
+
     try:
         # Try to get version from git
-        if os.path.exists('.git') or os.environ.get('GITHUB_ACTIONS'):
+        if os.path.exists(os.path.join(repo_root, '.git')) or os.environ.get('GITHUB_ACTIONS'):
             result = subprocess.run(
                 ['git', 'describe', '--tags', '--dirty', '--always'],
+                cwd=repo_root,  # Run git command from repository root
                 capture_output=True,
                 text=True,
                 check=True
@@ -50,8 +55,9 @@ def get_version():
 
     # Fallback: try to read from tarball version file
     try:
-        if os.path.exists('.tarball-version'):
-            with open('.tarball-version', 'r') as f:
+        tarball_version_path = os.path.join(repo_root, '.tarball-version')
+        if os.path.exists(tarball_version_path):
+            with open(tarball_version_path, 'r') as f:
                 full_version = f.read().strip()
                 if full_version.startswith('v'):
                     full_version = full_version[1:]

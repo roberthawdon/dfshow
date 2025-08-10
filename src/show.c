@@ -1029,7 +1029,7 @@ Options specific to show:\n\
       --settings-menu          launch settings menu\n\
       --edit-themes            launchs directly into the theme editor\n\
       --skip-to-first          skips navigation items if at the top of list\n\
-      --enable-mouse=[BOOLEAN] enables/disables mouse support. Can be either\n\
+      --enable-mouse=BOOLEAN   enables/disables mouse support. Can be either\n\
                                  'true' or 'false'\n"), stdout);
   fputs (("\n\
 The THEME argument can be:\n"), stdout);
@@ -1155,7 +1155,7 @@ int main(int argc, char *argv[])
          {"full-time",        no_argument,       0, GETOPT_FULLTIME_CHAR},
          {"edit-themes",      no_argument,       0, GETOPT_THEMEEDIT_CHAR},
          {"settings-menu",    no_argument,       0, GETOPT_OPTIONSMENU_CHAR},
-         {"contect",          no_argument,       0, 'Z'},
+         {"context",          no_argument,       0, 'Z'},
          {"skip-to-first",    no_argument,       0, GETOPT_SKIPTOFIRST_CHAR},
          {"enable-mouse",     required_argument, 0, GETOPT_ENABLE_MOUSE},
          {0, 0, 0, 0}

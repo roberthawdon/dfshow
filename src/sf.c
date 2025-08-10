@@ -129,7 +129,7 @@ Options:\n\
       --theme=[THEME]          color themes, see the THEME section below for\n\
                                valid themes.\n\
       --settings-menu          launch settings menu\n\
-      --enable-mouse=[BOOLEAN] enables/disables mouse support. Can be either\n\
+      --enable-mouse=BOOLEAN   enables/disables mouse support. Can be either\n\
                                  'true' or 'false'\n\
       --help                   displays help message, then exits\n\
       --version                displays version, then exits\n"), stdout);
