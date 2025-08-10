@@ -1,4 +1,14 @@
-AC_INIT([dfshow],[1.0.0-b.1],[https://github.com/roberthawdon/dfshow/issues])
+AC_INIT([dfshow], 
+        m4_esyscmd_s([
+            if test -d .git; then
+                git describe --tags --dirty --always 2>/dev/null || echo "1.0.0-unknown"
+            elif test -f .tarball-version; then
+                cat .tarball-version
+            else
+                echo "1.0.0-unknown"
+            fi
+        ]), 
+        [https://github.com/roberthawdon/dfshow/issues])
 AM_INIT_AUTOMAKE([subdir-objects])
 AC_PROG_CC
 AC_CONFIG_HEADERS([config.h:config.hin])
