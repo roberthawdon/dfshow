@@ -285,7 +285,7 @@ void adjustBinSetting(settingIndex **settings, t2BinValues **values, char *refLa
 {
   int i;
 
-  for (i = 0; i < maxValue + 1; i++){
+  for (i = 0; i < maxValue; i++){
     if (!strcmp((*values)[i].refLabel, refLabel) && ((*values)[i].index == settingsBinPos)){
       if ((*values)[i].boolVal > 0){
         (*settings)[settingsPos].intSetting = (*settings)[settingsPos].intSetting - (*values)[i].value;
