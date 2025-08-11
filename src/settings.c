@@ -253,6 +253,10 @@ void importSetting(settingIndex **settings, int *items, char *sectionRef, char *
   if (charSetting){
     (*settings)[currentItem].charSetting = malloc(sizeof(char) * (strlen(charSetting) + 1));
     snprintf((*settings)[currentItem].charSetting, (strlen(charSetting) + 1), "%s", charSetting);
+  } else {
+    (*settings)[currentItem].charSetting = malloc(sizeof(char) + 1);
+    snprintf((*settings)[currentItem].charSetting,  2, "%c", '\0');
+
   }
 
   ++*items;
@@ -403,7 +407,6 @@ int printSetting(int line, int col, settingIndex **settings, t1CharValues **valu
       itemAdjust = itemAdjust + valueLen;
     }
   } else if (type == 3){
-    // To Do: Add Free Text logic
     setColors(HILITE_PAIR);
     mvprintw(line, col, " ");
     if (settingsPos == index && settingsFreePos < 0){
@@ -572,7 +575,7 @@ void settingsMenuView(wchar_t *settingsMenuLabel, int settingsMenuSize, menuDef 
   int y = 7;
   int subY = 0;
   int e;
-  int b;
+  int b, t;
   int topPos = 2;
   char charTempValue[1024];
   settingsOrder order[totalItems];
@@ -618,9 +621,14 @@ void settingsMenuView(wchar_t *settingsMenuLabel, int settingsMenuSize, menuDef 
               order[orderCount].screenPos = printSetting(settingPosition, y, settings, charValues, binValues, count, totalCharItems, totalBinItems, (*settings)[count].type, (*settings)[count].invert, false);
             }
             b = wcslen((*settings)[count].textLabel);
+            if ((*settings)[count].charSetting[0] != '\0'){
+              t = strlen((*settings)[count].charSetting) + 1;
+            } else {
+              t = 0;
+            }
             snprintf(settingButtons[count].refLabel, 16, "%s", (*settings)[count].refLabel);
             settingButtons[count].topX = y;
-            settingButtons[count].bottomX = 3 + y + b; // Including check mark
+            settingButtons[count].bottomX = 3 + y + b + t; // Including check mark
             settingButtons[count].topY = settingButtons[count].bottomY = order[orderCount].screenPos;
             // endwin();
             // printf("\n%s:\n", (*settings)[count].refLabel);
