@@ -607,7 +607,11 @@ void settingsMenuView(wchar_t *settingsMenuLabel, int settingsMenuSize, menuDef 
           if (!strcmp((*settingSections)[countSection].refLabel, (*settings)[count].sectionRef)){
             order[orderCount].linePos = settingPosition;
             snprintf(order[orderCount].refLabel, 16, "%s", (*settings)[count].refLabel);
-            settingsPos = settingIndexLookup(settings, order, totalItems, NULL, *orderPos);
+            if (orderCount >= *orderPos){
+              settingsPos = settingIndexLookup(settings, order, totalItems, NULL, *orderPos);
+            } else {
+              settingsPos = -1;
+            }
             if (settingPosition < 1){
               order[orderCount].screenPos = printSetting(settingPosition, y, settings, charValues, binValues, count, totalCharItems, totalBinItems, (*settings)[count].type, (*settings)[count].invert, true);
             } else {
