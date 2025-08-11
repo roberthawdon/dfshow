@@ -48,6 +48,8 @@ extern char regexinput[1024];
 int colormode = 0;
 int messageBreak = 0;
 
+extern int sfOrderPos;
+
 extern MEVENT event;
 
 extern bool enableMouse;
@@ -269,7 +271,7 @@ Valid arguments are:\n\
   }
 
   if (launchSettingsMenu == 1) {
-    settingsMenuView(sfSettingsMenuLabel, sfSettingsMenuSize, sfSettingsMenu, sfSettingsMenuButtons, &settingSectionsSf, settingSectionsSfCount, &settingIndexSf, &charValuesSf, &binValuesSf, totalCharItemsSf, totalBinItemsSf, generateSfSettingsVars(), "sf");
+    settingsMenuView(sfSettingsMenuLabel, sfSettingsMenuSize, sfSettingsMenu, sfSettingsMenuButtons, &settingSectionsSf, settingSectionsSfCount, &settingIndexSf, &charValuesSf, &binValuesSf, totalCharItemsSf, totalBinItemsSf, generateSfSettingsVars(), "sf", &sfOrderPos);
   } else {
     if (optind < argc){
       snprintf(fileName, 4096, "%s", argv[optind]);

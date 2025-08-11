@@ -75,6 +75,8 @@ int blockend = -1;
 struct utimbuf touchDate;
 time_t touchTime;
 
+extern int showOrderPos;
+
 extern int clickMode;
 
 extern MEVENT event;
@@ -2013,7 +2015,7 @@ void functionAction(const char *refLabel){
       global_menu_inputs();
     }
   } else if (!strcmp(refLabel, "g_config")){
-    settingsMenuView(showSettingsMenuLabel, showSettingsMenuSize, showSettingsMenu, showSettingsMenuButtons, &settingSectionsShow, settingSectionsShowCount, &settingIndexShow, &charValuesShow, &binValuesShow, totalCharItemsShow, totalBinItemsShow, generateShowSettingsVars(), "show");
+    settingsMenuView(showSettingsMenuLabel, showSettingsMenuSize, showSettingsMenu, showSettingsMenuButtons, &settingSectionsShow, settingSectionsShowCount, &settingIndexShow, &charValuesShow, &binValuesShow, totalCharItemsShow, totalBinItemsShow, generateShowSettingsVars(), "show", &showOrderPos);
     if (historyref == 0){
       clear();
       global_menu_inputs();

@@ -17,7 +17,7 @@ DF-SHOW
 
 :Author: Robert Ian Hawdon (git@robertianhawdon.me.uk)
 :Source: https://github.com/roberthawdon/dfshow
-:Version: beta
+:Version: rc
 
 **DF-SHOW (Directory File Show) is a Unix-like rewrite of some of the applications from Larry Kroeker's DF-EDIT (Directory File Editor) for MS-DOS and PC-DOS systems, based on the Version 2.3d release from 1986.**
 

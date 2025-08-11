@@ -52,6 +52,8 @@ int sfSettingsMenuSize;
 wchar_t *sfSettingsMenuLabel;
 menuButton *sfSettingsMenuButtons;
 
+int sfOrderPos = 0;
+
 extern MEVENT event;
 
 extern int topMenuStart;
@@ -354,7 +356,7 @@ void show_file_inputs()
         updateView();
       } else if (*pc == menuHotkeyLookup(sfFileMenu, "f_config", sfFileMenuSize)){
         sfMenuItems = generateSfSettingsVars(); // This might need moving
-        settingsMenuView(sfSettingsMenuLabel, sfSettingsMenuSize, sfSettingsMenu, sfSettingsMenuButtons, &settingSectionsSf, settingSectionsSfCount, &settingIndexSf, &charValuesSf, &binValuesSf, totalCharItemsSf, totalBinItemsSf, generateSfSettingsVars(), "sf");
+        settingsMenuView(sfSettingsMenuLabel, sfSettingsMenuSize, sfSettingsMenu, sfSettingsMenuButtons, &settingSectionsSf, settingSectionsSfCount, &settingIndexSf, &charValuesSf, &binValuesSf, totalCharItemsSf, totalBinItemsSf, generateSfSettingsVars(), "sf", &sfOrderPos);
         wPrintMenu(0, 0, sfFileMenuLabel);
         if(wrap){
         }
