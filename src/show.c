@@ -128,6 +128,8 @@ int totalBinItemsShow;
 
 int clickMode = CLICK_SHOW;
 
+int showOrderPos = 0;
+
 extern MEVENT event;
 
 extern bool enableMouse;
@@ -1403,7 +1405,7 @@ Valid arguments are:\n\
     theme_menu_inputs();
     exittoshell();
   } else if (launchSettingsMenu == 1) {
-    settingsMenuView(showSettingsMenuLabel, showSettingsMenuSize, showSettingsMenu, showSettingsMenuButtons, &settingSectionsShow, settingSectionsShowCount, &settingIndexShow, &charValuesShow, &binValuesShow, totalCharItemsShow, totalBinItemsShow, generateShowSettingsVars(), "show");
+    settingsMenuView(showSettingsMenuLabel, showSettingsMenuSize, showSettingsMenu, showSettingsMenuButtons, &settingSectionsShow, settingSectionsShowCount, &settingIndexShow, &charValuesShow, &binValuesShow, totalCharItemsShow, totalBinItemsShow, generateShowSettingsVars(), "show", &showOrderPos);
     exittoshell();
   } else {
     // Remaining arguments passed as working directory

@@ -253,6 +253,10 @@ void importSetting(settingIndex **settings, int *items, char *sectionRef, char *
   if (charSetting){
     (*settings)[currentItem].charSetting = malloc(sizeof(char) * (strlen(charSetting) + 1));
     snprintf((*settings)[currentItem].charSetting, (strlen(charSetting) + 1), "%s", charSetting);
+  } else {
+    (*settings)[currentItem].charSetting = malloc(sizeof(char) + 1);
+    snprintf((*settings)[currentItem].charSetting,  2, "%c", '\0');
+
   }
 
   ++*items;
@@ -403,7 +407,6 @@ int printSetting(int line, int col, settingIndex **settings, t1CharValues **valu
       itemAdjust = itemAdjust + valueLen;
     }
   } else if (type == 3){
-    // To Do: Add Free Text logic
     setColors(HILITE_PAIR);
     mvprintw(line, col, " ");
     if (settingsPos == index && settingsFreePos < 0){
@@ -559,7 +562,7 @@ int settingOrderLookup(settingIndex **settings, settingsOrder *order, int settin
   return(-1);
 }
 
-void settingsMenuView(wchar_t *settingsMenuLabel, int settingsMenuSize, menuDef *settingsMenu, menuButton *settingsMenuButtons, settingSection **settingSections, int settingSectionSize, settingIndex **settings, t1CharValues **charValues, t2BinValues **binValues, int totalCharItems, int totalBinItems, int totalItems, char *application)
+void settingsMenuView(wchar_t *settingsMenuLabel, int settingsMenuSize, menuDef *settingsMenu, menuButton *settingsMenuButtons, settingSection **settingSections, int settingSectionSize, settingIndex **settings, t1CharValues **charValues, t2BinValues **binValues, int totalCharItems, int totalBinItems, int totalItems, char *application, int *orderPos)
 {
   int count = 0;
   int subCount = 0;
@@ -568,14 +571,11 @@ void settingsMenuView(wchar_t *settingsMenuLabel, int settingsMenuSize, menuDef 
   int settingPosition = 0;
   int settingsPosCache = 0;
   int orderCount = 0;
-  int orderPos = 0;
   int x = 2;
   int y = 7;
   int subY = 0;
-  int markedCount, sortmodeCount, timestyleCount, ownerCount;
-  int sortmodeInt, timestyleInt;
   int e;
-  int b;
+  int b, t;
   int topPos = 2;
   char charTempValue[1024];
   settingsOrder order[totalItems];
@@ -610,15 +610,25 @@ void settingsMenuView(wchar_t *settingsMenuLabel, int settingsMenuSize, menuDef 
           if (!strcmp((*settingSections)[countSection].refLabel, (*settings)[count].sectionRef)){
             order[orderCount].linePos = settingPosition;
             snprintf(order[orderCount].refLabel, 16, "%s", (*settings)[count].refLabel);
+            if (orderCount >= *orderPos){
+              settingsPos = settingIndexLookup(settings, order, totalItems, NULL, *orderPos);
+            } else {
+              settingsPos = -1;
+            }
             if (settingPosition < 1){
               order[orderCount].screenPos = printSetting(settingPosition, y, settings, charValues, binValues, count, totalCharItems, totalBinItems, (*settings)[count].type, (*settings)[count].invert, true);
             } else {
               order[orderCount].screenPos = printSetting(settingPosition, y, settings, charValues, binValues, count, totalCharItems, totalBinItems, (*settings)[count].type, (*settings)[count].invert, false);
             }
             b = wcslen((*settings)[count].textLabel);
+            if ((*settings)[count].charSetting[0] != '\0'){
+              t = strlen((*settings)[count].charSetting) + 1;
+            } else {
+              t = 0;
+            }
             snprintf(settingButtons[count].refLabel, 16, "%s", (*settings)[count].refLabel);
             settingButtons[count].topX = y;
-            settingButtons[count].bottomX = 3 + y + b; // Including check mark
+            settingButtons[count].bottomX = 3 + y + b + t; // Including check mark
             settingButtons[count].topY = settingButtons[count].bottomY = order[orderCount].screenPos;
             // endwin();
             // printf("\n%s:\n", (*settings)[count].refLabel);
@@ -660,12 +670,12 @@ void settingsMenuView(wchar_t *settingsMenuLabel, int settingsMenuSize, menuDef 
       orderCount = 0;
       settingPosition = topPos;
 
-      if (order[orderPos].screenPos > (LINES - 1)){
+      if (order[*orderPos].screenPos > (LINES - 1)){
         clear();
         wPrintMenu(0,0,settingsMenuLabel);
         settingPosition = 0;
         orderCount = 0;
-        orderPos = 0;
+        *orderPos = 0;
         topPos = 2;
         goto loopDraw;
       }
@@ -693,7 +703,7 @@ void settingsMenuView(wchar_t *settingsMenuLabel, int settingsMenuSize, menuDef 
               //   exit(123);
               // }
             }
-            orderPos = settingOrderLookup(settings, order, totalItems, NULL, settingsPos);
+            *orderPos = settingOrderLookup(settings, order, totalItems, NULL, settingsPos);
             goto loop;
           }
         } else if (event.bstate & BUTTON5_PRESSED){
@@ -723,18 +733,18 @@ void settingsMenuView(wchar_t *settingsMenuLabel, int settingsMenuSize, menuDef 
         wPrintMenu(0,0,settingsMenuLabel);
       } else if (*pc == 258 || *pc == 10){
         down:
-        if (orderPos < (totalItems -1 )){
+        if (*orderPos < (totalItems -1 )){
           settingsBinPos = -1;
-          orderPos++;
-          if (order[orderPos].screenPos > (LINES - 1)){
+          ++*orderPos;
+          if (order[*orderPos].screenPos > (LINES - 1)){
             free(settingButtons);
             settingButtons = malloc(sizeof(menuButton) * totalItems);
             clear();
             wPrintMenu(0,0,settingsMenuLabel);
-            topPos = topPos + (order[orderPos - 1].screenPos - order[orderPos].screenPos);
+            topPos = topPos + (order[*orderPos - 1].screenPos - order[*orderPos].screenPos);
           }
         } else {
-          orderPos = totalItems - 1;
+          *orderPos = totalItems - 1;
         }
       } else if (*pc == 32 || *pc == 260 || *pc == 261){
         // Adjust
@@ -783,28 +793,27 @@ void settingsMenuView(wchar_t *settingsMenuLabel, int settingsMenuSize, menuDef 
         }
       } else if (*pc == 259){
         up:
-        if (orderPos > 0){
+        if (*orderPos > 0){
           settingsBinPos = -1;
-          orderPos--;
-          if (order[orderPos].screenPos < 1){
+          --*orderPos;
+          if (order[*orderPos].screenPos < 1){
             free(settingButtons);
             settingButtons = malloc(sizeof(menuButton) * totalItems);
             clear();
             wPrintMenu(0,0,settingsMenuLabel);
-            // topPos = 2 + (order[orderPos + 1].screenPos - order[orderPos].screenPos);
-            if (orderPos < 1){
-              orderPos = 0;
+            if (*orderPos < 1){
+              *orderPos = 0;
               topPos = 2;
             } else {
-              topPos = topPos +(order[orderPos + 1].screenPos - order[orderPos].screenPos);
+              topPos = topPos +(order[*orderPos + 1].screenPos - order[*orderPos].screenPos);
             }
           }
         } else {
-          orderPos = 0;
+          *orderPos = 0;
           topPos = 2;
         }
       }
-      settingsPos = settingIndexLookup(settings, order, totalItems, NULL, orderPos);
+      settingsPos = settingIndexLookup(settings, order, totalItems, NULL, *orderPos);
     }
 
 }
