@@ -1,4 +1,5 @@
 #include <limits.h>
+#include "customtypes.h"
 
 // #define PROGRAM_NAME "sf"
 #define LINE_WRAP 0
@@ -8,7 +9,7 @@ int calculateTab(int pos);
 void file_view(char * currentfile);
 void fileShowStatus();
 void loadFile(const char * currentfile);
-void updateView();
+int updateView();
 int findInFile(const char * currentfile, const char * search, int charcase);
 void refreshScreenSf();
 void readSfConfig(const char * confFile);
@@ -16,4 +17,4 @@ void saveSfConfig(const char * confFile, settingIndex **settings, t1CharValues *
 int generateSfSettingsVars();
 // void freeSettingVars();
 void applySfSettings(settingIndex **settings, t1CharValues **values, int items, int valuesCount);
-
+int findLastLineStart(int longLineLen);

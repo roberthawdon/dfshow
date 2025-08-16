@@ -86,6 +86,11 @@ extern int displaycount;
 
 extern int i, s;
 
+extern int prevLine;
+extern int wrapStartChar;
+
+extern bool lineWrapped;
+
 extern FILE *file;
 extern int exitCode;
 
@@ -362,8 +367,14 @@ int findInFile(const char * currentfile, const char * search, int charcase)
 void fileShowStatus()
 {
   char *statusText;
+  char wrapStatus[2];
+  if (lineWrapped && wrapStartChar != 0){
+    wrapStatus[0] = '*';
+  } else {
+    wrapStatus[0] = '\0';
+  }
   if (wrap){
-    setDynamicChar(&statusText, _("File = <%s>  Top = <%i>"), fileName, topline);
+    setDynamicChar(&statusText, _("File = <%s>  Top = <%i%s>"), fileName, topline, wrapStatus);
   } else {
     setDynamicChar(&statusText, _("File = <%s>  Top = <%i:%i>"), fileName, topline, leftcol);
   }
@@ -371,15 +382,30 @@ void fileShowStatus()
   free(statusText);
 }
 
-void updateView()
+int findLastLineStart(int longLineLen){
+  int c = 0;
+  int result = 0;
+
+  while (c < longLineLen){
+    result = c;
+    c = c + COLS;
+  }
+
+  return(result);
+}
+
+int updateView()
 {
   int longlinelen = 0;
+  int startChar = 0;
+  int wrapEnd = 0;
   top = topline;
   left = leftcol;
   len = 0;
   top--;
   left--;
   displaycount = 0;
+  lineWrapped = false;
 
   displaysize = LINES - 2;
 
@@ -396,7 +422,22 @@ void updateView()
     mbstowcs(longline, line, len);
     longlinelen = wcslen(longline);
     if (displaycount < displaysize){
-      for(i = 0; i < longlinelen; i++){
+      if (displaycount == 0){
+        if (topline < prevLine){
+          wrapStartChar = startChar = findLastLineStart(longlinelen);
+          // if (startChar != 0){
+          //   lineWrapped = true;
+          // }
+        } else {
+          startChar = wrapStartChar;
+        }
+      } else {
+        startChar = 0;
+      }
+      if (startChar > 0){
+        lineWrapped = true;
+      }
+      for(i = startChar; i < longlinelen; i++){
         mvprintw(displaycount + 1, s - left, "%lc", longline[i]);
         // This doesn't increase the max line.
         if (line[i] == '\t'){
@@ -406,7 +447,15 @@ void updateView()
         } else {
           s = s + wcwidth(longline[i]);
         }
+        if (longlinelen > COLS){
+          if ((longlinelen - startChar) < COLS){
+            wrapEnd = 1;
+          }
+        }
         if ( s == COLS + left){
+          if (displaycount == 0){
+            lineWrapped = true;
+          }
           if ( wrap ) {
             if ( wrapmode != WORD_WRAP ){
               s = 0;
@@ -428,6 +477,7 @@ void updateView()
   fileShowStatus();
   free(line);
   // free(longline);
+  return(wrapEnd);
 }
 
 void loadFile(const char * currentfile)

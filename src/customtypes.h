@@ -1,3 +1,4 @@
+#include <wchar.h>
 #pragma once
 
 /* TYPE DEFINITIONS */
