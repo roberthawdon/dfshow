@@ -388,6 +388,8 @@ void show_file_inputs()
         refreshScreenSf();
         // updateView();
       } else if (*pc == menuHotkeyLookup(sfFileMenu, "f_quit", sfFileMenuSize)){
+        prevLine = 0;
+        wrapStartChar = 0;
         free(longline);
         free(filePos);
         fclose(stream);

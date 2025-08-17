@@ -417,12 +417,13 @@ int updateView()
 
   line = malloc(sizeof(char) + 1); // Preallocating memory appears to fix a crash on FreeBSD, it might also fix the same issue on macOS
 
+  reload:
   while ((nread = getline(&line, &len, stream)) != -1) {
     s = 0;
     mbstowcs(longline, line, len);
     longlinelen = wcslen(longline);
     if (displaycount < displaysize){
-      if (displaycount == 0){
+      if (displaycount == 0 && wrap){
         if (topline < prevLine){
           wrapStartChar = startChar = findLastLineStart(longlinelen);
           // if (startChar != 0){
@@ -436,6 +437,12 @@ int updateView()
       }
       if (startChar > 0){
         lineWrapped = true;
+      }
+      if (startChar > longlinelen){
+        wrapStartChar = startChar = 0;
+        topline++;
+        lineWrapped = false;
+        goto reload;
       }
       for(i = startChar; i < longlinelen; i++){
         mvprintw(displaycount + 1, s - left, "%lc", longline[i]);
@@ -453,7 +460,7 @@ int updateView()
           }
         }
         if ( s == COLS + left){
-          if (displaycount == 0){
+          if (displaycount == 0 && wrap){
             lineWrapped = true;
           }
           if ( wrap ) {
