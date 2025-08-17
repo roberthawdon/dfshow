@@ -2,11 +2,13 @@
 
 if [ -d /usr/share/gettext/m4 ]; then
     aclocal -I /usr/share/gettext/m4
+elif [ -d /opt/homebrew/share/gettext/m4 ]; then
+    aclocal -I /opt/homebrew/share/gettext/m4
 else
     aclocal
 fi
 
 autoconf --force  # Force regeneration even if configure exists
 autoheader
-autopoint
+autopoint --force
 automake --add-missing --copy
