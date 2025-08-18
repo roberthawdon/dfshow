@@ -426,9 +426,6 @@ int updateView()
       if (displaycount == 0 && wrap){
         if (topline < prevLine){
           wrapStartChar = startChar = findLastLineStart(longlinelen);
-          // if (startChar != 0){
-          //   lineWrapped = true;
-          // }
         } else {
           startChar = wrapStartChar;
         }
@@ -483,7 +480,6 @@ int updateView()
   attroff(A_BOLD);
   fileShowStatus();
   free(line);
-  // free(longline);
   return(wrapEnd);
 }
 
