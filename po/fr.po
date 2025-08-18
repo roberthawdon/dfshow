@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: dfshow v0.10.3-1-beta-95-g65387e4\n"
 "Report-Msgid-Bugs-To: https://github.com/roberthawdon/dfshow/issues\n"
-"POT-Creation-Date: 2025-08-11 22:19+0100\n"
+"POT-Creation-Date: 2025-08-18 22:34+0100\n"
 "PO-Revision-Date: 2025-08-10 18:30+0100\n"
 "Last-Translator: Robert Hawdon <git@robertianhawdon.me.uk>\n"
 "Language-Team: French <fr@li.org>\n"
@@ -294,138 +294,138 @@ msgstr ""
 msgid "Try '%s --help' for more information.\n"
 msgstr "Essayez '%s --help' pour plus d'informations.\n"
 
-#: src//sffunctions.c:252 src//show.c:670
+#: src//sffunctions.c:257 src//show.c:670
 msgid "Global Settings"
 msgstr "Paramètres Globaux"
 
-#: src//sffunctions.c:253 src//show.c:673
+#: src//sffunctions.c:258 src//show.c:673
 msgid "Behavior Settings"
 msgstr "Paramètres de Comportement"
 
-#: src//sffunctions.c:265 src//show.c:707
+#: src//sffunctions.c:270 src//show.c:707
 msgid "Enable mouse (Requires restart)"
 msgstr "Activer la souris (Nécessite un redémarrage)"
 
-#: src//sffunctions.c:266
+#: src//sffunctions.c:271
 msgid "Enable text wrapping"
 msgstr "Activer le retour à la ligne automatique"
 
-#: src//sffunctions.c:267 src//show.c:733
+#: src//sffunctions.c:272 src//show.c:733
 msgid "Mouse scroll interval size"
 msgstr "Taille de l'intervalle de défilement de la souris"
 
-#: src//sffunctions.c:366
+#: src//sffunctions.c:377
 #, fuzzy, c-format
 #| msgid "File = <%s> Top = <%i>"
-msgid "File = <%s>  Top = <%i>"
+msgid "File = <%s>  Top = <%i%s>"
 msgstr "Fichier = <%s> Haut = <%i>"
 
-#: src//sffunctions.c:368
+#: src//sffunctions.c:379
 #, fuzzy, c-format
 #| msgid "File = <%s> Top = <%i:%i>"
 msgid "File = <%s>  Top = <%i:%i>"
 msgstr "Fichier = <%s> Haut = <%i:%i>"
 
-#: src//sffunctions.c:491
+#: src//sffunctions.c:544
 #, c-format
 msgid "File [%s] does not exist"
 msgstr "Le fichier [%s] n'existe pas"
 
-#: src//sfmenus.c:103 src//showmenus.c:262
+#: src//sfmenus.c:110 src//showmenus.c:262
 #, fuzzy
 #| msgid "-Down"
 msgid "<F1>-Down"
 msgstr "-Bas"
 
-#: src//sfmenus.c:104 src//showmenus.c:263
+#: src//sfmenus.c:111 src//showmenus.c:263
 msgid "<F2>-Up"
 msgstr ""
 
-#: src//sfmenus.c:105 src//showmenus.c:264
+#: src//sfmenus.c:112 src//showmenus.c:264
 #, fuzzy
 #| msgid "-Top"
 msgid "<F3>-Top"
 msgstr "-Début"
 
-#: src//sfmenus.c:106 src//showmenus.c:265
+#: src//sfmenus.c:113 src//showmenus.c:265
 #, fuzzy
 #| msgid "-Bottom"
 msgid "<F4>-Bottom"
 msgstr "-Fin"
 
-#: src//sfmenus.c:107 src//showmenus.c:235
+#: src//sfmenus.c:114 src//showmenus.c:235
 msgid "!Config"
 msgstr "!Config"
 
-#: src//sfmenus.c:108
+#: src//sfmenus.c:115
 msgid "!Find"
 msgstr "!Rechercher"
 
-#: src//sfmenus.c:109 src//showmenus.c:238
+#: src//sfmenus.c:116 src//showmenus.c:238
 msgid "!Help"
 msgstr "!Aide"
 
-#: src//sfmenus.c:110
+#: src//sfmenus.c:117
 msgid "!Position"
 msgstr "!Position"
 
-#: src//sfmenus.c:111 src//sfmenus.c:123 src//showmenus.c:240
+#: src//sfmenus.c:118 src//sfmenus.c:130 src//showmenus.c:240
 #: src//showmenus.c:254 src//showmenus.c:305 src//showmenus.c:311
 msgid "!Quit"
 msgstr "!Quitter"
 
-#: src//sfmenus.c:113 src//sfmenus.c:300
+#: src//sfmenus.c:120 src//sfmenus.c:323
 msgid "!Wrap-off"
 msgstr "r!Etour-désactivé"
 
-#: src//sfmenus.c:115 src//sfmenus.c:297
+#: src//sfmenus.c:122 src//sfmenus.c:320
 msgid "!Wrap-on"
 msgstr "r!Etour-activé"
 
-#: src//sfmenus.c:119
+#: src//sfmenus.c:126
 msgid "!Ignore-case"
 msgstr "!Ignorer-casse"
 
-#: src//sfmenus.c:120
+#: src//sfmenus.c:127
 msgid "!Case-sensitive"
 msgstr "!Sensible-casse"
 
-#: src//sfmenus.c:124 src//showmenus.c:312
+#: src//sfmenus.c:131 src//showmenus.c:312
 msgid "!Revert"
 msgstr "!Annuler"
 
-#: src//sfmenus.c:125 src//showmenus.c:306 src//showmenus.c:313
+#: src//sfmenus.c:132 src//showmenus.c:306 src//showmenus.c:313
 msgid "!Save"
 msgstr "!Sauvegarder"
 
-#: src//sfmenus.c:130
+#: src//sfmenus.c:137
 msgid "(enter = I)"
 msgstr "(entrée = I)"
 
-#: src//sfmenus.c:131
+#: src//sfmenus.c:138
 msgid "SF Settings Menu -"
 msgstr "Menu Paramètres SF -"
 
-#: src//sfmenus.c:150 src//showmenus.c:1031
+#: src//sfmenus.c:157 src//showmenus.c:1031
 msgid "Match Case - Enter string:"
 msgstr "Respecter la casse - Saisir la chaîne :"
 
-#: src//sfmenus.c:153 src//showmenus.c:1034
+#: src//sfmenus.c:160 src//showmenus.c:1034
 msgid "Ignore Case - Enter string:"
 msgstr "Ignorer la casse - Saisir la chaîne :"
 
-#: src//sfmenus.c:174
+#: src//sfmenus.c:181
 #, c-format
 msgid "No further references to '%s' found."
 msgstr "Aucune autre référence à '%s' trouvée."
 
-#: src//sfmenus.c:221
+#: src//sfmenus.c:228
 #, fuzzy
 #| msgid "Position relative (<+num> || <-num>) or absolute ():"
 msgid "Position relative (<+num> || <-num>) or absolute (<num>):"
 msgstr "Position relative (<+num> || <-num>) ou absolue () :"
 
-#: src//sfmenus.c:429
+#: src//sfmenus.c:454
 msgid "Show File - Enter pathname:"
 msgstr "Afficher le fichier - Saisir le chemin :"
 

@@ -54,6 +54,13 @@ menuButton *sfSettingsMenuButtons;
 
 int sfOrderPos = 0;
 
+int prevLine = 0;
+int wrapStartChar = 0;
+
+bool lineWrapped = false;
+
+int wrapEnd = 0;
+
 extern MEVENT event;
 
 extern int topMenuStart;
@@ -255,22 +262,38 @@ void sfNavigate(int direction, int step){
 
   switch(direction){
     case D_DOWN:
-      testStep = (totallines +1) - topline;
-      if ((testStep > 0) && (testStep >= step)){
-        i = step;
-      } else if ((testStep > 0) && (testStep < step)){
-        i = testStep;
+      if (lineWrapped && !wrapEnd){
+        wrapStartChar = wrapStartChar + (COLS * step);
       } else {
-        break;
+        prevLine = topline;
+        wrapStartChar = 0;
+        testStep = (totallines +1) - topline;
+        if ((testStep > 0) && (testStep >= step)){
+          i = step;
+        } else if ((testStep > 0) && (testStep < step)){
+          i = testStep;
+        } else {
+          break;
+        }
+        topline = topline + i;
       }
-      topline = topline + i;
-      updateView();
+      wrapEnd = updateView();
       break;
     case D_UP:
-      if (topline > step){
-        topline = topline - step;
-      } else if (topline <= step) {
-        topline = 1;
+      if (lineWrapped && wrapStartChar > 0){
+        prevLine = topline;
+        if ((wrapStartChar - (COLS * step)) < 0){
+          wrapStartChar = 0;
+        } else {
+          wrapStartChar = wrapStartChar - (COLS * step);
+        }
+      } else {
+        prevLine = topline;
+        if (topline > step){
+          topline = topline - step;
+        } else if (topline <= step) {
+          topline = 1;
+        }
       }
       updateView();
       break;
@@ -365,6 +388,8 @@ void show_file_inputs()
         refreshScreenSf();
         // updateView();
       } else if (*pc == menuHotkeyLookup(sfFileMenu, "f_quit", sfFileMenuSize)){
+        prevLine = 0;
+        wrapStartChar = 0;
         free(longline);
         free(filePos);
         fclose(stream);
