@@ -4,10 +4,11 @@ setopt localoptions noshwordsplit noksharrays
 local -a args
 args=(
     '(-w --wrap)'{-w,--wrap}"["'Trun line wrapping on'"]"
-    '(--help)--help[Displays help message, then exits]'
-    '(--version)--version[Displays version, then exits]'
     '(--theme)--theme[Color themes]'
     '(--settings-menu)--settings-menu[Launch settings menu]'
+    '(--enable-mouse)--enable-mouse[Enables/Disables mouse support]'
+    '(--help)--help[Displays help message, then exits]'
+    '(--version)--version[Displays version, then exits]'
     '*:filename:_files'
     )
 

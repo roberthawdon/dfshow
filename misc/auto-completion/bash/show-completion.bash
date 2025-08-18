@@ -19,7 +19,9 @@ _show()
            -g
            --no-group
            --human-readable
+	   --inode
            --si
+	   --numeric-uid-gid
            --reverse
            --size
            -S
@@ -30,6 +32,7 @@ _show()
            -1
            --help
            --version
+	   --directories-only
 	   --theme
 	   --no-danger
 	   --marked
@@ -39,6 +42,7 @@ _show()
 	   --settings-menu
 	   --edit-themes
 	   --skip-to-first
+	   --enable-mouse
     )
     if [[ $cur == -* ]]; then
         COMPREPLY=( $( compgen -W "${options[*]}" -- "$cur" ) )

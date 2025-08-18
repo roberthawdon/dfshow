@@ -16,7 +16,9 @@ args=(
     '(-g)-g[Only show group]'
     '(-G --no-group)'{-G,--no-group}"["'Do not show group'"]"
     '(-h --human-readable)'{-h,--human-readable}"["'Print sizes like 1K 234M 2G etc.'"]"
+    '(-i --inode)'{-i,--inode}"["'Print index number of each file'"]"
     '(--si)--si[As above, but use powers of 1000 not 1024]'
+    '(-n --numeric-uid-gid)'{-n,--numeric-uid-gid}"["'Show numeric values for user and group IDs'"]"
     '(-r --reverse)'{-r,--reverse}"["'Reverse order while sorting'"]"
     '(-s --size)'{-s,--size}"["'Display the allocated size of files, in blocks'"]"
     '(-S)-S[Sort file by size, largest first]'
@@ -27,6 +29,7 @@ args=(
     '(-1)-1[Only show file name, one per line]'
     '(--help)--help[Displays help message, then exits]'
     '(--version)--version[Displays version, then exits]'
+    '(--directories-only)--directories-only[Show only directories]'
     '(--theme)--theme[Color themes]'
     '(--no-danger)--no-danger[Turns off danger colors when running with elevated privileges]'
     '(--marked)--marked[Shows information about marked objects]'
@@ -36,6 +39,7 @@ args=(
     '(--settings-menu)--settings-menu[Launch settings menu]'
     '(--edit-themes)--edit-themes[Launches directly into the theme editor]'
     '(--skip-to-first)--skip-to-first[Skips navigation items if at the top of list]'
+    '(--enable-mouse)--enable-mouse[Enables/Disables mouse support]'
     '*:filename:_files'
     )
 

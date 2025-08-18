@@ -8,10 +8,11 @@ _sf()
     local -a options
     options=(
            --wrap
-           --help
-           --version
 	   --theme
 	   --settings-menu
+	   --enable-mouse
+           --help
+           --version
     )
     if [[ $cur == -* ]]; then
         COMPREPLY=( $( compgen -W "${options[*]}" -- "$cur" ) )
