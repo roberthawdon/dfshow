@@ -369,9 +369,9 @@ void fileShowStatus()
   char *statusText;
   char wrapStatus[2];
   if (lineWrapped && wrapStartChar != 0){
-    wrapStatus[0] = '*';
+    snprintf(wrapStatus, 2, "*");
   } else {
-    wrapStatus[0] = '\0';
+    snprintf(wrapStatus, 2, " ");
   }
   if (wrap){
     setDynamicChar(&statusText, _("File = <%s>  Top = <%i%s>"), fileName, topline, wrapStatus);
