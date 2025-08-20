@@ -295,7 +295,7 @@ void sfNavigate(int direction, int step){
           topline = 1;
         }
       }
-      updateView();
+      wrapEnd = updateView();
       break;
     case D_LEFT:
       if ((leftcol > 1) && (wrap != 1)){

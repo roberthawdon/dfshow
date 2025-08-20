@@ -424,7 +424,7 @@ int updateView()
     longlinelen = wcslen(longline);
     if (displaycount < displaysize){
       if (displaycount == 0 && wrap){
-        if (topline < prevLine){
+        if (topline == (prevLine - 1)){
           wrapStartChar = startChar = findLastLineStart(longlinelen);
         } else {
           startChar = wrapStartChar;
@@ -451,11 +451,6 @@ int updateView()
         } else {
           s = s + wcwidth(longline[i]);
         }
-        if (longlinelen > COLS){
-          if ((longlinelen - startChar) < COLS){
-            wrapEnd = 1;
-          }
-        }
         if ( s == COLS + left){
           if (displaycount == 0 && wrap){
             lineWrapped = true;
@@ -468,6 +463,12 @@ int updateView()
           } else {
             break;
           }
+        }
+      }
+      if (longlinelen > COLS){
+        endwin();
+        if ((longlinelen - startChar) < COLS){
+          wrapEnd = 1;
         }
       }
       displaycount++;
