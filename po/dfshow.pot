@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: dfshow v1.0.0-rc3-2-gb861cc7\n"
+"Project-Id-Version: dfshow v1.0.0-rc3-4-g276e10d-dirty\n"
 "Report-Msgid-Bugs-To: https://github.com/roberthawdon/dfshow/issues\n"
-"POT-Creation-Date: 2025-08-20 07:11+0100\n"
+"POT-Creation-Date: 2025-08-20 17:50+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -292,7 +292,7 @@ msgstr ""
 msgid "File = <%s>  Top = <%i:%i>"
 msgstr ""
 
-#: src//sffunctions.c:545
+#: src//sffunctions.c:544
 #, c-format
 msgid "File [%s] does not exist"
 msgstr ""

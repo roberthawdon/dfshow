@@ -466,7 +466,6 @@ int updateView()
         }
       }
       if (longlinelen > COLS){
-        endwin();
         if ((longlinelen - startChar) < COLS){
           wrapEnd = 1;
         }
