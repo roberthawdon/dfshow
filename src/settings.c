@@ -376,6 +376,7 @@ int printSetting(int line, int col, settingIndex **settings, t1CharValues **valu
         setColors(COMMAND_PAIR);
       }
       mvprintw(line, (col + 4 + labelLen + itemAdjust), "<%s>", (*values)[i + v].value);
+      setColors(COMMAND_PAIR);
       itemAdjust = itemAdjust + valueLen;
     }
   } else if (type == 2){
