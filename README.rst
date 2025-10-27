@@ -12,7 +12,7 @@ DF-SHOW
 .. |Documentation| image:: https://readthedocs.org/projects/dfshow/badge/?version=latest
    :target: https://dfshow.readthedocs.io/en/latest/?badge=latest
 
-.. |Contributor Covenant| image:: https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg
+.. |Contributor Covenant| image:: https://img.shields.io/badge/Contributor%20Covenant-3.0-4baaaa.svg
    :target: CODE_OF_CONDUCT.md
 
 :Author: Robert Ian Hawdon (git@robertianhawdon.me.uk)
