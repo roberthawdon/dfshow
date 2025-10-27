@@ -99,15 +99,15 @@ AS_IF([test "x$MORE_CHECK" = "xyes"], [
 ])
 
 
-AC_ARG_WITH([selinux], AS_HELP_STRING([--with-selinux], [Build with selinux library (default: disabled)]))
-AC_ARG_ENABLE([move-between-devices], AS_HELP_STRING([--enable-move-between-devices], [Enable moving objects between mounted devices (default: disabled)]))
+AC_ARG_WITH([selinux], AS_HELP_STRING([--with-selinux], [Build with selinux library]))
+AC_ARG_ENABLE([move-between-devices], AS_HELP_STRING([--disable-move-between-devices], [Disable moving objects between mounted devices]))
 
 AS_IF([test "x$with_selinux" = "xyes"], [
   AC_CHECK_HEADERS(selinux/selinux.h, , AC_MSG_ERROR(selinux header (selinux/selinux.h) not found. You may need to install an selinux development package.))
 ])
 
-AS_IF([test "x$enable_move_between_devices" = "xyes"], [
-  AC_DEFINE(HAVE_MOVE_BETWEEN_DEVICES, 1, [True for enable-move-between-devices])
+AS_IF([test "x$enable_move_between_devices" = "xno"], [
+  AC_DEFINE(HAVE_NO_MOVE_BETWEEN_DEVICES, 1, [True for disable-move-between-devices])
 ])
 
 AS_IF([test $(uname) = "Linux"], [
