@@ -218,10 +218,10 @@ extern char * pagerPath;
 
 extern char sortmode[9];
 
-#ifdef HAVE_MOVE_BETWEEN_DEVICES
-bool moveBetweenDevices = true;
-#else
+#ifdef HAVE_NO_MOVE_BETWEEN_DEVICES
 bool moveBetweenDevices = false;
+#else
+bool moveBetweenDevices = true;
 #endif
 
 /* Formatting time in a similar fashion to `ls` */
