@@ -295,6 +295,7 @@ int exittoshell()
   clear();
   // unloadMenuLabels();
   // freeSettingVars();
+  fclose(stdin);
   endwin();
   exit(exitCode);
   return exitCode;
