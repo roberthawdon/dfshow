@@ -1059,8 +1059,6 @@ int main(int argc, char *argv[])
   char * tmpPwd;
   char options[22];
 
-  freopen("/dev/tty", "r", stdin);
-
   initI18n();
 
   setDynamicChar(&programName, "%s", PROGRAM_NAME);
@@ -1367,6 +1365,9 @@ Valid arguments are:\n\
   }
 
 
+  // Ensure tty is input (dropping piped stdin)
+  freopen("/dev/tty", "r", stdin);
+
   // Writing Menus
 
   generateDefaultShowMenus();
@@ -1438,5 +1439,6 @@ Valid arguments are:\n\
     }
     directory_view(currentpwd);
   }
+  fclose(stdin);
   return exitCode;
 }

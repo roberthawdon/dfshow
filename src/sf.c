@@ -145,8 +145,6 @@ int main(int argc, char *argv[])
 {
   int c;
 
-  freopen("/dev/tty", "r", stdin);
-
   initI18n();
 
   setDynamicChar(&programName, "%s", PROGRAM_NAME);
@@ -232,6 +230,9 @@ Valid arguments are:\n\
       exit(2);
     }
   }
+
+  // Ensure tty is input (dropping piped stdin)
+  freopen("/dev/tty", "r", stdin);
 
   generateDefaultSfMenus();
 
