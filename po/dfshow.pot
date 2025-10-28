@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: dfshow v1.0.0-rc3-4-g276e10d-dirty\n"
+"Project-Id-Version: dfshow v1.0.0-rc4-10-g6d97372-dirty\n"
 "Report-Msgid-Bugs-To: https://github.com/roberthawdon/dfshow/issues\n"
-"POT-Creation-Date: 2025-08-20 17:50+0100\n"
+"POT-Creation-Date: 2025-10-28 17:41+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
