@@ -1059,6 +1059,8 @@ int main(int argc, char *argv[])
   char * tmpPwd;
   char options[22];
 
+  freopen("/dev/tty", "r", stdin);
+
   initI18n();
 
   setDynamicChar(&programName, "%s", PROGRAM_NAME);
