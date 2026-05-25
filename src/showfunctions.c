@@ -337,7 +337,7 @@ int processXAttrs(xattrList **xa, char *name, unsigned char *xattrs, size_t xatt
 
 char *getRelativePath(char *file, char *target)
 {
-  char *result = malloc(sizeof(char) + 1);
+  char *result = calloc(2, sizeof(char));
   int i, j, e, c, targetUp, fileUp;
   splitStrStruct *fileStruct, *targetStruct;
   int  fileLen, targetLen, commonPath = 0;
@@ -388,9 +388,9 @@ char *getRelativePath(char *file, char *target)
       resultLen = sizeof(char) * (resultLen + j + 2);
       result = realloc(result, resultLen);
       if (i == fileLen - 1){
-        snprintf(result + strlen(result), (strlen(result) + j + 2), "%s%c", fileStruct[i].subString, '\0');
+        snprintf(result + strlen(result), j + 1, "%s%c", fileStruct[i].subString, '\0');
       } else {
-        snprintf(result + strlen(result), (strlen(result) + j + 2), "%s/%c", fileStruct[i].subString, '\0');
+        snprintf(result + strlen(result), j + 2, "%s/%c", fileStruct[i].subString, '\0');
       }
     }
   } else if ((targetUp < 1) && (fileUp > 1)){
@@ -399,11 +399,11 @@ char *getRelativePath(char *file, char *target)
       resultLen = sizeof(char) * (resultLen + j + 2);
       result = realloc(result, resultLen);
       if (c == 0){
-        snprintf(result, (strlen(result) + j + 2), "%s/%c", fileStruct[i].subString, '\0');
+        snprintf(result, j + 2, "%s/%c", fileStruct[i].subString, '\0');
       } else if (i == fileLen - 1){
-        snprintf(result + strlen(result), (strlen(result) + j + 2), "%s%c", fileStruct[i].subString, '\0');
+        snprintf(result + strlen(result), j + 1, "%s%c", fileStruct[i].subString, '\0');
       } else {
-        snprintf(result + strlen(result), (strlen(result) + j + 2), "%s/%c", fileStruct[i].subString, '\0');
+        snprintf(result + strlen(result), j + 2, "%s/%c", fileStruct[i].subString, '\0');
       }
       c++;
     }

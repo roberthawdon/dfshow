@@ -1433,10 +1433,10 @@ int symLinkLocation()
 
 void linktext_input(char *file, int symbolic)
 {
-  char *inputmessage;
+  char *inputmessage = NULL;
   char target[4096];
   int relative, e;
-  char *relativeFile;
+  char *relativeFile = NULL;
   int curPos = 0;
   memcpy(target, currentpwd, 4096);
   if (!check_last_char(target, "/")){
