@@ -375,14 +375,9 @@ char *getRelativePath(char *file, char *target)
   if (targetUp > 0){
     resultLen = sizeof(char) * ((targetUp * 3) + 1);
     result = realloc(result, resultLen);
-    for (i = 0; i < targetUp; i++){
-      if (c == 0){
-        snprintf(result, ((targetUp * 3) + 1), "%s/", "..");
-      } else {
-        snprintf(result + strlen(result), ((targetUp * 3) + 1), "%s/", "..");
+      for (i = 0; i < targetUp; i++){
+          snprintf(result + (i * 3), 4, "%s/", "..");
       }
-      c++;
-    }
     for(i=(fileLen - fileUp); i < fileLen; i++){
       j = strlen(fileStruct[i].subString);
       resultLen = sizeof(char) * (resultLen + j + 2);
