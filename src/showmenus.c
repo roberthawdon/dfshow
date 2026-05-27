@@ -1,7 +1,7 @@
 /*
   DF-SHOW: An interactive directory/file browser written for Unix-like systems.
   Based on the applications from the PC-DOS DF-EDIT suite by Larry Kroeker.
-  Copyright (C) 2018-2025  Robert Ian Hawdon
+  Copyright (C) 2018-2026  Robert Ian Hawdon
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -1433,10 +1433,10 @@ int symLinkLocation()
 
 void linktext_input(char *file, int symbolic)
 {
-  char *inputmessage;
+  char *inputmessage = NULL;
   char target[4096];
   int relative, e;
-  char *relativeFile;
+  char *relativeFile = NULL;
   int curPos = 0;
   memcpy(target, currentpwd, 4096);
   if (!check_last_char(target, "/")){
