@@ -786,9 +786,14 @@ void writeResultStruct(results* ob, const char * filename, struct stat buffer, i
     ob[count].slink[cslinklen] = '\0';
     // Now we know the size, lets clear the memory and read again.
     free(ob[count].slink);
-    ob[count].slink = malloc(sizeof(char) * (cslinklen + 1));
-    cslinklen = readlink(filename, ob[count].slink, cslinklen + 1);
-    ob[count].slink[cslinklen] = '\0';
+    if (cslinklen > 0){
+      ob[count].slink = malloc(sizeof(char) * (cslinklen + 1));
+      cslinklen = readlink(filename, ob[count].slink, cslinklen + 1);
+      ob[count].slink[cslinklen] = '\0';
+    } else {
+      ob[count].slink = malloc(sizeof(char) + 1);
+      ob[count].slink[0]=0;
+    }
   } else {
     ob[count].slink = malloc(sizeof(char) + 1);
     ob[count].slink[0]=0;
